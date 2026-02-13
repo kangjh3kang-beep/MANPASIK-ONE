@@ -1,0 +1,259 @@
+---
+description: 인프라 및 DevOps 에이전트 - Docker Compose 전체 서비스 맵, K8s, CI/CD, 모니터링, 시크릿 관리, 네트워크 아키텍처 완전 컨텍스트
+globs: ["infrastructure/**", "**/Dockerfile", "**/docker-compose*.yml", "**/.github/**", "**/Makefile", "**/Taskfile.yml", "**/*.yaml", "**/*.yml"]
+---
+
+# Infrastructure Agent 완전 컨텍스트
+
+## Docker Compose 개발 환경 완전 레퍼런스
+
+### 서비스 구성 (15+ 서비스)
+```yaml
+# infrastructure/docker/docker-compose.dev.yml (version: '3.9')
+# 네트워크: manpasik-network (bridge)
+```
+
+| 서비스 | 이미지 | 컨테이너명 | 포트 | 환경 변수 | 볼륨 | 헬스체크 |
+|--------|--------|-----------|------|-----------|------|---------|
+| **postgres** | postgres:16-alpine | manpasik-postgres | 5432 | USER=manpasik, PW=manpasik_dev_2026, DB=manpasik | postgres_data + init-scripts | pg_isready |
+| **timescaledb** | timescale/timescaledb:latest-pg16 | manpasik-timescale | 5433→5432 | USER=manpasik, PW=manpasik_dev_2026, DB=manpasik_ts | timescale_data | pg_isready |
+| **redis** | redis:7-alpine | manpasik-redis | 6379 | - | redis_data, appendonly yes | redis-cli ping |
+| **redpanda** | redpandadata/redpanda:v24.2.1 | manpasik-redpanda | 19092(kafka), 18082(proxy), 18081(schema) | smp=1, memory=1G, dev-container | redpanda_data | - |
+| **milvus** | milvusdb/milvus:v2.4.10 | manpasik-milvang | 19530, 9091 | etcd + minio 의존 | milvus_data | - |
+| **milvus-etcd** | coreos/etcd:v3.5.5 | manpasik-milvus-etcd | - (내부) | auto_compaction | milvus_etcd | - |
+| **milvus-minio** | minio:RELEASE.2024-01-04 | manpasik-milvus-minio | - (내부) | minioadmin/minioadmin | milvus_minio | curl health |
+| **elasticsearch** | elasticsearch:8.14.0 | manpasik-elasticsearch | 9200 | single-node, security=false, 512m | elasticsearch_data | - |
+| **keycloak** | keycloak:25.0 | manpasik-keycloak | 8080 | DB=postgres, admin/admin | postgres 의존 | - |
+| **kong-database** | postgres:16-alpine | manpasik-kong-db | - (내부) | kong/kong/kong | kong_db_data | - |
+| **kong-migrations** | kong:3.7 | manpasik-kong-migrations | - | bootstrap | kong-db 의존 | - |
+| **kong** | kong:3.7 | manpasik-kong | 8000(proxy), 8443(ssl), 8001(admin), 8002(gui) | PG 연결 | kong-migrations 의존 | - |
+| **mosquitto** | eclipse-mosquitto:2 | manpasik-mosquitto | 1883, 9001 | config 마운트 | mosquitto_data+log | - |
+| **minio** | minio:latest | manpasik-minio | 9000, 9010(콘솔→9001) | manpasik/manpasik_dev_2026 | minio_data | - |
+| **prometheus** | prom/prometheus:v2.53.1 | manpasik-prometheus | 9090 | config 마운트 | prometheus_data | - |
+| **grafana** | grafana/grafana:11.1.0 | manpasik-grafana | 3000 | admin/admin | grafana_data | - |
+
+### 볼륨 목록 (15개)
+```
+postgres_data, timescale_data, redis_data, redpanda_data,
+milvus_etcd, milvus_minio, milvus_data, elasticsearch_data,
+kong_db_data, mosquitto_data, mosquitto_log, minio_data,
+prometheus_data, grafana_data
+```
+
+### 서비스 의존성 그래프
+```
+keycloak → postgres (service_healthy)
+kong → kong-migrations → kong-database
+milvus → milvus-etcd + milvus-minio
+```
+
+---
+
+## 접속 정보 (개발 환경)
+
+| 서비스 | URL/주소 | 계정 | 비밀번호 |
+|--------|----------|------|---------|
+| PostgreSQL | localhost:5432/manpasik | manpasik | manpasik_dev_2026 |
+| TimescaleDB | localhost:5433/manpasik_ts | manpasik | manpasik_dev_2026 |
+| Redis | localhost:6379 | - | - |
+| Kafka (Redpanda) | localhost:19092 | - | - |
+| Schema Registry | localhost:18081 | - | - |
+| Milvus | localhost:19530 | - | - |
+| Elasticsearch | localhost:9200 | - | - |
+| Keycloak Admin | http://localhost:8080 | admin | admin |
+| Kong Proxy | http://localhost:8000 | - | - |
+| Kong Admin API | http://localhost:8001 | - | - |
+| Kong Admin GUI | http://localhost:8002 | - | - |
+| MQTT Broker | localhost:1883 | - | - |
+| MinIO API | localhost:9000 | manpasik | manpasik_dev_2026 |
+| MinIO Console | http://localhost:9010 | manpasik | manpasik_dev_2026 |
+| Prometheus | http://localhost:9090 | - | - |
+| Grafana | http://localhost:3000 | admin | admin |
+
+---
+
+## Kubernetes 배포 설계 (Phase 2)
+
+### 네임스페이스
+```
+manpasik-dev       # 개발 환경
+manpasik-staging   # 스테이징 환경
+manpasik-prod      # 프로덕션 환경
+manpasik-system    # 인프라 컴포넌트
+```
+
+### 배포 매니페스트 구조 (예정)
+```
+infrastructure/
+├── docker/
+│   └── docker-compose.dev.yml     ✅ 완성
+├── kubernetes/
+│   ├── base/                      🔲 대기
+│   │   ├── auth-service/
+│   │   ├── user-service/
+│   │   ├── device-service/
+│   │   └── measurement-service/
+│   ├── overlays/
+│   │   ├── dev/
+│   │   ├── staging/
+│   │   └── production/
+│   └── kustomization.yaml
+├── terraform/                     🔲 대기
+│   ├── modules/
+│   ├── environments/
+│   └── main.tf
+└── helm/                          🔲 대기
+```
+
+### K8s 리소스 요구사항 (서비스별)
+| 서비스 | CPU Req/Lim | Memory Req/Lim | Replicas |
+|--------|-------------|----------------|----------|
+| auth-service | 100m/500m | 128Mi/256Mi | 2-4 |
+| user-service | 100m/500m | 128Mi/256Mi | 2-4 |
+| device-service | 200m/1000m | 256Mi/512Mi | 2-4 |
+| measurement-service | 500m/2000m | 512Mi/1Gi | 3-6 |
+
+### 필수 K8s 리소스
+- **Deployment**: Replicas, RollingUpdate 전략
+- **Service**: ClusterIP (내부), LoadBalancer (외부)
+- **ConfigMap**: 환경 설정 (비밀이 아닌 값)
+- **Secret**: External Secrets Operator → HashiCorp Vault
+- **HPA**: CPU 70%, Memory 80% 기준 자동 스케일링
+- **NetworkPolicy**: 서비스 간 허용된 통신만
+- **PodDisruptionBudget**: minAvailable: 1
+- **Probes**: liveness(gRPC Live), readiness(gRPC Ready), startup
+
+---
+
+## CI/CD 파이프라인 (GitHub Actions)
+
+### 워크플로우 단계
+```yaml
+name: ManPaSik CI/CD
+
+on: [push, pull_request]
+
+jobs:
+  lint:          # 코드 품질
+    - Rust: cargo clippy + cargo fmt
+    - Go: golangci-lint
+    - Dart: flutter analyze
+    - TS: eslint
+
+  test:          # 테스트 + 커버리지
+    - Rust: cargo test + cargo tarpaulin (80%+)
+    - Go: go test -race -coverprofile (80%+)
+    - Dart: flutter test --coverage (80%+)
+
+  security:      # 보안 스캔
+    - Rust: cargo audit + cargo deny
+    - Go: govulncheck + nancy
+    - Docker: trivy image scan
+    - SAST: semgrep / CodeQL
+
+  build:         # Docker 이미지 빌드
+    - 멀티스테이지 빌드
+    - Non-root 사용자
+    - 고정 버전 태그 (latest 금지)
+
+  deploy:
+    - dev: 자동 배포 (main 브랜치)
+    - staging: 자동 배포 (release/* 브랜치)
+    - production: 수동 승인 후 배포 (태그)
+```
+
+---
+
+## Docker 규칙
+
+### Dockerfile 표준 (Go 서비스)
+```dockerfile
+# 빌드 스테이지
+FROM golang:1.22-alpine AS builder
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -ldflags="-s -w" -o /service ./cmd/main.go
+
+# 실행 스테이지
+FROM alpine:3.19
+RUN apk --no-cache add ca-certificates
+RUN adduser -D -u 1000 appuser
+USER appuser
+COPY --from=builder /service /service
+HEALTHCHECK --interval=30s --timeout=5s CMD ["/service", "healthcheck"]
+ENTRYPOINT ["/service"]
+```
+
+### Docker 규칙
+- 멀티스테이지 빌드 필수 (이미지 크기 최소화)
+- Non-root 사용자 실행 (`USER appuser`)
+- `.dockerignore` 필수
+- `HEALTHCHECK` 포함
+- 고정 버전 태그 사용 (`:latest` 금지)
+- 보안 스캔: `trivy image scan`
+
+---
+
+## 모니터링 설정
+
+### Prometheus
+- **메트릭 수집**: 15초 간격
+- **서비스 SLA**: 99.9% 가용성
+- **핵심 메트릭**:
+  - `grpc_server_handled_total` — gRPC 요청 수
+  - `grpc_server_handling_seconds` — gRPC 응답 시간
+  - `go_goroutines` — 고루틴 수
+  - `process_resident_memory_bytes` — 메모리
+
+### Grafana 대시보드 (예정)
+- 서비스 개요: 요청률, 에러율, P95 응답 시간
+- 인프라: CPU, 메모리, 디스크, 네트워크
+- 비즈니스: 측정 횟수, 활성 사용자, 디바이스 수
+
+### 알림 규칙
+| 조건 | 심각도 | 알림 채널 |
+|------|--------|-----------|
+| 에러율 > 1% | Warning | Slack |
+| P95 > 500ms | Warning | Slack |
+| 에러율 > 5% | Critical | PagerDuty |
+| 서비스 다운 | Critical | PagerDuty + SMS |
+| 디스크 > 80% | Warning | Slack |
+| 인증서 만료 7일 전 | Warning | Slack + Email |
+
+---
+
+## 백업 & 재해 복구
+
+| 대상 | 방식 | 주기 | 보존 | RTO | RPO |
+|------|------|------|------|-----|-----|
+| PostgreSQL | pg_dump + WAL | 일일 + 연속 | 30일 | 2시간 | 5분 |
+| TimescaleDB | pg_dump + WAL | 일일 + 연속 | 1년 (의료) | 2시간 | 5분 |
+| Milvus | 스냅샷 | 일일 | 30일 | 4시간 | 1일 |
+| Redis | RDB + AOF | 연속 | 7일 | 30분 | 1분 |
+| MinIO | 버킷 복제 | 연속 | 무기한 | 2시간 | 5분 |
+| Elasticsearch | 스냅샷 | 일일 | 90일 | 4시간 | 1일 |
+
+---
+
+## 네트워크 아키텍처
+```
+[Internet] ─── TLS 1.3 ───→ [Kong API Gateway :8000]
+                                    │
+                              [Keycloak :8080] (OIDC 인증)
+                                    │
+                              ── mTLS ──
+                              │        │
+                        [gRPC 서비스들]  [MQTT :1883]
+                        (50051-50054)    (IoT 디바이스)
+                              │
+                        [데이터 계층]
+                        PostgreSQL/TimescaleDB/Milvus/Redis/Kafka/MinIO/ES
+```
+
+### 시크릿 관리
+- Git 커밋 절대 금지: `.env`, `credentials.json`, `*.key`, `*.pem`
+- 개발: 환경 변수 + `.env.local` (`.gitignore`에 등록)
+- 프로덕션: HashiCorp Vault + K8s External Secrets
+- 12-Factor App: 환경 변수로 설정 주입

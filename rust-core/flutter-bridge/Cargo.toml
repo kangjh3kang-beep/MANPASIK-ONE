@@ -1,0 +1,23 @@
+[package]
+name = "flutter-bridge"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Flutter-Rust Bridge for ManPaSik Core Engine"
+
+[lib]
+name = "flutter_bridge"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+manpasik-engine = { path = "../manpasik-engine" }
+flutter_rust_bridge = "2.0"
+tokio = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+tracing = { workspace = true }
+
+[build-dependencies]
+flutter_rust_bridge_codegen = "2.0"

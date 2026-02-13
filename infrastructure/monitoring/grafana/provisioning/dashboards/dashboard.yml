@@ -1,0 +1,16 @@
+# ManPaSik Grafana 대시보드 프로비저닝
+# 대시보드 JSON 파일 자동 로드 설정
+
+apiVersion: 1
+
+providers:
+  - name: ManPaSik Dashboards
+    orgId: 1
+    folder: ManPaSik
+    folderUid: manpasik
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards/json

@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: manpasik
+  labels:
+    app.kubernetes.io/name: manpasik
+    app.kubernetes.io/part-of: manpasik-ecosystem
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: manpasik-data
+  labels:
+    app.kubernetes.io/name: manpasik-data
+    app.kubernetes.io/part-of: manpasik-ecosystem
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: manpasik-monitoring
+  labels:
+    app.kubernetes.io/name: manpasik-monitoring
+    app.kubernetes.io/part-of: manpasik-ecosystem

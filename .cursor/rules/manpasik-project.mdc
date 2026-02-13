@@ -1,0 +1,180 @@
+---
+description: ManPaSik 프로젝트 전역 규칙 - 모든 에이전트가 항상 준수해야 하는 공통 원칙과 프로젝트 컨텍스트
+globs: ["**/*"]
+alwaysApply: true
+---
+
+# ManPaSik 프로젝트 전역 규칙 (Global Agent Rules)
+
+> **모든 IDE 공통 규칙**: 프로젝트 전체에서(Cursor·VS Code·JetBrains·터미널 등) 적용하는 공통 규칙은 [docs/COMMON_RULES.md](docs/COMMON_RULES.md)에 정의되어 있으며, Cursor에서도 동일한 기준(코드 리뷰 → 린트 → 테스트)을 따릅니다.
+
+## 프로젝트 핵심 컨텍스트
+
+### 제품 정의
+- **이름**: ManPaSik (만파식, 萬波息) - 차동측정 기반 범용 분석 헬스케어 AI 생태계
+- **의료기기 등급**: Class II (체외진단의료기기, IVD)
+- **대상 시장**: KR(MFDS), US(FDA 510(k)), EU(CE-IVDR), CN(NMPA), JP(PMDA)
+- **핵심 가치**: 오프라인 100% 동작, 99% 노이즈 제거, 896차원 핑거프린트, 무제한 리더기 확장
+
+### 핵심 기술 공식
+```
+차동측정: S_corrected = S_det - α × S_ref
+  - α (alpha) 기본값: 0.95 (crate::DEFAULT_ALPHA)
+  - 채널별 확장: (S_det[i] - α × S_ref[i] - offset[i]) × gain[i]
+
+핑거프린트: 88차원(Basic) → 448차원(Enhanced) → 896차원(Full)
+  - MAX_CHANNELS = 896
+  - 벡터 연산: L2 정규화, 코사인 유사도, 유클리드 거리
+```
+
+### 기술 스택 (확정, 변경 불가)
+| 계층 | 기술 |
+|------|------|
+| 모바일 | Flutter 3.x + Riverpod 2.x + go_router |
+| 코어 | Rust (Edition 2021) + TFLite + flutter_rust_bridge 2.0 |
+| API Gateway | Kong 3.7 + Keycloak 25.0 |
+| 백엔드 | Go 1.22+ + gRPC + Gin |
+| 메인 DB | PostgreSQL 16 |
+| 시계열 | TimescaleDB (pg16) |
+| 벡터 DB | Milvus 2.4 |
+| 캐시 | Redis 7 |
+| 메시징 | Kafka (Redpanda v24.2) |
+| 검색 | Elasticsearch 8.14 |
+| IoT | MQTT (Mosquitto 2) |
+| 스토리지 | MinIO |
+| 모니터링 | Prometheus + Grafana 11 |
+| 컨테이너 | Docker + Kubernetes |
+
+### 카트리지 시스템 (29종)
+- 건강 바이오마커 14종: 혈당, 지질패널, HbA1c, 요산, 크레아티닌, VitD, VitB12, 철분, TSH, 코르티솔, 테스토스테론, 에스트로겐, CRP, 인슐린
+- 환경 모니터링 4종: 수질, 실내공기질, 라돈, 방사능
+- 식품 안전 4종: 농약잔류, 식품신선도, 알레르겐, 데이트약물
+- 전자코/전자혀 3종: E-Nose, E-Tongue, EHD기체
+- 고급 분석 4종: 비표적448, 비표적896, 다중바이오마커, 맞춤연구용
+
+### 구독 티어
+| 티어 | 가격 | 특징 |
+|------|------|------|
+| Free | 무료 | 기본 측정 |
+| Basic Safety | ₩9,900/월 | 안전 모니터링 |
+| Bio-Optimization | ₩29,900/월 | AI 코칭 |
+| Clinical Guard | ₩59,900/월 | 원격진료 연동 |
+
+---
+
+## 기획-개발 철학 (모든 작업의 전제)
+
+> **기준 수립 → 고도화 → 유기적 대응**: 원본 기획안에 완벽 부합하고 추가 제안까지 반영해 세부 기획·계획을 수립하지 않은 모든 항목을 먼저 완벽히 수립해 기준을 정해 둔 뒤, 개발 과정에서 수정·보완을 통해 고도화하고, 생각지 못한 사항에는 유기적으로 대응하며 완벽한 시스템 구축 및 완성을 추구한다.
+
+- **1단계(기준 수립)**: 원본 + 발전 수립안에 따라 미수립 항목(데이터 패킷, 사이트맵, MSA 로드맵, 추적성 등)을 수립하고 베이스라인 확정.
+- **2단계(고도화)**: 구현 중 Quality Gate·리뷰·테스트로 검증하고, 개선안은 문서·코드에 반영해 기준을 갱신.
+- **우회·미루기 금지**: 구현 항목을 "나중에" 또는 "우회"로 미루는 것을 기본으로 두지 않음. 막히면 해결점을 찾아 정상 구현·구축. 부득이한 우회/연기는 KNOWN_ISSUES 등록 + 해결 조건·시한 명시 필수.
+- **3단계(유기적 대응)**: 예상치 못한 이슈는 KNOWN_ISSUES·CHANGELOG에 기록하고, 원본 의도(홍익인간, 차동측정, 오프라인 100%, 규제 준수)를 유지한 채 설계·기획 문서를 보완.
+
+**상세**: `docs/development-philosophy.md` 참조.
+
+---
+
+## 필수 준수 원칙
+
+### 1. Security First (보안 최우선 - OWASP Top 10)
+- **입력 검증**: 모든 외부 입력은 반드시 검증/새니타이제이션 (Rust: validator, Go: binding tag, Dart: form, TS: zod)
+- **SQL Injection 방지**: ORM만 사용 (Go: sqlc/GORM, 직접 SQL 쿼리 절대 금지)
+- **인증/인가**: JWT (OAuth2) 인증 + RBAC 인가 필수 (Keycloak OIDC)
+- **민감 정보**: PII/PHI/Secrets 코드 하드코딩 절대 금지
+- **의료 데이터(PHI)**: AES-256-GCM 암호화, 접근 로그 기록, 최소 권한 원칙
+- **에러 응답**: 내부 스택 트레이스/시스템 정보 절대 노출 금지
+- **CORS**: 화이트리스트 기반 origin 제한
+- **Rate Limiting**: API별 요청 제한 적용
+
+### 2. Test-Driven Development (TDD)
+- **Rule**: "No Code Without Tests" - 기능 구현 전 실패하는 테스트 먼저 작성
+- **단계 완료 시 검증 필수 (코드 리뷰 → 린트 → 테스트)**: 기능/서비스/Stage 완료 시 **완료 선언 전에** (1) 코드 리뷰(보안·패턴·의존성 자기 점검), (2) 린트 실행, (3) 테스트·빌드 실행을 순서대로 수행한다. 2·3 실행 불가 시 CHANGELOG에 "검증 필요"를 남기고 사용자에게 실행 명령을 안내한 뒤, 사용자 검증 후에만 완료로 표기한다. (QUALITY_GATES.md §1, §2.3)
+- **커버리지**: 80% 이상 유지
+- **테스트 프레임워크**:
+  - Rust: `#[cfg(test)]` 모듈 + `criterion` 벤치마크 + `proptest` 속성 기반
+  - Go: `testing` 패키지 + `_test.go` + testcontainers-go
+  - Dart: `flutter_test` (위젯) + `integration_test` (통합) + `mocktail` (목)
+  - TypeScript: Jest + React Testing Library
+- **테스트 명명**: `test_기능_시나리오_기대결과` (한국어 가능)
+
+### 3. Enterprise SaaS 품질
+- **Multi-tenancy**: 해당 시 DB 스키마에 `tenant_id` 포함
+- **에러 처리**: 표준화된 에러 응답 (code, message, details)
+- **비동기 처리**: 성능 최적화 (Rust: tokio, Go: goroutine, Dart: Future/Stream)
+- **Graceful Shutdown**: 모든 서비스 필수 (SIGINT/SIGTERM 처리)
+- **멱등성**: POST를 제외한 모든 API 멱등성 보장
+
+### 4. 의료기기 규정 준수
+- **IEC 62304**: 소프트웨어 수명주기 프로세스 (안전 등급 Class B/C)
+- **ISO 14971**: 위험관리 적용
+- **ISO 13485**: 품질경영시스템
+- **데이터 무결성**: SHA-256 해시체인 검증 (측정 데이터)
+- **감사 추적**: 모든 주요 작업 Audit Trail 기록 (최소 10년 보존)
+- **SOUP 관리**: 서드파티 라이브러리 위험 평가
+
+### 5. 코드 스타일 (언어별)
+- **Rust**: `clippy::all` + `rust_2018_idioms` 경고 활성화, `unsafe` 시 `// SAFETY:` 주석, 공개 API `///` doc comment
+- **Go**: `golangci-lint` 준수, effective Go 스타일, 에러 래핑 `%w`
+- **Dart**: `flutter_lints` 3.x, null safety 엄격, `freezed` + `json_serializable`
+- **TypeScript**: strict mode, ESLint, Prettier
+
+### 6. 문서화
+- 모든 공개 API에 문서 주석 필수
+- 복잡한 알고리즘: 수학 공식과 함께 설명
+
+### 7. 응답 언어
+- 모든 응답, 코드 주석, 커밋 메시지: **한국어**
+- 코드 내 변수명/함수명/타입명: **영어**
+
+### 8. 실시간 작업 기록 (필수 - 모든 작업 세션에 적용)
+> **규칙: 코드 변경이 수반되는 모든 작업 완료 시, 반드시 CHANGELOG.md, CONTEXT.md, KNOWN_ISSUES.md를 업데이트한다.**
+> **과정도 결과만큼 중요하다**: 에러, 디버깅 과정, 환경 문제, 우회 방법을 빠짐없이 기록한다.
+
+- **CHANGELOG.md**: 작업 결과 + 발생 이슈/에러 + 디버깅 과정 + 환경 변경 기록
+- **CONTEXT.md**: 프로젝트 상태 요약 갱신
+- **KNOWN_ISSUES.md**: 미해결 이슈 추가, 기존 이슈 해결 시 상태 변경 (삭제 금지)
+
+**상세 프로토콜은 `.cursor/rules/work-logging.mdc` 참조.**
+
+### 9. Quality Gate 개발 프로세스 (단계별 검증)
+
+> **규칙: 린트·테스트·빌드 통과 없이 작업 완료로 간주하지 않는다. Stage 완료 시 체크리스트 수행 후 다음 Stage 진행.**
+
+**3단계 검증:**
+- **Level 1 (매 작업)**: 코드 변경 시 즉시 린트 + 단위 테스트 + 빌드 실행. 통과 시에만 CHANGELOG 기록.
+- **Level 2 (Stage 완료)**: 기능 단위 완료 시 `QUALITY_GATES.md` Stage Gate 체크리스트 수행. 통과 시 Stage 완료 선언.
+- **Level 3 (Phase 완료)**: 마일스톤 완료 시 통합 테스트·보안 스캔·성능·규정 문서 정합성 검증 후 다음 Phase 진행.
+
+**Level 1 검증 명령어 (언어별):**
+| 언어 | 린트 | 테스트 | 빌드 |
+|------|------|--------|------|
+| Rust | `cargo clippy --all-targets` | `cargo test` | `cargo build` |
+| Go | `golangci-lint run` | `go test ./...` | `go build ./...` |
+| Dart | `dart analyze` | `flutter test` | `flutter build` |
+| TS | `eslint .` | `jest --passWithNoTests` | `tsc --noEmit` |
+
+**참조:** `QUALITY_GATES.md` — Stage/Phase 정의, 체크리스트 템플릿, 현재 Stage 상태.
+
+---
+
+## 데이터 흐름 (엔드투엔드 측정)
+```
+리더기 → [BLE 5.0 GATT] → Flutter 앱 (Rust FFI)
+  → 차동측정 (S_det - α × S_ref)
+  → 핑거프린트 벡터 생성 (88/448/896)
+  → 엣지 AI 추론 (TFLite)
+  → 로컬 저장 (오프라인 CRDT)
+  → [gRPC Stream] → Go Backend
+    → TimescaleDB (시계열 저장)
+    → Milvus (벡터 저장/검색)
+    → Kafka (이벤트 발행)
+  → 결과 표시 (Flutter UI)
+```
+
+## 참조 문서
+- `AGENTS.md` - 에이전트 팀 마스터 컨텍스트
+- `CONTEXT.md` - AI 간 공유 컨텍스트
+- `CHANGELOG.md` - 실시간 작업 로그
+- `QUALITY_GATES.md` - Quality Gate 프로세스 (Stage/Phase 체크리스트)
+- `docs/AI_COLLABORATION.md` - 3-AI 협업 분담

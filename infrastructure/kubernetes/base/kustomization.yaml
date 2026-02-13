@@ -1,0 +1,37 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: manpasik
+
+commonLabels:
+  app.kubernetes.io/part-of: manpasik-ecosystem
+  app.kubernetes.io/managed-by: kustomize
+
+resources:
+  - namespace.yaml
+  - config/configmap.yaml
+  - config/secrets.yaml
+  - services/gateway.yaml
+  - services/auth-service.yaml
+  - services/user-service.yaml
+  - services/device-service.yaml
+  - services/measurement-service.yaml
+  - services/subscription-service.yaml
+  - services/shop-service.yaml
+  - services/payment-service.yaml
+  - services/ai-inference-service.yaml
+  - services/cartridge-service.yaml
+  - services/calibration-service.yaml
+  - services/coaching-service.yaml
+  - services/reservation-service.yaml
+  - services/prescription-service.yaml
+  - services/health-record-service.yaml
+  - services/family-service.yaml
+  - services/community-service.yaml
+  - services/video-service.yaml
+  - services/notification-service.yaml
+  - services/translation-service.yaml
+  - services/admin-service.yaml
+  - services/telemedicine-service.yaml
+  - services/vision-service.yaml
+  - ingress.yaml

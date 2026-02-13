@@ -1,0 +1,256 @@
+---
+description: Go 백엔드 에이전트 - gRPC 마이크로서비스, Proto 정의, DB 스키마, 인증/인가 완전 컨텍스트
+globs: ["backend/**/*.go", "backend/**/go.mod", "backend/**/go.sum", "backend/**/*.proto", "backend/**/*.sql", "backend/**/Makefile", "backend/**/Dockerfile"]
+---
+
+# Go Backend Agent 완전 컨텍스트
+
+## 현재 상태
+- Go 모듈 정의: `backend/go.mod` (go 1.22+)
+- gRPC Proto: 2개 완성 (`health.proto`, `manpasik.proto`)
+- Go 소스 코드: **아직 없음** (구현 대기 중)
+- 상태: 5% (구조와 Proto만 존재)
+
+## 핵심 의존성 (go.mod에서 사용할 패키지)
+```
+google.golang.org/grpc          — gRPC 서버/클라이언트
+google.golang.org/protobuf      — Protobuf 코드 생성
+github.com/gin-gonic/gin        — HTTP Gateway
+github.com/jackc/pgx/v5         — PostgreSQL 드라이버 (pgxpool)
+github.com/redis/go-redis/v9    — Redis 클라이언트
+github.com/segmentio/kafka-go   — Kafka 프로듀서/컨슈머
+github.com/milvus-io/milvus-sdk-go — Milvus 벡터 DB
+go.uber.org/zap                 — 구조화된 로깅
+github.com/coreos/go-oidc/v3    — Keycloak OIDC 검증
+github.com/golang-jwt/jwt/v5    — JWT 파싱/검증
+github.com/golang-migrate/migrate — DB 마이그레이션
+```
+
+---
+
+## gRPC Proto 완전 레퍼런스
+
+### manpasik.proto (package manpasik.v1)
+```
+go_package = "github.com/manpasik/backend/shared/proto/v1"
+
+// 3개 서비스 정의:
+
+service MeasurementService {
+  rpc StartSession(StartSessionRequest) → StartSessionResponse
+  rpc StreamMeasurement(stream MeasurementData) → (stream MeasurementResult)  // 양방향
+  rpc EndSession(EndSessionRequest) → EndSessionResponse
+  rpc GetMeasurementHistory(GetHistoryRequest) → GetHistoryResponse
+}
+
+service DeviceService {
+  rpc RegisterDevice(RegisterDeviceRequest) → RegisterDeviceResponse
+  rpc ListDevices(ListDevicesRequest) → ListDevicesResponse
+  rpc StreamDeviceStatus(stream DeviceStatusUpdate) → (stream DeviceCommand)  // 양방향
+  rpc RequestOtaUpdate(OtaRequest) → OtaResponse
+}
+
+service UserService {
+  rpc GetProfile(GetProfileRequest) → UserProfile
+  rpc UpdateProfile(UpdateProfileRequest) → UserProfile
+  rpc GetSubscription(GetSubscriptionRequest) → SubscriptionInfo
+}
+
+// 핵심 메시지:
+MeasurementData { session_id, raw_channels[], differential{s_det,s_ref,alpha,s_corrected}, env_meta{temp_c,humidity_pct,pressure_kpa}, timestamp }
+MeasurementResult { session_id, primary_value, unit, confidence, fingerprint_vector[], processed_at }
+DeviceInfo { device_id, name, firmware_version, status(UNKNOWN/ONLINE/OFFLINE/MEASURING/UPDATING/ERROR), battery_percent, last_seen }
+UserProfile { user_id, email, display_name, avatar_url, language, timezone, subscription_tier, created_at }
+SubscriptionInfo { user_id, tier(FREE/BASIC/PRO/CLINICAL), started_at, expires_at, max_devices, max_family_members, ai_coaching_enabled, telemedicine_enabled }
+
+// 구독 가격:
+FREE(0)=무료, BASIC(1)=₩9,900, PRO(2)=₩29,900, CLINICAL(3)=₩59,900
+```
+
+### health.proto (package manpasik.health.v1)
+```
+go_package = "github.com/manpasik/backend/shared/proto/health/v1"
+
+service Health { Check, Watch(stream) }           // 표준 gRPC 헬스체크
+service ExtendedHealth { GetStatus, CheckDependencies, Ready, Live }  // K8s Probes
+
+// 상세 메시지:
+ServiceInfo { name, version, build_time, build_commit, go_version, started_at, uptime_seconds }
+DependencyStatus { name, type(DATABASE/CACHE/MESSAGE_QUEUE/EXTERNAL_SERVICE/STORAGE/SEARCH), health(HEALTHY/DEGRADED/UNHEALTHY), latency_ms, message }
+ServiceMetrics { active_connections, pending_requests, error_rate, avg_response_time_ms, memory_bytes, cpu_usage, goroutines }
+```
+
+---
+
+## 서비스 아키텍처 (구현할 4개 핵심 서비스)
+
+### 서비스 디렉토리 구조 (필수 패턴)
+```
+backend/services/{service-name}/
+├── cmd/main.go              # 진입점 (Graceful Shutdown)
+├── internal/
+│   ├── handler/             # gRPC 핸들러 (Proto 구현)
+│   │   └── grpc.go          # pb.UnimplementedXxxServer 임베딩
+│   ├── service/             # 비즈니스 로직 (인터페이스 기반)
+│   ├── repository/          # DB 접근 (sqlc/GORM only)
+│   └── model/               # 도메인 모델
+├── pkg/                     # 외부 공개 패키지
+├── migrations/              # DB 마이그레이션 (golang-migrate)
+├── Dockerfile               # 멀티스테이지 빌드
+└── Makefile
+```
+
+### auth-service (:50051)
+- **기능**: Keycloak OIDC 연동, JWT 토큰 검증, 세션 관리 (Redis), MFA 지원
+- **인증 흐름**: `클라이언트 → Kong → auth-service → Keycloak OIDC → JWT 발급 → Redis 세션`
+- **핵심 구현**: JWT 미들웨어 인터셉터 (모든 서비스에서 재사용)
+
+### user-service (:50052)
+- **기능**: 사용자 프로필 CRUD, 구독 관리, 가족 그룹 관리
+- **DB 테이블**: users, subscriptions, family_groups, family_members
+- **Proto**: UserService (GetProfile, UpdateProfile, GetSubscription)
+
+### device-service (:50053)
+- **기능**: 리더기 등록/해제, 펌웨어 OTA 관리, 디바이스 상태 추적
+- **DB 테이블**: devices, device_events (JSONB 페이로드)
+- **Proto**: DeviceService (RegisterDevice, ListDevices, StreamDeviceStatus, RequestOtaUpdate)
+- **특이사항**: StreamDeviceStatus는 양방향 스트리밍 (디바이스 상태 + 명령 전송)
+
+### measurement-service (:50054)
+- **기능**: 측정 세션 관리, TimescaleDB 저장, Milvus 벡터 저장, 핑거프린트 유사도 검색
+- **DB**: TimescaleDB (measurements 하이퍼테이블), Milvus (핑거프린트 벡터)
+- **Proto**: MeasurementService (StartSession, StreamMeasurement, EndSession, GetHistory)
+- **특이사항**: StreamMeasurement는 양방향 스트리밍 (실시간 측정 데이터 ↔ 결과)
+- **핵심**: 차동측정값(s_det, s_ref, alpha, s_corrected) + 핑거프린트 벡터(88/448/896) 저장
+
+---
+
+## DB 스키마 완전 레퍼런스
+
+### PostgreSQL (:5432, DB: manpasik, User: manpasik)
+```sql
+-- users
+id UUID PK, email VARCHAR(255) UNIQUE NOT NULL, display_name VARCHAR(100),
+avatar_url TEXT, language VARCHAR(10) DEFAULT 'ko', timezone VARCHAR(50) DEFAULT 'Asia/Seoul',
+created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW()
+
+-- subscriptions
+id UUID PK, user_id UUID FK→users, tier VARCHAR(20) NOT NULL ['free','basic','pro','clinical'],
+started_at TIMESTAMPTZ, expires_at TIMESTAMPTZ, max_devices INT DEFAULT 3, max_family_members INT DEFAULT 1
+
+-- family_groups
+id UUID PK, name VARCHAR(100) NOT NULL, owner_id UUID FK→users
+
+-- family_members
+id UUID PK, family_id UUID FK→family_groups, user_id UUID FK→users,
+role VARCHAR(20) DEFAULT 'member' ['owner','admin','member'], UNIQUE(family_id, user_id)
+
+-- devices
+id UUID PK, device_id VARCHAR(100) UNIQUE NOT NULL (BLE MAC/시리얼),
+user_id UUID FK→users, name VARCHAR(100), firmware_version VARCHAR(20),
+last_seen TIMESTAMPTZ, status VARCHAR(20) DEFAULT 'offline', battery_percent INT
+
+-- device_events
+id UUID PK, device_id UUID FK→devices, event_type VARCHAR(50) NOT NULL,
+payload JSONB, created_at TIMESTAMPTZ DEFAULT NOW()
+```
+
+### TimescaleDB (:5433, DB: manpasik_ts, User: manpasik)
+```sql
+-- measurements (하이퍼테이블)
+time TIMESTAMPTZ NOT NULL, session_id UUID NOT NULL, device_id UUID NOT NULL,
+user_id UUID, cartridge_type VARCHAR(50),
+raw_channels DOUBLE PRECISION[], s_det/s_ref/alpha/s_corrected DOUBLE PRECISION,
+primary_value DOUBLE PRECISION, unit VARCHAR(20), confidence FLOAT,
+fingerprint_vector REAL[],  -- 88/448/896 차원
+temp_c FLOAT, humidity_pct FLOAT, battery_pct INT
+
+SELECT create_hypertable('measurements', 'time');
+INDEX: idx_measurements_session(session_id), idx_measurements_user(user_id, time DESC)
+```
+
+---
+
+## 코딩 규칙 상세
+
+### Go 스타일
+- Go 1.22+ 사용, `golangci-lint` 준수, Effective Go 스타일
+- 에러 래핑: `fmt.Errorf("서비스 실패: %w", err)`
+- 구조체 태그: `json:"field_name" binding:"required"`
+- 컨텍스트 전파: `context.Context` 첫 번째 파라미터
+
+### gRPC 구현 패턴
+```go
+type measurementServiceServer struct {
+    pb.UnimplementedMeasurementServiceServer  // 필수 임베딩
+    svc service.MeasurementService             // 비즈니스 로직 인터페이스
+}
+
+// 인터셉터 체인: 인증 → 로깅 → 메트릭 → 에러 처리 → 패닉 복구
+```
+
+### Graceful Shutdown (필수 패턴)
+```go
+sigCh := make(chan os.Signal, 1)
+signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+<-sigCh
+log.Info("shutting down gracefully...")
+server.GracefulStop()
+```
+
+### 인증 미들웨어 (gRPC Interceptor)
+```go
+// UnaryServerInterceptor: JWT 토큰 추출 → Keycloak OIDC 검증 → 컨텍스트에 사용자 정보 저장
+// metadata.FromIncomingContext(ctx) → "authorization" 헤더에서 Bearer 토큰 추출
+```
+
+### DB 접근 패턴
+- ORM만 사용 (sqlc 또는 GORM) — 직접 SQL 쿼리 금지
+- 커넥션 풀링: `pgxpool.New(ctx, connString)`
+- 트랜잭션: 비즈니스 로직 단위로 묶기
+- 마이그레이션: `golang-migrate` 사용
+
+### 에러 응답 표준 형식
+```json
+{
+  "error": {
+    "code": "INVALID_INPUT",
+    "message": "이메일 형식이 올바르지 않습니다",
+    "details": { "field": "email", "constraint": "format" }
+  }
+}
+```
+
+### 로깅 (zap)
+- 구조화된 JSON 로깅
+- 민감 정보 로깅 금지 (PII, 토큰, 비밀번호)
+- Request ID 추적 (`X-Request-ID` 헤더)
+- 로그 레벨: Debug, Info, Warn, Error
+
+### 테스트 패턴
+```go
+// 테이블 드리븐 테스트
+tests := []struct {
+    name    string
+    input   *pb.XXXRequest
+    want    *pb.XXXResponse
+    wantErr bool
+}{...}
+for _, tt := range tests {
+    t.Run(tt.name, func(t *testing.T) { ... })
+}
+```
+- Mock: `mockgen` 또는 인터페이스 기반
+- 통합: `testcontainers-go` (PostgreSQL, Redis, Kafka)
+
+### 데이터 저장소 라우팅
+| 데이터 유형 | 저장소 | 포트 | 접속 정보 |
+|------------|--------|------|-----------|
+| 사용자/디바이스/구독 | PostgreSQL | 5432 | manpasik / manpasik_dev_2026 / manpasik |
+| 시계열 측정값 | TimescaleDB | 5433 | manpasik / manpasik_dev_2026 / manpasik_ts |
+| 핑거프린트 벡터 | Milvus | 19530 | - |
+| 세션/캐시 | Redis | 6379 | appendonly yes |
+| 이벤트 스트리밍 | Kafka (Redpanda) | 19092 | - |
+| 파일/바이너리 | MinIO | 9000 (콘솔 9010) | manpasik / manpasik_dev_2026 |
+| 검색/로그 | Elasticsearch | 9200 | xpack.security.enabled=false |
+| IoT 메시지 | MQTT (Mosquitto) | 1883 | - |

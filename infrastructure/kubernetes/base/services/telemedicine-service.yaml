@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemedicine-service
+  labels:
+    app: telemedicine-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: telemedicine-service
+  template:
+    metadata:
+      labels:
+        app: telemedicine-service
+        tier: backend
+    spec:
+      containers:
+        - name: telemedicine-service
+          image: manpasik/telemedicine-service:latest
+          ports:
+            - containerPort: 50071
+              name: grpc
+            - containerPort: 9100
+              name: metrics
+          envFrom:
+            - configMapRef:
+                name: manpasik-config
+            - secretRef:
+                name: manpasik-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:50071"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:50071"]
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: telemedicine-service
+spec:
+  selector:
+    app: telemedicine-service
+  ports:
+    - port: 50071
+      targetPort: 50071
+      name: grpc
+    - port: 9100
+      targetPort: 9100
+      name: metrics

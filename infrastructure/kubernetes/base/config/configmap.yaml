@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: manpasik-config
+data:
+  # Environment
+  ENVIRONMENT: "development"
+  LOG_LEVEL: "info"
+
+  # Database (manpasik-data namespace)
+  DB_HOST: "postgres.manpasik-data.svc.cluster.local"
+  DB_PORT: "5432"
+  DB_NAME: "manpasik"
+  DB_SSLMODE: "require"
+  POSTGRES_HOST: "postgres.manpasik-data.svc.cluster.local"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "manpasik"
+
+  # TimescaleDB
+  TIMESCALE_HOST: "timescaledb.manpasik-data.svc.cluster.local"
+  TIMESCALE_PORT: "5432"
+  TIMESCALE_DB: "manpasik_ts"
+
+  # Redis
+  REDIS_HOST: "redis.manpasik-data.svc.cluster.local"
+  REDIS_PORT: "6379"
+  REDIS_ADDR: "redis.manpasik-data.svc.cluster.local:6379"
+
+  # Kafka / Redpanda
+  KAFKA_BROKERS: "redpanda.manpasik-data.svc.cluster.local:9092"
+
+  # Milvus (Vector DB)
+  MILVUS_HOST: "milvus.manpasik-data.svc.cluster.local"
+  MILVUS_PORT: "19530"
+
+  # Keycloak
+  KEYCLOAK_URL: "http://keycloak.manpasik.svc.cluster.local:8080"
+  KEYCLOAK_REALM: "manpasik"
+
+  # Service addresses for cross-service communication (gRPC)
+  AUTH_SERVICE_ADDR: "auth-service:50051"
+  USER_SERVICE_ADDR: "user-service:50052"
+  DEVICE_SERVICE_ADDR: "device-service:50053"
+  MEASUREMENT_SERVICE_ADDR: "measurement-service:50054"
+  SUBSCRIPTION_SERVICE_ADDR: "subscription-service:50055"
+  SHOP_SERVICE_ADDR: "shop-service:50056"
+  PAYMENT_SERVICE_ADDR: "payment-service:50057"
+  AI_INFERENCE_SERVICE_ADDR: "ai-inference-service:50058"
+  CARTRIDGE_SERVICE_ADDR: "cartridge-service:50059"
+  CALIBRATION_SERVICE_ADDR: "calibration-service:50060"
+  COACHING_SERVICE_ADDR: "coaching-service:50061"
+  FAMILY_SERVICE_ADDR: "family-service:50063"
+  HEALTH_RECORD_SERVICE_ADDR: "health-record-service:50064"
+  COMMUNITY_SERVICE_ADDR: "community-service:50065"
+  RESERVATION_SERVICE_ADDR: "reservation-service:50066"
+  ADMIN_SERVICE_ADDR: "admin-service:50068"
+  NOTIFICATION_SERVICE_ADDR: "notification-service:50062"
+  PRESCRIPTION_SERVICE_ADDR: "prescription-service:50069"
+  VIDEO_SERVICE_ADDR: "video-service:50070"
+  TRANSLATION_SERVICE_ADDR: "translation-service:50073"
+
+  # Service FQDN addresses (fully qualified)
+  AUTH_SERVICE_URL: "auth-service.manpasik.svc.cluster.local:50051"
+  USER_SERVICE_URL: "user-service.manpasik.svc.cluster.local:50052"
+  DEVICE_SERVICE_URL: "device-service.manpasik.svc.cluster.local:50053"
+  MEASUREMENT_SERVICE_URL: "measurement-service.manpasik.svc.cluster.local:50054"
+  SUBSCRIPTION_SERVICE_URL: "subscription-service.manpasik.svc.cluster.local:50055"
+  SHOP_SERVICE_URL: "shop-service.manpasik.svc.cluster.local:50056"
+  PAYMENT_SERVICE_URL: "payment-service.manpasik.svc.cluster.local:50057"
+  AI_INFERENCE_SERVICE_URL: "ai-inference-service.manpasik.svc.cluster.local:50058"
+  CARTRIDGE_SERVICE_URL: "cartridge-service.manpasik.svc.cluster.local:50059"
+  CALIBRATION_SERVICE_URL: "calibration-service.manpasik.svc.cluster.local:50060"
+  COACHING_SERVICE_URL: "coaching-service.manpasik.svc.cluster.local:50061"
+  FAMILY_SERVICE_URL: "family-service.manpasik.svc.cluster.local:50063"
+  HEALTH_RECORD_SERVICE_URL: "health-record-service.manpasik.svc.cluster.local:50064"
+  COMMUNITY_SERVICE_URL: "community-service.manpasik.svc.cluster.local:50065"
+  RESERVATION_SERVICE_URL: "reservation-service.manpasik.svc.cluster.local:50066"
+  ADMIN_SERVICE_URL: "admin-service.manpasik.svc.cluster.local:50068"
+  NOTIFICATION_SERVICE_URL: "notification-service.manpasik.svc.cluster.local:50062"
+  PRESCRIPTION_SERVICE_URL: "prescription-service.manpasik.svc.cluster.local:50069"
+  VIDEO_SERVICE_URL: "video-service.manpasik.svc.cluster.local:50070"
+  TRANSLATION_SERVICE_URL: "translation-service.manpasik.svc.cluster.local:50073"
+
+  # Vision service (Phase 5)
+  VISION_SERVICE_ADDR: "vision-service:50072"
+  VISION_SERVICE_URL: "vision-service.manpasik.svc.cluster.local:50072"
+  TELEMEDICINE_SERVICE_ADDR: "telemedicine-service:50071"
+  TELEMEDICINE_SERVICE_URL: "telemedicine-service.manpasik.svc.cluster.local:50071"
+
+  # ManPaSik domain settings
+  MAX_FINGERPRINT_DIMENSION: "896"
+  DEFAULT_ALPHA: "0.95"
+  OFFLINE_MODE_ENABLED: "true"

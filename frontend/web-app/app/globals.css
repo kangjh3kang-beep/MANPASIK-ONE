@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════
+   MANPASIK Health Management Lab - Design System
+   Korean Futuristic Theme: Deep Sea + Sanggam Gold
+   ═══════════════════════════════════════════════ */
+
+:root {
+  --background: #0A192F;
+  --foreground: #FAFAFA;
+  --deep-sea: #0A192F;
+  --ink-black: #000000;
+  --sanggam-gold: #D4AF37;
+  --wave-cyan: #64FFDA;
+  --celadon-teal: #00897B;
+  --dancheong-red: #D32F2F;
+  --hanji-white: #FAFAFA;
+  --glass-navy: rgba(10, 25, 47, 0.6);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-deep-sea: var(--deep-sea);
+  --color-ink-black: var(--ink-black);
+  --color-sanggam: var(--sanggam-gold);
+  --color-wave-cyan: var(--wave-cyan);
+  --color-celadon: var(--celadon-teal);
+  --color-dancheong: var(--dancheong-red);
+  --color-hanji: var(--hanji-white);
+  --color-glass: var(--glass-navy);
+  --font-sans: 'Noto Sans KR', sans-serif;
+  --font-serif: 'Gowun Batang', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ═══ Base ═══ */
+body {
+  background: linear-gradient(135deg, var(--deep-sea) 0%, var(--ink-black) 100%);
+  color: var(--hanji-white);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-serif);
+  color: var(--sanggam-gold);
+}
+
+/* ═══ Sanggam Panel (글래스모피즘 + 상감) ═══ */
+.sanggam-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  background: rgba(10, 25, 47, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(212, 175, 55, 0.1);
+  transition: all 0.3s ease;
+}
+
+.sanggam-panel:hover {
+  border-color: rgba(212, 175, 55, 0.6);
+  box-shadow:
+    0 12px 48px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(212, 175, 55, 0.2);
+}
+
+/* ═══ Sanggam Button ═══ */
+.sanggam-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid var(--sanggam-gold);
+  color: var(--sanggam-gold);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.sanggam-btn:hover {
+  background: var(--sanggam-gold);
+  color: var(--ink-black);
+  box-shadow: 0 0 24px rgba(212, 175, 55, 0.3);
+}
+
+/* ═══ Wave Animation (파동 효과) ═══ */
+@keyframes wave-pulse {
+
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+.wave-animate {
+  animation: wave-pulse 3s ease-in-out infinite;
+}
+
+/* ═══ Wave Ripple (동심원 파동) ═══ */
+@keyframes wave-ripple {
+  0% {
+    box-shadow:
+      0 0 0 0 rgba(100, 255, 218, 0.25),
+      0 0 0 0 rgba(100, 255, 218, 0.15),
+      0 0 0 0 rgba(212, 175, 55, 0.1);
+  }
+
+  100% {
+    box-shadow:
+      0 0 0 30px rgba(100, 255, 218, 0),
+      0 0 0 60px rgba(100, 255, 218, 0),
+      0 0 0 90px rgba(212, 175, 55, 0);
+  }
+}
+
+.wave-ripple-animate {
+  animation: wave-ripple 3s ease-out infinite;
+}
+
+/* ═══ Breathing Animation (호흡 효과) ═══ */
+@keyframes breathing {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+
+  50% {
+    transform: scale(1.015);
+    opacity: 1;
+  }
+}
+
+.breathing-animate {
+  animation: breathing 4s ease-in-out infinite;
+}
+
+/* ═══ Sanggam Glow Line (상감 금선 식별) ═══ */
+@keyframes glow-line {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.sanggam-glow-line {
+  height: 1px;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      var(--sanggam-gold) 50%,
+      transparent 100%);
+  background-size: 200% 100%;
+  animation: glow-line 3s ease-in-out infinite;
+  opacity: 0.6;
+}
+
+/* ═══ Wave Ripple Background Layer ═══ */
+.wave-ripple-bg {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: wave-ripple 3s ease-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══ Data Label ═══ */
+.data-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--wave-cyan);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}

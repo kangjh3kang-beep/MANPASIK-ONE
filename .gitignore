@@ -1,0 +1,79 @@
+# =============================================================================
+# ManPaSik .gitignore
+# =============================================================================
+
+# ── Rust ──
+rust-core/target/
+**/*.rs.bk
+
+# ── Go ──
+bin/
+backend/coverage.out
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+
+# ── Node / Frontend ──
+node_modules/
+.next/
+out/
+build/
+dist/
+*.tsbuildinfo
+
+# ── Flutter ──
+frontend/flutter-app/.dart_tool/
+frontend/flutter-app/.packages
+frontend/flutter-app/.pub-cache/
+frontend/flutter-app/.pub/
+frontend/flutter-app/build/
+frontend/flutter-app/.flutter-plugins
+frontend/flutter-app/.flutter-plugins-dependencies
+
+# ── Python / AI-ML ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+*.egg
+.venv/
+venv/
+env/
+ai-ml/models/*.pt
+ai-ml/models/*.onnx
+ai-ml/models/*.tflite
+
+# ── IDE ──
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ── Docker ──
+infrastructure/docker/config/mosquitto/
+infrastructure/docker/config/prometheus/
+
+# ── Secrets / Env ──
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+credentials.json
+
+# ── OS ──
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Misc ──
+*.log
+*.tmp
+*.bak

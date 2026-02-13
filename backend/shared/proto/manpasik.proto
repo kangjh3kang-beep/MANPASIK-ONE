@@ -1,0 +1,3087 @@
+syntax = "proto3";
+
+package manpasik.v1;
+
+option go_package = "github.com/manpasik/backend/shared/gen/go/v1";
+
+import "google/protobuf/timestamp.proto";
+
+// ============================================================================
+// 인증 서비스 (Auth Service)
+// ============================================================================
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+  rpc RefreshToken(RefreshTokenRequest) returns (LoginResponse);
+  rpc Logout(LogoutRequest) returns (LogoutResponse);
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message RegisterRequest {
+  string email = 1;
+  string password = 2;
+  string display_name = 3;
+}
+
+message RegisterResponse {
+  string user_id = 1;
+  string email = 2;
+  string display_name = 3;
+  string role = 4;
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string access_token = 1;
+  string refresh_token = 2;
+  int64 expires_in = 3;
+  string token_type = 4;
+}
+
+message RefreshTokenRequest {
+  string refresh_token = 1;
+}
+
+message LogoutRequest {
+  string user_id = 1;
+}
+
+message LogoutResponse {}
+
+message ValidateTokenRequest {
+  string access_token = 1;
+}
+
+message ValidateTokenResponse {
+  string user_id = 1;
+  string email = 2;
+  string role = 3;
+}
+
+// ============================================================================
+// 측정 서비스 (Measurement Service)
+// ============================================================================
+
+service MeasurementService {
+  // 측정 세션 시작
+  rpc StartSession(StartSessionRequest) returns (StartSessionResponse);
+  
+  // 측정 데이터 스트림
+  rpc StreamMeasurement(stream MeasurementData) returns (stream MeasurementResult);
+  
+  // 측정 세션 종료
+  rpc EndSession(EndSessionRequest) returns (EndSessionResponse);
+  
+  // 측정 기록 조회
+  rpc GetMeasurementHistory(GetHistoryRequest) returns (GetHistoryResponse);
+  // Phase 4: FHIR export
+  rpc ExportSingleMeasurement(ExportSingleMeasurementRequest) returns (ExportFHIRResponse);
+  rpc ExportToFHIRObservations(ExportToFHIRObservationsRequest) returns (ExportFHIRResponse);
+}
+
+// ----------------------------------------------------------------------------
+// 측정 메시지
+// ----------------------------------------------------------------------------
+
+message StartSessionRequest {
+  string device_id = 1;
+  string cartridge_id = 2;
+  string user_id = 3;
+  int32 cartridge_category = 4;    // 카테고리 코드 (0x01~0xFF, v2.0 무한확장)
+  int32 cartridge_type_index = 5;  // 타입 인덱스 (카테고리 내 순번, v2.0 무한확장)
+}
+
+message StartSessionResponse {
+  string session_id = 1;
+  google.protobuf.Timestamp started_at = 2;
+}
+
+message MeasurementData {
+  string session_id = 1;
+  repeated double raw_channels = 2;
+  DifferentialCorrection differential = 3;
+  EnvironmentMeta env_meta = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+message DifferentialCorrection {
+  double s_det = 1;
+  double s_ref = 2;
+  double alpha = 3;
+  double s_corrected = 4;
+}
+
+message EnvironmentMeta {
+  float temp_c = 1;
+  float humidity_pct = 2;
+  float pressure_kpa = 3;
+}
+
+message MeasurementResult {
+  string session_id = 1;
+  double primary_value = 2;
+  string unit = 3;
+  double confidence = 4;
+  repeated float fingerprint_vector = 5;
+  google.protobuf.Timestamp processed_at = 6;
+}
+
+message EndSessionRequest {
+  string session_id = 1;
+}
+
+message EndSessionResponse {
+  string session_id = 1;
+  int32 total_measurements = 2;
+  google.protobuf.Timestamp ended_at = 3;
+}
+
+message GetHistoryRequest {
+  string user_id = 1;
+  google.protobuf.Timestamp start_time = 2;
+  google.protobuf.Timestamp end_time = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message GetHistoryResponse {
+  repeated MeasurementSummary measurements = 1;
+  int32 total_count = 2;
+}
+
+message MeasurementSummary {
+  string session_id = 1;
+  string cartridge_type = 2;
+  double primary_value = 3;
+  string unit = 4;
+  google.protobuf.Timestamp measured_at = 5;
+}
+
+// ============================================================================
+// 디바이스 서비스 (Device Service)
+// ============================================================================
+
+service DeviceService {
+  // 디바이스 등록
+  rpc RegisterDevice(RegisterDeviceRequest) returns (RegisterDeviceResponse);
+  
+  // 디바이스 목록 조회
+  rpc ListDevices(ListDevicesRequest) returns (ListDevicesResponse);
+  
+  // 디바이스 상태 업데이트 스트림
+  rpc StreamDeviceStatus(stream DeviceStatusUpdate) returns (stream DeviceCommand);
+  
+  // 펌웨어 OTA 업데이트
+  rpc RequestOtaUpdate(OtaRequest) returns (OtaResponse);
+  // Phase 4: Device status management
+  rpc UpdateDeviceStatus(UpdateDeviceStatusRequest) returns (UpdateDeviceStatusResponse);
+}
+
+message RegisterDeviceRequest {
+  string device_id = 1;
+  string serial_number = 2;
+  string firmware_version = 3;
+  string user_id = 4;
+}
+
+message RegisterDeviceResponse {
+  string device_id = 1;
+  string registration_token = 2;
+  google.protobuf.Timestamp registered_at = 3;
+}
+
+message ListDevicesRequest {
+  string user_id = 1;
+}
+
+message ListDevicesResponse {
+  repeated DeviceInfo devices = 1;
+}
+
+message DeviceInfo {
+  string device_id = 1;
+  string name = 2;
+  string firmware_version = 3;
+  DeviceStatus status = 4;
+  int32 battery_percent = 5;
+  google.protobuf.Timestamp last_seen = 6;
+}
+
+enum DeviceStatus {
+  DEVICE_STATUS_UNKNOWN = 0;
+  DEVICE_STATUS_ONLINE = 1;
+  DEVICE_STATUS_OFFLINE = 2;
+  DEVICE_STATUS_MEASURING = 3;
+  DEVICE_STATUS_UPDATING = 4;
+  DEVICE_STATUS_ERROR = 5;
+}
+
+message DeviceStatusUpdate {
+  string device_id = 1;
+  DeviceStatus status = 2;
+  int32 battery_percent = 3;
+  int32 signal_strength = 4;
+  google.protobuf.Timestamp timestamp = 5;
+}
+
+message DeviceCommand {
+  string command_id = 1;
+  CommandType command_type = 2;
+  bytes payload = 3;
+}
+
+enum CommandType {
+  COMMAND_TYPE_UNKNOWN = 0;
+  COMMAND_TYPE_START_MEASUREMENT = 1;
+  COMMAND_TYPE_STOP_MEASUREMENT = 2;
+  COMMAND_TYPE_CALIBRATE = 3;
+  COMMAND_TYPE_REBOOT = 4;
+  COMMAND_TYPE_OTA_UPDATE = 5;
+}
+
+message OtaRequest {
+  string device_id = 1;
+  string target_version = 2;
+}
+
+message OtaResponse {
+  string update_id = 1;
+  string download_url = 2;
+  string checksum = 3;
+}
+
+// ============================================================================
+// 사용자 서비스 (User Service)
+// ============================================================================
+
+service UserService {
+  // 사용자 프로필 조회
+  rpc GetProfile(GetProfileRequest) returns (UserProfile);
+  
+  // 사용자 프로필 업데이트
+  rpc UpdateProfile(UpdateProfileRequest) returns (UserProfile);
+  
+  // 구독 정보 조회
+  rpc GetSubscription(GetSubscriptionRequest) returns (SubscriptionInfo);
+}
+
+message GetProfileRequest {
+  string user_id = 1;
+}
+
+message UpdateProfileRequest {
+  string user_id = 1;
+  string display_name = 2;
+  string avatar_url = 3;
+  string language = 4;
+  string timezone = 5;
+}
+
+message UserProfile {
+  string user_id = 1;
+  string email = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  string language = 5;
+  string timezone = 6;
+  SubscriptionTier subscription_tier = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
+message GetSubscriptionRequest {
+  string user_id = 1;
+}
+
+message SubscriptionInfo {
+  string user_id = 1;
+  SubscriptionTier tier = 2;
+  google.protobuf.Timestamp started_at = 3;
+  google.protobuf.Timestamp expires_at = 4;
+  int32 max_devices = 5;
+  int32 max_family_members = 6;
+  bool ai_coaching_enabled = 7;
+  bool telemedicine_enabled = 8;
+}
+
+enum SubscriptionTier {
+  SUBSCRIPTION_TIER_FREE = 0;
+  SUBSCRIPTION_TIER_BASIC = 1;      // Basic Safety: ₩9,900
+  SUBSCRIPTION_TIER_PRO = 2;        // Bio-Optimization: ₩29,900
+  SUBSCRIPTION_TIER_CLINICAL = 3;   // Clinical Guard: ₩59,900
+}
+
+// ============================================================================
+// 구독 서비스 (Subscription Service) — Phase 2
+// ============================================================================
+
+service SubscriptionService {
+  // 구독 생성 (회원가입 시 Free 자동 생성)
+  rpc CreateSubscription(CreateSubscriptionRequest) returns (SubscriptionDetail);
+  
+  // 구독 정보 조회
+  rpc GetSubscription(GetSubscriptionDetailRequest) returns (SubscriptionDetail);
+  
+  // 구독 업데이트 (티어 변경)
+  rpc UpdateSubscription(UpdateSubscriptionRequest) returns (SubscriptionDetail);
+  
+  // 구독 해지
+  rpc CancelSubscription(CancelSubscriptionRequest) returns (CancelSubscriptionResponse);
+  
+  // 기능 접근 권한 확인
+  rpc CheckFeatureAccess(CheckFeatureAccessRequest) returns (CheckFeatureAccessResponse);
+  
+  // 구독 플랜 목록 조회
+  rpc ListSubscriptionPlans(ListSubscriptionPlansRequest) returns (ListSubscriptionPlansResponse);
+
+  // 카트리지 접근 권한 확인 (등급별 접근 제어)
+  rpc CheckCartridgeAccess(CheckCartridgeAccessRequest) returns (CheckCartridgeAccessResponse);
+
+  // 사용자별 접근 가능 카트리지 목록
+  rpc ListAccessibleCartridges(ListAccessibleCartridgesRequest) returns (ListAccessibleCartridgesResponse);
+}
+
+// ----------------------------------------------------------------------------
+// 구독 메시지
+// ----------------------------------------------------------------------------
+
+message CreateSubscriptionRequest {
+  string user_id = 1;
+  SubscriptionTier tier = 2;  // 기본값: FREE
+}
+
+message GetSubscriptionDetailRequest {
+  string user_id = 1;
+}
+
+message UpdateSubscriptionRequest {
+  string user_id = 1;
+  SubscriptionTier new_tier = 2;
+  string payment_id = 3;  // 결제 ID (업그레이드 시)
+}
+
+message CancelSubscriptionRequest {
+  string user_id = 1;
+  string reason = 2;
+}
+
+message CancelSubscriptionResponse {
+  bool success = 1;
+  google.protobuf.Timestamp cancelled_at = 2;
+  google.protobuf.Timestamp effective_until = 3;  // 남은 기간까지 유효
+}
+
+message SubscriptionDetail {
+  string subscription_id = 1;
+  string user_id = 2;
+  SubscriptionTier tier = 3;
+  SubscriptionStatus status = 4;
+  google.protobuf.Timestamp started_at = 5;
+  google.protobuf.Timestamp expires_at = 6;
+  google.protobuf.Timestamp cancelled_at = 7;
+  int32 max_devices = 8;
+  int32 max_family_members = 9;
+  bool ai_coaching_enabled = 10;
+  bool telemedicine_enabled = 11;
+  int32 monthly_price_krw = 12;
+  bool auto_renew = 13;
+}
+
+enum SubscriptionStatus {
+  SUBSCRIPTION_STATUS_UNKNOWN = 0;
+  SUBSCRIPTION_STATUS_ACTIVE = 1;
+  SUBSCRIPTION_STATUS_CANCELLED = 2;
+  SUBSCRIPTION_STATUS_EXPIRED = 3;
+  SUBSCRIPTION_STATUS_SUSPENDED = 4;
+  SUBSCRIPTION_STATUS_TRIAL = 5;
+}
+
+message CheckFeatureAccessRequest {
+  string user_id = 1;
+  string feature_name = 2;  // "ai_coaching", "telemedicine", "multi_device" 등
+}
+
+message CheckFeatureAccessResponse {
+  bool allowed = 1;
+  SubscriptionTier required_tier = 2;
+  SubscriptionTier current_tier = 3;
+  string message = 4;
+}
+
+message ListSubscriptionPlansRequest {}
+
+message ListSubscriptionPlansResponse {
+  repeated SubscriptionPlan plans = 1;
+}
+
+message SubscriptionPlan {
+  SubscriptionTier tier = 1;
+  string name = 2;
+  string description = 3;
+  int32 monthly_price_krw = 4;
+  int32 max_devices = 5;
+  int32 max_family_members = 6;
+  bool ai_coaching_enabled = 7;
+  bool telemedicine_enabled = 8;
+  repeated string features = 9;
+}
+
+// ============================================================================
+// 쇼핑 서비스 (Shop Service) — Phase 2
+// ============================================================================
+
+service ShopService {
+  // 상품 목록 조회
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+  
+  // 상품 상세 조회
+  rpc GetProduct(GetProductRequest) returns (Product);
+  
+  // 장바구니 추가
+  rpc AddToCart(AddToCartRequest) returns (Cart);
+  
+  // 장바구니 조회
+  rpc GetCart(GetCartRequest) returns (Cart);
+  
+  // 장바구니 항목 제거
+  rpc RemoveFromCart(RemoveFromCartRequest) returns (Cart);
+  
+  // 주문 생성
+  rpc CreateOrder(CreateOrderRequest) returns (Order);
+  
+  // 주문 상세 조회
+  rpc GetOrder(GetOrderRequest) returns (Order);
+  
+  // 주문 이력 조회
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse);
+}
+
+// ----------------------------------------------------------------------------
+// 쇼핑 메시지
+// ----------------------------------------------------------------------------
+
+enum ProductCategory {
+  PRODUCT_CATEGORY_UNKNOWN = 0;
+  PRODUCT_CATEGORY_CARTRIDGE = 1;   // 카트리지
+  PRODUCT_CATEGORY_READER = 2;      // 리더기
+  PRODUCT_CATEGORY_ACCESSORY = 3;   // 액세서리
+  PRODUCT_CATEGORY_BUNDLE = 4;      // 번들
+}
+
+message ListProductsRequest {
+  ProductCategory category = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListProductsResponse {
+  repeated Product products = 1;
+  int32 total_count = 2;
+}
+
+message GetProductRequest {
+  string product_id = 1;
+}
+
+message Product {
+  string product_id = 1;
+  string name = 2;
+  string description = 3;
+  ProductCategory category = 4;
+  int32 price_krw = 5;
+  int32 stock = 6;
+  string image_url = 7;
+  bool is_active = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message AddToCartRequest {
+  string user_id = 1;
+  string product_id = 2;
+  int32 quantity = 3;
+}
+
+message GetCartRequest {
+  string user_id = 1;
+}
+
+message RemoveFromCartRequest {
+  string user_id = 1;
+  string cart_item_id = 2;
+}
+
+message Cart {
+  string user_id = 1;
+  repeated CartItem items = 2;
+  int32 total_price_krw = 3;
+}
+
+message CartItem {
+  string cart_item_id = 1;
+  string product_id = 2;
+  string product_name = 3;
+  int32 quantity = 4;
+  int32 unit_price_krw = 5;
+  int32 total_price_krw = 6;
+}
+
+message CreateOrderRequest {
+  string user_id = 1;
+  string shipping_address = 2;
+  string payment_method = 3;
+}
+
+message GetOrderRequest {
+  string order_id = 1;
+}
+
+message ListOrdersRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListOrdersResponse {
+  repeated Order orders = 1;
+  int32 total_count = 2;
+}
+
+enum OrderStatus {
+  ORDER_STATUS_UNKNOWN = 0;
+  ORDER_STATUS_PENDING = 1;
+  ORDER_STATUS_PAID = 2;
+  ORDER_STATUS_SHIPPED = 3;
+  ORDER_STATUS_DELIVERED = 4;
+  ORDER_STATUS_CANCELLED = 5;
+  ORDER_STATUS_REFUNDED = 6;
+}
+
+message Order {
+  string order_id = 1;
+  string user_id = 2;
+  repeated OrderItem items = 3;
+  int32 total_price_krw = 4;
+  OrderStatus status = 5;
+  string shipping_address = 6;
+  string payment_id = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+message OrderItem {
+  string product_id = 1;
+  string product_name = 2;
+  int32 quantity = 3;
+  int32 unit_price_krw = 4;
+  int32 total_price_krw = 5;
+}
+
+// ============================================================================
+// 결제 서비스 (Payment Service) — Phase 2
+// ============================================================================
+
+service PaymentService {
+  // 결제 요청 생성
+  rpc CreatePayment(CreatePaymentRequest) returns (PaymentDetail);
+  
+  // 결제 확인 (PG 콜백)
+  rpc ConfirmPayment(ConfirmPaymentRequest) returns (PaymentDetail);
+  
+  // 결제 상세 조회
+  rpc GetPayment(GetPaymentRequest) returns (PaymentDetail);
+  
+  // 결제 이력 조회
+  rpc ListPayments(ListPaymentsRequest) returns (ListPaymentsResponse);
+  
+  // 환불 처리
+  rpc RefundPayment(RefundPaymentRequest) returns (RefundResponse);
+}
+
+// ----------------------------------------------------------------------------
+// 결제 메시지
+// ----------------------------------------------------------------------------
+
+enum PaymentType {
+  PAYMENT_TYPE_UNKNOWN = 0;
+  PAYMENT_TYPE_ONE_TIME = 1;       // 일회성 결제
+  PAYMENT_TYPE_SUBSCRIPTION = 2;   // 구독 결제
+}
+
+enum PaymentStatus {
+  PAYMENT_STATUS_UNKNOWN = 0;
+  PAYMENT_STATUS_PENDING = 1;
+  PAYMENT_STATUS_COMPLETED = 2;
+  PAYMENT_STATUS_FAILED = 3;
+  PAYMENT_STATUS_CANCELLED = 4;
+  PAYMENT_STATUS_REFUNDED = 5;
+  PAYMENT_STATUS_PARTIAL_REFUND = 6;
+}
+
+message CreatePaymentRequest {
+  string user_id = 1;
+  string order_id = 2;           // 상품 결제 시
+  string subscription_id = 3;    // 구독 결제 시
+  PaymentType payment_type = 4;
+  int32 amount_krw = 5;
+  string payment_method = 6;     // "card", "bank_transfer", "kakao_pay"
+}
+
+message ConfirmPaymentRequest {
+  string payment_id = 1;
+  string pg_transaction_id = 2;
+  string pg_provider = 3;  // "toss", "kcp"
+  string payment_key = 4;   // Toss 콜백에서 받은 결제 키. 있으면 PG 승인 호출 후 완료 처리
+}
+
+message GetPaymentRequest {
+  string payment_id = 1;
+}
+
+message ListPaymentsRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListPaymentsResponse {
+  repeated PaymentDetail payments = 1;
+  int32 total_count = 2;
+}
+
+message PaymentDetail {
+  string payment_id = 1;
+  string user_id = 2;
+  string order_id = 3;
+  string subscription_id = 4;
+  PaymentType payment_type = 5;
+  int32 amount_krw = 6;
+  PaymentStatus status = 7;
+  string payment_method = 8;
+  string pg_transaction_id = 9;
+  string pg_provider = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp completed_at = 12;
+}
+
+message RefundPaymentRequest {
+  string payment_id = 1;
+  int32 refund_amount_krw = 2;   // 0이면 전액 환불
+  string reason = 3;
+}
+
+message RefundResponse {
+  string refund_id = 1;
+  string payment_id = 2;
+  int32 refund_amount_krw = 3;
+  PaymentStatus payment_status = 4;
+  google.protobuf.Timestamp refunded_at = 5;
+}
+
+// =============================================================================
+// AI Inference Service (Phase 2) — 포트 50058
+// =============================================================================
+
+service AiInferenceService {
+  rpc AnalyzeMeasurement(AnalyzeMeasurementRequest) returns (AnalysisResult);
+  rpc GetHealthScore(GetHealthScoreRequest) returns (HealthScoreResponse);
+  rpc PredictTrend(PredictTrendRequest) returns (TrendPrediction);
+  rpc GetModelInfo(GetModelInfoRequest) returns (ModelInfo);
+  rpc ListModels(ListModelsRequest) returns (ListModelsResponse);
+}
+
+// --- AI Inference messages ---
+
+enum AiModelType {
+  AI_MODEL_TYPE_UNSPECIFIED = 0;
+  AI_MODEL_TYPE_BIOMARKER_CLASSIFIER = 1;
+  AI_MODEL_TYPE_ANOMALY_DETECTOR = 2;
+  AI_MODEL_TYPE_TREND_PREDICTOR = 3;
+  AI_MODEL_TYPE_HEALTH_SCORER = 4;
+  AI_MODEL_TYPE_FOOD_CALORIE_ESTIMATOR = 5;
+}
+
+enum RiskLevel {
+  RISK_LEVEL_UNSPECIFIED = 0;
+  RISK_LEVEL_LOW = 1;
+  RISK_LEVEL_MODERATE = 2;
+  RISK_LEVEL_HIGH = 3;
+  RISK_LEVEL_CRITICAL = 4;
+}
+
+message AnalyzeMeasurementRequest {
+  string user_id = 1;
+  string measurement_id = 2;
+  repeated AiModelType models = 3;  // 비어 있으면 전체 모델 적용
+}
+
+message BiomarkerResult {
+  string biomarker_name = 1;
+  double value = 2;
+  string unit = 3;
+  string classification = 4;    // "normal", "borderline", "abnormal"
+  double confidence = 5;         // 0.0 ~ 1.0
+  RiskLevel risk_level = 6;
+  string reference_range = 7;   // e.g. "70-100 mg/dL"
+}
+
+message AnomalyFlag {
+  string metric_name = 1;
+  double value = 2;
+  double expected_min = 3;
+  double expected_max = 4;
+  double anomaly_score = 5;     // 0.0 ~ 1.0
+  string description = 6;
+}
+
+message AnalysisResult {
+  string analysis_id = 1;
+  string user_id = 2;
+  string measurement_id = 3;
+  repeated BiomarkerResult biomarkers = 4;
+  repeated AnomalyFlag anomalies = 5;
+  double overall_health_score = 6;
+  string summary = 7;            // AI 요약 텍스트
+  google.protobuf.Timestamp analyzed_at = 8;
+}
+
+message GetHealthScoreRequest {
+  string user_id = 1;
+  int32 days = 2;               // 최근 N일 기준 (기본 30)
+}
+
+message HealthScoreResponse {
+  string user_id = 1;
+  double overall_score = 2;     // 0 ~ 100
+  map<string, double> category_scores = 3; // e.g. "cardiovascular": 85.0
+  string trend = 4;              // "improving", "stable", "declining"
+  string recommendation = 5;
+  google.protobuf.Timestamp calculated_at = 6;
+}
+
+message PredictTrendRequest {
+  string user_id = 1;
+  string metric_name = 2;       // e.g. "blood_glucose"
+  int32 history_days = 3;       // 과거 데이터 기간
+  int32 prediction_days = 4;    // 예측 기간
+}
+
+message TrendDataPoint {
+  google.protobuf.Timestamp timestamp = 1;
+  double value = 2;
+  double lower_bound = 3;       // 예측 하한
+  double upper_bound = 4;       // 예측 상한
+}
+
+message TrendPrediction {
+  string user_id = 1;
+  string metric_name = 2;
+  repeated TrendDataPoint historical = 3;
+  repeated TrendDataPoint predicted = 4;
+  double confidence = 5;
+  string direction = 6;         // "up", "down", "stable"
+  string insight = 7;
+}
+
+message GetModelInfoRequest {
+  AiModelType model_type = 1;
+}
+
+message ModelInfo {
+  AiModelType model_type = 1;
+  string name = 2;
+  string version = 3;
+  string description = 4;
+  double accuracy = 5;
+  google.protobuf.Timestamp last_trained = 6;
+  string status = 7;            // "active", "training", "deprecated"
+}
+
+message ListModelsRequest {}
+
+message ListModelsResponse {
+  repeated ModelInfo models = 1;
+}
+
+// =============================================================================
+// 카트리지 서비스 (Cartridge Service) — Phase 2, 포트 50059
+// =============================================================================
+
+service CartridgeService {
+  // NFC 태그 읽기 → 카트리지 정보 반환
+  rpc ReadCartridge(ReadCartridgeRequest) returns (CartridgeDetail);
+
+  // 카트리지 사용 기록
+  rpc RecordUsage(RecordUsageRequest) returns (RecordUsageResponse);
+
+  // 카트리지 사용 이력 조회
+  rpc GetUsageHistory(GetUsageHistoryRequest) returns (GetUsageHistoryResponse);
+
+  // 카트리지 타입 정보 조회 (레지스트리)
+  rpc GetCartridgeType(GetCartridgeTypeRequest) returns (CartridgeTypeInfo);
+
+  // 카테고리 목록 조회
+  rpc ListCategories(ListCategoriesRequest) returns (ListCategoriesResponse);
+
+  // 카테고리별 타입 목록 조회
+  rpc ListTypesByCategory(ListTypesByCategoryRequest) returns (ListTypesByCategoryResponse);
+
+  // 카트리지 잔여 사용 횟수 조회
+  rpc GetRemainingUses(GetRemainingUsesRequest) returns (GetRemainingUsesResponse);
+
+  // 카트리지 유효성 검증 (NFC UID + 유효기간 + 잔여횟수)
+  rpc ValidateCartridge(ValidateCartridgeRequest) returns (ValidateCartridgeResponse);
+}
+
+// --- 카트리지 서비스 메시지 ---
+
+message ReadCartridgeRequest {
+  bytes nfc_tag_data = 1;          // NFC 태그 원시 데이터
+  int32 tag_version = 2;           // 1 = v1.0, 2 = v2.0
+}
+
+message CartridgeDetail {
+  string cartridge_uid = 1;        // 8바이트 UID (hex)
+  int32 category_code = 2;
+  int32 type_index = 3;
+  int32 legacy_code = 4;           // v1.0 호환 (0이면 없음)
+  string name_ko = 5;
+  string name_en = 6;
+  string lot_id = 7;
+  string expiry_date = 8;          // YYYYMMDD
+  int32 remaining_uses = 9;
+  int32 max_uses = 10;
+  double alpha_coefficient = 11;   // 보정 계수
+  double temp_coefficient = 12;
+  double humidity_coefficient = 13;
+  int32 required_channels = 14;
+  int32 measurement_secs = 15;
+  string unit = 16;
+  string reference_range = 17;
+  bool is_valid = 18;
+  string validation_message = 19;
+}
+
+message RecordUsageRequest {
+  string user_id = 1;
+  string session_id = 2;
+  string cartridge_uid = 3;
+  int32 category_code = 4;
+  int32 type_index = 5;
+}
+
+message RecordUsageResponse {
+  bool success = 1;
+  int32 remaining_uses = 2;       // 카트리지 잔여 횟수
+  int32 remaining_daily = 3;       // 사용자 일일 잔여 (-1=무제한)
+  int32 remaining_monthly = 4;
+}
+
+message GetUsageHistoryRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetUsageHistoryResponse {
+  repeated CartridgeUsageRecord records = 1;
+  int32 total_count = 2;
+}
+
+message CartridgeUsageRecord {
+  string record_id = 1;
+  string user_id = 2;
+  string session_id = 3;
+  string cartridge_uid = 4;
+  int32 category_code = 5;
+  int32 type_index = 6;
+  string type_name_ko = 7;
+  google.protobuf.Timestamp used_at = 8;
+}
+
+message GetCartridgeTypeRequest {
+  int32 category_code = 1;
+  int32 type_index = 2;
+}
+
+message ListCategoriesRequest {}
+
+message ListCategoriesResponse {
+  repeated CartridgeCategoryInfo categories = 1;
+}
+
+message ListTypesByCategoryRequest {
+  int32 category_code = 1;
+}
+
+message ListTypesByCategoryResponse {
+  repeated CartridgeTypeInfo types = 1;
+}
+
+message GetRemainingUsesRequest {
+  string cartridge_uid = 1;
+}
+
+message GetRemainingUsesResponse {
+  string cartridge_uid = 1;
+  int32 remaining_uses = 2;
+  int32 max_uses = 3;
+  string expiry_date = 4;
+  bool is_expired = 5;
+}
+
+message ValidateCartridgeRequest {
+  string cartridge_uid = 1;
+  int32 category_code = 2;
+  int32 type_index = 3;
+  string user_id = 4;             // 접근 권한 확인용
+}
+
+message ValidateCartridgeResponse {
+  bool is_valid = 1;
+  string reason = 2;              // "ok", "expired", "no_uses", "access_denied"
+  int32 remaining_uses = 3;
+  CartridgeAccessLevel access_level = 4;
+  CartridgeDetail detail = 5;
+}
+
+// =============================================================================
+// 보정 서비스 (Calibration Service) — Phase 2, 포트 50060
+// =============================================================================
+
+service CalibrationService {
+  // 팩토리 보정 데이터 등록
+  rpc RegisterFactoryCalibration(RegisterFactoryCalibrationRequest) returns (CalibrationRecord);
+
+  // 현장 보정 수행 (사용자 보정)
+  rpc PerformFieldCalibration(PerformFieldCalibrationRequest) returns (CalibrationRecord);
+
+  // 보정 데이터 조회 (디바이스 + 카트리지 타입별 최신)
+  rpc GetCalibration(GetCalibrationRequest) returns (CalibrationRecord);
+
+  // 보정 이력 조회
+  rpc ListCalibrationHistory(ListCalibrationHistoryRequest) returns (ListCalibrationHistoryResponse);
+
+  // 보정 상태 확인 (보정 필요 여부 판단)
+  rpc CheckCalibrationStatus(CheckCalibrationStatusRequest) returns (CalibrationStatusResponse);
+
+  // 보정 모델 목록 조회
+  rpc ListCalibrationModels(ListCalibrationModelsRequest) returns (ListCalibrationModelsResponse);
+}
+
+// --- 보정 서비스 메시지 ---
+
+enum CalibrationType {
+  CALIBRATION_TYPE_UNKNOWN = 0;
+  CALIBRATION_TYPE_FACTORY = 1;      // 팩토리 보정 (제조 시)
+  CALIBRATION_TYPE_FIELD = 2;        // 현장 보정 (사용자)
+  CALIBRATION_TYPE_AUTO = 3;         // 자동 보정 (AI 기반)
+}
+
+enum CalibrationStatus {
+  CALIBRATION_STATUS_UNKNOWN = 0;
+  CALIBRATION_STATUS_VALID = 1;      // 유효
+  CALIBRATION_STATUS_EXPIRING = 2;   // 만료 임박 (7일 이내)
+  CALIBRATION_STATUS_EXPIRED = 3;    // 만료됨
+  CALIBRATION_STATUS_NEEDED = 4;     // 보정 필요
+}
+
+message RegisterFactoryCalibrationRequest {
+  string device_id = 1;
+  int32 cartridge_category = 2;
+  int32 cartridge_type_index = 3;
+  double alpha = 4;                  // 보정된 alpha 값
+  repeated double channel_offsets = 5;
+  repeated double channel_gains = 6;
+  double temp_coefficient = 7;
+  double humidity_coefficient = 8;
+  string reference_standard = 9;     // 기준 물질 ID
+  string calibrated_by = 10;         // 보정 수행자
+}
+
+message PerformFieldCalibrationRequest {
+  string device_id = 1;
+  string user_id = 2;
+  int32 cartridge_category = 3;
+  int32 cartridge_type_index = 4;
+  repeated double reference_values = 5;  // 기준 시료 측정값
+  repeated double measured_values = 6;   // 실측값
+  double temperature_c = 7;
+  double humidity_pct = 8;
+}
+
+message GetCalibrationRequest {
+  string device_id = 1;
+  int32 cartridge_category = 2;
+  int32 cartridge_type_index = 3;
+}
+
+message CalibrationRecord {
+  string calibration_id = 1;
+  string device_id = 2;
+  int32 cartridge_category = 3;
+  int32 cartridge_type_index = 4;
+  CalibrationType calibration_type = 5;
+  double alpha = 6;
+  repeated double channel_offsets = 7;
+  repeated double channel_gains = 8;
+  double temp_coefficient = 9;
+  double humidity_coefficient = 10;
+  double accuracy_score = 11;       // 보정 정확도 (0~1)
+  string reference_standard = 12;
+  string calibrated_by = 13;
+  google.protobuf.Timestamp calibrated_at = 14;
+  google.protobuf.Timestamp expires_at = 15;
+  CalibrationStatus status = 16;
+}
+
+message ListCalibrationHistoryRequest {
+  string device_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListCalibrationHistoryResponse {
+  repeated CalibrationRecord records = 1;
+  int32 total_count = 2;
+}
+
+message CheckCalibrationStatusRequest {
+  string device_id = 1;
+  int32 cartridge_category = 2;
+  int32 cartridge_type_index = 3;
+}
+
+message CalibrationStatusResponse {
+  CalibrationStatus status = 1;
+  string device_id = 2;
+  string message = 3;                // "보정 유효", "7일 이내 만료" 등
+  google.protobuf.Timestamp last_calibrated_at = 4;
+  google.protobuf.Timestamp expires_at = 5;
+  int32 days_until_expiry = 6;
+  CalibrationRecord latest_record = 7;
+}
+
+message ListCalibrationModelsRequest {}
+
+message CalibrationModel {
+  string model_id = 1;
+  int32 cartridge_category = 2;
+  int32 cartridge_type_index = 3;
+  string name = 4;
+  string version = 5;
+  double default_alpha = 6;
+  int32 validity_days = 7;           // 보정 유효 기간 (일)
+  string description = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message ListCalibrationModelsResponse {
+  repeated CalibrationModel models = 1;
+}
+
+// =============================================================================
+// 코칭 서비스 (Coaching Service) — Phase 2, 포트 50061
+// =============================================================================
+
+service CoachingService {
+  // 건강 목표 설정
+  rpc SetHealthGoal(SetHealthGoalRequest) returns (HealthGoal);
+
+  // 건강 목표 조회
+  rpc GetHealthGoals(GetHealthGoalsRequest) returns (GetHealthGoalsResponse);
+
+  // AI 코칭 메시지 생성 (측정 결과 기반)
+  rpc GenerateCoaching(GenerateCoachingRequest) returns (CoachingMessage);
+
+  // 코칭 메시지 이력 조회
+  rpc ListCoachingMessages(ListCoachingMessagesRequest) returns (ListCoachingMessagesResponse);
+
+  // 일일 건강 리포트 생성
+  rpc GenerateDailyReport(GenerateDailyReportRequest) returns (DailyHealthReport);
+
+  // 주간 건강 리포트 조회
+  rpc GetWeeklyReport(GetWeeklyReportRequest) returns (WeeklyHealthReport);
+
+  // 개인화 추천 조회
+  rpc GetRecommendations(GetRecommendationsRequest) returns (GetRecommendationsResponse);
+}
+
+// --- 코칭 서비스 메시지 ---
+
+enum GoalCategory {
+  GOAL_CATEGORY_UNKNOWN = 0;
+  GOAL_CATEGORY_BLOOD_GLUCOSE = 1;
+  GOAL_CATEGORY_BLOOD_PRESSURE = 2;
+  GOAL_CATEGORY_CHOLESTEROL = 3;
+  GOAL_CATEGORY_WEIGHT = 4;
+  GOAL_CATEGORY_EXERCISE = 5;
+  GOAL_CATEGORY_NUTRITION = 6;
+  GOAL_CATEGORY_SLEEP = 7;
+  GOAL_CATEGORY_STRESS = 8;
+  GOAL_CATEGORY_CUSTOM = 9;
+}
+
+enum GoalStatus {
+  GOAL_STATUS_UNKNOWN = 0;
+  GOAL_STATUS_ACTIVE = 1;
+  GOAL_STATUS_ACHIEVED = 2;
+  GOAL_STATUS_PAUSED = 3;
+  GOAL_STATUS_CANCELLED = 4;
+}
+
+enum CoachingType {
+  COACHING_TYPE_UNKNOWN = 0;
+  COACHING_TYPE_MEASUREMENT_FEEDBACK = 1;  // 측정 결과 피드백
+  COACHING_TYPE_DAILY_TIP = 2;              // 일일 건강 팁
+  COACHING_TYPE_GOAL_PROGRESS = 3;          // 목표 진행 알림
+  COACHING_TYPE_ALERT = 4;                  // 건강 경고
+  COACHING_TYPE_MOTIVATION = 5;             // 동기부여 메시지
+  COACHING_TYPE_RECOMMENDATION = 6;         // 개인화 추천
+}
+
+enum RecommendationType {
+  RECOMMENDATION_TYPE_UNKNOWN = 0;
+  RECOMMENDATION_TYPE_FOOD = 1;
+  RECOMMENDATION_TYPE_EXERCISE = 2;
+  RECOMMENDATION_TYPE_SUPPLEMENT = 3;
+  RECOMMENDATION_TYPE_LIFESTYLE = 4;
+  RECOMMENDATION_TYPE_CHECKUP = 5;
+}
+
+message SetHealthGoalRequest {
+  string user_id = 1;
+  GoalCategory category = 2;
+  string metric_name = 3;           // e.g. "fasting_glucose"
+  double target_value = 4;
+  string unit = 5;
+  string description = 6;
+  google.protobuf.Timestamp target_date = 7;
+}
+
+message HealthGoal {
+  string goal_id = 1;
+  string user_id = 2;
+  GoalCategory category = 3;
+  string metric_name = 4;
+  double target_value = 5;
+  double current_value = 6;
+  string unit = 7;
+  double progress_pct = 8;          // 0 ~ 100
+  GoalStatus status = 9;
+  string description = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp target_date = 12;
+  google.protobuf.Timestamp achieved_at = 13;
+}
+
+message GetHealthGoalsRequest {
+  string user_id = 1;
+  GoalStatus status_filter = 2;    // 0이면 전체
+}
+
+message GetHealthGoalsResponse {
+  repeated HealthGoal goals = 1;
+}
+
+message GenerateCoachingRequest {
+  string user_id = 1;
+  string measurement_id = 2;       // 측정 결과 기반 코칭 시 (선택)
+  CoachingType coaching_type = 3;   // 빈 값이면 자동 선택
+}
+
+message CoachingMessage {
+  string message_id = 1;
+  string user_id = 2;
+  CoachingType coaching_type = 3;
+  string title = 4;
+  string body = 5;
+  RiskLevel risk_level = 6;
+  repeated string action_items = 7;
+  string related_metric = 8;
+  double related_value = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message ListCoachingMessagesRequest {
+  string user_id = 1;
+  CoachingType type_filter = 2;    // 0이면 전체
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message ListCoachingMessagesResponse {
+  repeated CoachingMessage messages = 1;
+  int32 total_count = 2;
+}
+
+message GenerateDailyReportRequest {
+  string user_id = 1;
+  google.protobuf.Timestamp date = 2;  // 비어 있으면 오늘
+}
+
+message DailyHealthReport {
+  string report_id = 1;
+  string user_id = 2;
+  google.protobuf.Timestamp report_date = 3;
+  double overall_score = 4;
+  int32 measurements_count = 5;
+  repeated CoachingMessage highlights = 6;
+  string summary = 7;
+  repeated string recommendations = 8;
+}
+
+message GetWeeklyReportRequest {
+  string user_id = 1;
+  google.protobuf.Timestamp week_start = 2;
+}
+
+message WeeklyHealthReport {
+  string report_id = 1;
+  string user_id = 2;
+  google.protobuf.Timestamp week_start = 3;
+  google.protobuf.Timestamp week_end = 4;
+  double average_score = 5;
+  string score_trend = 6;           // "improving", "stable", "declining"
+  int32 total_measurements = 7;
+  int32 goals_achieved = 8;
+  int32 goals_active = 9;
+  repeated DailyHealthReport daily_reports = 10;
+  string weekly_summary = 11;
+  repeated string key_insights = 12;
+}
+
+message GetRecommendationsRequest {
+  string user_id = 1;
+  RecommendationType type_filter = 2;
+  int32 limit = 3;
+}
+
+message Recommendation {
+  string recommendation_id = 1;
+  RecommendationType type = 2;
+  string title = 3;
+  string description = 4;
+  string reason = 5;               // AI가 이 추천을 하는 이유
+  RiskLevel priority = 6;
+  repeated string action_steps = 7;
+  string related_metric = 8;
+  google.protobuf.Timestamp created_at = 9;
+}
+
+message GetRecommendationsResponse {
+  repeated Recommendation recommendations = 1;
+}
+
+// =============================================================================
+// 카트리지 무한확장 체계 (Cartridge Infinite Expansion System)
+// =============================================================================
+
+// 카트리지 접근 레벨
+enum CartridgeAccessLevel {
+  CARTRIDGE_ACCESS_UNKNOWN = 0;
+  CARTRIDGE_ACCESS_INCLUDED = 1;    // 구독에 포함 (무제한)
+  CARTRIDGE_ACCESS_LIMITED = 2;     // 구독에 포함 (횟수 제한)
+  CARTRIDGE_ACCESS_ADD_ON = 3;      // 별도 구매 필요
+  CARTRIDGE_ACCESS_RESTRICTED = 4;  // 사용 불가 (상위 등급 필요)
+  CARTRIDGE_ACCESS_BETA = 5;        // 베타 (Clinical 신청 기반)
+}
+
+// 카트리지 카테고리
+message CartridgeCategoryInfo {
+  int32 code = 1;            // 카테고리 코드 (0x01~0xFF)
+  string name_en = 2;
+  string name_ko = 3;
+  string description = 4;
+  int32 type_count = 5;      // 등록된 타입 수
+  bool is_active = 6;
+}
+
+// 카트리지 타입 정보
+message CartridgeTypeInfo {
+  int32 category_code = 1;
+  int32 type_index = 2;
+  int32 legacy_code = 3;     // v1.0 호환 코드 (0이면 없음)
+  string name_en = 4;
+  string name_ko = 5;
+  string description = 6;
+  int32 required_channels = 7;
+  int32 measurement_secs = 8;
+  string unit = 9;
+  string reference_range = 10;
+  bool is_active = 11;
+  bool is_beta = 12;
+  string manufacturer = 13;
+}
+
+// 카트리지 접근 권한 확인 요청
+message CheckCartridgeAccessRequest {
+  string user_id = 1;
+  int32 category_code = 2;
+  int32 type_index = 3;
+}
+
+// 카트리지 접근 권한 확인 응답
+message CheckCartridgeAccessResponse {
+  bool allowed = 1;
+  CartridgeAccessLevel access_level = 2;
+  int32 remaining_daily = 3;      // 일일 잔여 (-1 = 무제한)
+  int32 remaining_monthly = 4;    // 월간 잔여 (-1 = 무제한)
+  SubscriptionTier required_tier = 5;
+  SubscriptionTier current_tier = 6;
+  string message = 7;
+  int32 addon_price_krw = 8;      // ADD_ON 시 가격
+}
+
+// 접근 가능 카트리지 목록 요청
+message ListAccessibleCartridgesRequest {
+  string user_id = 1;
+}
+
+// 접근 가능 카트리지 목록 응답
+message ListAccessibleCartridgesResponse {
+  repeated CartridgeAccessEntry entries = 1;
+}
+
+// 개별 카트리지 접근 항목
+message CartridgeAccessEntry {
+  CartridgeTypeInfo type_info = 1;
+  CartridgeAccessLevel access_level = 2;
+  int32 remaining_daily = 3;
+  int32 remaining_monthly = 4;
+}
+
+// =============================================================================
+// 예약 서비스 (Reservation Service) — Phase 3
+// =============================================================================
+
+service ReservationService {
+  rpc SearchFacilities(SearchFacilitiesRequest) returns (SearchFacilitiesResponse);
+  rpc GetFacility(GetFacilityRequest) returns (Facility);
+  rpc GetAvailableSlots(GetAvailableSlotsRequest) returns (GetAvailableSlotsResponse);
+  rpc CreateReservation(CreateReservationRequest) returns (Reservation);
+  rpc GetReservation(GetReservationRequest) returns (Reservation);
+  rpc ListReservations(ListReservationsRequest) returns (ListReservationsResponse);
+  rpc CancelReservation(CancelReservationRequest) returns (CancelReservationResponse);
+  // Phase 4: Doctor & region extensions
+  rpc ListDoctorsByFacility(ListDoctorsByFacilityRequest) returns (ListDoctorsByFacilityResponse);
+  rpc GetDoctorAvailability(GetDoctorAvailabilityRequest) returns (GetDoctorAvailabilityResponse);
+  rpc SelectDoctor(SelectDoctorRequest) returns (SelectDoctorResponse);
+}
+
+enum FacilityType {
+  FACILITY_TYPE_UNKNOWN = 0;
+  FACILITY_TYPE_HOSPITAL = 1;
+  FACILITY_TYPE_CLINIC = 2;
+  FACILITY_TYPE_PHARMACY = 3;
+  FACILITY_TYPE_DENTAL = 4;
+  FACILITY_TYPE_ORIENTAL = 5;
+}
+
+enum DoctorSpecialty {
+  DOCTOR_SPECIALTY_UNKNOWN = 0;
+  DOCTOR_SPECIALTY_GENERAL = 1;
+  DOCTOR_SPECIALTY_INTERNAL = 2;
+  DOCTOR_SPECIALTY_CARDIOLOGY = 3;
+  DOCTOR_SPECIALTY_ENDOCRINOLOGY = 4;
+  DOCTOR_SPECIALTY_DERMATOLOGY = 5;
+  DOCTOR_SPECIALTY_PEDIATRICS = 6;
+  DOCTOR_SPECIALTY_PSYCHIATRY = 7;
+  DOCTOR_SPECIALTY_ORTHOPEDICS = 8;
+  DOCTOR_SPECIALTY_OPHTHALMOLOGY = 9;
+  DOCTOR_SPECIALTY_ENT = 10;
+}
+
+enum ReservationStatus {
+  RESERVATION_STATUS_UNKNOWN = 0;
+  RESERVATION_STATUS_PENDING = 1;
+  RESERVATION_STATUS_CONFIRMED = 2;
+  RESERVATION_STATUS_COMPLETED = 3;
+  RESERVATION_STATUS_CANCELLED = 4;
+  RESERVATION_STATUS_NO_SHOW = 5;
+}
+
+message SearchFacilitiesRequest {
+  double latitude = 1;
+  double longitude = 2;
+  double radius_km = 3;
+  FacilityType type = 4;
+  DoctorSpecialty specialty = 5;
+  string query = 6;
+  int32 limit = 7;
+  int32 offset = 8;
+}
+
+message SearchFacilitiesResponse {
+  repeated Facility facilities = 1;
+  int32 total_count = 2;
+}
+
+message GetFacilityRequest {
+  string facility_id = 1;
+}
+
+message Facility {
+  string facility_id = 1;
+  string name = 2;
+  FacilityType type = 3;
+  string address = 4;
+  double latitude = 5;
+  double longitude = 6;
+  string phone = 7;
+  repeated DoctorSpecialty specialties = 8;
+  float rating = 9;
+  bool is_open_now = 10;
+  bool accepts_reservation = 11;
+  string operating_hours = 12;
+  double distance_km = 13;
+}
+
+message GetAvailableSlotsRequest {
+  string facility_id = 1;
+  string date = 2;
+  string doctor_id = 3;
+  DoctorSpecialty specialty = 4;
+}
+
+message GetAvailableSlotsResponse {
+  repeated TimeSlot slots = 1;
+}
+
+message TimeSlot {
+  string slot_id = 1;
+  google.protobuf.Timestamp start_time = 2;
+  google.protobuf.Timestamp end_time = 3;
+  bool is_available = 4;
+  string doctor_name = 5;
+  DoctorSpecialty specialty = 6;
+}
+
+message CreateReservationRequest {
+  string user_id = 1;
+  string facility_id = 2;
+  string slot_id = 3;
+  string doctor_id = 4;
+  DoctorSpecialty specialty = 5;
+  string reason = 6;
+  string notes = 7;
+}
+
+message Reservation {
+  string reservation_id = 1;
+  string user_id = 2;
+  string facility_id = 3;
+  string facility_name = 4;
+  string doctor_id = 5;
+  string doctor_name = 6;
+  DoctorSpecialty specialty = 7;
+  google.protobuf.Timestamp appointment_time = 8;
+  ReservationStatus status = 9;
+  string reason = 10;
+  string notes = 11;
+  google.protobuf.Timestamp created_at = 12;
+  google.protobuf.Timestamp updated_at = 13;
+}
+
+message GetReservationRequest {
+  string reservation_id = 1;
+}
+
+message ListReservationsRequest {
+  string user_id = 1;
+  ReservationStatus status = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message ListReservationsResponse {
+  repeated Reservation reservations = 1;
+  int32 total_count = 2;
+}
+
+message CancelReservationRequest {
+  string reservation_id = 1;
+  string reason = 2;
+}
+
+message CancelReservationResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// =============================================================================
+// 관리자 서비스 (Admin Service) — Phase 3
+// =============================================================================
+
+service AdminService {
+  rpc CreateAdmin(CreateAdminRequest) returns (AdminUser);
+  rpc GetAdmin(GetAdminRequest) returns (AdminUser);
+  rpc ListAdmins(ListAdminsRequest) returns (ListAdminsResponse);
+  rpc UpdateAdminRole(UpdateAdminRoleRequest) returns (AdminUser);
+  rpc DeactivateAdmin(DeactivateAdminRequest) returns (AdminUser);
+  rpc ListUsers(AdminListUsersRequest) returns (AdminListUsersResponse);
+  rpc GetSystemStats(GetSystemStatsRequest) returns (GetSystemStatsResponse);
+  rpc GetAuditLog(GetAuditLogRequest) returns (GetAuditLogResponse);
+  rpc SetSystemConfig(SetSystemConfigRequest) returns (SystemConfig);
+  rpc GetSystemConfig(GetSystemConfigRequest) returns (SystemConfig);
+  // Phase 4: Region-based admin
+  rpc ListAdminsByRegion(ListAdminsByRegionRequest) returns (ListAdminsResponse);
+  // Phase 5: 설정 관리 확장
+  rpc ListSystemConfigs(ListSystemConfigsRequest) returns (ListSystemConfigsResponse);
+  rpc GetConfigWithMeta(GetConfigWithMetaRequest) returns (ConfigWithMeta);
+  rpc ValidateConfigValue(ValidateConfigValueRequest) returns (ValidateConfigValueResponse);
+  rpc BulkSetConfigs(BulkSetConfigsRequest) returns (BulkSetConfigsResponse);
+}
+
+enum AdminRole {
+  ADMIN_ROLE_UNKNOWN = 0;
+  ADMIN_ROLE_SUPER = 1;
+  ADMIN_ROLE_NATIONAL = 2;
+  ADMIN_ROLE_REGIONAL = 3;
+  ADMIN_ROLE_BRANCH = 4;
+  ADMIN_ROLE_STORE = 5;
+}
+
+enum AuditAction {
+  AUDIT_ACTION_UNKNOWN = 0;
+  AUDIT_ACTION_LOGIN = 1;
+  AUDIT_ACTION_LOGOUT = 2;
+  AUDIT_ACTION_CREATE = 3;
+  AUDIT_ACTION_UPDATE = 4;
+  AUDIT_ACTION_DELETE = 5;
+  AUDIT_ACTION_CONFIG_CHANGE = 6;
+  AUDIT_ACTION_ROLE_CHANGE = 7;
+}
+
+message CreateAdminRequest {
+  string email = 1;
+  string password = 2;
+  string display_name = 3;
+  AdminRole role = 4;
+  string region = 5;
+  string branch = 6;
+}
+
+message GetAdminRequest {
+  string admin_id = 1;
+}
+
+message ListAdminsRequest {
+  AdminRole role_filter = 1;
+  string region = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message ListAdminsResponse {
+  repeated AdminUser admins = 1;
+  int32 total_count = 2;
+}
+
+message UpdateAdminRoleRequest {
+  string admin_id = 1;
+  AdminRole new_role = 2;
+  string region = 3;
+  string branch = 4;
+}
+
+message DeactivateAdminRequest {
+  string admin_id = 1;
+  string reason = 2;
+}
+
+message AdminUser {
+  string admin_id = 1;
+  string email = 2;
+  string display_name = 3;
+  AdminRole role = 4;
+  string region = 5;
+  string branch = 6;
+  bool is_active = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp last_login_at = 9;
+}
+
+message AdminListUsersRequest {
+  string query = 1;
+  SubscriptionTier tier_filter = 2;
+  bool active_only = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message AdminListUsersResponse {
+  repeated AdminUserSummary users = 1;
+  int32 total_count = 2;
+}
+
+message AdminUserSummary {
+  string user_id = 1;
+  string email = 2;
+  string display_name = 3;
+  SubscriptionTier tier = 4;
+  bool is_active = 5;
+  int32 device_count = 6;
+  int32 measurement_count = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp last_active_at = 9;
+}
+
+message GetSystemStatsRequest {}
+
+message GetSystemStatsResponse {
+  int32 total_users = 1;
+  int32 active_users = 2;
+  int32 total_devices = 3;
+  int32 total_measurements = 4;
+  map<string, int32> users_by_tier = 5;
+  map<string, int32> measurements_by_type = 6;
+  google.protobuf.Timestamp generated_at = 7;
+}
+
+message GetAuditLogRequest {
+  string admin_id = 1;
+  AuditAction action_filter = 2;
+  google.protobuf.Timestamp start_time = 3;
+  google.protobuf.Timestamp end_time = 4;
+  int32 limit = 5;
+  int32 offset = 6;
+}
+
+message GetAuditLogResponse {
+  repeated AuditLogEntry entries = 1;
+  int32 total_count = 2;
+}
+
+message AuditLogEntry {
+  string entry_id = 1;
+  string admin_id = 2;
+  string admin_email = 3;
+  AuditAction action = 4;
+  string resource_type = 5;
+  string resource_id = 6;
+  string details = 7;
+  string ip_address = 8;
+  google.protobuf.Timestamp timestamp = 9;
+}
+
+message SetSystemConfigRequest {
+  string key = 1;
+  string value = 2;
+  string description = 3;
+}
+
+message GetSystemConfigRequest {
+  string key = 1;
+}
+
+message SystemConfig {
+  string key = 1;
+  string value = 2;
+  string description = 3;
+  google.protobuf.Timestamp updated_at = 4;
+  string updated_by = 5;
+}
+
+// =============================================================================
+// 가족 서비스 (Family Service) — Phase 3
+// =============================================================================
+
+service FamilyService {
+  rpc CreateFamilyGroup(CreateFamilyGroupRequest) returns (FamilyGroup);
+  rpc GetFamilyGroup(GetFamilyGroupRequest) returns (FamilyGroup);
+  rpc InviteMember(InviteMemberRequest) returns (FamilyInvitation);
+  rpc RespondToInvitation(RespondToInvitationRequest) returns (RespondToInvitationResponse);
+  rpc RemoveMember(RemoveMemberRequest) returns (RemoveMemberResponse);
+  rpc UpdateMemberRole(UpdateMemberRoleRequest) returns (FamilyMember);
+  rpc ListFamilyMembers(ListFamilyMembersRequest) returns (ListFamilyMembersResponse);
+  rpc SetSharingPreferences(SetSharingPreferencesRequest) returns (SharingPreferences);
+  rpc GetSharedHealthData(GetSharedHealthDataRequest) returns (GetSharedHealthDataResponse);
+}
+
+enum FamilyRole {
+  FAMILY_ROLE_UNKNOWN = 0;
+  FAMILY_ROLE_OWNER = 1;
+  FAMILY_ROLE_GUARDIAN = 2;
+  FAMILY_ROLE_MEMBER = 3;
+  FAMILY_ROLE_CHILD = 4;
+  FAMILY_ROLE_ELDERLY = 5;
+}
+
+enum InvitationStatus {
+  INVITATION_STATUS_UNKNOWN = 0;
+  INVITATION_STATUS_PENDING = 1;
+  INVITATION_STATUS_ACCEPTED = 2;
+  INVITATION_STATUS_REJECTED = 3;
+  INVITATION_STATUS_EXPIRED = 4;
+}
+
+message CreateFamilyGroupRequest {
+  string owner_user_id = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message GetFamilyGroupRequest {
+  string group_id = 1;
+}
+
+message FamilyGroup {
+  string group_id = 1;
+  string name = 2;
+  string description = 3;
+  string owner_user_id = 4;
+  int32 member_count = 5;
+  int32 max_members = 6;
+  repeated FamilyMember members = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
+message FamilyMember {
+  string user_id = 1;
+  string display_name = 2;
+  FamilyRole role = 3;
+  string relationship = 4;
+  bool can_view_health_data = 5;
+  bool can_manage_devices = 6;
+  google.protobuf.Timestamp joined_at = 7;
+}
+
+message InviteMemberRequest {
+  string group_id = 1;
+  string inviter_user_id = 2;
+  string invitee_email = 3;
+  FamilyRole role = 4;
+  string relationship = 5;
+}
+
+message FamilyInvitation {
+  string invitation_id = 1;
+  string group_id = 2;
+  string group_name = 3;
+  string inviter_user_id = 4;
+  string inviter_name = 5;
+  string invitee_email = 6;
+  FamilyRole role = 7;
+  InvitationStatus status = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp expires_at = 10;
+}
+
+message RespondToInvitationRequest {
+  string invitation_id = 1;
+  string user_id = 2;
+  bool accept = 3;
+}
+
+message RespondToInvitationResponse {
+  bool success = 1;
+  string message = 2;
+  FamilyGroup group = 3;
+}
+
+message RemoveMemberRequest {
+  string group_id = 1;
+  string requester_user_id = 2;
+  string target_user_id = 3;
+}
+
+message RemoveMemberResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message UpdateMemberRoleRequest {
+  string group_id = 1;
+  string requester_user_id = 2;
+  string target_user_id = 3;
+  FamilyRole new_role = 4;
+}
+
+message ListFamilyMembersRequest {
+  string group_id = 1;
+}
+
+message ListFamilyMembersResponse {
+  repeated FamilyMember members = 1;
+}
+
+message SetSharingPreferencesRequest {
+  string group_id = 1;
+  string user_id = 2;
+  bool share_measurements = 3;
+  bool share_health_records = 4;
+  bool share_prescriptions = 5;
+  bool share_coaching = 6;
+  repeated string shared_with_user_ids = 7;
+}
+
+message SharingPreferences {
+  string user_id = 1;
+  string group_id = 2;
+  bool share_measurements = 3;
+  bool share_health_records = 4;
+  bool share_prescriptions = 5;
+  bool share_coaching = 6;
+  repeated string shared_with_user_ids = 7;
+  google.protobuf.Timestamp updated_at = 8;
+}
+
+message GetSharedHealthDataRequest {
+  string group_id = 1;
+  string requester_user_id = 2;
+  string target_user_id = 3;
+}
+
+message GetSharedHealthDataResponse {
+  string target_user_id = 1;
+  string target_display_name = 2;
+  repeated MeasurementSummary recent_measurements = 3;
+  double health_score = 4;
+  string last_active = 5;
+}
+
+// =============================================================================
+// 건강 기록 서비스 (Health Record Service) — Phase 3
+// =============================================================================
+
+service HealthRecordService {
+  rpc CreateRecord(CreateHealthRecordRequest) returns (HealthRecord);
+  rpc GetRecord(GetHealthRecordRequest) returns (HealthRecord);
+  rpc ListRecords(ListHealthRecordsRequest) returns (ListHealthRecordsResponse);
+  rpc UpdateRecord(UpdateHealthRecordRequest) returns (HealthRecord);
+  rpc DeleteRecord(DeleteHealthRecordRequest) returns (DeleteHealthRecordResponse);
+  rpc ExportToFHIR(ExportToFHIRRequest) returns (ExportToFHIRResponse);
+  rpc ImportFromFHIR(ImportFromFHIRRequest) returns (ImportFromFHIRResponse);
+  rpc GetHealthSummary(GetHealthSummaryRequest) returns (GetHealthSummaryResponse);
+  // Phase 4: Data sharing & consent
+  rpc CreateDataSharingConsent(CreateConsentRequest) returns (DataSharingConsent);
+  rpc RevokeDataSharingConsent(RevokeConsentRequest) returns (RevokeConsentResponse);
+  rpc ListDataSharingConsents(ListConsentsRequest) returns (ListConsentsResponse);
+  rpc ShareWithProvider(ShareWithProviderRequest) returns (ShareWithProviderResponse);
+  rpc GetDataAccessLog(GetDataAccessLogRequest) returns (GetDataAccessLogResponse);
+}
+
+enum HealthRecordType {
+  HEALTH_RECORD_TYPE_UNKNOWN = 0;
+  HEALTH_RECORD_TYPE_LAB_RESULT = 1;
+  HEALTH_RECORD_TYPE_IMAGING = 2;
+  HEALTH_RECORD_TYPE_VITAL_SIGN = 3;
+  HEALTH_RECORD_TYPE_ALLERGY = 4;
+  HEALTH_RECORD_TYPE_CONDITION = 5;
+  HEALTH_RECORD_TYPE_IMMUNIZATION = 6;
+  HEALTH_RECORD_TYPE_PROCEDURE = 7;
+}
+
+enum FHIRResourceType {
+  FHIR_RESOURCE_TYPE_UNKNOWN = 0;
+  FHIR_RESOURCE_TYPE_OBSERVATION = 1;
+  FHIR_RESOURCE_TYPE_CONDITION = 2;
+  FHIR_RESOURCE_TYPE_ALLERGY_INTOLERANCE = 3;
+  FHIR_RESOURCE_TYPE_IMMUNIZATION = 4;
+  FHIR_RESOURCE_TYPE_PROCEDURE = 5;
+  FHIR_RESOURCE_TYPE_DIAGNOSTIC_REPORT = 6;
+  FHIR_RESOURCE_TYPE_BUNDLE = 7;
+}
+
+message CreateHealthRecordRequest {
+  string user_id = 1;
+  HealthRecordType record_type = 2;
+  string title = 3;
+  string description = 4;
+  string provider = 5;
+  map<string, string> metadata = 6;
+  string measurement_id = 7;
+}
+
+message GetHealthRecordRequest {
+  string record_id = 1;
+}
+
+message ListHealthRecordsRequest {
+  string user_id = 1;
+  HealthRecordType type_filter = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message ListHealthRecordsResponse {
+  repeated HealthRecord records = 1;
+  int32 total_count = 2;
+}
+
+message UpdateHealthRecordRequest {
+  string record_id = 1;
+  string title = 2;
+  string description = 3;
+  map<string, string> metadata = 4;
+}
+
+message DeleteHealthRecordRequest {
+  string record_id = 1;
+}
+
+message DeleteHealthRecordResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message HealthRecord {
+  string record_id = 1;
+  string user_id = 2;
+  HealthRecordType record_type = 3;
+  string title = 4;
+  string description = 5;
+  string provider = 6;
+  map<string, string> metadata = 7;
+  string measurement_id = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message ExportToFHIRRequest {
+  string user_id = 1;
+  repeated string record_ids = 2;
+  FHIRResourceType target_type = 3;
+}
+
+message ExportToFHIRResponse {
+  string fhir_bundle_json = 1;
+  FHIRResourceType resource_type = 2;
+  int32 resource_count = 3;
+}
+
+message ImportFromFHIRRequest {
+  string user_id = 1;
+  string fhir_bundle_json = 2;
+}
+
+message ImportFromFHIRResponse {
+  int32 imported_count = 1;
+  int32 skipped_count = 2;
+  repeated string imported_record_ids = 3;
+  repeated string errors = 4;
+}
+
+message GetHealthSummaryRequest {
+  string user_id = 1;
+}
+
+message GetHealthSummaryResponse {
+  string user_id = 1;
+  int32 total_records = 2;
+  map<string, int32> records_by_type = 3;
+  repeated HealthRecord recent_records = 4;
+  google.protobuf.Timestamp last_updated = 5;
+}
+
+// =============================================================================
+// 처방 서비스 (Prescription Service) — Phase 3
+// =============================================================================
+
+service PrescriptionService {
+  rpc CreatePrescription(CreatePrescriptionRequest) returns (Prescription);
+  rpc GetPrescription(GetPrescriptionRequest) returns (Prescription);
+  rpc ListPrescriptions(ListPrescriptionsRequest) returns (ListPrescriptionsResponse);
+  rpc UpdatePrescriptionStatus(UpdatePrescriptionStatusRequest) returns (Prescription);
+  rpc AddMedication(AddMedicationRequest) returns (Prescription);
+  rpc RemoveMedication(RemoveMedicationRequest) returns (Prescription);
+  rpc CheckDrugInteraction(CheckDrugInteractionRequest) returns (CheckDrugInteractionResponse);
+  rpc GetMedicationReminders(GetMedicationRemindersRequest) returns (GetMedicationRemindersResponse);
+  // Phase 4: Pharmacy fulfillment flow
+  rpc SelectPharmacyAndFulfillment(SelectPharmacyRequest) returns (SelectPharmacyResponse);
+  rpc SendPrescriptionToPharmacy(SendToPharmacyRequest) returns (SendToPharmacyResponse);
+  rpc GetPrescriptionByToken(GetByTokenRequest) returns (Prescription);
+  rpc UpdateDispensaryStatus(UpdateDispensaryStatusRequest) returns (Prescription);
+}
+
+enum PrescriptionStatus {
+  PRESCRIPTION_STATUS_UNKNOWN = 0;
+  PRESCRIPTION_STATUS_DRAFT = 1;
+  PRESCRIPTION_STATUS_ACTIVE = 2;
+  PRESCRIPTION_STATUS_DISPENSED = 3;
+  PRESCRIPTION_STATUS_COMPLETED = 4;
+  PRESCRIPTION_STATUS_CANCELLED = 5;
+  PRESCRIPTION_STATUS_EXPIRED = 6;
+}
+
+enum DrugInteractionSeverity {
+  DRUG_INTERACTION_SEVERITY_UNKNOWN = 0;
+  DRUG_INTERACTION_SEVERITY_NONE = 1;
+  DRUG_INTERACTION_SEVERITY_MINOR = 2;
+  DRUG_INTERACTION_SEVERITY_MODERATE = 3;
+  DRUG_INTERACTION_SEVERITY_MAJOR = 4;
+  DRUG_INTERACTION_SEVERITY_CONTRAINDICATED = 5;
+}
+
+message CreatePrescriptionRequest {
+  string user_id = 1;
+  string doctor_id = 2;
+  string doctor_name = 3;
+  string facility_id = 4;
+  string diagnosis = 5;
+  string notes = 6;
+  repeated Medication medications = 7;
+}
+
+message GetPrescriptionRequest {
+  string prescription_id = 1;
+}
+
+message ListPrescriptionsRequest {
+  string user_id = 1;
+  PrescriptionStatus status_filter = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message ListPrescriptionsResponse {
+  repeated Prescription prescriptions = 1;
+  int32 total_count = 2;
+}
+
+message UpdatePrescriptionStatusRequest {
+  string prescription_id = 1;
+  PrescriptionStatus new_status = 2;
+}
+
+message AddMedicationRequest {
+  string prescription_id = 1;
+  Medication medication = 2;
+}
+
+message RemoveMedicationRequest {
+  string prescription_id = 1;
+  string medication_id = 2;
+}
+
+message Prescription {
+  string prescription_id = 1;
+  string user_id = 2;
+  string doctor_id = 3;
+  string doctor_name = 4;
+  string facility_id = 5;
+  string diagnosis = 6;
+  string notes = 7;
+  PrescriptionStatus status = 8;
+  repeated Medication medications = 9;
+  google.protobuf.Timestamp prescribed_at = 10;
+  google.protobuf.Timestamp expires_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message Medication {
+  string medication_id = 1;
+  string name = 2;
+  string dosage = 3;
+  string frequency = 4;
+  string route = 5;
+  int32 duration_days = 6;
+  string instructions = 7;
+  bool is_critical = 8;
+}
+
+message CheckDrugInteractionRequest {
+  repeated string medication_names = 1;
+  string user_id = 2;
+}
+
+message CheckDrugInteractionResponse {
+  repeated DrugInteraction interactions = 1;
+  bool has_critical = 2;
+}
+
+message DrugInteraction {
+  string drug_a = 1;
+  string drug_b = 2;
+  DrugInteractionSeverity severity = 3;
+  string description = 4;
+  string recommendation = 5;
+}
+
+message GetMedicationRemindersRequest {
+  string user_id = 1;
+  string date = 2;
+}
+
+message GetMedicationRemindersResponse {
+  repeated MedicationReminder reminders = 1;
+}
+
+message MedicationReminder {
+  string reminder_id = 1;
+  string prescription_id = 2;
+  string medication_name = 3;
+  string dosage = 4;
+  string scheduled_time = 5;
+  bool is_taken = 6;
+  string instructions = 7;
+}
+
+// =============================================================================
+// 커뮤니티 서비스 (Community Service) — Phase 3
+// =============================================================================
+
+service CommunityService {
+  rpc CreatePost(CreatePostRequest) returns (Post);
+  rpc GetPost(GetPostRequest) returns (Post);
+  rpc ListPosts(ListPostsRequest) returns (ListPostsResponse);
+  rpc LikePost(LikePostRequest) returns (LikePostResponse);
+  rpc CreateComment(CreateCommentRequest) returns (Comment);
+  rpc ListComments(ListCommentsRequest) returns (ListCommentsResponse);
+  rpc CreateChallenge(CreateChallengeRequest) returns (Challenge);
+  rpc GetChallenge(GetChallengeRequest) returns (Challenge);
+  rpc JoinChallenge(JoinChallengeRequest) returns (JoinChallengeResponse);
+  rpc ListChallenges(ListChallengesRequest) returns (ListChallengesResponse);
+}
+
+enum PostCategory {
+  POST_CATEGORY_UNKNOWN = 0;
+  POST_CATEGORY_GENERAL = 1;
+  POST_CATEGORY_HEALTH_TIP = 2;
+  POST_CATEGORY_QNA = 3;
+  POST_CATEGORY_EXPERIENCE = 4;
+  POST_CATEGORY_RECIPE = 5;
+  POST_CATEGORY_EXERCISE = 6;
+}
+
+enum ChallengeStatus {
+  CHALLENGE_STATUS_UNKNOWN = 0;
+  CHALLENGE_STATUS_UPCOMING = 1;
+  CHALLENGE_STATUS_ACTIVE = 2;
+  CHALLENGE_STATUS_COMPLETED = 3;
+  CHALLENGE_STATUS_CANCELLED = 4;
+}
+
+enum ChallengeType {
+  CHALLENGE_TYPE_UNKNOWN = 0;
+  CHALLENGE_TYPE_STEPS = 1;
+  CHALLENGE_TYPE_MEASUREMENT = 2;
+  CHALLENGE_TYPE_DIET = 3;
+  CHALLENGE_TYPE_EXERCISE = 4;
+  CHALLENGE_TYPE_SLEEP = 5;
+}
+
+message CreatePostRequest {
+  string author_id = 1;
+  string title = 2;
+  string content = 3;
+  PostCategory category = 4;
+  repeated string tags = 5;
+}
+
+message GetPostRequest {
+  string post_id = 1;
+}
+
+message ListPostsRequest {
+  PostCategory category = 1;
+  string author_id = 2;
+  string query = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message ListPostsResponse {
+  repeated Post posts = 1;
+  int32 total_count = 2;
+}
+
+message Post {
+  string post_id = 1;
+  string author_id = 2;
+  string author_name = 3;
+  string title = 4;
+  string content = 5;
+  PostCategory category = 6;
+  repeated string tags = 7;
+  int32 like_count = 8;
+  int32 comment_count = 9;
+  int32 view_count = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message LikePostRequest {
+  string post_id = 1;
+  string user_id = 2;
+}
+
+message LikePostResponse {
+  bool success = 1;
+  int32 like_count = 2;
+  bool is_liked = 3;
+}
+
+message CreateCommentRequest {
+  string post_id = 1;
+  string author_id = 2;
+  string content = 3;
+  string parent_comment_id = 4;
+}
+
+message ListCommentsRequest {
+  string post_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListCommentsResponse {
+  repeated Comment comments = 1;
+  int32 total_count = 2;
+}
+
+message Comment {
+  string comment_id = 1;
+  string post_id = 2;
+  string author_id = 3;
+  string author_name = 4;
+  string content = 5;
+  string parent_comment_id = 6;
+  int32 like_count = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
+message CreateChallengeRequest {
+  string creator_id = 1;
+  string title = 2;
+  string description = 3;
+  ChallengeType challenge_type = 4;
+  double target_value = 5;
+  string unit = 6;
+  google.protobuf.Timestamp start_date = 7;
+  google.protobuf.Timestamp end_date = 8;
+  int32 max_participants = 9;
+}
+
+message GetChallengeRequest {
+  string challenge_id = 1;
+}
+
+message Challenge {
+  string challenge_id = 1;
+  string creator_id = 2;
+  string title = 3;
+  string description = 4;
+  ChallengeType challenge_type = 5;
+  ChallengeStatus status = 6;
+  double target_value = 7;
+  string unit = 8;
+  int32 participant_count = 9;
+  int32 max_participants = 10;
+  google.protobuf.Timestamp start_date = 11;
+  google.protobuf.Timestamp end_date = 12;
+  google.protobuf.Timestamp created_at = 13;
+}
+
+message JoinChallengeRequest {
+  string challenge_id = 1;
+  string user_id = 2;
+}
+
+message JoinChallengeResponse {
+  bool success = 1;
+  string message = 2;
+  int32 participant_count = 3;
+}
+
+message ListChallengesRequest {
+  ChallengeType type_filter = 1;
+  ChallengeStatus status_filter = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message ListChallengesResponse {
+  repeated Challenge challenges = 1;
+  int32 total_count = 2;
+}
+
+// =============================================================================
+// 비디오 서비스 (Video Service) — Phase 3
+// =============================================================================
+
+service VideoService {
+  rpc CreateRoom(CreateRoomRequest) returns (Room);
+  rpc GetRoom(GetRoomRequest) returns (Room);
+  rpc JoinRoom(JoinRoomRequest) returns (JoinRoomResponse);
+  rpc LeaveRoom(LeaveRoomRequest) returns (LeaveRoomResponse);
+  rpc EndRoom(EndRoomRequest) returns (Room);
+  rpc SendSignal(SendSignalRequest) returns (SendSignalResponse);
+  rpc ListParticipants(ListParticipantsRequest) returns (ListParticipantsResponse);
+  rpc GetRoomStats(GetRoomStatsRequest) returns (GetRoomStatsResponse);
+}
+
+enum RoomType {
+  ROOM_TYPE_UNKNOWN = 0;
+  ROOM_TYPE_ONE_TO_ONE = 1;
+  ROOM_TYPE_GROUP = 2;
+  ROOM_TYPE_WEBINAR = 3;
+  ROOM_TYPE_CONSULTATION = 4;
+}
+
+enum RoomStatus {
+  ROOM_STATUS_UNKNOWN = 0;
+  ROOM_STATUS_WAITING = 1;
+  ROOM_STATUS_ACTIVE = 2;
+  ROOM_STATUS_ENDED = 3;
+  ROOM_STATUS_FAILED = 4;
+}
+
+enum SignalType {
+  SIGNAL_TYPE_UNKNOWN = 0;
+  SIGNAL_TYPE_OFFER = 1;
+  SIGNAL_TYPE_ANSWER = 2;
+  SIGNAL_TYPE_ICE_CANDIDATE = 3;
+  SIGNAL_TYPE_RENEGOTIATE = 4;
+  SIGNAL_TYPE_MUTE = 5;
+  SIGNAL_TYPE_UNMUTE = 6;
+}
+
+message CreateRoomRequest {
+  string host_user_id = 1;
+  RoomType room_type = 2;
+  string title = 3;
+  int32 max_participants = 4;
+  string scheduled_at = 5;
+  string reservation_id = 6;
+}
+
+message GetRoomRequest {
+  string room_id = 1;
+}
+
+message Room {
+  string room_id = 1;
+  string host_user_id = 2;
+  RoomType room_type = 3;
+  RoomStatus status = 4;
+  string title = 5;
+  int32 participant_count = 6;
+  int32 max_participants = 7;
+  string reservation_id = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp started_at = 10;
+  google.protobuf.Timestamp ended_at = 11;
+}
+
+message JoinRoomRequest {
+  string room_id = 1;
+  string user_id = 2;
+}
+
+message JoinRoomResponse {
+  bool success = 1;
+  string token = 2;
+  Room room = 3;
+  repeated Participant participants = 4;
+}
+
+message LeaveRoomRequest {
+  string room_id = 1;
+  string user_id = 2;
+}
+
+message LeaveRoomResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message EndRoomRequest {
+  string room_id = 1;
+  string user_id = 2;
+}
+
+message Participant {
+  string user_id = 1;
+  string display_name = 2;
+  bool is_host = 3;
+  bool is_muted = 4;
+  bool is_video_on = 5;
+  google.protobuf.Timestamp joined_at = 6;
+}
+
+message SendSignalRequest {
+  string room_id = 1;
+  string from_user_id = 2;
+  string to_user_id = 3;
+  SignalType signal_type = 4;
+  string payload = 5;
+}
+
+message SendSignalResponse {
+  bool success = 1;
+}
+
+message ListParticipantsRequest {
+  string room_id = 1;
+}
+
+message ListParticipantsResponse {
+  repeated Participant participants = 1;
+}
+
+message GetRoomStatsRequest {
+  string room_id = 1;
+}
+
+message GetRoomStatsResponse {
+  string room_id = 1;
+  int32 total_participants = 2;
+  int32 current_participants = 3;
+  int64 duration_seconds = 4;
+  int32 signal_count = 5;
+  google.protobuf.Timestamp started_at = 6;
+}
+
+// =============================================================================
+// 알림 서비스 (Notification Service) — Phase 3
+// =============================================================================
+
+service NotificationService {
+  rpc SendNotification(SendNotificationRequest) returns (Notification);
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsResponse);
+  rpc MarkAsRead(MarkAsReadRequest) returns (MarkAsReadResponse);
+  rpc MarkAllAsRead(MarkAllAsReadRequest) returns (MarkAllAsReadResponse);
+  rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse);
+  rpc UpdateNotificationPreferences(UpdateNotificationPreferencesRequest) returns (NotificationPreferences);
+  rpc GetNotificationPreferences(GetNotificationPreferencesRequest) returns (NotificationPreferences);
+}
+
+enum NotificationType {
+  NOTIFICATION_TYPE_UNKNOWN = 0;
+  NOTIFICATION_TYPE_MEASUREMENT = 1;
+  NOTIFICATION_TYPE_HEALTH_ALERT = 2;
+  NOTIFICATION_TYPE_APPOINTMENT = 3;
+  NOTIFICATION_TYPE_PRESCRIPTION = 4;
+  NOTIFICATION_TYPE_COMMUNITY = 5;
+  NOTIFICATION_TYPE_SYSTEM = 6;
+  NOTIFICATION_TYPE_PROMOTION = 7;
+}
+
+enum NotificationChannel {
+  NOTIFICATION_CHANNEL_UNKNOWN = 0;
+  NOTIFICATION_CHANNEL_PUSH = 1;
+  NOTIFICATION_CHANNEL_EMAIL = 2;
+  NOTIFICATION_CHANNEL_SMS = 3;
+  NOTIFICATION_CHANNEL_IN_APP = 4;
+}
+
+enum NotificationPriority {
+  NOTIFICATION_PRIORITY_UNKNOWN = 0;
+  NOTIFICATION_PRIORITY_LOW = 1;
+  NOTIFICATION_PRIORITY_NORMAL = 2;
+  NOTIFICATION_PRIORITY_HIGH = 3;
+  NOTIFICATION_PRIORITY_URGENT = 4;
+}
+
+message SendNotificationRequest {
+  string user_id = 1;
+  NotificationType type = 2;
+  string title = 3;
+  string body = 4;
+  NotificationPriority priority = 5;
+  NotificationChannel channel = 6;
+  map<string, string> data = 7;
+  string action_url = 8;
+}
+
+message Notification {
+  string notification_id = 1;
+  string user_id = 2;
+  NotificationType type = 3;
+  string title = 4;
+  string body = 5;
+  NotificationPriority priority = 6;
+  NotificationChannel channel = 7;
+  bool is_read = 8;
+  map<string, string> data = 9;
+  string action_url = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp read_at = 12;
+}
+
+message ListNotificationsRequest {
+  string user_id = 1;
+  NotificationType type_filter = 2;
+  bool unread_only = 3;
+  int32 limit = 4;
+  int32 offset = 5;
+}
+
+message ListNotificationsResponse {
+  repeated Notification notifications = 1;
+  int32 total_count = 2;
+}
+
+message MarkAsReadRequest {
+  string notification_id = 1;
+}
+
+message MarkAsReadResponse {
+  bool success = 1;
+}
+
+message MarkAllAsReadRequest {
+  string user_id = 1;
+}
+
+message MarkAllAsReadResponse {
+  int32 marked_count = 1;
+}
+
+message GetUnreadCountRequest {
+  string user_id = 1;
+}
+
+message GetUnreadCountResponse {
+  int32 count = 1;
+}
+
+message UpdateNotificationPreferencesRequest {
+  string user_id = 1;
+  bool push_enabled = 2;
+  bool email_enabled = 3;
+  bool sms_enabled = 4;
+  bool measurement_alerts = 5;
+  bool health_alerts = 6;
+  bool appointment_reminders = 7;
+  bool community_updates = 8;
+  bool promotions = 9;
+  string quiet_hours_start = 10;
+  string quiet_hours_end = 11;
+}
+
+message GetNotificationPreferencesRequest {
+  string user_id = 1;
+}
+
+message NotificationPreferences {
+  string user_id = 1;
+  bool push_enabled = 2;
+  bool email_enabled = 3;
+  bool sms_enabled = 4;
+  bool measurement_alerts = 5;
+  bool health_alerts = 6;
+  bool appointment_reminders = 7;
+  bool community_updates = 8;
+  bool promotions = 9;
+  string quiet_hours_start = 10;
+  string quiet_hours_end = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+// =============================================================================
+// 번역 서비스 (Translation Service) — Phase 3
+// =============================================================================
+
+service TranslationService {
+  rpc TranslateText(TranslateTextRequest) returns (TranslateTextResponse);
+  rpc DetectLanguage(DetectLanguageRequest) returns (DetectLanguageResponse);
+  rpc ListSupportedLanguages(ListSupportedLanguagesRequest) returns (ListSupportedLanguagesResponse);
+  rpc TranslateBatch(TranslateBatchRequest) returns (TranslateBatchResponse);
+  rpc GetTranslationHistory(GetTranslationHistoryRequest) returns (GetTranslationHistoryResponse);
+  rpc GetTranslationUsage(GetTranslationUsageRequest) returns (GetTranslationUsageResponse);
+}
+
+message TranslateTextRequest {
+  string text = 1;
+  string source_language = 2;
+  string target_language = 3;
+  bool is_medical = 4;
+  string context = 5;
+}
+
+message TranslateTextResponse {
+  string translated_text = 1;
+  string source_language = 2;
+  string target_language = 3;
+  double confidence = 4;
+  bool is_medical_term = 5;
+  string original_text = 6;
+}
+
+message DetectLanguageRequest {
+  string text = 1;
+}
+
+message DetectLanguageResponse {
+  repeated DetectedLanguage languages = 1;
+}
+
+message DetectedLanguage {
+  string language_code = 1;
+  string language_name = 2;
+  double confidence = 3;
+}
+
+message ListSupportedLanguagesRequest {}
+
+message ListSupportedLanguagesResponse {
+  repeated SupportedLanguage languages = 1;
+}
+
+message SupportedLanguage {
+  string language_code = 1;
+  string language_name = 2;
+  string native_name = 3;
+  bool supports_medical = 4;
+}
+
+message TranslateBatchRequest {
+  repeated string texts = 1;
+  string source_language = 2;
+  string target_language = 3;
+  bool is_medical = 4;
+}
+
+message TranslateBatchResponse {
+  repeated TranslateTextResponse translations = 1;
+}
+
+message GetTranslationHistoryRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetTranslationHistoryResponse {
+  repeated TranslationRecord records = 1;
+  int32 total_count = 2;
+}
+
+message TranslationRecord {
+  string record_id = 1;
+  string user_id = 2;
+  string source_text = 3;
+  string translated_text = 4;
+  string source_language = 5;
+  string target_language = 6;
+  bool is_medical = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
+message GetTranslationUsageRequest {
+  string user_id = 1;
+}
+
+message GetTranslationUsageResponse {
+  string user_id = 1;
+  int32 total_translations = 2;
+  int32 monthly_translations = 3;
+  int32 monthly_limit = 4;
+  int32 medical_translations = 5;
+  map<string, int32> by_language_pair = 6;
+}
+
+
+// ============================================================================
+// Phase 4: New Request/Response Messages
+// ============================================================================
+
+// --- ReservationService Phase 4 Messages ---
+
+message ListDoctorsByFacilityRequest {
+  string facility_id = 1;
+}
+
+message ListDoctorsByFacilityResponse {
+  repeated Doctor doctors = 1;
+}
+
+message Doctor {
+  string doctor_id = 1;
+  string name = 2;
+  string specialty = 3;
+  string facility_id = 4;
+  float rating = 5;
+  int32 consultation_fee = 6;
+  bool accepts_telemedicine = 7;
+  repeated string available_region_codes = 8;
+  string next_available_at = 9;
+}
+
+message GetDoctorAvailabilityRequest {
+  string doctor_id = 1;
+  string date = 2;
+}
+
+message GetDoctorAvailabilityResponse {
+  repeated TimeSlotDetail slots = 1;
+}
+
+message TimeSlotDetail {
+  string start_time = 1;
+  string end_time = 2;
+  bool is_available = 3;
+}
+
+message SelectDoctorRequest {
+  string facility_id = 1;
+  string doctor_id = 2;
+  string user_id = 3;
+}
+
+message SelectDoctorResponse {
+  Doctor doctor = 1;
+  bool success = 2;
+}
+
+// --- PrescriptionService Phase 4 Messages ---
+
+message SelectPharmacyRequest {
+  string prescription_id = 1;
+  string pharmacy_id = 2;
+  string pharmacy_name = 3;
+  string fulfillment_type = 4;
+  string shipping_address = 5;
+}
+
+message SelectPharmacyResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message SendToPharmacyRequest {
+  string prescription_id = 1;
+}
+
+message SendToPharmacyResponse {
+  string fulfillment_token = 1;
+  string expires_at = 2;
+  bool success = 3;
+}
+
+message GetByTokenRequest {
+  string fulfillment_token = 1;
+}
+
+message UpdateDispensaryStatusRequest {
+  string prescription_id = 1;
+  string status = 2;
+}
+
+// --- HealthRecordService Phase 4 Messages ---
+
+message CreateConsentRequest {
+  string user_id = 1;
+  string provider_id = 2;
+  string provider_name = 3;
+  string consent_type = 4;
+  repeated string scope = 5;
+  string purpose = 6;
+}
+
+message DataSharingConsent {
+  string id = 1;
+  string user_id = 2;
+  string provider_id = 3;
+  string provider_name = 4;
+  string consent_type = 5;
+  repeated string scope = 6;
+  string purpose = 7;
+  string status = 8;
+  string granted_at = 9;
+  string expires_at = 10;
+  string revoked_at = 11;
+  string revoke_reason = 12;
+}
+
+message RevokeConsentRequest {
+  string consent_id = 1;
+  string reason = 2;
+}
+
+message RevokeConsentResponse {
+  bool success = 1;
+}
+
+message ListConsentsRequest {
+  string user_id = 1;
+}
+
+message ListConsentsResponse {
+  repeated DataSharingConsent consents = 1;
+}
+
+message ShareWithProviderRequest {
+  string consent_id = 1;
+}
+
+message ShareWithProviderResponse {
+  string fhir_bundle_json = 1;
+  int32 resource_count = 2;
+  string shared_at = 3;
+}
+
+message GetDataAccessLogRequest {
+  string user_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetDataAccessLogResponse {
+  repeated DataAccessLogEntry entries = 1;
+  int32 total = 2;
+}
+
+message DataAccessLogEntry {
+  string id = 1;
+  string consent_id = 2;
+  string user_id = 3;
+  string provider_id = 4;
+  string action = 5;
+  string resource_type = 6;
+  repeated string resource_ids = 7;
+  string accessed_at = 8;
+}
+
+// --- MeasurementService Phase 4 Messages ---
+
+message ExportSingleMeasurementRequest {
+  string session_id = 1;
+}
+
+message ExportToFHIRObservationsRequest {
+  string user_id = 1;
+  string from_date = 2;
+  string to_date = 3;
+}
+
+message ExportFHIRResponse {
+  string fhir_bundle_json = 1;
+  int32 resource_count = 2;
+}
+
+// --- DeviceService Phase 4 Messages ---
+
+message UpdateDeviceStatusRequest {
+  string device_id = 1;
+  string status = 2;
+}
+
+message UpdateDeviceStatusResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// --- AdminService Phase 4 Messages ---
+
+message ListAdminsByRegionRequest {
+  string country_code = 1;
+  string region_code = 2;
+}
+
+// =============================================================================
+// AdminService Phase 5: 설정 관리 확장 Messages
+// =============================================================================
+
+message ListSystemConfigsRequest {
+  string language_code = 1;
+  string category = 2;
+  bool include_secrets = 3;
+}
+
+message ListSystemConfigsResponse {
+  repeated ConfigWithMeta configs = 1;
+  map<string, int32> category_counts = 2;
+}
+
+message ConfigWithMeta {
+  string key = 1;
+  string value = 2;
+  string raw_value = 3;
+  string category = 4;
+  string value_type = 5;
+  string security_level = 6;
+  bool is_required = 7;
+  string default_value = 8;
+  repeated string allowed_values = 9;
+  string validation_regex = 10;
+  double validation_min = 11;
+  double validation_max = 12;
+  string depends_on = 13;
+  string depends_value = 14;
+  string env_var_name = 15;
+  string service_name = 16;
+  bool restart_required = 17;
+  string display_name = 20;
+  string description = 21;
+  string placeholder = 22;
+  string help_text = 23;
+  string validation_message = 24;
+  string updated_by = 30;
+  google.protobuf.Timestamp updated_at = 31;
+}
+
+message GetConfigWithMetaRequest {
+  string key = 1;
+  string language_code = 2;
+}
+
+message ValidateConfigValueRequest {
+  string key = 1;
+  string value = 2;
+}
+
+message ValidateConfigValueResponse {
+  bool valid = 1;
+  string error_message = 2;
+  repeated string suggestions = 3;
+}
+
+message BulkSetConfigsRequest {
+  repeated SetSystemConfigRequest configs = 1;
+  string reason = 2;
+}
+
+message BulkSetConfigsResponse {
+  repeated ConfigChangeResult results = 1;
+  int32 success_count = 2;
+  int32 failure_count = 3;
+}
+
+message ConfigChangeResult {
+  string key = 1;
+  bool success = 2;
+  string error_message = 3;
+}
+
+// =============================================================================
+// 원격진료 서비스 (Telemedicine Service)
+// =============================================================================
+
+service TelemedicineService {
+  rpc CreateConsultation(CreateConsultationRequest) returns (Consultation);
+  rpc GetConsultation(GetConsultationRequest) returns (Consultation);
+  rpc ListConsultations(ListConsultationsRequest) returns (ListConsultationsResponse);
+  rpc MatchDoctor(MatchDoctorRequest) returns (MatchDoctorResponse);
+  rpc StartVideoSession(StartVideoSessionRequest) returns (VideoSession);
+  rpc EndVideoSession(EndVideoSessionRequest) returns (VideoSession);
+  rpc RateConsultation(RateConsultationRequest) returns (RateConsultationResponse);
+}
+
+// --- 원격진료 Enums ---
+
+enum ConsultationStatus {
+  CONSULTATION_STATUS_UNKNOWN = 0;
+  CONSULTATION_STATUS_REQUESTED = 1;
+  CONSULTATION_STATUS_MATCHED = 2;
+  CONSULTATION_STATUS_SCHEDULED = 3;
+  CONSULTATION_STATUS_IN_PROGRESS = 4;
+  CONSULTATION_STATUS_COMPLETED = 5;
+  CONSULTATION_STATUS_CANCELLED = 6;
+  CONSULTATION_STATUS_NO_SHOW = 7;
+}
+
+enum VideoSessionStatus {
+  VIDEO_SESSION_STATUS_UNKNOWN = 0;
+  VIDEO_SESSION_STATUS_WAITING = 1;
+  VIDEO_SESSION_STATUS_CONNECTED = 2;
+  VIDEO_SESSION_STATUS_ENDED = 3;
+  VIDEO_SESSION_STATUS_FAILED = 4;
+}
+
+// --- 원격진료 Messages ---
+
+message Consultation {
+  string consultation_id = 1;
+  string patient_user_id = 2;
+  string doctor_id = 3;
+  DoctorSpecialty specialty = 4;
+  string chief_complaint = 5;
+  string description = 6;
+  ConsultationStatus status = 7;
+  string diagnosis = 8;
+  string doctor_notes = 9;
+  string prescription_id = 10;
+  int32 duration_minutes = 11;
+  double rating = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp scheduled_at = 14;
+  google.protobuf.Timestamp started_at = 15;
+  google.protobuf.Timestamp ended_at = 16;
+}
+
+message CreateConsultationRequest {
+  string patient_user_id = 1;
+  DoctorSpecialty specialty = 2;
+  string chief_complaint = 3;
+  string description = 4;
+}
+
+message GetConsultationRequest {
+  string consultation_id = 1;
+}
+
+message ListConsultationsRequest {
+  string user_id = 1;
+  ConsultationStatus status_filter = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message ListConsultationsResponse {
+  repeated Consultation consultations = 1;
+  int32 total_count = 2;
+}
+
+message MatchDoctorRequest {
+  DoctorSpecialty specialty = 1;
+  string language = 2;
+}
+
+message MatchDoctorResponse {
+  repeated DoctorProfile doctors = 1;
+  int32 total_available = 2;
+}
+
+message DoctorProfile {
+  string doctor_id = 1;
+  string name = 2;
+  DoctorSpecialty specialty = 3;
+  string hospital = 4;
+  string license_number = 5;
+  int32 experience_years = 6;
+  double rating = 7;
+  int32 total_consultations = 8;
+  bool is_available = 9;
+  repeated string languages = 10;
+  string profile_image_url = 11;
+}
+
+message StartVideoSessionRequest {
+  string consultation_id = 1;
+  string user_id = 2;
+}
+
+message VideoSession {
+  string session_id = 1;
+  string consultation_id = 2;
+  string room_url = 3;
+  string token = 4;
+  VideoSessionStatus status = 5;
+  int32 duration_seconds = 6;
+  google.protobuf.Timestamp started_at = 7;
+  google.protobuf.Timestamp ended_at = 8;
+}
+
+message EndVideoSessionRequest {
+  string session_id = 1;
+  string consultation_id = 2;
+  string doctor_notes = 3;
+  string diagnosis = 4;
+}
+
+message RateConsultationRequest {
+  string consultation_id = 1;
+  double rating = 2;
+}
+
+message RateConsultationResponse {
+  bool success = 1;
+  double new_average_rating = 2;
+}

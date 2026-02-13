@@ -1,0 +1,57 @@
+[package]
+name = "manpasik-engine"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "ManPaSik Core Engine - Differential Measurement, AI Inference, BLE/NFC, DSP"
+
+[lib]
+name = "manpasik_engine"
+crate-type = ["cdylib", "staticlib", "rlib"]
+
+[features]
+default = ["std", "ble", "nfc", "ai"]
+std = []
+no_std = []
+ble = ["btleplug"]
+nfc = []
+ai = ["tflitec"]
+fingerprint = ["ndarray"]
+full = ["ble", "nfc", "ai", "fingerprint"]
+
+[dependencies]
+# Workspace dependencies
+tokio = { workspace = true }
+async-trait = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+bincode = { workspace = true }
+btleplug = { workspace = true, optional = true }
+rustfft = { workspace = true }
+dasp = { workspace = true }
+ndarray = { workspace = true, optional = true }
+ring = { workspace = true }
+aes-gcm = { workspace = true }
+sha2 = { workspace = true }
+tflitec = { workspace = true, optional = true }
+tracing = { workspace = true }
+thiserror = { workspace = true }
+anyhow = { workspace = true }
+
+# Additional
+uuid = { version = "1.7", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+bytes = "1.5"
+parking_lot = "0.12"
+crossbeam-channel = "0.5"
+hex = "0.4"
+futures = "0.3"
+
+[dev-dependencies]
+criterion = { workspace = true }
+tokio-test = "0.4"
+
+[[bench]]
+name = "differential_measurement"
+harness = false

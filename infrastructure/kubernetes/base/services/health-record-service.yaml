@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: health-record-service
+  labels:
+    app: health-record-service
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: health-record-service
+  template:
+    metadata:
+      labels:
+        app: health-record-service
+        tier: backend
+    spec:
+      containers:
+        - name: health-record-service
+          image: manpasik/health-record-service:latest
+          ports:
+            - containerPort: 50064
+              name: grpc
+            - containerPort: 9100
+              name: metrics
+          envFrom:
+            - configMapRef:
+                name: manpasik-config
+            - secretRef:
+                name: manpasik-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          readinessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:50064"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["/bin/grpc_health_probe", "-addr=:50064"]
+            initialDelaySeconds: 15
+            periodSeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: health-record-service
+spec:
+  selector:
+    app: health-record-service
+  ports:
+    - port: 50064
+      targetPort: 50064
+      name: grpc
+    - port: 9100
+      targetPort: 9100
+      name: metrics

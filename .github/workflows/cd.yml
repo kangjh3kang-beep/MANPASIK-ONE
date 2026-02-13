@@ -1,0 +1,534 @@
+name: CD
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '배포 환경'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+  GO_VERSION: '1.22'
+
+# ============================================================================
+# 전체 서비스 목록 (재사용을 위한 앵커)
+# ============================================================================
+# gateway, auth-service, user-service, device-service, measurement-service,
+# subscription-service, shop-service, payment-service, ai-inference-service,
+# cartridge-service, calibration-service, coaching-service, family-service,
+# notification-service, health-record-service, prescription-service,
+# reservation-service, telemedicine-service, admin-service, community-service,
+# video-service, translation-service, vision-service
+
+jobs:
+  # ============================================================================
+  # 1단계: Docker 이미지 빌드 & 푸시
+  # ============================================================================
+  docker-build:
+    name: "Build & Push: ${{ matrix.service }}"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - gateway
+          - auth-service
+          - user-service
+          - device-service
+          - measurement-service
+          - subscription-service
+          - shop-service
+          - payment-service
+          - ai-inference-service
+          - cartridge-service
+          - calibration-service
+          - coaching-service
+          - family-service
+          - notification-service
+          - health-record-service
+          - prescription-service
+          - reservation-service
+          - telemedicine-service
+          - admin-service
+          - community-service
+          - video-service
+          - translation-service
+          - vision-service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service }}
+          tags: |
+            type=sha,prefix=
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: backend/Dockerfile
+          build-args: |
+            SERVICE_NAME=${{ matrix.service }}
+            VERSION=${{ github.ref_name }}
+            BUILD_TIME=${{ github.event.head_commit.timestamp }}
+            GIT_COMMIT=${{ github.sha }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ============================================================================
+  # 2단계: Dev 환경 배포 (자동)
+  # ============================================================================
+  deploy-dev:
+    name: Deploy to Dev
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    if: >-
+      github.event.inputs.environment == 'dev' ||
+      github.event.inputs.environment == 'staging' ||
+      github.event.inputs.environment == 'production' ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+    environment:
+      name: dev
+      url: https://dev.manpasik.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name manpasik-dev --region ap-northeast-2
+
+      - name: Update image tags (Dev)
+        working-directory: infrastructure/kubernetes/overlays/dev
+        run: |
+          IMAGES=""
+          for svc in gateway auth-service user-service device-service measurement-service \
+            subscription-service shop-service payment-service ai-inference-service \
+            cartridge-service calibration-service coaching-service family-service \
+            notification-service health-record-service prescription-service \
+            reservation-service telemedicine-service admin-service community-service \
+            video-service translation-service vision-service; do
+            [ -n "$IMAGES" ] && IMAGES="$IMAGES "
+            IMAGES="${IMAGES}manpasik/${svc}:latest=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${svc}:${{ github.sha }}"
+          done
+          kustomize edit set image $IMAGES
+
+      - name: Deploy to Kubernetes (Dev)
+        run: kubectl apply -k infrastructure/kubernetes/overlays/dev/
+
+      - name: Wait for rollout
+        run: |
+          SERVICES=(
+            gateway
+            auth-service
+            user-service
+            device-service
+            measurement-service
+            subscription-service
+            shop-service
+            payment-service
+            ai-inference-service
+            cartridge-service
+            calibration-service
+            coaching-service
+            family-service
+            notification-service
+            health-record-service
+            prescription-service
+            reservation-service
+            telemedicine-service
+            admin-service
+            community-service
+            video-service
+            translation-service
+            vision-service
+          )
+          FAILED=()
+          for svc in "${SERVICES[@]}"; do
+            echo "::group::Verifying $svc"
+            if ! kubectl rollout status deployment/$svc -n manpasik --timeout=120s; then
+              FAILED+=("$svc")
+              echo "::warning::$svc rollout failed"
+            fi
+            echo "::endgroup::"
+          done
+          if [ ${#FAILED[@]} -ne 0 ]; then
+            echo "::error::Failed services: ${FAILED[*]}"
+            exit 1
+          fi
+
+      - name: Health check (Dev)
+        run: |
+          GATEWAY_URL=$(kubectl get svc gateway -n manpasik -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
+          if [ -z "$GATEWAY_URL" ]; then
+            GATEWAY_URL=$(kubectl get svc gateway -n manpasik -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "")
+          fi
+          echo "Gateway URL: $GATEWAY_URL"
+
+          # gRPC health check 또는 HTTP health endpoint
+          for i in {1..5}; do
+            if curl -sf "http://${GATEWAY_URL}:8080/health" --connect-timeout 10; then
+              echo ""
+              echo "Dev health check passed (attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
+          echo "::error::Dev health check failed after 5 attempts"
+          exit 1
+
+  # ============================================================================
+  # 3단계: Staging 환경 배포 (자동) — kustomize overlays/staging
+  # ============================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [deploy-dev]
+    if: >-
+      github.event.inputs.environment == 'staging' ||
+      github.event.inputs.environment == 'production' ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+    environment:
+      name: staging
+      url: https://staging.manpasik.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name manpasik-staging --region ap-northeast-2
+
+      - name: Update image tags (Staging)
+        working-directory: infrastructure/kubernetes/overlays/staging
+        run: |
+          IMAGES=""
+          for svc in gateway auth-service user-service device-service measurement-service \
+            subscription-service shop-service payment-service ai-inference-service \
+            cartridge-service calibration-service coaching-service family-service \
+            notification-service health-record-service prescription-service \
+            reservation-service telemedicine-service admin-service community-service \
+            video-service translation-service vision-service; do
+            [ -n "$IMAGES" ] && IMAGES="$IMAGES "
+            IMAGES="${IMAGES}manpasik/${svc}:latest=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${svc}:${{ github.sha }}"
+          done
+          kustomize edit set image $IMAGES
+
+      - name: Deploy to Kubernetes (Staging)
+        run: kubectl apply -k infrastructure/kubernetes/overlays/staging/
+
+      - name: Wait for rollout (Staging)
+        run: |
+          SERVICES=(
+            gateway
+            auth-service
+            user-service
+            device-service
+            measurement-service
+            subscription-service
+            shop-service
+            payment-service
+            ai-inference-service
+            cartridge-service
+            calibration-service
+            coaching-service
+            family-service
+            notification-service
+            health-record-service
+            prescription-service
+            reservation-service
+            telemedicine-service
+            admin-service
+            community-service
+            video-service
+            translation-service
+            vision-service
+          )
+          FAILED=()
+          for svc in "${SERVICES[@]}"; do
+            echo "::group::Verifying $svc"
+            if ! kubectl rollout status deployment/$svc -n manpasik --timeout=180s; then
+              FAILED+=("$svc")
+              echo "::warning::$svc rollout failed"
+            fi
+            echo "::endgroup::"
+          done
+          if [ ${#FAILED[@]} -ne 0 ]; then
+            echo "::error::Failed services: ${FAILED[*]}"
+            exit 1
+          fi
+
+      - name: Health check (Staging)
+        run: |
+          GATEWAY_URL=$(kubectl get svc gateway -n manpasik -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
+          if [ -z "$GATEWAY_URL" ]; then
+            GATEWAY_URL=$(kubectl get svc gateway -n manpasik -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "")
+          fi
+          echo "Gateway URL: $GATEWAY_URL"
+
+          for i in {1..5}; do
+            if curl -sf "http://${GATEWAY_URL}:8080/health" --connect-timeout 10; then
+              echo ""
+              echo "Staging health check passed (attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 10s..."
+            sleep 10
+          done
+          echo "::error::Staging health check failed after 5 attempts"
+          exit 1
+
+  # ============================================================================
+  # 4단계: Production 환경 배포 (수동 승인) — kustomize overlays/production
+  # ============================================================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: >-
+      github.event.inputs.environment == 'production' ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
+    environment:
+      name: production
+      url: https://manpasik.com
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Install kustomize
+        run: |
+          curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+          sudo mv kustomize /usr/local/bin/
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name manpasik-production --region ap-northeast-2
+
+      - name: Update image tags (Production)
+        working-directory: infrastructure/kubernetes/overlays/production
+        run: |
+          IMAGES=""
+          for svc in gateway auth-service user-service device-service measurement-service \
+            subscription-service shop-service payment-service ai-inference-service \
+            cartridge-service calibration-service coaching-service family-service \
+            notification-service health-record-service prescription-service \
+            reservation-service telemedicine-service admin-service community-service \
+            video-service translation-service vision-service; do
+            [ -n "$IMAGES" ] && IMAGES="$IMAGES "
+            IMAGES="${IMAGES}manpasik/${svc}:latest=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${svc}:${{ github.sha }}"
+          done
+          kustomize edit set image $IMAGES
+
+      - name: Deploy to Kubernetes (Production)
+        run: kubectl apply -k infrastructure/kubernetes/overlays/production/
+
+      - name: Wait for rollout (Production)
+        run: |
+          SERVICES=(gateway auth-service user-service device-service measurement-service \
+            subscription-service shop-service payment-service ai-inference-service \
+            cartridge-service calibration-service coaching-service family-service \
+            notification-service health-record-service prescription-service \
+            reservation-service telemedicine-service admin-service community-service \
+            video-service translation-service vision-service)
+          FAILED=()
+          for svc in "${SERVICES[@]}"; do
+            echo "::group::Waiting for $svc rollout"
+            if ! kubectl rollout status deployment/$svc -n manpasik --timeout=600s 2>/dev/null; then
+              FAILED+=("$svc")
+              echo "::warning::$svc rollout did not complete"
+            fi
+            echo "::endgroup::"
+          done
+          if [ ${#FAILED[@]} -ne 0 ]; then
+            echo "::error::Failed rollouts: ${FAILED[*]}"
+            exit 1
+          fi
+          echo "Production rollout completed"
+
+      - name: Health check (Production)
+        run: |
+          GATEWAY_URL=$(kubectl get svc gateway -n manpasik -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
+          if [ -z "$GATEWAY_URL" ]; then
+            GATEWAY_URL=$(kubectl get svc gateway -n manpasik -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "")
+          fi
+          if [ -z "$GATEWAY_URL" ]; then
+            echo "::error::Gateway service not found"
+            exit 1
+          fi
+          echo "Gateway URL: $GATEWAY_URL"
+          for i in {1..10}; do
+            if curl -sf "http://${GATEWAY_URL}:8080/health" --connect-timeout 10; then
+              echo ""
+              echo "Production health check passed (attempt $i)"
+              exit 0
+            fi
+            echo "Attempt $i failed, retrying in 15s..."
+            sleep 15
+          done
+          echo "::error::Production health check failed"
+          exit 1
+
+      - name: Notify Slack
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            ManPaSik Production Deployment
+            Status: ${{ job.status }}
+            Version: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # ============================================================================
+  # 5단계: 롤백 (Production 실패 시)
+  # ============================================================================
+  rollback:
+    name: Rollback Production
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always() && needs.deploy-production.result == 'failure'
+    environment: production
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: Update kubeconfig
+        run: aws eks update-kubeconfig --name manpasik-production --region ap-northeast-2
+
+      - name: Rollback all services
+        run: |
+          SERVICES=(
+            gateway
+            auth-service
+            user-service
+            device-service
+            measurement-service
+            subscription-service
+            shop-service
+            payment-service
+            ai-inference-service
+            cartridge-service
+            calibration-service
+            coaching-service
+            family-service
+            notification-service
+            health-record-service
+            prescription-service
+            reservation-service
+            telemedicine-service
+            admin-service
+            community-service
+            video-service
+            translation-service
+            vision-service
+          )
+          for svc in "${SERVICES[@]}"; do
+            echo "Rolling back $svc..."
+            kubectl rollout undo deployment/$svc -n manpasik || echo "::warning::Failed to rollback $svc (may not exist)"
+          done
+
+      - name: Verify rollback
+        run: |
+          SERVICES=(
+            gateway
+            auth-service
+            user-service
+            device-service
+            measurement-service
+          )
+          for svc in "${SERVICES[@]}"; do
+            kubectl rollout status deployment/$svc -n manpasik --timeout=120s || echo "::warning::$svc rollback status check failed"
+          done
+
+      - name: Notify Slack (Rollback)
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          custom_payload: |
+            {
+              "text": ":rotating_light: ManPaSik Production ROLLBACK executed\nVersion: ${{ github.ref_name }}\nCommit: ${{ github.sha }}\nTriggered by deployment failure."
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

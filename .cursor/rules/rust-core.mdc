@@ -1,0 +1,312 @@
+---
+description: Rust 코어 엔진 에이전트 - 차동측정, 핑거프린트, BLE, NFC, AI, DSP, 암호화, CRDT 전체 컨텍스트
+globs: ["rust-core/**/*.rs", "rust-core/**/Cargo.toml", "rust-core/**/Cargo.lock"]
+---
+
+# Rust Core Agent 완전 컨텍스트
+
+## 워크스페이스 구조
+```
+rust-core/
+├── Cargo.toml              # 워크스페이스 루트 (resolver = "2")
+├── manpasik-engine/         # 핵심 엔진 크레이트
+│   ├── Cargo.toml           # crate-type: [cdylib, staticlib, rlib]
+│   └── src/
+│       ├── lib.rs           # 메인: MeasurementPacket, PacketHeader/Payload/Footer
+│       ├── differential/    # ✅ 구현 완료: DifferentialEngine
+│       ├── fingerprint/     # ✅ 구현 완료: FingerprintVector, FingerprintBuilder
+│       ├── ai/              # ✅ 구현 완료: InferenceEngine, ModelManager
+│       ├── ble/             # ✅ 구현 완료: BleManager, GATT UUID
+│       ├── nfc/             # ✅ 구현 완료: NfcReader, 29종 CartridgeType
+│       ├── dsp/             # 🔸 스텁: DspProcessor (FFT/필터 미구현)
+│       ├── crypto/          # 🔸 스텁: CryptoEngine (hash_sha256만 구현)
+│       └── sync/            # 🔸 스텁: SyncManager (CRDT 미구현)
+└── flutter-bridge/          # Flutter FFI 브리지
+    ├── Cargo.toml           # crate-type: [cdylib, staticlib]
+    └── src/lib.rs           # ManpasikEngine + DTO들
+```
+
+## Feature Flags
+```toml
+[features]
+default = ["std", "ble", "nfc", "ai"]
+std = []                          # 표준 라이브러리 사용
+no_std = []                       # 임베디드 환경용
+ble = ["btleplug"]                # BLE 5.0 통신
+nfc = []                          # NFC 카트리지
+ai = ["tflitec"]                  # TFLite 엣지 AI
+fingerprint = ["ndarray"]         # 고급 핑거프린트 연산
+full = ["ble", "nfc", "ai", "fingerprint"]  # 모든 기능
+```
+
+## 핵심 의존성
+```toml
+# 비동기: tokio 1.36 (full), async-trait 0.1
+# 직렬화: serde 1.0 (derive), serde_json 1.0, bincode 1.3
+# BLE: btleplug 0.11 (optional)
+# DSP: rustfft 6.2, dasp 0.11, ndarray 0.15 (optional)
+# 암호화: ring 0.17, aes-gcm 0.10, sha2 0.10
+# AI: tflitec 0.5 (optional), ort 2.0 (ONNX, workspace only)
+# 유틸: uuid 1.7 (v4,serde), chrono 0.4 (serde), parking_lot 0.12, bytes 1.5, crossbeam-channel 0.5
+# 에러: thiserror 1.0, anyhow 1.0
+# 로깅: tracing 0.1
+# 테스트: criterion 0.5, tokio-test 0.4
+```
+
+## 릴리스 프로파일
+```toml
+[profile.release]
+opt-level = 3, lto = true, codegen-units = 1, panic = "abort", strip = true
+```
+
+---
+
+## 모듈별 완전 API 레퍼런스
+
+### 1. lib.rs — 메인 라이브러리
+**상수:**
+- `VERSION: &str` — Cargo 패키지 버전
+- `MAX_CHANNELS: usize = 896`
+- `DEFAULT_ALPHA: f64 = 0.95`
+
+**핵심 타입:**
+```rust
+MeasurementPacket { header: PacketHeader, payload: PacketPayload, footer: PacketFooter }
+PacketHeader { device_id: String, lot_id: String, fw_ver: String, cartridge_id: String, session_id: uuid::Uuid, timestamp: DateTime<Utc> }
+PacketPayload { raw_channels: Vec<f64>, result: Option<MeasurementResult>, env_meta: EnvironmentMeta, state_meta: StateMeta }
+EnvironmentMeta { temp_c: f32, humidity_pct: f32, pressure_kpa: f32 }
+StateMeta { battery_pct: u8, signal_quality: SignalQuality, self_diagnostic: DiagnosticResult, uncertainty: f64 }
+PacketFooter { checksum: String, schema_ver: String, transform_log: Vec<TransformStep> }
+SignalQuality { High, Medium, Low, Poor }
+DiagnosticResult { Pass, Warning, Fail }
+TransformStep { step: String, hash: String }
+```
+
+**Re-exports:** `DifferentialEngine, MeasurementResult, CorrectionParams, FingerprintVector`
+
+### 2. differential — 차동측정 엔진
+**공식:** `S_corrected[i] = (S_det[i] - α × S_ref[i] - offset[i]) × gain[i]`
+
+```rust
+pub struct DifferentialEngine { params: CorrectionParams, num_channels: usize }
+pub struct CorrectionParams { alpha: f64, channel_offsets: Vec<f64>, channel_gains: Vec<f64>, temp_coefficient: f64 }
+pub struct MeasurementResult { primary_value: f64, unit: String, confidence: f64, differential_correction: DifferentialCorrection }
+pub struct DifferentialCorrection { s_det: f64, s_ref: f64, alpha: f64, s_corrected: f64 }
+pub enum DifferentialError { ChannelCountMismatch{expected,got}, InvalidMeasurement(String), CalibrationError(String) }
+
+// API
+DifferentialEngine::new(params, num_channels) → Self
+DifferentialEngine::with_defaults(num_channels) → Self  // α=0.95
+measure(&self, s_det: &[f64], s_ref: &[f64]) → Result<Vec<f64>>
+measure_single(&self, s_det: f64, s_ref: f64) → DifferentialCorrection
+update_params(&mut self, params)
+alpha(&self) → f64
+set_alpha(&mut self, alpha: f64)
+```
+
+### 3. fingerprint — 핑거프린트 벡터
+**차원 상수:** `DIM_88 = 88, DIM_448 = 448, DIM_896 = 896`
+
+```rust
+pub struct FingerprintVector { data: Vec<f32>, dimension: usize, measurement_type: MeasurementType, normalized: bool }
+pub enum MeasurementType { Basic(88), Enhanced(448), Full(896) }
+pub enum FingerprintError { DimensionMismatch{expected,got}, EmptyVector, NormalizationError(String) }
+
+// 생성 API
+FingerprintVector::new(data, measurement_type) → Result<Self>
+FingerprintVector::basic(data) → Result<Self>      // 88차원
+FingerprintVector::enhanced(data) → Result<Self>   // 448차원
+FingerprintVector::full(data) → Result<Self>       // 896차원
+
+// 연산 API
+normalize(&mut self) → Result<()>                  // L2 정규화
+cosine_similarity(&self, other) → Result<f32>
+euclidean_distance(&self, other) → Result<f32>
+to_milvus_vector(&self) → Vec<f32>                 // Milvus 저장용
+
+// 접근자
+data(&self) → &[f32]
+dimension(&self) → usize
+measurement_type(&self) → MeasurementType
+is_normalized(&self) → bool
+
+// 빌더 (88→448→896 확장)
+pub struct FingerprintBuilder { base_channels, e_nose_channels, e_tongue_channels }
+FingerprintBuilder::new(base_88ch)
+  .with_e_nose(channels)
+  .with_e_tongue(channels)
+  .build() → Result<FingerprintVector>
+```
+
+### 4. ai — 엣지 AI 추론
+```rust
+pub enum ModelType { Calibration(88→88), FingerprintClassifier(896→29), AnomalyDetection(88→1), ValuePredictor(88→1), QualityAssessment(88→3) }
+pub enum ModelFormat { TFLite, Onnx }
+pub struct InferenceResult { values: Vec<f32>, confidence: f32, inference_time_ms: f32, model_type: ModelType }
+pub enum InferenceError { ModelNotFound, LoadError, InputShapeMismatch{expected,got}, InferenceError, OutputError }
+
+pub struct InferenceEngine { model_type, input_size, output_size, model_loaded }
+InferenceEngine::new(model_type) → Self
+InferenceEngine::calibration() → Self              // 88→88
+InferenceEngine::classifier() → Self               // 896→29
+InferenceEngine::anomaly_detector() → Self          // 88→1
+load_model(&mut self, path) → Result<()>
+predict(&self, input: &[f32]) → Result<InferenceResult>
+predict_batch(&self, inputs) → Result<Vec<InferenceResult>>
+
+pub struct ModelManager { calibration, classifier, anomaly_detector }
+load_defaults(&mut self, models_dir) → Result<()>   // calibration.tflite, classifier.tflite, anomaly.tflite
+calibrate/classify/detect_anomaly(&self, input) → Result<InferenceResult>
+```
+
+### 5. ble — BLE 5.0 GATT 통신
+```rust
+pub enum ConnectionState { Disconnected, Connecting, Connected, Measuring, Error }
+pub struct DeviceInfo { device_id, name, rssi: i8, state, firmware_version, battery_level }
+pub enum BleCommand { StartMeasurement=0x01, StopMeasurement=0x02, GetStatus=0x03, StartCalibration=0x04, SetParameters=0x05, Reset=0xFF }
+pub struct MeasurementDataPacket { sequence: u16, channels: Vec<f32>, temperature: f32, humidity: f32, battery: u8, timestamp_ms: u64 }
+
+pub struct BleManager { connected_devices: Arc<RwLock<HashMap<String, DeviceInfo>>>, scan_cache }
+// 리더기 이름 필터: "MPK" 또는 "ManPaSik" 포함 시 인식
+scan() → Vec<DeviceInfo>                            // 5초 타임아웃
+scan_with_timeout(duration) → Vec<DeviceInfo>
+connect(&mut self, device_id) → Result<()>
+disconnect(&mut self, device_id) → Result<()>
+is_connected(&self, device_id) → bool
+connected_count(&self) → usize                     // 무제한 리더기 동시 연결
+connected_devices(&self) → Vec<DeviceInfo>
+start_measurement(&self, device_id) → Result<()>
+stop_measurement(&self, device_id) → Result<()>
+read_battery_level(&self, device_id) → Result<u8>
+read_firmware_version(&self, device_id) → Result<String>
+
+parse_measurement_packet(data: &[u8]) → Result<MeasurementDataPacket>  // 바이너리 파싱
+```
+
+**GATT UUID:**
+```rust
+service_uuids::MEASUREMENT_SERVICE    = "0000fff0-..."
+service_uuids::DEVICE_INFO_SERVICE    = "0000180a-..."
+service_uuids::BATTERY_SERVICE        = "0000180f-..."
+characteristic_uuids::MEASUREMENT_COMMAND = "0000fff1-..."  // Write
+characteristic_uuids::MEASUREMENT_DATA    = "0000fff2-..."  // Notify
+characteristic_uuids::MEASUREMENT_STATUS  = "0000fff3-..."  // Read/Notify
+characteristic_uuids::CALIBRATION_DATA    = "0000fff4-..."  // Read/Write
+characteristic_uuids::FIRMWARE_VERSION    = "00002a26-..."  // Read
+characteristic_uuids::BATTERY_LEVEL       = "00002a19-..."  // Read
+```
+
+### 6. nfc — NFC 카트리지 (29종)
+```rust
+pub struct CartridgeInfo { cartridge_id, cartridge_type: CartridgeType, lot_id, expiry_date, remaining_uses: u32, max_uses: u32, calibration_data: Vec<u8>, calibration_coefficients }
+pub struct CalibrationCoefficients { alpha: f64, offsets, gains, temp_coefficient, humidity_coefficient }
+pub enum CartridgeType { Glucose=0x01, LipidPanel=0x02, ..., NonTarget896=0x51, ..., Unknown=0x00 }  // 29종 + Unknown
+
+// CartridgeType 메서드
+name_ko(&self) → &str             // 한국어 이름
+required_channels(&self) → usize  // 8/88/448/896
+measurement_duration_secs(&self) → u32  // 15/30/45/60/90초
+from_code(code: u8) → Self
+to_code(&self) → u8
+
+pub struct NfcReader { last_cartridge: Option<CartridgeInfo> }
+read_cartridge(&mut self) → Result<CartridgeInfo>
+parse_tag_data(&self, data: &[u8]) → Result<CartridgeInfo>  // 64바이트+ NFC 태그 파싱
+decrement_usage(&mut self, cartridge_id) → Result<u32>
+validate_cartridge(&self, cartridge) → Result<()>  // 만료/사용횟수/타입 검증
+```
+
+### 7. crypto — 암호화 (스텁, 구현 필요)
+```rust
+pub struct CryptoEngine;
+encrypt_aes256(&self, plaintext, key) → Vec<u8>  // TODO
+decrypt_aes256(&self, ciphertext, key) → Vec<u8> // TODO
+hash_sha256(&self, data) → String                // ✅ 구현 완료 (sha2 크레이트)
+```
+
+### 8. dsp — 신호 처리 (스텁, 구현 필요)
+```rust
+pub enum FilterType { LowPass, HighPass, BandPass, Notch }
+pub struct DspProcessor;
+fft(&self, signal) → Vec<f64>        // TODO: rustfft 구현
+filter(&self, signal, filter_type) → Vec<f64>  // TODO
+```
+
+### 9. sync — CRDT 동기화 (스텁, 구현 필요)
+```rust
+pub enum SyncState { Synced, Pending, Conflicted, Error }
+pub struct SyncQueueItem { id, operation, data, timestamp, state }
+pub struct SyncManager { queue: Vec<SyncQueueItem> }
+enqueue(&mut self, item)
+pending_count(&self) → usize
+sync(&mut self) → Result<usize>  // TODO: CRDT 구현
+```
+
+### 10. flutter-bridge — Flutter FFI API
+```rust
+pub struct ManpasikEngine { differential, ble, nfc }
+ManpasikEngine::new(num_channels) → Self       // #[frb(sync)]
+ManpasikEngine::with_88_channels() → Self
+ManpasikEngine::with_896_channels() → Self
+
+// 차동측정 API
+differential_measure(s_det, s_ref, alpha) → Result<Vec<f64>>  // #[frb(sync)]
+differential_measure_single(s_det, s_ref, alpha) → DifferentialCorrectionDto
+
+// 핑거프린트 API
+create_fingerprint_88(data) → Result<FingerprintDto>    // #[frb(sync)]
+create_fingerprint_896(data) → Result<FingerprintDto>
+fingerprint_cosine_similarity(fp1, fp2, dimension) → Result<f32>
+
+// BLE API
+ble_scan() → Vec<DeviceInfoDto>           // #[frb] async
+ble_connect(device_id) → Result<bool>
+
+// NFC API
+nfc_read_cartridge() → Result<CartridgeInfoDto>  // #[frb] async
+
+// 유틸리티 API
+get_engine_version() → String             // #[frb(sync)]
+get_max_channels() → usize
+calculate_sha256(data) → String
+
+// DTO 타입 (모두 #[frb(dart_metadata=("freezed"))])
+DifferentialCorrectionDto { s_det, s_ref, alpha, s_corrected }
+FingerprintDto { data, dimension, measurement_type, normalized }
+DeviceInfoDto { device_id, name, rssi, state }
+CartridgeInfoDto { cartridge_id, cartridge_type, lot_id, expiry_date, remaining_uses }
+```
+
+---
+
+## 코딩 규칙
+
+### Rust 스타일 필수사항
+- `#![warn(clippy::all)]`, `#![warn(rust_2018_idioms)]`
+- Edition 2021, `no_std` 호환 유지 (가능한 경우)
+- `unsafe` 사용 시: `// SAFETY: [이유]` 주석 필수
+- panic 금지: 항상 `Result<T, E>` 반환
+- 에러 타입: `thiserror` 사용 (`#[error("한국어 메시지")]`)
+
+### 문서화
+- 모든 `pub` 항목: `///` doc comment 필수
+- 모듈 레벨: `//!` 문서 필수
+- 수학 공식: LaTeX 표기 포함
+- 예시: `# Examples` 섹션
+
+### 테스트
+- `#[cfg(test)] mod tests` 필수
+- `#[tokio::test]` 비동기 테스트
+- `criterion` 벤치마크 (핫 패스)
+- `proptest` 속성 기반 테스트 (수학 연산)
+
+### 성능
+- 힙 할당 최소화 (핫 패스)
+- SIMD 최적화 고려
+- `#[inline]` 적절히 사용
+- 벤치마크로 성능 회귀 감지
+
+### TODO 우선순위 (스텁 모듈)
+1. `crypto` — AES-256-GCM 암호화/복호화 (ring + aes-gcm)
+2. `dsp` — FFT, 필터링 (rustfft 6.2)
+3. `sync` — CRDT 오프라인 동기화

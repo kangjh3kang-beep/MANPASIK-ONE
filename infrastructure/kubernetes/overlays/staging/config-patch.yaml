@@ -1,0 +1,30 @@
+# Staging environment: config overrides
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: manpasik-config
+data:
+  ENVIRONMENT: "staging"
+  LOG_LEVEL: "info"
+  DB_SSLMODE: "require"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: manpasik-ingress
+spec:
+  tls:
+    - hosts:
+        - api.staging.manpasik.com
+      secretName: manpasik-staging-tls
+  rules:
+    - host: api.staging.manpasik.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway
+                port:
+                  number: 8080

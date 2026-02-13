@@ -1,0 +1,38 @@
+# Production environment: config overrides
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: manpasik-config
+data:
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "warn"
+  DB_SSLMODE: "require"
+  OFFLINE_MODE_ENABLED: "true"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: manpasik-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+    - hosts:
+        - api.manpasik.com
+      secretName: manpasik-prod-tls
+  rules:
+    - host: api.manpasik.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: gateway
+                port:
+                  number: 8080

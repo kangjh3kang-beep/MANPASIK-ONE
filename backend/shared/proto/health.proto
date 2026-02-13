@@ -1,0 +1,174 @@
+syntax = "proto3";
+
+package manpasik.health.v1;
+
+option go_package = "github.com/manpasik/backend/shared/proto/health/v1";
+
+// ============================================================================
+// 헬스체크 서비스 (gRPC Health Checking Protocol - 표준 준수)
+// https://github.com/grpc/grpc/blob/master/doc/health-checking.md
+// ============================================================================
+
+service Health {
+  // 서비스 상태 확인 (단발성)
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+  
+  // 서비스 상태 감시 (스트리밍)
+  rpc Watch(HealthCheckRequest) returns (stream HealthCheckResponse);
+}
+
+message HealthCheckRequest {
+  // 확인할 서비스 이름 (빈 문자열 = 서버 전체 상태)
+  string service = 1;
+}
+
+message HealthCheckResponse {
+  ServingStatus status = 1;
+}
+
+enum ServingStatus {
+  SERVING_STATUS_UNKNOWN = 0;
+  SERVING_STATUS_SERVING = 1;
+  SERVING_STATUS_NOT_SERVING = 2;
+  SERVING_STATUS_SERVICE_UNKNOWN = 3;  // Watch에서만 사용
+}
+
+// ============================================================================
+// 확장 헬스체크 서비스 (ManPaSik 전용)
+// ============================================================================
+
+service ExtendedHealth {
+  // 상세 상태 확인
+  rpc GetStatus(GetStatusRequest) returns (GetStatusResponse);
+  
+  // 의존성 상태 확인
+  rpc CheckDependencies(CheckDependenciesRequest) returns (CheckDependenciesResponse);
+  
+  // 서비스 준비 상태 확인 (Kubernetes readiness probe)
+  rpc Ready(ReadyRequest) returns (ReadyResponse);
+  
+  // 서비스 생존 상태 확인 (Kubernetes liveness probe)
+  rpc Live(LiveRequest) returns (LiveResponse);
+}
+
+// ----------------------------------------------------------------------------
+// 상세 상태
+// ----------------------------------------------------------------------------
+
+message GetStatusRequest {
+  // 포함할 상세 정보
+  bool include_metadata = 1;
+  bool include_dependencies = 2;
+  bool include_metrics = 3;
+}
+
+message GetStatusResponse {
+  // 서비스 정보
+  ServiceInfo service_info = 1;
+  // 상태
+  ServingStatus status = 2;
+  // 메타데이터
+  map<string, string> metadata = 3;
+  // 의존성 상태
+  repeated DependencyStatus dependencies = 4;
+  // 메트릭
+  ServiceMetrics metrics = 5;
+}
+
+message ServiceInfo {
+  // 서비스 이름
+  string name = 1;
+  // 버전
+  string version = 2;
+  // 빌드 시간
+  string build_time = 3;
+  // 빌드 커밋
+  string build_commit = 4;
+  // Go 버전
+  string go_version = 5;
+  // 시작 시간
+  string started_at = 6;
+  // 가동 시간 (초)
+  int64 uptime_seconds = 7;
+}
+
+message DependencyStatus {
+  // 의존성 이름 (예: "postgres", "redis", "kafka")
+  string name = 1;
+  // 의존성 타입
+  DependencyType type = 2;
+  // 상태
+  DependencyHealth health = 3;
+  // 응답 시간 (밀리초)
+  float latency_ms = 4;
+  // 상세 메시지
+  string message = 5;
+}
+
+enum DependencyType {
+  DEPENDENCY_TYPE_UNKNOWN = 0;
+  DEPENDENCY_TYPE_DATABASE = 1;
+  DEPENDENCY_TYPE_CACHE = 2;
+  DEPENDENCY_TYPE_MESSAGE_QUEUE = 3;
+  DEPENDENCY_TYPE_EXTERNAL_SERVICE = 4;
+  DEPENDENCY_TYPE_STORAGE = 5;
+  DEPENDENCY_TYPE_SEARCH = 6;
+}
+
+enum DependencyHealth {
+  DEPENDENCY_HEALTH_UNKNOWN = 0;
+  DEPENDENCY_HEALTH_HEALTHY = 1;
+  DEPENDENCY_HEALTH_DEGRADED = 2;
+  DEPENDENCY_HEALTH_UNHEALTHY = 3;
+}
+
+message ServiceMetrics {
+  // 활성 연결 수
+  int32 active_connections = 1;
+  // 처리 중인 요청 수
+  int32 pending_requests = 2;
+  // 에러율 (%)
+  float error_rate = 3;
+  // 평균 응답 시간 (밀리초)
+  float avg_response_time_ms = 4;
+  // 메모리 사용량 (바이트)
+  int64 memory_bytes = 5;
+  // CPU 사용률 (%)
+  float cpu_usage = 6;
+  // 고루틴 수
+  int32 goroutines = 7;
+}
+
+// ----------------------------------------------------------------------------
+// 의존성 확인
+// ----------------------------------------------------------------------------
+
+message CheckDependenciesRequest {
+  // 확인할 의존성 목록 (빈 경우 전체 확인)
+  repeated string dependency_names = 1;
+}
+
+message CheckDependenciesResponse {
+  // 전체 상태
+  bool all_healthy = 1;
+  // 개별 의존성 상태
+  repeated DependencyStatus dependencies = 2;
+}
+
+// ----------------------------------------------------------------------------
+// Kubernetes Probes
+// ----------------------------------------------------------------------------
+
+message ReadyRequest {}
+
+message ReadyResponse {
+  bool ready = 1;
+  string message = 2;
+}
+
+message LiveRequest {}
+
+message LiveResponse {
+  bool alive = 1;
+  string message = 2;
+}

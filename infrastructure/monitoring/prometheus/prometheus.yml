@@ -1,0 +1,145 @@
+# ManPaSik Prometheus 스크래핑 설정
+# docker-compose.dev.yml 기준 gRPC 서비스 메트릭 수집
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus 자체 모니터링
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # gRPC 마이크로서비스 (메트릭 포트 :9100)
+  - job_name: grpc-auth-service
+    static_configs:
+      - targets: ["auth-service:9100"]
+        labels:
+          service: auth-service
+
+  - job_name: grpc-user-service
+    static_configs:
+      - targets: ["user-service:9100"]
+        labels:
+          service: user-service
+
+  - job_name: grpc-device-service
+    static_configs:
+      - targets: ["device-service:9100"]
+        labels:
+          service: device-service
+
+  - job_name: grpc-measurement-service
+    static_configs:
+      - targets: ["measurement-service:9100"]
+        labels:
+          service: measurement-service
+
+  - job_name: grpc-subscription-service
+    static_configs:
+      - targets: ["subscription-service:9100"]
+        labels:
+          service: subscription-service
+
+  - job_name: grpc-shop-service
+    static_configs:
+      - targets: ["shop-service:9100"]
+        labels:
+          service: shop-service
+
+  - job_name: grpc-payment-service
+    static_configs:
+      - targets: ["payment-service:9100"]
+        labels:
+          service: payment-service
+
+  - job_name: grpc-ai-inference-service
+    static_configs:
+      - targets: ["ai-inference-service:9100"]
+        labels:
+          service: ai-inference-service
+
+  - job_name: grpc-cartridge-service
+    static_configs:
+      - targets: ["cartridge-service:9100"]
+        labels:
+          service: cartridge-service
+
+  - job_name: grpc-calibration-service
+    static_configs:
+      - targets: ["calibration-service:9100"]
+        labels:
+          service: calibration-service
+
+  - job_name: grpc-coaching-service
+    static_configs:
+      - targets: ["coaching-service:9100"]
+        labels:
+          service: coaching-service
+
+  - job_name: grpc-family-service
+    static_configs:
+      - targets: ["family-service:9100"]
+        labels:
+          service: family-service
+
+  - job_name: grpc-health-record-service
+    static_configs:
+      - targets: ["health-record-service:9100"]
+        labels:
+          service: health-record-service
+
+  - job_name: grpc-community-service
+    static_configs:
+      - targets: ["community-service:9100"]
+        labels:
+          service: community-service
+
+  - job_name: grpc-reservation-service
+    static_configs:
+      - targets: ["reservation-service:9100"]
+        labels:
+          service: reservation-service
+
+  - job_name: grpc-admin-service
+    static_configs:
+      - targets: ["admin-service:9100"]
+        labels:
+          service: admin-service
+
+  - job_name: grpc-notification-service
+    static_configs:
+      - targets: ["notification-service:9100"]
+        labels:
+          service: notification-service
+
+  - job_name: grpc-prescription-service
+    static_configs:
+      - targets: ["prescription-service:9100"]
+        labels:
+          service: prescription-service
+
+  - job_name: grpc-video-service
+    static_configs:
+      - targets: ["video-service:9100"]
+        labels:
+          service: video-service
+
+  - job_name: grpc-telemedicine-service
+    static_configs:
+      - targets: ["telemedicine-service:9100"]
+        labels:
+          service: telemedicine-service
+
+  - job_name: grpc-vision-service
+    static_configs:
+      - targets: ["vision-service:9100"]
+        labels:
+          service: vision-service
+
+  - job_name: grpc-translation-service
+    static_configs:
+      - targets: ["translation-service:9100"]
+        labels:
+          service: translation-service

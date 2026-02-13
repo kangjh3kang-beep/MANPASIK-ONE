@@ -1,0 +1,383 @@
+---
+description: Flutter 및 프론트엔드 에이전트 - Flutter UI/UX, Riverpod 상태관리, Rust FFI, Next.js 웹, 디자인 시스템, 다국어 완전 컨텍스트
+globs: ["frontend/**/*.dart", "frontend/**/*.tsx", "frontend/**/*.ts", "frontend/**/pubspec.yaml", "frontend/**/package.json", "frontend/**/*.arb"]
+---
+
+# Frontend Agent 완전 컨텍스트
+
+## 현재 상태
+- Flutter 앱: **S4 완료** (7화면, 3Provider, 6언어, 31테스트 PASS)
+- Next.js 웹: **아직 없음**
+- 스펙 문서: `docs/ai-specs/chatgpt/flutter-ui-spec.md` ✅
+
+---
+
+## 1. Flutter 앱 기술 스택 (확정)
+
+| 항목 | 기술 | 버전 |
+|------|------|------|
+| 프레임워크 | Flutter | 3.x (SDK >=3.2.0 <4.0.0) |
+| 언어 | Dart | 3.2+ |
+| 상태관리 | Riverpod + code generation | 2.4.9+ |
+| 라우팅 | go_router | 13.0.0+ |
+| 네트워크 | dio | 5.4.0+ |
+| 로컬 DB | sqflite + Hive | 2.3+, 1.1+ |
+| Rust FFI | flutter_rust_bridge | 2.0 |
+| BLE | flutter_blue_plus | 1.31+ (→ Rust FFI 대체 예정) |
+| 직렬화 | freezed + json_serializable | 2.4+, 6.7+ |
+| 국제화 | intl + ARB files | 0.19+ |
+| 이미지 | flutter_svg + cached_network_image | 2.0+, 3.3+ |
+| UI 효과 | shimmer | 3.0+ |
+
+---
+
+## 2. 디렉토리 구조 (Feature-First, 필수 패턴)
+
+```
+frontend/flutter/
+├── pubspec.yaml
+├── lib/
+│   ├── main.dart                    # 앱 진입점 (ProviderScope → ManpasikApp)
+│   ├── core/
+│   │   ├── router/
+│   │   │   └── app_router.dart      # go_router 설정 (appRouterProvider)
+│   │   ├── theme/
+│   │   │   └── app_theme.dart       # Material3 테마 (light + dark)
+│   │   ├── constants/               # 상수 (API URL, 타임아웃 등)
+│   │   ├── utils/                   # 유틸리티 (날짜, 숫자 포맷 등)
+│   │   └── services/                # 공통 서비스 (로깅, 분석 등)
+│   ├── features/
+│   │   ├── auth/                    # 인증 (로그인, 회원가입)
+│   │   │   ├── data/               # AuthRepository 구현, AuthDto
+│   │   │   ├── domain/             # AuthEntity, AuthRepository 인터페이스
+│   │   │   └── presentation/       # LoginScreen, RegisterScreen, AuthProvider
+│   │   ├── home/                    # 홈 대시보드
+│   │   ├── measurement/             # ★ 핵심: 측정 기능
+│   │   │   ├── data/               # MeasurementRepository, gRPC 클라이언트
+│   │   │   ├── domain/             # MeasurementEntity, SessionEntity
+│   │   │   └── presentation/       # MeasurementScreen, ResultScreen, Provider
+│   │   ├── data_hub/               # 데이터 허브 (기록 조회/분석)
+│   │   ├── ai_coach/               # AI 코치 (건강 조언)
+│   │   ├── market/                  # 카트리지/구독 마켓
+│   │   ├── community/              # 커뮤니티
+│   │   ├── devices/                 # ★ 핵심: 디바이스 관리
+│   │   │   ├── data/               # DeviceRepository, BLE 연동
+│   │   │   ├── domain/             # DeviceEntity
+│   │   │   └── presentation/       # DeviceListScreen, PairingScreen
+│   │   └── settings/               # 설정 (프로필, 알림, 언어)
+│   ├── shared/
+│   │   ├── widgets/                 # 공용 위젯 (ManpasikButton, LoadingOverlay 등)
+│   │   ├── models/                  # 공용 모델
+│   │   └── providers/               # 공용 Provider (AuthState, ThemeMode 등)
+│   └── l10n/
+│       ├── app_ko.arb              # 한국어 (기본)
+│       ├── app_en.arb              # 영어
+│       ├── app_ja.arb              # 일본어
+│       └── app_zh.arb              # 중국어
+├── test/                            # 유닛/위젯 테스트
+├── integration_test/                # 통합 테스트
+└── assets/
+    ├── images/
+    ├── icons/
+    └── fonts/
+```
+
+---
+
+## 3. 화면 라우트 맵
+
+| 화면 | 경로 | 우선순위 | 인증 필요 | 핵심 기능 |
+|------|------|----------|----------|-----------|
+| 스플래시 | `/splash` | P0 | ❌ | 앱 초기화, Rust FFI 로드 |
+| 로그인 | `/login` | P0 | ❌ | Keycloak OIDC |
+| 회원가입 | `/register` | P0 | ❌ | 이메일/소셜 가입 |
+| 홈 대시보드 | `/home` | P0 | ✅ | 최근 측정, 건강 요약, 알림 |
+| 측정 | `/measure` | P0 | ✅ | BLE 연결 → 차동측정 → 결과 |
+| 측정 결과 | `/measure/result` | P0 | ✅ | 수치, 그래프, AI 분석 |
+| 데이터 허브 | `/data-hub` | P1 | ✅ | 기록 조회, 트렌드 차트 |
+| AI 코치 | `/coach` | P1 | ✅ | 건강 조언, 식단/운동 |
+| 마켓 | `/market` | P2 | ✅ | 카트리지/구독 구매 |
+| 커뮤니티 | `/community` | P2 | ✅ | 게시판, 공유 |
+| 설정 | `/settings` | P1 | ✅ | 프로필, 알림, 언어, 테마 |
+| 디바이스 관리 | `/devices` | P0 | ✅ | 리더기 목록, 페어링, OTA |
+
+---
+
+## 4. 디자인 시스템
+
+### 4.1 브랜드 색상 팔레트
+```dart
+// Primary: 만파식 블루그린 (치유, 생명, 자연)
+static const primary = Color(0xFF00897B);        // Teal 600
+static const primaryLight = Color(0xFF4EBAAA);   // 밝은 변형
+static const primaryDark = Color(0xFF005B4F);    // 어두운 변형
+
+// Secondary: 골드 (프리미엄, 신뢰, 따뜻함)
+static const secondary = Color(0xFFFFB300);      // Amber 600
+
+// Background
+static const backgroundLight = Color(0xFFF5F7FA);
+static const backgroundDark = Color(0xFF121212);
+
+// Surface (카드, 바텀시트 등)
+static const surfaceLight = Colors.white;
+static const surfaceDark = Color(0xFF1E1E1E);
+
+// 상태 색상 (측정 결과 범위 표시)
+static const success = Color(0xFF4CAF50);        // 정상 범위
+static const warning = Color(0xFFFF9800);        // 주의 필요
+static const error = Color(0xFFE53935);          // 위험/이상
+static const info = Color(0xFF2196F3);           // 정보/안내
+```
+
+### 4.2 타이포그래피
+```dart
+// 한국어 기본: Pretendard 또는 Noto Sans KR
+// 숫자/데이터: Roboto Mono (고정폭)
+// 의료 데이터: 큰 글꼴(20sp+), 높은 대비, 볼드
+```
+
+### 4.3 UI 원칙
+- Material Design 3 (Material You) 기반
+- 다크 모드 지원 (ThemeMode.system 기본)
+- 접근성(Accessibility): 최소 AA 대비, TalkBack/VoiceOver
+- 반응형: 폰/태블릿/데스크톱 대응
+- 의료 데이터: 큰 글꼴, 높은 대비, 색맹 고려 (패턴 + 색상)
+- 로딩: Shimmer 효과 (스켈레톤 UI)
+- 에러: 사용자 친화적 메시지 (스택트레이스 노출 금지)
+
+---
+
+## 5. Rust FFI 브리지 (flutter_rust_bridge 2.0)
+
+### 5.1 사용 가능한 Rust API (DTO 기반)
+```dart
+// 차동측정 (동기)
+List<double> differentialMeasure(List<double> sDet, List<double> sRef, double alpha);
+DifferentialCorrectionDto differentialMeasureSingle(double sDet, double sRef, double alpha);
+
+// 핑거프린트 (동기)
+FingerprintDto createFingerprint88(List<double> data);
+FingerprintDto createFingerprint896(List<double> data);
+double fingerprintCosineSimilarity(List<double> fp1, List<double> fp2, int dimension);
+
+// BLE (비동기)
+Future<List<DeviceInfoDto>> bleScan();
+Future<bool> bleConnect(String deviceId);
+
+// NFC (비동기)
+Future<CartridgeInfoDto> nfcReadCartridge();
+
+// 유틸리티 (동기)
+String getEngineVersion();
+int getMaxChannels();    // 896
+String calculateSha256(List<int> data);
+```
+
+### 5.2 DTO 타입 (freezed 생성)
+```dart
+@freezed class DifferentialCorrectionDto { double sDet, sRef, alpha, sCorrected }
+@freezed class FingerprintDto { List<double> data, int dimension, String measurementType, bool normalized }
+@freezed class DeviceInfoDto { String deviceId, name, state; int rssi }
+@freezed class CartridgeInfoDto { String cartridgeId, cartridgeType, lotId, expiryDate; int remainingUses }
+```
+
+---
+
+## 6. 상태관리 (Riverpod 2.x)
+
+### 6.1 Provider 분류 패턴
+```dart
+// 단순 상태 (읽기 전용)
+@riverpod String engineVersion(Ref ref) => getEngineVersion();
+
+// 비동기 데이터
+@riverpod Future<List<DeviceInfoDto>> scannedDevices(Ref ref) => bleScan();
+
+// 복잡한 상태 (변경 가능)
+@riverpod
+class MeasurementSession extends _$MeasurementSession {
+  @override
+  MeasurementState build() => MeasurementState.idle;
+  
+  Future<void> startSession(String deviceId, String cartridgeId) async { ... }
+  void stopSession() { ... }
+}
+
+// 스트림 (실시간 데이터)
+@riverpod
+Stream<MeasurementResult> measurementStream(Ref ref, String sessionId) { ... }
+```
+
+### 6.2 전역 Provider
+```dart
+appRouterProvider       // go_router 인스턴스
+authStateProvider       // 인증 상태 (로그인/로그아웃)
+currentUserProvider     // 현재 사용자 정보
+themeProvider           // 테마 모드
+localeProvider          // 현재 로케일
+```
+
+---
+
+## 7. 네트워크 (Dio + gRPC)
+
+### 7.1 Dio 설정
+```dart
+final dio = Dio(BaseOptions(
+  baseUrl: 'http://localhost:8000',  // Kong API Gateway
+  connectTimeout: Duration(seconds: 10),
+  receiveTimeout: Duration(seconds: 30),
+));
+
+// 인터셉터 체인:
+// 1. AuthInterceptor: JWT 토큰 자동 첨부 + Refresh Token 로직
+// 2. LoggingInterceptor: 요청/응답 로깅 (PII 마스킹)
+// 3. ErrorInterceptor: 표준 에러 처리
+// 4. RetryInterceptor: 지수 백오프 재시도 (네트워크 에러)
+```
+
+### 7.2 오프라인 우선 전략
+```
+1. 로컬 DB에서 데이터 로드 (즉시 UI 표시)
+2. 네트워크 요청 시도
+3. 성공 → 로컬 DB 업데이트
+4. 실패 → CRDT 동기화 큐에 추가 (Rust sync 모듈)
+5. 연결 복구 시 자동 동기화
+```
+
+---
+
+## 8. 핵심 측정 플로우 (엔드투엔드)
+
+```
+[디바이스 관리 화면]
+  ↓ BLE 스캔 (Rust: ble_scan)
+  ↓ 디바이스 선택 & 연결 (Rust: ble_connect)
+
+[측정 화면]
+  ↓ NFC 카트리지 태핑 (Rust: nfc_read_cartridge)
+  ↓ 카트리지 유효성 검증 (만료/사용횟수/타입)
+  ↓ 측정 시작 (Rust: start_measurement via BLE)
+  ↓ 실시간 데이터 수신 (BLE Notify → 패킷 파싱)
+  ↓ 차동측정 (Rust: differential_measure)
+  ↓ 핑거프린트 생성 (Rust: create_fingerprint_88/896)
+  ↓ 엣지 AI 추론 (Rust: InferenceEngine)
+  ↓ 로컬 저장 (오프라인)
+  ↓ 서버 동기화 (gRPC: StreamMeasurement)
+
+[결과 화면]
+  ↓ 측정값 표시 (수치 + 정상 범위 비교)
+  ↓ 트렌드 차트
+  ↓ AI 코칭 메시지
+```
+
+---
+
+## 9. 보안 요구사항
+
+### 클라이언트 보안
+- **토큰 저장**: Flutter Secure Storage (iOS Keychain / Android Keystore)
+- **화면 캡처 방지**: 의료 데이터 표시 화면에서 FLAG_SECURE
+- **SSL Pinning**: 프로덕션 환경 적용
+- **코드 난독화**: ProGuard (Android) + Bitcode (iOS)
+- **디버그 감지**: 디버거 연결 시 민감 기능 비활성화
+- **바이오메트릭**: 앱 잠금 (지문/Face ID)
+
+### 데이터 보호
+- PHI 데이터: 로컬 암호화 (AES-256, Rust crypto 모듈)
+- 로그: PII/PHI 마스킹
+- 캐시: 민감 데이터 캐시 TTL 제한
+
+---
+
+## 10. 테스트 전략
+
+| 유형 | 프레임워크 | 대상 | 커버리지 목표 |
+|------|-----------|------|-------------|
+| 유닛 | flutter_test | Provider, Service, Repository | 80%+ |
+| 위젯 | flutter_test | Screen, Widget | 70%+ |
+| 통합 | integration_test | 전체 플로우 | 핵심 시나리오 |
+| 골든 | flutter_test | UI 스냅샷 | 주요 화면 |
+| Mock | mocktail | Rust FFI, Network | - |
+
+---
+
+## 11. 다국어 (i18n)
+
+### ARB 파일 형식
+```json
+// l10n/app_ko.arb (기본)
+{
+  "@@locale": "ko",
+  "appTitle": "만파식",
+  "measureButton": "측정 시작",
+  "glucoseLabel": "혈당",
+  "normalRange": "정상 범위: {min}~{max} {unit}",
+  "@normalRange": { "placeholders": { "min": {}, "max": {}, "unit": {} } }
+}
+```
+
+### 지원 로케일 (6개 언어 + 확장 구조)
+```dart
+// lib/shared/providers/locale_provider.dart의 SupportedLocales.all
+supportedLocales: [
+  Locale('ko'),  // 한국어 (기본)
+  Locale('en'),  // 영어
+  Locale('ja'),  // 일본어
+  Locale('zh'),  // 중국어 간체
+  Locale('fr'),  // 프랑스어
+  Locale('hi'),  // 힌디어
+]
+// 추후 확장: ar(아랍어), es(스페인어), de(독일어), pt(포르투갈어), th(태국어)
+```
+
+### i18n 구현 방식 (중요 — flutter_gen 사용 금지)
+```
+⚠️ flutter_gen/gen-l10n 코드 생성은 환경 불안정으로 사용하지 않음.
+수동 AppLocalizations 구현 사용:
+
+lib/l10n/
+├── app_localizations.dart        # AppLocalizations 클래스 + delegate
+└── translations/
+    ├── ko.dart                   # Map<String, String> koTranslations
+    ├── en.dart                   # Map<String, String> enTranslations
+    ├── ja.dart                   # jaTranslations
+    ├── zh.dart                   # zhTranslations
+    ├── fr.dart                   # frTranslations
+    └── hi.dart                   # hiTranslations
+
+새 언어 추가 방법:
+1. lib/l10n/translations/{code}.dart 생성 (기존 파일 복사 후 번역)
+2. app_localizations.dart에 import 추가 + switch case 추가
+3. SupportedLocales.all에 Locale 추가
+4. SupportedLocales.languageNames에 이름 추가
+```
+
+### Flutter 코드 작성 필수 규칙 (에러 방지)
+```
+1. Color API: withOpacity() 금지 → withValues(alpha: 0.3) 사용
+2. intl 버전: flutter_localizations 핀 버전과 반드시 일치 (현재 ^0.20.2)
+3. StateNotifier 테스트: debugState 금지 → state 직접 접근
+4. RadioListTile: groupValue/onChanged deprecated → ListTile + 체크아이콘
+5. const 적극 활용: 위젯/리터럴에 가능하면 항상 const
+6. flutter_gen import 금지: package:flutter_gen/* 사용하지 않음
+7. gen-l10n 전환 시: 잔여 app_localizations_*.dart 삭제 필수
+```
+
+---
+
+## 12. Next.js 웹 (보조, Phase 2)
+
+### 기술 스택
+- Next.js 14+ (App Router)
+- TypeScript (strict mode)
+- Tailwind CSS
+- shadcn/ui 컴포넌트
+- PWA 지원 (오프라인 의료진 대시보드)
+
+### 용도
+- 의료진/관리자 대시보드
+- 데이터 분석 포털 (차트/그래프)
+- 원격진료 연동 (Clinical Guard 티어)
+- 디바이스 관리 포털

@@ -1,0 +1,4 @@
+DROP TABLE IF EXISTS notification_preferences CASCADE;
+DROP TABLE IF EXISTS measurement_sessions CASCADE;
+DROP TABLE IF EXISTS devices CASCADE;
+DROP TABLE IF EXISTS users CASCADE;

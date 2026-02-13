@@ -1,0 +1,943 @@
+# ManPaSik AI Ecosystem - Development Environment
+# (version 필드는 Docker Compose V2에서 사용되지 않음, 제거함)
+# 만파식(萬波息) AI 생태계 개발 환경
+
+services:
+  # =============================================================================
+  # 데이터베이스
+  # =============================================================================
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: manpasik-postgres
+    environment:
+      POSTGRES_USER: manpasik
+      POSTGRES_PASSWORD: manpasik_dev_2026
+      POSTGRES_DB: manpasik
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../database/init/01-auth.sql:/docker-entrypoint-initdb.d/01-auth.sql
+      - ../database/init/02-user.sql:/docker-entrypoint-initdb.d/02-user.sql
+      - ../database/init/02-device.sql:/docker-entrypoint-initdb.d/02-device.sql
+      - ../database/init/03-device.sql:/docker-entrypoint-initdb.d/03-device.sql
+      - ../database/init/04-measurement.sql:/docker-entrypoint-initdb.d/04-measurement.sql
+      - ../database/init/05-subscription.sql:/docker-entrypoint-initdb.d/05-subscription.sql
+      - ../database/init/06-shop.sql:/docker-entrypoint-initdb.d/06-shop.sql
+      - ../database/init/07-payment.sql:/docker-entrypoint-initdb.d/07-payment.sql
+      - ../database/init/08-ai-inference.sql:/docker-entrypoint-initdb.d/08-ai-inference.sql
+      - ../database/init/09-cartridge.sql:/docker-entrypoint-initdb.d/09-cartridge.sql
+      - ../database/init/10-calibration.sql:/docker-entrypoint-initdb.d/10-calibration.sql
+      - ../database/init/11-coaching.sql:/docker-entrypoint-initdb.d/11-coaching.sql
+      - ../database/init/12-notification.sql:/docker-entrypoint-initdb.d/12-notification.sql
+      - ../database/init/13-family.sql:/docker-entrypoint-initdb.d/13-family.sql
+      - ../database/init/13a-family-sharing-extended.sql:/docker-entrypoint-initdb.d/13a-family-sharing-extended.sql
+      - ../database/init/14-health-record.sql:/docker-entrypoint-initdb.d/14-health-record.sql
+      - ../database/init/15-telemedicine.sql:/docker-entrypoint-initdb.d/15-telemedicine.sql
+      - ../database/init/16-reservation.sql:/docker-entrypoint-initdb.d/16-reservation.sql
+      - ../database/init/17-community.sql:/docker-entrypoint-initdb.d/17-community.sql
+      - ../database/init/18-admin.sql:/docker-entrypoint-initdb.d/18-admin.sql
+      - ../database/init/19-prescription.sql:/docker-entrypoint-initdb.d/19-prescription.sql
+      - ../database/init/20-translation.sql:/docker-entrypoint-initdb.d/20-translation.sql
+      - ../database/init/21-video.sql:/docker-entrypoint-initdb.d/21-video.sql
+      - ../database/init/22-regions-facilities-doctors.sql:/docker-entrypoint-initdb.d/22-regions-facilities-doctors.sql
+      - ../database/init/23-data-sharing-consents.sql:/docker-entrypoint-initdb.d/23-data-sharing-consents.sql
+      - ../database/init/24-prescription-fulfillment.sql:/docker-entrypoint-initdb.d/24-prescription-fulfillment.sql
+      - ../database/init/25-admin-settings-ext.sql:/docker-entrypoint-initdb.d/25-admin-settings-ext.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U manpasik" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - manpasik-network
+
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: manpasik-timescale
+    environment:
+      POSTGRES_USER: manpasik
+      POSTGRES_PASSWORD: manpasik_dev_2026
+      POSTGRES_DB: manpasik_ts
+    ports:
+      - "5433:5432"
+    volumes:
+      - timescale_data:/var/lib/postgresql/data
+      - ../database/init/03-measurement.sql:/docker-entrypoint-initdb.d/03-measurement.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U manpasik" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - manpasik-network
+
+  # =============================================================================
+  # 캐시 및 메시지 브로커
+  # =============================================================================
+
+  redis:
+    image: redis:7-alpine
+    container_name: manpasik-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - manpasik-network
+
+  # Kafka (Redpanda - Kafka API 호환, 경량)
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.1
+    container_name: manpasik-redpanda
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --pandaproxy-addr internal://0.0.0.0:8082,external://0.0.0.0:18082
+      - --advertise-pandaproxy-addr internal://redpanda:8082,external://localhost:18082
+      - --schema-registry-addr internal://0.0.0.0:8081,external://0.0.0.0:18081
+      - --rpc-addr redpanda:33145
+      - --advertise-rpc-addr redpanda:33145
+      - --smp 1
+      - --memory 1G
+      - --mode dev-container
+      - --default-log-level=warn
+    ports:
+      - "18081:18081"
+      - "18082:18082"
+      - "19092:19092"
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
+    networks:
+      - manpasik-network
+
+  # =============================================================================
+  # 벡터 데이터베이스 (896차원 핑거프린트)
+  # =============================================================================
+
+  milvus-etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    container_name: manpasik-milvus-etcd
+    environment:
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+    volumes:
+      - milvus_etcd:/etcd
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    networks:
+      - manpasik-network
+
+  milvus-minio:
+    image: minio/minio:latest
+    container_name: manpasik-milvus-minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    volumes:
+      - milvus_minio:/minio_data
+    command: minio server /minio_data --console-address ":9001"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - manpasik-network
+
+  milvus:
+    image: milvusdb/milvus:v2.4.10
+    container_name: manpasik-milvus
+    command: [ "milvus", "run", "standalone" ]
+    environment:
+      ETCD_ENDPOINTS: milvus-etcd:2379
+      MINIO_ADDRESS: milvus-minio:9000
+    volumes:
+      - milvus_data:/var/lib/milvus
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    depends_on:
+      - milvus-etcd
+      - milvus-minio
+    networks:
+      - manpasik-network
+
+  # =============================================================================
+  # 검색 엔진
+  # =============================================================================
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
+    container_name: manpasik-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    networks:
+      - manpasik-network
+
+  # =============================================================================
+  # Go gRPC 마이크로서비스 (ManPaSik 백엔드)
+  # =============================================================================
+
+  auth-service:
+    build:
+      context: ../../backend
+      dockerfile: services/auth-service/Dockerfile
+    image: manpasik/auth-service:dev
+    container_name: manpasik-auth-service
+    environment:
+      GRPC_PORT: ":50051"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+      JWT_SECRET: dev-secret-change-in-production
+    ports:
+      - "50051:50051"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+
+  user-service:
+    build:
+      context: ../../backend
+      dockerfile: services/user-service/Dockerfile
+    image: manpasik/user-service:dev
+    container_name: manpasik-user-service
+    environment:
+      GRPC_PORT: ":50052"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50052:50052"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+
+  device-service:
+    build:
+      context: ../../backend
+      dockerfile: services/device-service/Dockerfile
+    image: manpasik/device-service:dev
+    container_name: manpasik-device-service
+    environment:
+      GRPC_PORT: ":50053"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: "redpanda:9092"
+    ports:
+      - "50053:50053"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+
+  measurement-service:
+    build:
+      context: ../../backend
+      dockerfile: services/measurement-service/Dockerfile
+    image: manpasik/measurement-service:dev
+    container_name: manpasik-measurement-service
+    environment:
+      GRPC_PORT: ":50054"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: "redpanda:9092"
+      ELASTICSEARCH_URL: "http://elasticsearch:9200"
+      MILVUS_ADDR: "milvus:19530"
+    ports:
+      - "50054:50054"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+
+  # --- Phase 2 서비스 ---
+
+  subscription-service:
+    build:
+      context: ../../backend
+      dockerfile: services/subscription-service/Dockerfile
+    image: manpasik/subscription-service:dev
+    container_name: manpasik-subscription-service
+    environment:
+      GRPC_PORT: ":50055"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: "redpanda:9092"
+    ports:
+      - "50055:50055"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+
+  shop-service:
+    build:
+      context: ../../backend
+      dockerfile: services/shop-service/Dockerfile
+    image: manpasik/shop-service:dev
+    container_name: manpasik-shop-service
+    environment:
+      GRPC_PORT: ":50056"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50056:50056"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+
+  payment-service:
+    build:
+      context: ../../backend
+      dockerfile: services/payment-service/Dockerfile
+    image: manpasik/payment-service:dev
+    container_name: manpasik-payment-service
+    environment:
+      GRPC_PORT: ":50057"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+      KAFKA_BROKERS: "redpanda:9092"
+    ports:
+      - "50057:50057"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+
+  ai-inference-service:
+    build:
+      context: ../../backend
+      dockerfile: services/ai-inference-service/Dockerfile
+    image: manpasik/ai-inference-service:dev
+    container_name: manpasik-ai-inference-service
+    environment:
+      GRPC_PORT: ":50058"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50058:50058"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+
+  cartridge-service:
+    build:
+      context: ../../backend
+      dockerfile: services/cartridge-service/Dockerfile
+    image: manpasik/cartridge-service:dev
+    container_name: manpasik-cartridge-service
+    environment:
+      GRPC_PORT: ":50059"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50059:50059"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+
+  calibration-service:
+    build:
+      context: ../../backend
+      dockerfile: services/calibration-service/Dockerfile
+    image: manpasik/calibration-service:dev
+    container_name: manpasik-calibration-service
+    environment:
+      GRPC_PORT: ":50060"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50060:50060"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+
+  coaching-service:
+    build:
+      context: ../../backend
+      dockerfile: services/coaching-service/Dockerfile
+    image: manpasik/coaching-service:dev
+    container_name: manpasik-coaching-service
+    environment:
+      GRPC_PORT: ":50061"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50061:50061"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+
+  # --- Phase 3 서비스 ---
+
+  family-service:
+    build:
+      context: ../../backend
+      dockerfile: services/family-service/Dockerfile
+    image: manpasik/family-service:dev
+    container_name: manpasik-family-service
+    environment:
+      GRPC_PORT: ":50063"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50063:50063"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
+  health-record-service:
+    build:
+      context: ../../backend
+      dockerfile: services/health-record-service/Dockerfile
+    image: manpasik/health-record-service:dev
+    container_name: manpasik-health-record-service
+    environment:
+      GRPC_PORT: ":50064"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50064:50064"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
+  community-service:
+    build:
+      context: ../../backend
+      dockerfile: services/community-service/Dockerfile
+    image: manpasik/community-service:dev
+    container_name: manpasik-community-service
+    environment:
+      GRPC_PORT: ":50065"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+      ELASTICSEARCH_URL: "http://elasticsearch:9200"
+    ports:
+      - "50065:50065"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
+  reservation-service:
+    build:
+      context: ../../backend
+      dockerfile: services/reservation-service/Dockerfile
+    image: manpasik/reservation-service:dev
+    container_name: manpasik-reservation-service
+    environment:
+      GRPC_PORT: ":50066"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50066:50066"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
+  admin-service:
+    build:
+      context: ../../backend
+      dockerfile: services/admin-service/Dockerfile
+    image: manpasik/admin-service:dev
+    container_name: manpasik-admin-service
+    environment:
+      GRPC_PORT: ":50067"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+      CONFIG_ENCRYPTION_KEY: "dev-aes256gcm-key-change-in-prod!!"
+    ports:
+      - "50067:50067"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
+  notification-service:
+    build:
+      context: ../../backend
+      dockerfile: services/notification-service/Dockerfile
+    image: manpasik/notification-service:dev
+    container_name: manpasik-notification-service
+    environment:
+      GRPC_PORT: ":50068"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50068:50068"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
+  prescription-service:
+    build:
+      context: ../../backend
+      dockerfile: services/prescription-service/Dockerfile
+    image: manpasik/prescription-service:dev
+    container_name: manpasik-prescription-service
+    environment:
+      GRPC_PORT: ":50069"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50069:50069"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
+  video-service:
+    build:
+      context: ../../backend
+      dockerfile: services/video-service/Dockerfile
+    image: manpasik/video-service:dev
+    container_name: manpasik-video-service
+    environment:
+      GRPC_PORT: ":50070"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50070:50070"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
+  telemedicine-service:
+    build:
+      context: ../../backend
+      dockerfile: services/telemedicine-service/Dockerfile
+    image: manpasik/telemedicine-service:dev
+    container_name: manpasik-telemedicine-service
+    environment:
+      GRPC_PORT: ":50071"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50071:50071"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
+  translation-service:
+    build:
+      context: ../../backend
+      dockerfile: services/translation-service/Dockerfile
+    image: manpasik/translation-service:dev
+    container_name: manpasik-translation-service
+    environment:
+      GRPC_PORT: ":50073"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50073:50073"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
+  vision-service:
+    build:
+      context: ../../backend
+      dockerfile: services/vision-service/Dockerfile
+    image: manpasik/vision-service:dev
+    container_name: manpasik-vision-service
+    environment:
+      GRPC_PORT: ":50072"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50072:50072"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
+  # =============================================================================
+  # REST API 게이트웨이 (gRPC → HTTP)
+  # =============================================================================
+
+  gateway:
+    build:
+      context: ../../backend
+      dockerfile: services/gateway/Dockerfile
+    image: manpasik/gateway:dev
+    container_name: manpasik-gateway
+    ports:
+      - "8090:8080"
+    environment:
+      GATEWAY_PORT: "8080"
+      # --- Core services ---
+      AUTH_SERVICE_ADDR: "manpasik-auth-service:50051"
+      USER_SERVICE_ADDR: "manpasik-user-service:50052"
+      DEVICE_SERVICE_ADDR: "manpasik-device-service:50053"
+      MEASUREMENT_SERVICE_ADDR: "manpasik-measurement-service:50054"
+      # --- Phase 2 services ---
+      SUBSCRIPTION_SERVICE_ADDR: "manpasik-subscription-service:50055"
+      SHOP_SERVICE_ADDR: "manpasik-shop-service:50056"
+      PAYMENT_SERVICE_ADDR: "manpasik-payment-service:50057"
+      AI_INFERENCE_SERVICE_ADDR: "manpasik-ai-inference-service:50058"
+      CARTRIDGE_SERVICE_ADDR: "manpasik-cartridge-service:50059"
+      CALIBRATION_SERVICE_ADDR: "manpasik-calibration-service:50060"
+      COACHING_SERVICE_ADDR: "manpasik-coaching-service:50061"
+      # --- Phase 3 services ---
+      FAMILY_SERVICE_ADDR: "manpasik-family-service:50063"
+      HEALTH_RECORD_SERVICE_ADDR: "manpasik-health-record-service:50064"
+      COMMUNITY_SERVICE_ADDR: "manpasik-community-service:50065"
+      RESERVATION_SERVICE_ADDR: "manpasik-reservation-service:50066"
+      ADMIN_SERVICE_ADDR: "manpasik-admin-service:50067"
+      NOTIFICATION_SERVICE_ADDR: "manpasik-notification-service:50068"
+      PRESCRIPTION_SERVICE_ADDR: "manpasik-prescription-service:50069"
+      VIDEO_SERVICE_ADDR: "manpasik-video-service:50070"
+      TELEMEDICINE_SERVICE_ADDR: "manpasik-telemedicine-service:50071"
+      VISION_SERVICE_ADDR: "manpasik-vision-service:50072"
+      TRANSLATION_SERVICE_ADDR: "manpasik-translation-service:50073"
+      # --- Object Storage (MinIO) ---
+      S3_ENDPOINT: "http://minio:9000"
+      S3_ACCESS_KEY: "manpasik"
+      S3_SECRET_KEY: "manpasik_dev_2026"
+    depends_on:
+      - auth-service
+      - user-service
+      - device-service
+      - measurement-service
+      - subscription-service
+      - shop-service
+      - payment-service
+      - ai-inference-service
+      - cartridge-service
+      - calibration-service
+      - coaching-service
+      - family-service
+      - health-record-service
+      - community-service
+      - reservation-service
+      - admin-service
+      - notification-service
+      - prescription-service
+      - video-service
+      - telemedicine-service
+      - vision-service
+      - translation-service
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
+  # =============================================================================
+  # 인증/인가 (Keycloak)
+  # =============================================================================
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0
+    container_name: manpasik-keycloak
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/manpasik
+      KC_DB_USERNAME: manpasik
+      KC_DB_PASSWORD: manpasik_dev_2026
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+
+  # =============================================================================
+  # API 게이트웨이 (Kong)
+  # =============================================================================
+
+  kong-database:
+    image: postgres:16-alpine
+    container_name: manpasik-kong-db
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_PASSWORD: kong
+      POSTGRES_DB: kong
+    volumes:
+      - kong_db_data:/var/lib/postgresql/data
+    networks:
+      - manpasik-network
+
+  kong-migrations:
+    image: kong:3.7
+    container_name: manpasik-kong-migrations
+    command: kong migrations bootstrap
+    depends_on:
+      - kong-database
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+    networks:
+      - manpasik-network
+
+  kong:
+    image: kong:3.7
+    container_name: manpasik-kong
+    depends_on:
+      - kong-migrations
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_ADMIN_GUI_URL: http://localhost:8002
+    ports:
+      - "8000:8000" # Proxy
+      - "8443:8443" # Proxy SSL
+      - "8001:8001" # Admin API
+      - "8002:8002" # Admin GUI
+    networks:
+      - manpasik-network
+
+  # =============================================================================
+  # MQTT 브로커 (IoT 리더기 연결 - 무제한 확장)
+  # =============================================================================
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: manpasik-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./config/mosquitto:/mosquitto/config
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+    networks:
+      - manpasik-network
+
+  # =============================================================================
+  # 오브젝트 스토리지 (MinIO)
+  # =============================================================================
+
+  minio:
+    image: minio/minio:latest
+    container_name: manpasik-minio
+    ports:
+      - "9000:9000"
+      - "9010:9001"
+    environment:
+      MINIO_ROOT_USER: manpasik
+      MINIO_ROOT_PASSWORD: manpasik_dev_2026
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - manpasik-network
+
+  # =============================================================================
+  # 모니터링
+  # =============================================================================
+
+  prometheus:
+    image: prom/prometheus:v2.53.1
+    container_name: manpasik-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ../monitoring/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - manpasik-network
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: manpasik-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ../monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ../monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards/json
+    networks:
+      - manpasik-network
+
+# =============================================================================
+# 네트워크 및 볼륨
+# =============================================================================
+
+networks:
+  manpasik-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  timescale_data:
+  redis_data:
+  redpanda_data:
+  milvus_etcd:
+  milvus_minio:
+  milvus_data:
+  elasticsearch_data:
+  kong_db_data:
+  mosquitto_data:
+  mosquitto_log:
+  minio_data:
+  prometheus_data:
+  grafana_data:
