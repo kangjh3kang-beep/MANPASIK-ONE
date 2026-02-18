@@ -16,7 +16,7 @@ class CommunityScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return DefaultTabController(
-      length: 5,
+      length: 6,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('커뮤니티'),
@@ -29,6 +29,7 @@ class CommunityScreen extends ConsumerWidget {
               Tab(text: '측정 후기'),
               Tab(text: 'Q&A'),
               Tab(text: '챌린지'),
+              Tab(text: '연구'),
             ],
           ),
         ),
@@ -39,6 +40,7 @@ class CommunityScreen extends ConsumerWidget {
             _PostListTab(category: PostCategory.reviews),
             _PostListTab(category: PostCategory.all),
             const _ChallengeTab(),
+            const _ResearchTab(),
           ],
         ),
         floatingActionButton: FloatingActionButton(
@@ -383,6 +385,37 @@ class _ChallengeTab extends ConsumerWidget {
       },
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: Text('불러오기 실패: $e')),
+    );
+  }
+}
+
+class _ResearchTab extends StatelessWidget {
+  const _ResearchTab();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.science_outlined, size: 64, color: theme.colorScheme.primary),
+          const SizedBox(height: 16),
+          Text('건강 연구', style: theme.textTheme.headlineSmall),
+          const SizedBox(height: 8),
+          Text(
+            '익명화된 건강 데이터를 활용한\n연구 프로젝트에 참여하세요.',
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyLarge,
+          ),
+          const SizedBox(height: 24),
+          FilledButton.icon(
+            onPressed: () => context.push('/community/research'),
+            icon: const Icon(Icons.arrow_forward),
+            label: const Text('연구 프로젝트 보기'),
+          ),
+        ],
+      ),
     );
   }
 }

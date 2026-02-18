@@ -79,6 +79,16 @@ class AiCoachScreen extends ConsumerWidget {
               subtitle: '활동량 기반 운동 추천',
               category: 'exercise',
             ),
+            Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                leading: Icon(Icons.play_circle_outline, color: theme.colorScheme.primary),
+                title: const Text('운동 영상 가이드'),
+                subtitle: const Text('전문 트레이너의 맞춤 운동 영상'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => context.push('/coach/exercise-video'),
+              ),
+            ),
             _CoachCategoryTile(
               icon: Icons.bedtime,
               title: '수면 관리',

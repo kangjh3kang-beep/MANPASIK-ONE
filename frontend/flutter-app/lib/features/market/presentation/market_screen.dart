@@ -91,6 +91,16 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       ),
       actions: [
         IconButton(
+          icon: const Icon(Icons.menu_book_outlined, color: Colors.white70),
+          tooltip: '카트리지 도감',
+          onPressed: () => context.push('/market/encyclopedia'),
+        ),
+        IconButton(
+          icon: const Icon(Icons.receipt_long_outlined, color: Colors.white70),
+          tooltip: '주문 내역',
+          onPressed: () => context.push('/market/orders'),
+        ),
+        IconButton(
           icon: const Icon(Icons.search, color: Colors.white70),
           onPressed: () {},
         ),

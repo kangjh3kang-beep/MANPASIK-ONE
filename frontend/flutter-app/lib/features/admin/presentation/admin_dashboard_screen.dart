@@ -126,6 +126,18 @@ class AdminDashboardScreen extends ConsumerWidget {
           subtitle: 'GDPR/PIPA/HIPAA 체크리스트',
           onTap: () => context.push('/admin/compliance'),
         ),
+        _AdminMenuTile(
+          icon: Icons.attach_money,
+          title: '매출 관리',
+          subtitle: '구독/카트리지 매출 현황 및 분석',
+          onTap: () => context.push('/admin/revenue'),
+        ),
+        _AdminMenuTile(
+          icon: Icons.inventory_2,
+          title: '재고 관리',
+          subtitle: '카트리지 재고 현황 및 입출고 관리',
+          onTap: () => context.push('/admin/inventory'),
+        ),
         const SizedBox(height: 24),
 
         // 최근 감사 로그
