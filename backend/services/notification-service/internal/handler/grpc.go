@@ -174,6 +174,36 @@ func (h *NotificationHandler) GetNotificationPreferences(ctx context.Context, re
 	return preferencesToProto(pref), nil
 }
 
+// SendFromTemplate은 사전 정의된 템플릿으로 알림을 발송하는 RPC입니다.
+func (h *NotificationHandler) SendFromTemplate(ctx context.Context, req *v1.SendFromTemplateRequest) (*v1.Notification, error) {
+	if req == nil || req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "user_id는 필수입니다")
+	}
+	if req.TemplateKey == "" {
+		return nil, status.Error(codes.InvalidArgument, "template_key는 필수입니다")
+	}
+
+	// data map의 값들을 args로 변환
+	var args []interface{}
+	for _, v := range req.Data {
+		args = append(args, v)
+	}
+
+	err := h.svc.SendFromTemplate(ctx, req.UserId, req.TemplateKey, args...)
+	if err != nil {
+		return nil, toGRPC(err)
+	}
+
+	// SendFromTemplate은 내부에서 SendNotification을 호출하므로
+	// 가장 최근 알림을 조회하여 반환
+	notis, _, _, err := h.svc.ListNotifications(ctx, req.UserId, service.TypeUnknown, false, 1, 0)
+	if err != nil || len(notis) == 0 {
+		return &v1.Notification{UserId: req.UserId}, nil
+	}
+
+	return notificationToProto(notis[0]), nil
+}
+
 // ============================================================================
 // 변환 헬퍼
 // ============================================================================

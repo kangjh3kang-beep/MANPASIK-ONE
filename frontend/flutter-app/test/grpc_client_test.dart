@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:manpasik/core/services/grpc_client.dart';
+import 'package:manpasik/core/services/auth_interceptor.dart';
 import 'package:manpasik/core/constants/app_constants.dart';
 
 void main() {

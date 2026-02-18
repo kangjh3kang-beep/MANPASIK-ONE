@@ -1,7 +1,8 @@
-import 'dart:math';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-/// 한국 전통 문양 엣지 보더 (금속 상감 기법 느낌)
+/// 한국 전통 문양 엣지 보더 (Update: Premium Sanggam Gold Inlay)
+/// 금속 상감 기법의 정교함을 표현하기 위해 이중 테두리와 메탈릭 쉐이더를 적용합니다.
 class KoreanEdgeBorder extends StatelessWidget {
   final Widget child;
   final Color? borderColor;
@@ -12,7 +13,7 @@ class KoreanEdgeBorder extends StatelessWidget {
     super.key,
     required this.child,
     this.borderColor,
-    this.borderWidth = 2.0,
+    this.borderWidth = 1.0, // Thinner base width for elegance
     this.borderRadius = const BorderRadius.all(Radius.circular(16)),
   });
 
@@ -44,106 +45,106 @@ class _KoreanEdgePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
 
-    final Paint paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = width;
-      
     final Rect rect = Offset.zero & size;
-    
-    // Gold Gradient Shader
+
+    // Premium Gold Metallic Gradient
     final Gradient gradient = LinearGradient(
       colors: [
-        const Color(0xFFD4AF37), // Gold
-        const Color(0xFFF7EF8A), // Light Gold
-        const Color(0xFFB48E26), // Dark Bronze
-        const Color(0xFFD4AF37), // Gold
+        const Color(0xFFD4AF37), // Classic Gold
+        const Color(0xFFFFF8C5), // High-light (Pale Gold)
+        const Color(0xFFC59D2E), // Shadow Gold
+        const Color(0xFFF7EF8A), // Reflected Light
+        const Color(0xFFD4AF37), // Classic Gold
       ],
-      stops: const [0.0, 0.3, 0.7, 1.0],
+      stops: const [0.0, 0.2, 0.5, 0.8, 1.0],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
     
-    paint.shader = gradient.createShader(rect);
+    final Paint paint = Paint()
+      ..shader = gradient.createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width;
 
-    // 1. 기본 테두리
-    final RRect rrect = RRect.fromRectAndRadius(rect, Radius.circular(radius));
-    canvas.drawRRect(rrect, paint);
+    // 1. Double Border (Inner & Outer) to simulate inlay depth
+    // Outer Line
+    final RRect outerRRect = RRect.fromRectAndRadius(rect, Radius.circular(radius));
+    canvas.drawRRect(outerRRect, paint);
+
+    // Inner Line (Thinner, subtle)
+    final Paint innerPaint = Paint()
+      ..shader = gradient.createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width * 0.5;
     
-    // 2. 모서리 장식
-    _drawCornerOrnament(canvas, size, paint);
+    final RRect innerRRect = outerRRect.deflate(3.0);
+    canvas.drawRRect(innerRRect, innerPaint);
+    
+    // 2. Premium Corner Ornaments (Stylized Guigap/Turtle Shell)
+    _drawPremiumCorners(canvas, size, paint);
   }
 
-  void _drawCornerOrnament(Canvas canvas, Size size, Paint paint) {
-    final double s = 24.0;
-    
-    // 모서리 장식용 얇은 붓
-    final Paint ornamentPaint = Paint()
+  void _drawPremiumCorners(Canvas canvas, Size size, Paint paint) {
+    final double length = 28.0;
+    final double offset = 4.0; 
+
+    // Corner Paint (Slightly thicker for emphasis)
+    final Paint cornerPaint = Paint()
       ..shader = paint.shader
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.5;
+      ..strokeWidth = width * 1.5
+      ..strokeCap = StrokeCap.round;
 
-    // TL (Top-Left)
-    Path p1 = Path();
-    p1.moveTo(0, s);
-    p1.lineTo(0, s*0.4);
-    p1.quadraticBezierTo(0, 0, s*0.4, 0);
-    p1.lineTo(s, 0);
-    // 내부 문양 (Greek Key / Man-ja Style)
-    p1.moveTo(6, 6);
-    p1.lineTo(16, 6);
-    p1.lineTo(16, 16);
-    p1.lineTo(6, 16);
-    p1.close();
-    canvas.drawPath(p1, ornamentPaint);
+    // Top-Left Corner
+    Path tl = Path();
+    tl.moveTo(offset, length);
+    tl.lineTo(offset, radius);
+    tl.arcToPoint(Offset(radius, offset), radius: Radius.circular(radius - offset));
+    tl.lineTo(length, offset);
+    // Decorative Loop
+    tl.moveTo(offset + 4, length - 4);
+    tl.quadraticBezierTo(offset + 4, offset + 4, length - 4, offset + 4);
+    canvas.drawPath(tl, cornerPaint);
 
-    // TR (Top-Right)
-    Path p2 = Path();
-    p2.moveTo(size.width - s, 0);
-    p2.lineTo(size.width - s*0.4, 0);
-    p2.quadraticBezierTo(size.width, 0, size.width, s*0.4);
-    p2.lineTo(size.width, s);
-    // 문양
-    p2.moveTo(size.width - 6, 6);
-    p2.lineTo(size.width - 16, 6);
-    p2.lineTo(size.width - 16, 16);
-    p2.lineTo(size.width - 6, 16);
-    p2.close();
-    canvas.drawPath(p2, ornamentPaint);
+    // Top-Right Corner
+    Path tr = Path();
+    tr.moveTo(size.width - length, offset);
+    tr.lineTo(size.width - radius, offset);
+    tr.arcToPoint(Offset(size.width - offset, radius), radius: Radius.circular(radius - offset));
+    tr.lineTo(size.width - offset, length);
+    // Decorative Loop
+    tr.moveTo(size.width - length + 4, offset + 4);
+    tr.quadraticBezierTo(size.width - offset - 4, offset + 4, size.width - offset - 4, length - 4);
+    canvas.drawPath(tr, cornerPaint);
 
-    // BR (Bottom-Right)
-    Path p3 = Path();
-    p3.moveTo(size.width, size.height - s);
-    p3.lineTo(size.width, size.height - s*0.4);
-    p3.quadraticBezierTo(size.width, size.height, size.width - s*0.4, size.height);
-    p3.lineTo(size.width - s, size.height);
-    // 문양
-    p3.moveTo(size.width - 6, size.height - 6);
-    p3.lineTo(size.width - 16, size.height - 6);
-    p3.lineTo(size.width - 16, size.height - 16);
-    p3.lineTo(size.width - 6, size.height - 16);
-    p3.close();
-    canvas.drawPath(p3, ornamentPaint);
-    
-    // BL (Bottom-Left)
-    Path p4 = Path();
-    p4.moveTo(s, size.height);
-    p4.lineTo(s*0.4, size.height);
-    p4.quadraticBezierTo(0, size.height, 0, size.height - s*0.4);
-    p4.lineTo(0, size.height - s);
-    // 문양
-    p4.moveTo(6, size.height - 6);
-    p4.lineTo(16, size.height - 6);
-    p4.lineTo(16, size.height - 16);
-    p4.lineTo(6, size.height - 16);
-    p4.close();
-    canvas.drawPath(p4, ornamentPaint);
+    // Bottom-Right Corner
+    Path br = Path();
+    br.moveTo(size.width - offset, size.height - length);
+    br.lineTo(size.width - offset, size.height - radius);
+    br.arcToPoint(Offset(size.width - radius, size.height - offset), radius: Radius.circular(radius - offset));
+    br.lineTo(size.width - length, size.height - offset);
+    // Decorative Loop
+    br.moveTo(size.width - offset - 4, size.height - length + 4);
+    br.quadraticBezierTo(size.width - offset - 4, size.height - offset - 4, size.width - length + 4, size.height - offset - 4);
+    canvas.drawPath(br, cornerPaint);
+
+    // Bottom-Left Corner
+    Path bl = Path();
+    bl.moveTo(length, size.height - offset);
+    bl.lineTo(radius, size.height - offset);
+    bl.arcToPoint(Offset(offset, size.height - radius), radius: Radius.circular(radius - offset));
+    bl.lineTo(offset, size.height - length);
+    // Decorative Loop
+    bl.moveTo(length - 4, size.height - offset - 4);
+    bl.quadraticBezierTo(offset + 4, size.height - offset - 4, offset + 4, size.height - length + 4);
+    canvas.drawPath(bl, cornerPaint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-/// 자개 패턴이 적용된 컨테이너 (사용자 요청으로 패턴 제거, 그라디언트만 유지)
+/// 자개 패턴 컨테이너 (Update: Premium Lattice Pattern)
 class JagaeContainer extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -168,19 +169,76 @@ class JagaeContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-        // 사용자 피드백 반영: 비정형 자개 패턴(overlay) 제거.
-        // Container의 decoration(그라디언트/그림자)만 유지.
     return Container(
       width: width,
       height: height,
       decoration: decoration,
-          padding: padding,
-      child: child,
+      padding: padding,
+      child: showLattice 
+          ? CustomPaint(
+              painter: JagaePatternPainter(
+                color: baseColor ?? (Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.white.withOpacity(opacity) 
+                    : Colors.black.withOpacity(opacity * 0.6)), 
+              ),
+              child: child,
+            )
+          : child,
     );
   }
 }
 
-// 하위 호환성을 위해 남겨둔 빈 클래스 로직 (실제로는 사용되지 않음)
+/// Premium Lattice Painter (세살문/Seosal-mun Style)
+class JagaePatternPainter extends CustomPainter {
+  final Color color;
+
+  JagaePatternPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (size.isEmpty) return;
+
+    final paint = Paint()
+      ..color = color.withOpacity(color.opacity * 0.8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5; 
+
+    // Seosal-mun (Fine Lattice) Spacing
+    const double step = 20.0;
+    const double innerStep = 4.0; // Double line gap
+
+    // 1. Vertical Double Lines
+    for (double x = 0; x <= size.width; x += step) {
+      canvas.drawLine(Offset(x, 0), Offset(x, size.height), paint);
+      canvas.drawLine(Offset(x + innerStep, 0), Offset(x + innerStep, size.height), paint);
+    }
+
+    // 2. Horizontal Double Lines
+    for (double y = 0; y <= size.height; y += step) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+      canvas.drawLine(Offset(0, y + innerStep), Offset(size.width, y + innerStep), paint);
+    }
+
+    // 3. Flower/Star Accents at Intersections (Octagonal feel)
+    final accentPaint = Paint()
+      ..color = color.withOpacity(color.opacity) // Brighter
+      ..style = PaintingStyle.fill;
+
+    for (double x = 0; x <= size.width; x += step) {
+      for (double y = 0; y <= size.height; y += step) {
+        // Draw small diamond at intersection
+        double cx = x + innerStep / 2;
+        double cy = y + innerStep / 2;
+        canvas.drawCircle(Offset(cx, cy), 1.5, accentPaint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Legacy support
 class JagaePattern extends StatelessWidget {
   final Widget? child;
   final double opacity;

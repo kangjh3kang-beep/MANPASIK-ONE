@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:manpasik/shared/providers/auth_provider.dart';
 import 'package:manpasik/core/theme/app_theme.dart';
 import 'package:manpasik/shared/widgets/wave_ripple_painter.dart';
+import 'package:manpasik/shared/widgets/cosmic_background.dart';
 
 /// 스플래시 화면
 ///
@@ -75,94 +76,86 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppTheme.deepSeaBlue,
-              AppTheme.inkBlack,
-            ],
-          ),
-        ),
-        child: Stack(
-          children: [
-            // Wave Ripple 배경
-            Positioned.fill(
-              child: AnimatedBuilder(
-                animation: _waveController,
-                builder: (context, _) {
-                  return CustomPaint(
-                    painter: WaveRipplePainter(
-                      animationValue: _waveController.value,
-                      rippleCount: 6,
-                      primaryColor: AppTheme.waveCyan.withOpacity(0.5),
-                      secondaryColor: AppTheme.sanggamGold.withOpacity(0.3),
-                    ),
-                  );
-                },
-              ),
-            ),
-            // 전경 콘텐츠
-            Center(
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // 앱 아이콘
-                    Container(
-                      width: 120,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(32),
-                        border: Border.all(
-                          color: AppTheme.sanggamGold.withOpacity(0.3),
-                          width: 1,
-                        ),
+      body: CosmicBackground(
+        child: SizedBox(
+          width: double.infinity,
+          height: double.infinity,
+          child: Stack(
+            children: [
+              // Wave Ripple 배경
+              Positioned.fill(
+                child: AnimatedBuilder(
+                  animation: _waveController,
+                  builder: (context, _) {
+                    return CustomPaint(
+                      painter: WaveRipplePainter(
+                        animationValue: _waveController.value,
+                        rippleCount: 6,
+                        primaryColor: AppTheme.waveCyan.withOpacity(0.5),
+                        secondaryColor: AppTheme.sanggamGold.withOpacity(0.3),
                       ),
-                      child: const Icon(
-                        Icons.biotech_rounded,
-                        size: 64,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    // 브랜드명 (BRAND_GUIDELINE 준수)
-                    Text(
-                      'MANPASIK',
-                      style: theme.textTheme.headlineLarge?.copyWith(
-                        color: AppTheme.sanggamGold,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 4,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      '초정밀 차동 계측 시스템',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.7),
-                      ),
-                    ),
-                    const SizedBox(height: 64),
-                    // 로딩 인디케이터
-                    SizedBox(
-                      width: 32,
-                      height: 32,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: AppTheme.sanggamGold.withOpacity(0.6),
-                      ),
-                    ),
-                  ],
+                    );
+                  },
                 ),
               ),
-            ),
-          ],
+              // 전경 콘텐츠
+              Center(
+                child: FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 앱 아이콘
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(32),
+                          border: Border.all(
+                            color: AppTheme.sanggamGold.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.biotech_rounded,
+                          size: 64,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      // 브랜드명 (BRAND_GUIDELINE 준수)
+                      Text(
+                        'MANPASIK',
+                        style: theme.textTheme.headlineLarge?.copyWith(
+                          color: AppTheme.sanggamGold,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 4,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '초정밀 차동 계측 시스템',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: Colors.white.withOpacity(0.7),
+                        ),
+                      ),
+                      const SizedBox(height: 64),
+                      // 로딩 인디케이터
+                      SizedBox(
+                        width: 32,
+                        height: 32,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.5,
+                          color: AppTheme.sanggamGold.withOpacity(0.6),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

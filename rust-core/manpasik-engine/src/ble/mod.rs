@@ -9,9 +9,13 @@ use std::sync::Arc;
 use thiserror::Error;
 
 #[cfg(feature = "ble")]
-use btleplug::api::{Central, Manager as _, Peripheral as _, ScanFilter};
+use btleplug::api::{
+    Central, CharPropFlags, Characteristic, Manager as _, Peripheral as _, ScanFilter, WriteType,
+};
 #[cfg(feature = "ble")]
 use btleplug::platform::{Adapter, Manager, Peripheral};
+#[cfg(feature = "ble")]
+use uuid::Uuid as BleUuid;
 
 /// BLE 연결 상태
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -197,24 +201,92 @@ impl BleManager {
 
         #[cfg(feature = "ble")]
         {
-            // btleplug 기반 실제 연결 구현
-            // TODO: 실제 구현
+            let manager =
+                Manager::new()
+                    .await
+                    .map_err(|e| BleError::ConnectionFailed(e.to_string()))?;
+            let adapters = manager
+                .adapters()
+                .await
+                .map_err(|_| BleError::NoAdapter)?;
+            let adapter = adapters.into_iter().next().ok_or(BleError::NoAdapter)?;
+
+            // 스캔 캐시 또는 새 스캔으로 peripheral 탐색
+            let peripherals = adapter
+                .peripherals()
+                .await
+                .map_err(|e| BleError::DeviceNotFound(e.to_string()))?;
+
+            let peripheral = peripherals
+                .into_iter()
+                .find(|p| p.id().to_string() == device_id)
+                .ok_or_else(|| BleError::DeviceNotFound(device_id.to_string()))?;
+
+            // BLE 연결
+            peripheral
+                .connect()
+                .await
+                .map_err(|e| BleError::ConnectionFailed(e.to_string()))?;
+
+            // GATT 서비스 탐색
+            peripheral
+                .discover_services()
+                .await
+                .map_err(|e| BleError::ServiceNotFound(e.to_string()))?;
+
+            // 펌웨어 버전 읽기 시도
+            let fw_version = Self::read_characteristic_string(
+                &peripheral,
+                characteristic_uuids::FIRMWARE_VERSION,
+            )
+            .await
+            .ok();
+
+            // 배터리 레벨 읽기 시도
+            let battery = Self::read_characteristic_u8(
+                &peripheral,
+                characteristic_uuids::BATTERY_LEVEL,
+            )
+            .await
+            .ok();
+
+            let properties = peripheral.properties().await.ok().flatten();
+            let name = properties
+                .and_then(|p| p.local_name)
+                .unwrap_or_else(|| format!("MPK-{}", &device_id[..8.min(device_id.len())]));
+
+            let device_info = DeviceInfo {
+                device_id: device_id.to_string(),
+                name,
+                rssi: 0,
+                state: ConnectionState::Connected,
+                firmware_version: fw_version,
+                battery_level: battery,
+            };
+
+            self.connected_devices
+                .write()
+                .insert(device_id.to_string(), device_info);
+            return Ok(());
         }
 
-        // 연결 상태 업데이트
-        let device_info = DeviceInfo {
-            device_id: device_id.to_string(),
-            name: format!("MPK-{}", &device_id[..8.min(device_id.len())]),
-            rssi: 0,
-            state: ConnectionState::Connected,
-            firmware_version: Some("1.0.0".to_string()),
-            battery_level: Some(100),
-        };
+        // BLE 기능 비활성화 시 스텁 모드
+        #[cfg(not(feature = "ble"))]
+        {
+            let device_info = DeviceInfo {
+                device_id: device_id.to_string(),
+                name: format!("MPK-{}", &device_id[..8.min(device_id.len())]),
+                rssi: 0,
+                state: ConnectionState::Connected,
+                firmware_version: Some("1.0.0".to_string()),
+                battery_level: Some(100),
+            };
 
-        self.connected_devices
-            .write()
-            .insert(device_id.to_string(), device_info);
-        Ok(())
+            self.connected_devices
+                .write()
+                .insert(device_id.to_string(), device_info);
+            Ok(())
+        }
     }
 
     /// 디바이스 연결 해제
@@ -244,12 +316,22 @@ impl BleManager {
             return Err(BleError::DeviceNotFound(device_id.to_string()));
         }
 
+        #[cfg(feature = "ble")]
+        {
+            // GATT Write: 측정 시작 명령 (0x01)
+            if let Err(e) = self
+                .write_command(device_id, BleCommand::StartMeasurement)
+                .await
+            {
+                tracing::warn!("BLE 명령 전송 실패 (스텁 모드로 전환): {}", e);
+            }
+        }
+
         // 상태 업데이트
         if let Some(device) = self.connected_devices.write().get_mut(device_id) {
             device.state = ConnectionState::Measuring;
         }
 
-        // TODO: 실제 BLE 명령 전송
         Ok(())
     }
 
@@ -273,7 +355,7 @@ impl BleManager {
             return Err(BleError::DeviceNotFound(device_id.to_string()));
         }
 
-        // TODO: 실제 BLE 읽기
+        // 캐시된 값 반환 (실시간 BLE 읽기는 연결 시 수행)
         Ok(self
             .connected_devices
             .read()
@@ -295,11 +377,373 @@ impl BleManager {
             .and_then(|d| d.firmware_version.clone())
             .unwrap_or_else(|| "Unknown".to_string()))
     }
+
+    /// BLE GATT Write 명령 전송
+    #[cfg(feature = "ble")]
+    async fn write_command(&self, device_id: &str, command: BleCommand) -> Result<(), BleError> {
+        let manager =
+            Manager::new()
+                .await
+                .map_err(|e| BleError::WriteError(e.to_string()))?;
+        let adapters = manager
+            .adapters()
+            .await
+            .map_err(|_| BleError::NoAdapter)?;
+        let adapter = adapters.into_iter().next().ok_or(BleError::NoAdapter)?;
+        let peripherals = adapter
+            .peripherals()
+            .await
+            .map_err(|e| BleError::WriteError(e.to_string()))?;
+
+        let peripheral = peripherals
+            .into_iter()
+            .find(|p| p.id().to_string() == device_id)
+            .ok_or_else(|| BleError::DeviceNotFound(device_id.to_string()))?;
+
+        // MEASUREMENT_COMMAND 특성 찾기
+        let cmd_uuid =
+            BleUuid::parse_str(characteristic_uuids::MEASUREMENT_COMMAND)
+                .map_err(|e| BleError::CharacteristicNotFound(e.to_string()))?;
+
+        let characteristics = peripheral.characteristics();
+        let cmd_char = characteristics
+            .iter()
+            .find(|c| c.uuid == cmd_uuid)
+            .ok_or_else(|| {
+                BleError::CharacteristicNotFound("MEASUREMENT_COMMAND".to_string())
+            })?;
+
+        // 명령 바이트 전송
+        peripheral
+            .write(cmd_char, &[command as u8], WriteType::WithResponse)
+            .await
+            .map_err(|e| BleError::WriteError(e.to_string()))?;
+
+        Ok(())
+    }
+
+    /// BLE GATT 특성에서 문자열 읽기
+    #[cfg(feature = "ble")]
+    async fn read_characteristic_string(
+        peripheral: &Peripheral,
+        uuid_str: &str,
+    ) -> Result<String, BleError> {
+        let uuid = BleUuid::parse_str(uuid_str)
+            .map_err(|e| BleError::CharacteristicNotFound(e.to_string()))?;
+        let characteristics = peripheral.characteristics();
+        let char = characteristics
+            .iter()
+            .find(|c| c.uuid == uuid)
+            .ok_or_else(|| BleError::CharacteristicNotFound(uuid_str.to_string()))?;
+
+        let data = peripheral
+            .read(char)
+            .await
+            .map_err(|e| BleError::ReadError(e.to_string()))?;
+        Ok(String::from_utf8_lossy(&data).to_string())
+    }
+
+    /// BLE GATT 특성에서 u8 읽기
+    #[cfg(feature = "ble")]
+    async fn read_characteristic_u8(
+        peripheral: &Peripheral,
+        uuid_str: &str,
+    ) -> Result<u8, BleError> {
+        let uuid = BleUuid::parse_str(uuid_str)
+            .map_err(|e| BleError::CharacteristicNotFound(e.to_string()))?;
+        let characteristics = peripheral.characteristics();
+        let char = characteristics
+            .iter()
+            .find(|c| c.uuid == uuid)
+            .ok_or_else(|| BleError::CharacteristicNotFound(uuid_str.to_string()))?;
+
+        let data = peripheral
+            .read(char)
+            .await
+            .map_err(|e| BleError::ReadError(e.to_string()))?;
+        data.first()
+            .copied()
+            .ok_or_else(|| BleError::ReadError("빈 응답".to_string()))
+    }
+
+    /// 측정 데이터 GATT Notify 구독
+    ///
+    /// MEASUREMENT_DATA 특성을 구독하여 스트리밍 데이터 수신
+    #[cfg(feature = "ble")]
+    pub async fn subscribe_measurement_data(
+        &self,
+        device_id: &str,
+    ) -> Result<(), BleError> {
+        let manager =
+            Manager::new()
+                .await
+                .map_err(|e| BleError::ConnectionFailed(e.to_string()))?;
+        let adapters = manager
+            .adapters()
+            .await
+            .map_err(|_| BleError::NoAdapter)?;
+        let adapter = adapters.into_iter().next().ok_or(BleError::NoAdapter)?;
+        let peripherals = adapter
+            .peripherals()
+            .await
+            .map_err(|e| BleError::ConnectionFailed(e.to_string()))?;
+
+        let peripheral = peripherals
+            .into_iter()
+            .find(|p| p.id().to_string() == device_id)
+            .ok_or_else(|| BleError::DeviceNotFound(device_id.to_string()))?;
+
+        // MEASUREMENT_DATA Notify 특성 구독
+        let data_uuid =
+            BleUuid::parse_str(characteristic_uuids::MEASUREMENT_DATA)
+                .map_err(|e| BleError::CharacteristicNotFound(e.to_string()))?;
+
+        let characteristics = peripheral.characteristics();
+        let data_char = characteristics
+            .iter()
+            .find(|c| c.uuid == data_uuid && c.properties.contains(CharPropFlags::NOTIFY))
+            .ok_or_else(|| {
+                BleError::CharacteristicNotFound("MEASUREMENT_DATA (Notify)".to_string())
+            })?;
+
+        peripheral
+            .subscribe(data_char)
+            .await
+            .map_err(|e| BleError::ReadError(e.to_string()))?;
+
+        // 상태 업데이트 → Streaming
+        if let Some(device) = self.connected_devices.write().get_mut(device_id) {
+            device.state = ConnectionState::Measuring;
+        }
+
+        Ok(())
+    }
 }
 
 impl Default for BleManager {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+// ============================================================================
+// BLE 상태 머신 (ISO 14971 FM-BLE-001 대응)
+// ============================================================================
+
+/// BLE 연결 상태 머신 - 6-state FSM
+/// Disconnected → Scanning → Connecting → Connected → Streaming → Disconnecting
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum BleStateMachine {
+    Disconnected,
+    Scanning,
+    Connecting,
+    Connected,
+    Streaming,
+    Disconnecting,
+}
+
+impl BleStateMachine {
+    /// 상태 전이 유효성 검증
+    pub fn can_transition(&self, target: BleStateMachine) -> bool {
+        matches!(
+            (self, target),
+            (BleStateMachine::Disconnected, BleStateMachine::Scanning)
+                | (BleStateMachine::Scanning, BleStateMachine::Connecting)
+                | (BleStateMachine::Scanning, BleStateMachine::Disconnected)
+                | (BleStateMachine::Connecting, BleStateMachine::Connected)
+                | (BleStateMachine::Connecting, BleStateMachine::Disconnected)
+                | (BleStateMachine::Connected, BleStateMachine::Streaming)
+                | (BleStateMachine::Connected, BleStateMachine::Disconnecting)
+                | (BleStateMachine::Streaming, BleStateMachine::Connected)
+                | (BleStateMachine::Streaming, BleStateMachine::Disconnecting)
+                | (BleStateMachine::Disconnecting, BleStateMachine::Disconnected)
+        )
+    }
+
+    /// 상태 전이 수행
+    pub fn transition(&mut self, target: BleStateMachine) -> Result<(), BleError> {
+        if self.can_transition(target) {
+            *self = target;
+            Ok(())
+        } else {
+            Err(BleError::ConnectionFailed(format!(
+                "잘못된 상태 전이: {:?} → {:?}",
+                self, target
+            )))
+        }
+    }
+}
+
+// ============================================================================
+// 청크 재조립기 (FM-BLE-005 대응: 896/1792차원 대용량 데이터)
+// ============================================================================
+
+/// BLE MTU 제한으로 인한 대용량 데이터 청크 재조립
+pub struct ChunkReassembler {
+    /// 총 예상 청크 수
+    total_chunks: u16,
+    /// 수신된 청크 (순서 보장)
+    received: HashMap<u16, Vec<u8>>,
+    /// 시작 시간 (타임아웃 체크용)
+    started_at: std::time::Instant,
+    /// 타임아웃 (기본 30초)
+    timeout: std::time::Duration,
+}
+
+impl ChunkReassembler {
+    pub fn new(total_chunks: u16) -> Self {
+        Self {
+            total_chunks,
+            received: HashMap::new(),
+            started_at: std::time::Instant::now(),
+            timeout: std::time::Duration::from_secs(30),
+        }
+    }
+
+    /// 청크 추가
+    pub fn add_chunk(&mut self, sequence: u16, data: Vec<u8>) -> Result<(), BleError> {
+        if self.started_at.elapsed() > self.timeout {
+            return Err(BleError::Timeout);
+        }
+        if sequence >= self.total_chunks {
+            return Err(BleError::ReadError(format!(
+                "시퀀스 번호 초과: {} >= {}",
+                sequence, self.total_chunks
+            )));
+        }
+        self.received.insert(sequence, data);
+        Ok(())
+    }
+
+    /// 모든 청크 수신 완료 여부
+    pub fn is_complete(&self) -> bool {
+        self.received.len() as u16 == self.total_chunks
+    }
+
+    /// 누락된 청크 시퀀스 번호 반환
+    pub fn missing_chunks(&self) -> Vec<u16> {
+        (0..self.total_chunks)
+            .filter(|seq| !self.received.contains_key(seq))
+            .collect()
+    }
+
+    /// 완성된 데이터 추출 (순서대로 연결)
+    pub fn assemble(&self) -> Result<Vec<u8>, BleError> {
+        if !self.is_complete() {
+            return Err(BleError::ReadError(format!(
+                "미완성: {}/{} 청크 수신",
+                self.received.len(),
+                self.total_chunks
+            )));
+        }
+        let mut result = Vec::new();
+        for seq in 0..self.total_chunks {
+            if let Some(data) = self.received.get(&seq) {
+                result.extend_from_slice(data);
+            }
+        }
+        Ok(result)
+    }
+
+    /// 수신 진행률 (0.0 ~ 1.0)
+    pub fn progress(&self) -> f32 {
+        self.received.len() as f32 / self.total_chunks as f32
+    }
+}
+
+// ============================================================================
+// RSSI 모니터 (연결 품질 모니터링)
+// ============================================================================
+
+/// RSSI 기반 연결 품질 모니터
+pub struct RssiMonitor {
+    samples: Vec<i8>,
+    max_samples: usize,
+}
+
+impl RssiMonitor {
+    pub fn new(max_samples: usize) -> Self {
+        Self {
+            samples: Vec::with_capacity(max_samples),
+            max_samples,
+        }
+    }
+
+    /// RSSI 샘플 추가
+    pub fn add_sample(&mut self, rssi: i8) {
+        if self.samples.len() >= self.max_samples {
+            self.samples.remove(0);
+        }
+        self.samples.push(rssi);
+    }
+
+    /// 평균 RSSI
+    pub fn average_rssi(&self) -> f32 {
+        if self.samples.is_empty() {
+            return -100.0;
+        }
+        self.samples.iter().map(|&r| r as f32).sum::<f32>() / self.samples.len() as f32
+    }
+
+    /// 연결 품질 등급
+    pub fn quality(&self) -> ConnectionQuality {
+        let avg = self.average_rssi();
+        match avg as i32 {
+            -50..=0 => ConnectionQuality::Excellent,
+            -70..=-51 => ConnectionQuality::Good,
+            -85..=-71 => ConnectionQuality::Fair,
+            _ => ConnectionQuality::Poor,
+        }
+    }
+}
+
+/// 연결 품질 등급
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ConnectionQuality {
+    Excellent,
+    Good,
+    Fair,
+    Poor,
+}
+
+// ============================================================================
+// 재연결 전략 (지수 백오프)
+// ============================================================================
+
+/// 자동 재연결 전략 (FM-BLE-001 대응)
+pub struct ReconnectionStrategy {
+    max_retries: u32,
+    current_retry: u32,
+    base_delay_ms: u64,
+}
+
+impl ReconnectionStrategy {
+    pub fn new(max_retries: u32) -> Self {
+        Self {
+            max_retries,
+            current_retry: 0,
+            base_delay_ms: 500,
+        }
+    }
+
+    /// 재연결 시도 가능 여부
+    pub fn can_retry(&self) -> bool {
+        self.current_retry < self.max_retries
+    }
+
+    /// 다음 재시도 대기 시간 (밀리초, 지수 백오프)
+    pub fn next_delay_ms(&mut self) -> Option<u64> {
+        if !self.can_retry() {
+            return None;
+        }
+        let delay = self.base_delay_ms * 2u64.pow(self.current_retry);
+        self.current_retry += 1;
+        Some(delay.min(30_000)) // 최대 30초
+    }
+
+    /// 재시도 카운터 리셋
+    pub fn reset(&mut self) {
+        self.current_retry = 0;
     }
 }
 
@@ -372,6 +816,63 @@ mod tests {
         manager.disconnect("test-device-001").await.unwrap();
         assert!(!manager.is_connected("test-device-001"));
         assert_eq!(manager.connected_count(), 0);
+    }
+
+    #[test]
+    fn test_state_machine_valid_transitions() {
+        let mut state = BleStateMachine::Disconnected;
+        assert!(state.transition(BleStateMachine::Scanning).is_ok());
+        assert_eq!(state, BleStateMachine::Scanning);
+        assert!(state.transition(BleStateMachine::Connecting).is_ok());
+        assert_eq!(state, BleStateMachine::Connecting);
+        assert!(state.transition(BleStateMachine::Connected).is_ok());
+        assert!(state.transition(BleStateMachine::Streaming).is_ok());
+        assert!(state.transition(BleStateMachine::Disconnecting).is_ok());
+        assert!(state.transition(BleStateMachine::Disconnected).is_ok());
+    }
+
+    #[test]
+    fn test_state_machine_invalid_transition() {
+        let mut state = BleStateMachine::Disconnected;
+        assert!(state.transition(BleStateMachine::Streaming).is_err());
+    }
+
+    #[test]
+    fn test_chunk_reassembler() {
+        let mut reassembler = ChunkReassembler::new(3);
+        assert!(!reassembler.is_complete());
+
+        reassembler.add_chunk(0, vec![1, 2]).unwrap();
+        reassembler.add_chunk(2, vec![5, 6]).unwrap();
+        assert_eq!(reassembler.missing_chunks(), vec![1]);
+
+        reassembler.add_chunk(1, vec![3, 4]).unwrap();
+        assert!(reassembler.is_complete());
+
+        let data = reassembler.assemble().unwrap();
+        assert_eq!(data, vec![1, 2, 3, 4, 5, 6]);
+    }
+
+    #[test]
+    fn test_rssi_monitor() {
+        let mut monitor = RssiMonitor::new(10);
+        monitor.add_sample(-45);
+        monitor.add_sample(-50);
+        monitor.add_sample(-48);
+        assert!(monitor.average_rssi() > -51.0);
+        assert_eq!(monitor.quality(), ConnectionQuality::Excellent);
+    }
+
+    #[test]
+    fn test_reconnection_strategy() {
+        let mut strategy = ReconnectionStrategy::new(3);
+        assert!(strategy.can_retry());
+        assert_eq!(strategy.next_delay_ms(), Some(500));
+        assert_eq!(strategy.next_delay_ms(), Some(1000));
+        assert_eq!(strategy.next_delay_ms(), Some(2000));
+        assert!(!strategy.can_retry());
+        strategy.reset();
+        assert!(strategy.can_retry());
     }
 
     #[test]

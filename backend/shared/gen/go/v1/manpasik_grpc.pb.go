@@ -21,9 +21,11 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	AuthService_Register_FullMethodName      = "/manpasik.v1.AuthService/Register"
 	AuthService_Login_FullMethodName         = "/manpasik.v1.AuthService/Login"
+	AuthService_SocialLogin_FullMethodName   = "/manpasik.v1.AuthService/SocialLogin"
 	AuthService_RefreshToken_FullMethodName  = "/manpasik.v1.AuthService/RefreshToken"
 	AuthService_Logout_FullMethodName        = "/manpasik.v1.AuthService/Logout"
 	AuthService_ValidateToken_FullMethodName = "/manpasik.v1.AuthService/ValidateToken"
+	AuthService_ResetPassword_FullMethodName = "/manpasik.v1.AuthService/ResetPassword"
 )
 
 // AuthServiceClient is the client API for AuthService service.
@@ -32,9 +34,11 @@ const (
 type AuthServiceClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
+	SocialLogin(ctx context.Context, in *SocialLoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	RefreshToken(ctx context.Context, in *RefreshTokenRequest, opts ...grpc.CallOption) (*LoginResponse, error)
 	Logout(ctx context.Context, in *LogoutRequest, opts ...grpc.CallOption) (*LogoutResponse, error)
 	ValidateToken(ctx context.Context, in *ValidateTokenRequest, opts ...grpc.CallOption) (*ValidateTokenResponse, error)
+	ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*ResetPasswordResponse, error)
 }
 
 type authServiceClient struct {
@@ -59,6 +63,16 @@ func (c *authServiceClient) Login(ctx context.Context, in *LoginRequest, opts ..
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(LoginResponse)
 	err := c.cc.Invoke(ctx, AuthService_Login_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *authServiceClient) SocialLogin(ctx context.Context, in *SocialLoginRequest, opts ...grpc.CallOption) (*LoginResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(LoginResponse)
+	err := c.cc.Invoke(ctx, AuthService_SocialLogin_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -95,15 +109,27 @@ func (c *authServiceClient) ValidateToken(ctx context.Context, in *ValidateToken
 	return out, nil
 }
 
+func (c *authServiceClient) ResetPassword(ctx context.Context, in *ResetPasswordRequest, opts ...grpc.CallOption) (*ResetPasswordResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ResetPasswordResponse)
+	err := c.cc.Invoke(ctx, AuthService_ResetPassword_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthServiceServer is the server API for AuthService service.
 // All implementations must embed UnimplementedAuthServiceServer
 // for forward compatibility.
 type AuthServiceServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
+	SocialLogin(context.Context, *SocialLoginRequest) (*LoginResponse, error)
 	RefreshToken(context.Context, *RefreshTokenRequest) (*LoginResponse, error)
 	Logout(context.Context, *LogoutRequest) (*LogoutResponse, error)
 	ValidateToken(context.Context, *ValidateTokenRequest) (*ValidateTokenResponse, error)
+	ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error)
 	mustEmbedUnimplementedAuthServiceServer()
 }
 
@@ -120,6 +146,9 @@ func (UnimplementedAuthServiceServer) Register(context.Context, *RegisterRequest
 func (UnimplementedAuthServiceServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method Login not implemented")
 }
+func (UnimplementedAuthServiceServer) SocialLogin(context.Context, *SocialLoginRequest) (*LoginResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SocialLogin not implemented")
+}
 func (UnimplementedAuthServiceServer) RefreshToken(context.Context, *RefreshTokenRequest) (*LoginResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RefreshToken not implemented")
 }
@@ -128,6 +157,9 @@ func (UnimplementedAuthServiceServer) Logout(context.Context, *LogoutRequest) (*
 }
 func (UnimplementedAuthServiceServer) ValidateToken(context.Context, *ValidateTokenRequest) (*ValidateTokenResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ValidateToken not implemented")
+}
+func (UnimplementedAuthServiceServer) ResetPassword(context.Context, *ResetPasswordRequest) (*ResetPasswordResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ResetPassword not implemented")
 }
 func (UnimplementedAuthServiceServer) mustEmbedUnimplementedAuthServiceServer() {}
 func (UnimplementedAuthServiceServer) testEmbeddedByValue()                     {}
@@ -186,6 +218,24 @@ func _AuthService_Login_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_SocialLogin_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SocialLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).SocialLogin(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_SocialLogin_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).SocialLogin(ctx, req.(*SocialLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthService_RefreshToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RefreshTokenRequest)
 	if err := dec(in); err != nil {
@@ -240,6 +290,24 @@ func _AuthService_ValidateToken_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthService_ResetPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthServiceServer).ResetPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AuthService_ResetPassword_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthServiceServer).ResetPassword(ctx, req.(*ResetPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthService_ServiceDesc is the grpc.ServiceDesc for AuthService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -256,6 +324,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AuthService_Login_Handler,
 		},
 		{
+			MethodName: "SocialLogin",
+			Handler:    _AuthService_SocialLogin_Handler,
+		},
+		{
 			MethodName: "RefreshToken",
 			Handler:    _AuthService_RefreshToken_Handler,
 		},
@@ -266,6 +338,10 @@ var AuthService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ValidateToken",
 			Handler:    _AuthService_ValidateToken_Handler,
+		},
+		{
+			MethodName: "ResetPassword",
+			Handler:    _AuthService_ResetPassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -3792,6 +3868,7 @@ const (
 	AdminService_GetConfigWithMeta_FullMethodName   = "/manpasik.v1.AdminService/GetConfigWithMeta"
 	AdminService_ValidateConfigValue_FullMethodName = "/manpasik.v1.AdminService/ValidateConfigValue"
 	AdminService_BulkSetConfigs_FullMethodName      = "/manpasik.v1.AdminService/BulkSetConfigs"
+	AdminService_GetAuditLogDetails_FullMethodName  = "/manpasik.v1.AdminService/GetAuditLogDetails"
 )
 
 // AdminServiceClient is the client API for AdminService service.
@@ -3815,6 +3892,8 @@ type AdminServiceClient interface {
 	GetConfigWithMeta(ctx context.Context, in *GetConfigWithMetaRequest, opts ...grpc.CallOption) (*ConfigWithMeta, error)
 	ValidateConfigValue(ctx context.Context, in *ValidateConfigValueRequest, opts ...grpc.CallOption) (*ValidateConfigValueResponse, error)
 	BulkSetConfigs(ctx context.Context, in *BulkSetConfigsRequest, opts ...grpc.CallOption) (*BulkSetConfigsResponse, error)
+	// Phase 6: 감사 로그 상세 조회
+	GetAuditLogDetails(ctx context.Context, in *GetAuditLogDetailsRequest, opts ...grpc.CallOption) (*GetAuditLogDetailsResponse, error)
 }
 
 type adminServiceClient struct {
@@ -3975,6 +4054,16 @@ func (c *adminServiceClient) BulkSetConfigs(ctx context.Context, in *BulkSetConf
 	return out, nil
 }
 
+func (c *adminServiceClient) GetAuditLogDetails(ctx context.Context, in *GetAuditLogDetailsRequest, opts ...grpc.CallOption) (*GetAuditLogDetailsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAuditLogDetailsResponse)
+	err := c.cc.Invoke(ctx, AdminService_GetAuditLogDetails_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminServiceServer is the server API for AdminService service.
 // All implementations must embed UnimplementedAdminServiceServer
 // for forward compatibility.
@@ -3996,6 +4085,8 @@ type AdminServiceServer interface {
 	GetConfigWithMeta(context.Context, *GetConfigWithMetaRequest) (*ConfigWithMeta, error)
 	ValidateConfigValue(context.Context, *ValidateConfigValueRequest) (*ValidateConfigValueResponse, error)
 	BulkSetConfigs(context.Context, *BulkSetConfigsRequest) (*BulkSetConfigsResponse, error)
+	// Phase 6: 감사 로그 상세 조회
+	GetAuditLogDetails(context.Context, *GetAuditLogDetailsRequest) (*GetAuditLogDetailsResponse, error)
 	mustEmbedUnimplementedAdminServiceServer()
 }
 
@@ -4050,6 +4141,9 @@ func (UnimplementedAdminServiceServer) ValidateConfigValue(context.Context, *Val
 }
 func (UnimplementedAdminServiceServer) BulkSetConfigs(context.Context, *BulkSetConfigsRequest) (*BulkSetConfigsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method BulkSetConfigs not implemented")
+}
+func (UnimplementedAdminServiceServer) GetAuditLogDetails(context.Context, *GetAuditLogDetailsRequest) (*GetAuditLogDetailsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetAuditLogDetails not implemented")
 }
 func (UnimplementedAdminServiceServer) mustEmbedUnimplementedAdminServiceServer() {}
 func (UnimplementedAdminServiceServer) testEmbeddedByValue()                      {}
@@ -4342,6 +4436,24 @@ func _AdminService_BulkSetConfigs_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_GetAuditLogDetails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAuditLogDetailsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).GetAuditLogDetails(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_GetAuditLogDetails_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).GetAuditLogDetails(ctx, req.(*GetAuditLogDetailsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminService_ServiceDesc is the grpc.ServiceDesc for AdminService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -4409,6 +4521,10 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "BulkSetConfigs",
 			Handler:    _AdminService_BulkSetConfigs_Handler,
 		},
+		{
+			MethodName: "GetAuditLogDetails",
+			Handler:    _AdminService_GetAuditLogDetails_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "manpasik.proto",
@@ -4424,6 +4540,7 @@ const (
 	FamilyService_ListFamilyMembers_FullMethodName     = "/manpasik.v1.FamilyService/ListFamilyMembers"
 	FamilyService_SetSharingPreferences_FullMethodName = "/manpasik.v1.FamilyService/SetSharingPreferences"
 	FamilyService_GetSharedHealthData_FullMethodName   = "/manpasik.v1.FamilyService/GetSharedHealthData"
+	FamilyService_ValidateSharingAccess_FullMethodName = "/manpasik.v1.FamilyService/ValidateSharingAccess"
 )
 
 // FamilyServiceClient is the client API for FamilyService service.
@@ -4439,6 +4556,8 @@ type FamilyServiceClient interface {
 	ListFamilyMembers(ctx context.Context, in *ListFamilyMembersRequest, opts ...grpc.CallOption) (*ListFamilyMembersResponse, error)
 	SetSharingPreferences(ctx context.Context, in *SetSharingPreferencesRequest, opts ...grpc.CallOption) (*SharingPreferences, error)
 	GetSharedHealthData(ctx context.Context, in *GetSharedHealthDataRequest, opts ...grpc.CallOption) (*GetSharedHealthDataResponse, error)
+	// Phase 6: 공유 접근 검증
+	ValidateSharingAccess(ctx context.Context, in *ValidateSharingAccessRequest, opts ...grpc.CallOption) (*ValidateSharingAccessResponse, error)
 }
 
 type familyServiceClient struct {
@@ -4539,6 +4658,16 @@ func (c *familyServiceClient) GetSharedHealthData(ctx context.Context, in *GetSh
 	return out, nil
 }
 
+func (c *familyServiceClient) ValidateSharingAccess(ctx context.Context, in *ValidateSharingAccessRequest, opts ...grpc.CallOption) (*ValidateSharingAccessResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ValidateSharingAccessResponse)
+	err := c.cc.Invoke(ctx, FamilyService_ValidateSharingAccess_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FamilyServiceServer is the server API for FamilyService service.
 // All implementations must embed UnimplementedFamilyServiceServer
 // for forward compatibility.
@@ -4552,6 +4681,8 @@ type FamilyServiceServer interface {
 	ListFamilyMembers(context.Context, *ListFamilyMembersRequest) (*ListFamilyMembersResponse, error)
 	SetSharingPreferences(context.Context, *SetSharingPreferencesRequest) (*SharingPreferences, error)
 	GetSharedHealthData(context.Context, *GetSharedHealthDataRequest) (*GetSharedHealthDataResponse, error)
+	// Phase 6: 공유 접근 검증
+	ValidateSharingAccess(context.Context, *ValidateSharingAccessRequest) (*ValidateSharingAccessResponse, error)
 	mustEmbedUnimplementedFamilyServiceServer()
 }
 
@@ -4588,6 +4719,9 @@ func (UnimplementedFamilyServiceServer) SetSharingPreferences(context.Context, *
 }
 func (UnimplementedFamilyServiceServer) GetSharedHealthData(context.Context, *GetSharedHealthDataRequest) (*GetSharedHealthDataResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetSharedHealthData not implemented")
+}
+func (UnimplementedFamilyServiceServer) ValidateSharingAccess(context.Context, *ValidateSharingAccessRequest) (*ValidateSharingAccessResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ValidateSharingAccess not implemented")
 }
 func (UnimplementedFamilyServiceServer) mustEmbedUnimplementedFamilyServiceServer() {}
 func (UnimplementedFamilyServiceServer) testEmbeddedByValue()                       {}
@@ -4772,6 +4906,24 @@ func _FamilyService_GetSharedHealthData_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FamilyService_ValidateSharingAccess_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateSharingAccessRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FamilyServiceServer).ValidateSharingAccess(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: FamilyService_ValidateSharingAccess_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FamilyServiceServer).ValidateSharingAccess(ctx, req.(*ValidateSharingAccessRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FamilyService_ServiceDesc is the grpc.ServiceDesc for FamilyService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -4814,6 +4966,10 @@ var FamilyService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSharedHealthData",
 			Handler:    _FamilyService_GetSharedHealthData_Handler,
+		},
+		{
+			MethodName: "ValidateSharingAccess",
+			Handler:    _FamilyService_ValidateSharingAccess_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -6722,6 +6878,7 @@ const (
 	NotificationService_GetUnreadCount_FullMethodName                = "/manpasik.v1.NotificationService/GetUnreadCount"
 	NotificationService_UpdateNotificationPreferences_FullMethodName = "/manpasik.v1.NotificationService/UpdateNotificationPreferences"
 	NotificationService_GetNotificationPreferences_FullMethodName    = "/manpasik.v1.NotificationService/GetNotificationPreferences"
+	NotificationService_SendFromTemplate_FullMethodName              = "/manpasik.v1.NotificationService/SendFromTemplate"
 )
 
 // NotificationServiceClient is the client API for NotificationService service.
@@ -6735,6 +6892,8 @@ type NotificationServiceClient interface {
 	GetUnreadCount(ctx context.Context, in *GetUnreadCountRequest, opts ...grpc.CallOption) (*GetUnreadCountResponse, error)
 	UpdateNotificationPreferences(ctx context.Context, in *UpdateNotificationPreferencesRequest, opts ...grpc.CallOption) (*NotificationPreferences, error)
 	GetNotificationPreferences(ctx context.Context, in *GetNotificationPreferencesRequest, opts ...grpc.CallOption) (*NotificationPreferences, error)
+	// Phase 6: 템플릿 기반 알림 발송
+	SendFromTemplate(ctx context.Context, in *SendFromTemplateRequest, opts ...grpc.CallOption) (*Notification, error)
 }
 
 type notificationServiceClient struct {
@@ -6815,6 +6974,16 @@ func (c *notificationServiceClient) GetNotificationPreferences(ctx context.Conte
 	return out, nil
 }
 
+func (c *notificationServiceClient) SendFromTemplate(ctx context.Context, in *SendFromTemplateRequest, opts ...grpc.CallOption) (*Notification, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(Notification)
+	err := c.cc.Invoke(ctx, NotificationService_SendFromTemplate_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // NotificationServiceServer is the server API for NotificationService service.
 // All implementations must embed UnimplementedNotificationServiceServer
 // for forward compatibility.
@@ -6826,6 +6995,8 @@ type NotificationServiceServer interface {
 	GetUnreadCount(context.Context, *GetUnreadCountRequest) (*GetUnreadCountResponse, error)
 	UpdateNotificationPreferences(context.Context, *UpdateNotificationPreferencesRequest) (*NotificationPreferences, error)
 	GetNotificationPreferences(context.Context, *GetNotificationPreferencesRequest) (*NotificationPreferences, error)
+	// Phase 6: 템플릿 기반 알림 발송
+	SendFromTemplate(context.Context, *SendFromTemplateRequest) (*Notification, error)
 	mustEmbedUnimplementedNotificationServiceServer()
 }
 
@@ -6856,6 +7027,9 @@ func (UnimplementedNotificationServiceServer) UpdateNotificationPreferences(cont
 }
 func (UnimplementedNotificationServiceServer) GetNotificationPreferences(context.Context, *GetNotificationPreferencesRequest) (*NotificationPreferences, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetNotificationPreferences not implemented")
+}
+func (UnimplementedNotificationServiceServer) SendFromTemplate(context.Context, *SendFromTemplateRequest) (*Notification, error) {
+	return nil, status.Error(codes.Unimplemented, "method SendFromTemplate not implemented")
 }
 func (UnimplementedNotificationServiceServer) mustEmbedUnimplementedNotificationServiceServer() {}
 func (UnimplementedNotificationServiceServer) testEmbeddedByValue()                             {}
@@ -7004,6 +7178,24 @@ func _NotificationService_GetNotificationPreferences_Handler(srv interface{}, ct
 	return interceptor(ctx, in, info, handler)
 }
 
+func _NotificationService_SendFromTemplate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SendFromTemplateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(NotificationServiceServer).SendFromTemplate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: NotificationService_SendFromTemplate_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(NotificationServiceServer).SendFromTemplate(ctx, req.(*SendFromTemplateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // NotificationService_ServiceDesc is the grpc.ServiceDesc for NotificationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -7038,6 +7230,10 @@ var NotificationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetNotificationPreferences",
 			Handler:    _NotificationService_GetNotificationPreferences_Handler,
+		},
+		{
+			MethodName: "SendFromTemplate",
+			Handler:    _NotificationService_SendFromTemplate_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

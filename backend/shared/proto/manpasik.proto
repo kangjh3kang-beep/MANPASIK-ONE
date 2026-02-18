@@ -13,15 +13,32 @@ import "google/protobuf/timestamp.proto";
 service AuthService {
   rpc Register(RegisterRequest) returns (RegisterResponse);
   rpc Login(LoginRequest) returns (LoginResponse);
+  rpc SocialLogin(SocialLoginRequest) returns (LoginResponse);
   rpc RefreshToken(RefreshTokenRequest) returns (LoginResponse);
   rpc Logout(LogoutRequest) returns (LogoutResponse);
   rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+  rpc ResetPassword(ResetPasswordRequest) returns (ResetPasswordResponse);
 }
 
 message RegisterRequest {
   string email = 1;
   string password = 2;
   string display_name = 3;
+  // 건강 프로필 (온보딩 시 선택 입력)
+  string birth_date = 4;          // YYYY-MM-DD
+  Gender gender = 5;
+  string blood_type = 6;          // "A+", "B-", "O+", "AB+" 등
+  double height_cm = 7;
+  double weight_kg = 8;
+  repeated string medical_conditions = 9;   // "diabetes", "hypertension" 등
+  repeated string allergies = 10;
+  string emergency_contact_name = 11;
+  string emergency_contact_phone = 12;
+  // 약관 동의
+  bool terms_agreed = 13;
+  bool privacy_agreed = 14;
+  bool health_data_agreed = 15;     // 건강정보 수집 동의 (필수)
+  bool marketing_agreed = 16;       // 마케팅 동의 (선택)
 }
 
 message RegisterResponse {
@@ -61,6 +78,42 @@ message ValidateTokenResponse {
   string user_id = 1;
   string email = 2;
   string role = 3;
+}
+
+// ----------------------------------------------------------------------------
+// 소셜 로그인 & 비밀번호 재설정
+// ----------------------------------------------------------------------------
+
+enum SocialProvider {
+  SOCIAL_PROVIDER_UNSPECIFIED = 0;
+  SOCIAL_PROVIDER_GOOGLE = 1;
+  SOCIAL_PROVIDER_APPLE = 2;
+  SOCIAL_PROVIDER_KAKAO = 3;
+  SOCIAL_PROVIDER_NAVER = 4;
+}
+
+enum Gender {
+  GENDER_UNSPECIFIED = 0;
+  GENDER_MALE = 1;
+  GENDER_FEMALE = 2;
+  GENDER_OTHER = 3;
+  GENDER_PREFER_NOT_TO_SAY = 4;
+}
+
+message SocialLoginRequest {
+  SocialProvider provider = 1;
+  string id_token = 2;           // OAuth2 ID 토큰
+  string access_token = 3;       // OAuth2 액세스 토큰
+  string nonce = 4;              // OIDC nonce (Apple Sign In)
+}
+
+message ResetPasswordRequest {
+  string email = 1;
+}
+
+message ResetPasswordResponse {
+  bool success = 1;
+  string message = 2;            // "비밀번호 재설정 링크가 이메일로 전송되었습니다."
 }
 
 // ============================================================================
@@ -280,6 +333,16 @@ message UpdateProfileRequest {
   string avatar_url = 3;
   string language = 4;
   string timezone = 5;
+  // 건강 프로필
+  string birth_date = 6;           // YYYY-MM-DD
+  Gender gender = 7;
+  string blood_type = 8;
+  double height_cm = 9;
+  double weight_kg = 10;
+  repeated string medical_conditions = 11;
+  repeated string allergies = 12;
+  string emergency_contact_name = 13;
+  string emergency_contact_phone = 14;
 }
 
 message UserProfile {
@@ -291,6 +354,19 @@ message UserProfile {
   string timezone = 6;
   SubscriptionTier subscription_tier = 7;
   google.protobuf.Timestamp created_at = 8;
+  // 건강 프로필
+  string birth_date = 9;           // YYYY-MM-DD
+  Gender gender = 10;
+  string blood_type = 11;          // "A+", "B-", "O+", "AB+" 등
+  double height_cm = 12;
+  double weight_kg = 13;
+  repeated string medical_conditions = 14;
+  repeated string allergies = 15;
+  string emergency_contact_name = 16;
+  string emergency_contact_phone = 17;
+  // 소셜 로그인 정보
+  SocialProvider social_provider = 18;  // 소셜 로그인 사용자의 경우
+  string social_id = 19;                // 소셜 계정 고유 ID
 }
 
 message GetSubscriptionRequest {
@@ -691,6 +767,8 @@ service AiInferenceService {
   rpc PredictTrend(PredictTrendRequest) returns (TrendPrediction);
   rpc GetModelInfo(GetModelInfoRequest) returns (ModelInfo);
   rpc ListModels(ListModelsRequest) returns (ListModelsResponse);
+  // Phase 9: AI 스트리밍 채팅 (C1)
+  rpc StreamChat(StreamChatRequest) returns (stream StreamChatResponse);
 }
 
 // --- AI Inference messages ---
@@ -1534,6 +1612,11 @@ service AdminService {
   rpc GetConfigWithMeta(GetConfigWithMetaRequest) returns (ConfigWithMeta);
   rpc ValidateConfigValue(ValidateConfigValueRequest) returns (ValidateConfigValueResponse);
   rpc BulkSetConfigs(BulkSetConfigsRequest) returns (BulkSetConfigsResponse);
+  // Phase 6: 감사 로그 상세 조회
+  rpc GetAuditLogDetails(GetAuditLogDetailsRequest) returns (GetAuditLogDetailsResponse);
+  // Phase 9: 매출/재고 통계 (C12)
+  rpc GetRevenueStats(GetRevenueStatsRequest) returns (GetRevenueStatsResponse);
+  rpc GetInventoryStats(GetInventoryStatsRequest) returns (GetInventoryStatsResponse);
 }
 
 enum AdminRole {
@@ -1700,6 +1783,8 @@ service FamilyService {
   rpc ListFamilyMembers(ListFamilyMembersRequest) returns (ListFamilyMembersResponse);
   rpc SetSharingPreferences(SetSharingPreferencesRequest) returns (SharingPreferences);
   rpc GetSharedHealthData(GetSharedHealthDataRequest) returns (GetSharedHealthDataResponse);
+  // Phase 6: 공유 접근 검증
+  rpc ValidateSharingAccess(ValidateSharingAccessRequest) returns (ValidateSharingAccessResponse);
 }
 
 enum FamilyRole {
@@ -1817,6 +1902,12 @@ message SetSharingPreferencesRequest {
   bool share_prescriptions = 5;
   bool share_coaching = 6;
   repeated string shared_with_user_ids = 7;
+  bool share_health_score = 8;
+  bool share_goals = 9;
+  bool share_alerts = 10;
+  int32 measurement_days_limit = 11;
+  repeated string allowed_biomarkers = 12;
+  bool require_approval = 13;
 }
 
 message SharingPreferences {
@@ -1828,6 +1919,12 @@ message SharingPreferences {
   bool share_coaching = 6;
   repeated string shared_with_user_ids = 7;
   google.protobuf.Timestamp updated_at = 8;
+  bool share_health_score = 9;
+  bool share_goals = 10;
+  bool share_alerts = 11;
+  int32 measurement_days_limit = 12;
+  repeated string allowed_biomarkers = 13;
+  bool require_approval = 14;
 }
 
 message GetSharedHealthDataRequest {
@@ -2136,6 +2233,9 @@ service CommunityService {
   rpc GetChallenge(GetChallengeRequest) returns (Challenge);
   rpc JoinChallenge(JoinChallengeRequest) returns (JoinChallengeResponse);
   rpc ListChallenges(ListChallengesRequest) returns (ListChallengesResponse);
+  // Phase 9: 챌린지 리더보드 (C8)
+  rpc GetChallengeLeaderboard(GetChallengeLeaderboardRequest) returns (GetChallengeLeaderboardResponse);
+  rpc UpdateChallengeProgress(UpdateChallengeProgressRequest) returns (UpdateChallengeProgressResponse);
 }
 
 enum PostCategory {
@@ -2449,6 +2549,8 @@ service NotificationService {
   rpc GetUnreadCount(GetUnreadCountRequest) returns (GetUnreadCountResponse);
   rpc UpdateNotificationPreferences(UpdateNotificationPreferencesRequest) returns (NotificationPreferences);
   rpc GetNotificationPreferences(GetNotificationPreferencesRequest) returns (NotificationPreferences);
+  // Phase 6: 템플릿 기반 알림 발송
+  rpc SendFromTemplate(SendFromTemplateRequest) returns (Notification);
 }
 
 enum NotificationType {
@@ -2585,6 +2687,8 @@ service TranslationService {
   rpc TranslateBatch(TranslateBatchRequest) returns (TranslateBatchResponse);
   rpc GetTranslationHistory(GetTranslationHistoryRequest) returns (GetTranslationHistoryResponse);
   rpc GetTranslationUsage(GetTranslationUsageRequest) returns (GetTranslationUsageResponse);
+  // Phase 9: 실시간 번역 (C6)
+  rpc TranslateRealtime(TranslateRealtimeRequest) returns (TranslateRealtimeResponse);
 }
 
 message TranslateTextRequest {
@@ -3084,4 +3188,183 @@ message RateConsultationRequest {
 message RateConsultationResponse {
   bool success = 1;
   double new_average_rating = 2;
+}
+
+// ============================================================================
+// Phase 6: 신규 메시지 (SendFromTemplate, ValidateSharingAccess, AuditLogDetails)
+// ============================================================================
+
+message SendFromTemplateRequest {
+  string template_key = 1;
+  string user_id = 2;
+  map<string, string> data = 3;
+}
+
+message ValidateSharingAccessRequest {
+  string group_id = 1;
+  string requester_user_id = 2;
+  string target_user_id = 3;
+  string biomarker = 4;
+}
+
+message ValidateSharingAccessResponse {
+  bool allowed = 1;
+  string deny_reason = 2;
+}
+
+message GetAuditLogDetailsRequest {
+  int32 limit = 1;
+  int32 offset = 2;
+  string admin_id = 3;
+  string action = 4;
+}
+
+message GetAuditLogDetailsResponse {
+  repeated AuditLogDetail details = 1;
+  int32 total = 2;
+}
+
+message AuditLogDetail {
+  string id = 1;
+  string admin_id = 2;
+  string action = 3;
+  string resource_type = 4;
+  string resource_id = 5;
+  string old_value = 6;
+  string new_value = 7;
+  string description = 8;
+  string ip_address = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+// =============================================================================
+// Phase 9: Sprint 9 신규 메시지 (C1, C6, C8, C12)
+// =============================================================================
+
+// --- C1: AI 스트리밍 채팅 ---
+
+message StreamChatRequest {
+  string user_id = 1;
+  string message = 2;
+  string session_id = 3;
+  repeated string context_measurement_ids = 4;
+}
+
+message StreamChatResponse {
+  string chunk = 1;
+  bool is_final = 2;
+  string session_id = 3;
+  string full_response = 4;
+}
+
+// --- C8: 챌린지 리더보드 ---
+
+message GetChallengeLeaderboardRequest {
+  string challenge_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message GetChallengeLeaderboardResponse {
+  repeated LeaderboardEntry entries = 1;
+  int32 total_participants = 2;
+  LeaderboardEntry my_entry = 3;
+}
+
+message LeaderboardEntry {
+  int32 rank = 1;
+  string user_id = 2;
+  string display_name = 3;
+  string avatar_url = 4;
+  double progress_value = 5;
+  double target_value = 6;
+  double progress_pct = 7;
+  int32 streak_days = 8;
+  google.protobuf.Timestamp last_updated = 9;
+}
+
+message UpdateChallengeProgressRequest {
+  string challenge_id = 1;
+  string user_id = 2;
+  double value = 3;
+  string measurement_id = 4;
+}
+
+message UpdateChallengeProgressResponse {
+  bool success = 1;
+  double new_progress = 2;
+  double target_value = 3;
+  int32 new_rank = 4;
+}
+
+// --- C12: 관리자 매출/재고 통계 ---
+
+message GetRevenueStatsRequest {
+  string period = 1;
+  string start_date = 2;
+  string end_date = 3;
+}
+
+message GetRevenueStatsResponse {
+  int64 total_revenue_krw = 1;
+  int64 subscription_revenue_krw = 2;
+  int64 product_revenue_krw = 3;
+  int32 total_transactions = 4;
+  repeated RevenuePeriod periods = 5;
+  map<string, int64> revenue_by_tier = 6;
+}
+
+message RevenuePeriod {
+  string label = 1;
+  int64 revenue_krw = 2;
+  int32 transaction_count = 3;
+}
+
+message GetInventoryStatsRequest {
+  int32 category_filter = 1;
+}
+
+message GetInventoryStatsResponse {
+  repeated InventoryItem items = 1;
+  int32 total_products = 2;
+  int32 low_stock_count = 3;
+  int32 out_of_stock_count = 4;
+}
+
+message InventoryItem {
+  string product_id = 1;
+  string product_name = 2;
+  int32 category = 3;
+  int32 current_stock = 4;
+  int32 min_stock_threshold = 5;
+  int32 monthly_sales = 6;
+  int32 price_krw = 7;
+  string status = 8;
+}
+
+// --- C6: 실시간 번역 ---
+
+message TranslateRealtimeRequest {
+  string text = 1;
+  string source_language = 2;
+  string target_language = 3;
+  bool is_medical = 4;
+  string context = 5;
+  string session_id = 6;
+}
+
+message TranslateRealtimeResponse {
+  string translated_text = 1;
+  string source_language = 2;
+  string target_language = 3;
+  double confidence = 4;
+  bool is_medical_term = 5;
+  int64 latency_ms = 6;
+  repeated MedicalTermMapping medical_terms = 7;
+}
+
+message MedicalTermMapping {
+  string original = 1;
+  string translated = 2;
+  string category = 3;
 }

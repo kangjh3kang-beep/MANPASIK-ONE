@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -317,4 +318,145 @@ func TestRequestIDInterceptor_PropagatesExisting(t *testing.T) {
 	if id != "existing-id-456" {
 		t.Fatalf("expected 'existing-id-456', got %q", id)
 	}
+}
+
+// --- DefaultRBACConfig Tests ---
+
+func TestDefaultRBACConfig_AdminMethodsRestricted(t *testing.T) {
+	config := DefaultRBACConfig()
+	interceptor := RBACInterceptor(config)
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return "ok", nil
+	}
+
+	// Regular user should NOT access admin methods
+	ctx := context.WithValue(context.Background(), UserRoleKey, RoleUser)
+	_, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/manpasik.v1.AdminService/ListUsers"}, handler)
+	if err == nil {
+		t.Fatal("regular user should not access admin method")
+	}
+	st, ok := status.FromError(err)
+	if !ok || st.Code() != codes.PermissionDenied {
+		t.Fatalf("expected PermissionDenied, got %v", err)
+	}
+}
+
+func TestDefaultRBACConfig_AdminCanAccessAll(t *testing.T) {
+	config := DefaultRBACConfig()
+	interceptor := RBACInterceptor(config)
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return "ok", nil
+	}
+
+	ctx := context.WithValue(context.Background(), UserRoleKey, RoleAdmin)
+	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/manpasik.v1.AdminService/ListUsers"}, handler)
+	if err != nil {
+		t.Fatalf("admin should access all methods, got %v", err)
+	}
+	if resp != "ok" {
+		t.Fatalf("expected 'ok', got %v", resp)
+	}
+}
+
+func TestDefaultRBACConfig_MedicalStaffTelemedicine(t *testing.T) {
+	config := DefaultRBACConfig()
+	interceptor := RBACInterceptor(config)
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return "ok", nil
+	}
+
+	ctx := context.WithValue(context.Background(), UserRoleKey, RoleMedicalStaff)
+	resp, err := interceptor(ctx, nil, &grpc.UnaryServerInfo{FullMethod: "/manpasik.v1.TelemedicineService/CreatePrescription"}, handler)
+	if err != nil {
+		t.Fatalf("medical staff should access telemedicine, got %v", err)
+	}
+	if resp != "ok" {
+		t.Fatalf("expected 'ok', got %v", resp)
+	}
+}
+
+// --- Cache Middleware Tests ---
+
+func TestIsWriteMethod(t *testing.T) {
+	tests := []struct {
+		method string
+		want   bool
+	}{
+		{"/manpasik.v1.AuthService/CreateUser", true},
+		{"/manpasik.v1.AdminService/UpdateSystemConfig", true},
+		{"/manpasik.v1.AdminService/DeleteUser", true},
+		{"/manpasik.v1.AdminService/GetSystemStats", false},
+		{"/manpasik.v1.MeasurementService/ListSessions", false},
+	}
+	for _, tc := range tests {
+		t.Run(tc.method, func(t *testing.T) {
+			if got := isWriteMethod(tc.method); got != tc.want {
+				t.Errorf("isWriteMethod(%q) = %v, want %v", tc.method, got, tc.want)
+			}
+		})
+	}
+}
+
+func TestCacheInterceptor_SkipsWriteMethods(t *testing.T) {
+	store := &mockCacheStore{}
+	config := &CacheConfig{
+		DefaultTTL: 5 * time.Minute,
+		KeyPrefix:  "test:",
+	}
+	interceptor := CacheInterceptor(store, config)
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return "written", nil
+	}
+
+	resp, err := interceptor(context.Background(), nil, &grpc.UnaryServerInfo{FullMethod: "/test/CreateItem"}, handler)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if resp != "written" {
+		t.Fatalf("expected 'written', got %v", resp)
+	}
+}
+
+func TestCacheInterceptor_ZeroTTLSkips(t *testing.T) {
+	store := &mockCacheStore{}
+	config := &CacheConfig{
+		DefaultTTL: 0,
+		KeyPrefix:  "test:",
+	}
+	interceptor := CacheInterceptor(store, config)
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return "uncached", nil
+	}
+
+	resp, err := interceptor(context.Background(), nil, &grpc.UnaryServerInfo{FullMethod: "/test/GetItem"}, handler)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	if resp != "uncached" {
+		t.Fatalf("expected 'uncached', got %v", resp)
+	}
+}
+
+// mockCacheStore는 테스트용 캐시 저장소입니다.
+type mockCacheStore struct {
+	data map[string]string
+}
+
+func (m *mockCacheStore) Get(_ context.Context, key string) (string, error) {
+	if m.data == nil {
+		return "", fmt.Errorf("not found")
+	}
+	v, ok := m.data[key]
+	if !ok {
+		return "", fmt.Errorf("not found")
+	}
+	return v, nil
+}
+
+func (m *mockCacheStore) Set(_ context.Context, key string, value interface{}, _ time.Duration) error {
+	if m.data == nil {
+		m.data = make(map[string]string)
+	}
+	m.data[key] = fmt.Sprintf("%v", value)
+	return nil
 }

@@ -1,0 +1,332 @@
+# ManPaSik AI 생태계 — Docker Compose 통합 환경
+# 사용법: docker-compose up -d
+version: "3.9"
+
+x-go-service: &go-service
+  build:
+    context: ./backend
+  restart: unless-stopped
+  environment: &common-env
+    DB_HOST: postgres
+    DB_PORT: "5432"
+    DB_USER: manpasik
+    DB_PASSWORD: manpasik_dev
+    DB_NAME: manpasik
+    DB_SSLMODE: disable
+    REDIS_HOST: redis
+    REDIS_PORT: "6379"
+    KAFKA_BROKERS: redpanda:19092
+    JWT_SECRET: dev-secret-change-in-production
+    S3_ENDPOINT: minio:9000
+    S3_ACCESS_KEY: minioadmin
+    S3_SECRET_KEY: minioadmin
+    S3_BUCKET: manpasik
+  depends_on:
+    postgres:
+      condition: service_healthy
+    redis:
+      condition: service_healthy
+  networks:
+    - manpasik
+
+services:
+  # ============================================================================
+  # 인프라
+  # ============================================================================
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: manpasik
+      POSTGRES_PASSWORD: manpasik_dev
+      POSTGRES_DB: manpasik
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/database/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U manpasik"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - manpasik
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - manpasik
+
+  redpanda:
+    image: redpandadata/redpanda:v24.3.1
+    command:
+      - redpanda start
+      - --smp 1
+      - --memory 512M
+      - --overprovisioned
+      - --kafka-addr internal://0.0.0.0:19092,external://0.0.0.0:9092
+      - --advertise-kafka-addr internal://redpanda:19092,external://localhost:9092
+    ports:
+      - "9092:9092"
+      - "19092:19092"
+    networks:
+      - manpasik
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - manpasik
+
+  # ============================================================================
+  # Gateway (REST → gRPC)
+  # ============================================================================
+  gateway:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      <<: *common-env
+      HTTP_PORT: ":8080"
+      AUTH_SERVICE_ADDR: auth-service:50051
+      USER_SERVICE_ADDR: user-service:50052
+      DEVICE_SERVICE_ADDR: device-service:50053
+      MEASUREMENT_SERVICE_ADDR: measurement-service:50054
+      SUBSCRIPTION_SERVICE_ADDR: subscription-service:50055
+      SHOP_SERVICE_ADDR: shop-service:50056
+      PAYMENT_SERVICE_ADDR: payment-service:50057
+      AI_INFERENCE_SERVICE_ADDR: ai-inference-service:50058
+      CARTRIDGE_SERVICE_ADDR: cartridge-service:50059
+      CALIBRATION_SERVICE_ADDR: calibration-service:50060
+      COACHING_SERVICE_ADDR: coaching-service:50061
+      NOTIFICATION_SERVICE_ADDR: notification-service:50062
+      FAMILY_SERVICE_ADDR: family-service:50063
+      HEALTH_RECORD_SERVICE_ADDR: health-record-service:50064
+      TELEMEDICINE_SERVICE_ADDR: telemedicine-service:50065
+      RESERVATION_SERVICE_ADDR: reservation-service:50066
+      COMMUNITY_SERVICE_ADDR: community-service:50067
+      ADMIN_SERVICE_ADDR: admin-service:50068
+      PRESCRIPTION_SERVICE_ADDR: prescription-service:50069
+      TRANSLATION_SERVICE_ADDR: translation-service:50070
+      VIDEO_SERVICE_ADDR: video-service:50071
+    depends_on:
+      - auth-service
+      - user-service
+
+  # ============================================================================
+  # 마이크로서비스
+  # ============================================================================
+  auth-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/auth-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50051"
+
+  user-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/user-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50052"
+
+  device-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/device-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50053"
+
+  measurement-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/measurement-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50054"
+
+  subscription-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/subscription-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50055"
+
+  shop-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/shop-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50056"
+
+  payment-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/payment-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50057"
+
+  ai-inference-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/ai-inference-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50058"
+
+  cartridge-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/cartridge-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50059"
+
+  calibration-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/calibration-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50060"
+
+  coaching-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/coaching-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50061"
+
+  notification-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/notification-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50062"
+
+  family-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/family-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50063"
+
+  health-record-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/health-record-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50064"
+
+  telemedicine-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/telemedicine-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50065"
+
+  reservation-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/reservation-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50066"
+
+  community-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/community-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50067"
+
+  admin-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/admin-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50068"
+
+  prescription-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/prescription-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50069"
+
+  translation-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/translation-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50070"
+
+  video-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/video-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50071"
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  manpasik:
+    driver: bridge

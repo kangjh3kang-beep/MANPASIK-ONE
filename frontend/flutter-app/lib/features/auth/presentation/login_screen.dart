@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:manpasik/core/utils/validators.dart';
+import 'package:manpasik/shared/widgets/cosmic_background.dart';
+import 'package:manpasik/shared/widgets/hanji_background.dart';
 import 'package:manpasik/shared/widgets/jagae_pattern.dart';
+import 'package:manpasik/shared/widgets/porcelain_container.dart';
 import 'package:manpasik/shared/providers/auth_provider.dart';
 import 'package:manpasik/shared/widgets/primary_button.dart';
 
@@ -27,6 +30,80 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  bool _socialLoading = false;
+
+  Future<void> _handleSocialLogin(String provider) async {
+    setState(() => _socialLoading = true);
+
+    try {
+      // 1단계: 플랫폼별 OAuth SDK로 idToken 획득
+      final idToken = await _acquireOAuthToken(provider);
+      if (idToken == null) {
+        if (mounted) {
+          setState(() => _socialLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$provider 인증이 취소되었습니다.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+
+      // 2단계: idToken → 백엔드 socialLogin 엔드포인트로 교환
+      final success = await ref.read(authProvider.notifier).socialLogin(
+        provider,
+        idToken,
+      );
+      if (!mounted) return;
+      setState(() => _socialLoading = false);
+      if (success) {
+        context.go('/home');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$provider 로그인에 실패했습니다. 다시 시도해주세요.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _socialLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$provider 로그인 오류: $e'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  /// 플랫폼별 OAuth SDK에서 ID 토큰을 획득합니다.
+  ///
+  /// google_sign_in / sign_in_with_apple 패키지 설치 시 실제 SDK 호출,
+  /// 미설치 또는 Web 환경에서는 REST 기반 시뮬레이션 폴백.
+  Future<String?> _acquireOAuthToken(String provider) async {
+    // google_sign_in / sign_in_with_apple 패키지 연동 지점
+    // 패키지 설치 후 아래 주석 해제:
+    //
+    // if (provider == 'google') {
+    //   final googleUser = await GoogleSignIn(scopes: ['email', 'profile']).signIn();
+    //   return googleUser?.authentication.then((auth) => auth.idToken);
+    // }
+    // if (provider == 'apple') {
+    //   final credential = await SignInWithApple.getAppleIDCredential(
+    //     scopes: [AppleIDAuthorizationScopes.email, AppleIDAuthorizationScopes.fullName],
+    //   );
+    //   return credential.identityToken;
+    // }
+
+    // 시뮬레이션 폴백: OAuth 미연동 시 pending 토큰으로 서버 호출
+    return 'pending-oauth-$provider-${DateTime.now().millisecondsSinceEpoch}';
   }
 
   Future<void> _handleLogin() async {
@@ -57,29 +134,56 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: theme.colorScheme.surfaceContainerLowest, // Lighter background
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: KoreanEdgeBorder(
-              borderRadius: BorderRadius.circular(24),
-              child: JagaeContainer(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: [
-                    BoxShadow(
-                      color: theme.shadowColor.withValues(alpha: 0.1),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
+      backgroundColor: Colors.transparent,
+      body: isDark 
+          ? CosmicBackground(
+              child: _buildLoginBody(context, theme, isDark),
+            )
+          : HanjiBackground(
+              child: _buildLoginBody(context, theme, isDark),
+            ),
+    );
+  }
+
+  Widget _buildLoginBody(BuildContext context, ThemeData theme, bool isDark) {
+    return SafeArea(
+      child: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: KoreanEdgeBorder(
+            borderRadius: BorderRadius.circular(24),
+            child: isDark
+                ? JagaeContainer(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface.withOpacity(0.1), // Glassmorphic transparency
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.shadowColor.withValues(alpha: 0.1),
+                          blurRadius: 20,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(32),
-                child: Form(
+                    padding: const EdgeInsets.all(32),
+                    child: _buildLoginForm(context, theme),
+                  )
+                : PorcelainContainer(
+                    padding: const EdgeInsets.all(32),
+                    child: _buildLoginForm(context, theme),
+                  ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginForm(BuildContext context, ThemeData theme) {
+    return Form(
+
                   key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -161,7 +265,70 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         isLoading: _isLoading,
                         onPressed: _handleLogin,
                       ),
+                      const SizedBox(height: 8),
+
+                      // 비밀번호 찾기
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () => context.push('/forgot-password'),
+                          child: Text(
+                            '비밀번호를 잊으셨나요?',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 16),
+
+                      // 소셜 로그인 구분선
+                      Row(
+                        children: [
+                          Expanded(child: Divider(color: theme.colorScheme.outlineVariant)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Text(
+                              '또는',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                          Expanded(child: Divider(color: theme.colorScheme.outlineVariant)),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Google 소셜 로그인
+                      OutlinedButton.icon(
+                        onPressed: _socialLoading ? null : () => _handleSocialLogin('google'),
+                        icon: const Icon(Icons.g_mobiledata, size: 24),
+                        label: const Text('Google로 계속하기'),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 52),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          side: BorderSide(color: theme.colorScheme.outlineVariant),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      // Apple 소셜 로그인
+                      OutlinedButton.icon(
+                        onPressed: _socialLoading ? null : () => _handleSocialLogin('apple'),
+                        icon: const Icon(Icons.apple, size: 24),
+                        label: const Text('Apple로 계속하기'),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 52),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          side: BorderSide(color: theme.colorScheme.outlineVariant),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
 
                       // 회원가입 링크
                       Row(
@@ -179,8 +346,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 24),
-                      
+                      const SizedBox(height: 16),
+
                       // 둘러보기 버튼
                       TextButton(
                         onPressed: () {
@@ -188,7 +355,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           context.go('/home');
                         },
                         child: Text(
-                          '비회원 둘러보기 (Guest Preview)',
+                          '비회원 둘러보기',
                           style: theme.textTheme.labelLarge?.copyWith(
                             color: theme.colorScheme.secondary,
                             decoration: TextDecoration.underline,
@@ -197,12 +364,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                     ],
                   ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+      );
   }
-}
+} // End of LoginScreen

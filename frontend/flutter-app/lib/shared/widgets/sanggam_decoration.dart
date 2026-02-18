@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:ui';
-import '../theme/app_theme.dart';
+import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/shared/widgets/jagae_pattern.dart'; // Add import
 
 /// MANPASIK R&D Lab - Sanggam Inlay Decoration
 /// Provides traditional gold inlay effect and glassmorphism for Flutter widgets.
@@ -16,7 +17,7 @@ class SanggamContainer extends StatelessWidget {
     required this.child,
     this.borderRadius = 16.0,
     this.showGlow = true,
-    this.borderWidth = 1.0,
+    this.borderWidth = 1.5, // Thicker default border
     this.backgroundColor,
   });
 
@@ -27,7 +28,7 @@ class SanggamContainer extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         boxShadow: showGlow ? [
           BoxShadow(
-            color: AppTheme.sanggamGold.withOpacity(0.1),
+            color: AppTheme.sanggamGold.withOpacity(0.2), // Increased glow opacity
             blurRadius: 15,
             spreadRadius: 2,
           )
@@ -42,9 +43,12 @@ class SanggamContainer extends StatelessWidget {
               borderRadius: borderRadius,
               borderWidth: borderWidth,
             ),
+            foregroundPainter: JagaePatternPainter( // Use the public painter if possible, or duplicate logic
+               color: Colors.white.withOpacity(0.15), // Increased from 0.05
+            ), 
             child: Container(
               padding: const EdgeInsets.all(1), // Border alignment
-              color: backgroundColor ?? AppTheme.deepSeaBlue.withOpacity(0.7),
+              color: backgroundColor ?? AppTheme.deepSeaBlue.withOpacity(0.8), // Slightly darker for contrast
               child: child,
             ),
           ),

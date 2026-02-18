@@ -24,12 +24,12 @@
 
 | 구성요소 | IEC 62304 등급 | V&V 수준 |
 |----------|-------------|---------|
-| Rust 코어 엔진 (10모듈) | Class B | 전체 V&V |
-| Go 마이크로서비스 (4서비스) | Class B | 전체 V&V |
-| Flutter 모바일 앱 | Class B | 전체 V&V |
+| Rust 코어 엔진 (10모듈: ble, nfc, dsp, ai, crypto, sync, storage, ffi, config, error) | Class B | 전체 V&V |
+| Go 마이크로서비스 (22서비스: auth, user, measurement, device, cartridge 외 17개) | Class B | 전체 V&V |
+| Flutter 모바일 앱 (12개 Feature: auth, home, measurement, devices, chat, settings, admin, ai_coach, data_hub, community, family, market, medical) | Class B | 전체 V&V |
 | Next.js 웹 대시보드 | Class A | 기본 V&V |
-| AI/ML 모델 (5종) | Class B | 강화 V&V (FDA AI/ML) |
-| 인프라 (Docker/K8s) | Class A | 기본 V&V |
+| AI/ML 모델 (5종: 바이오마커 분류/회귀, 이상탐지, 건강코치, 카트리지 QC) | Class B | 강화 V&V (FDA AI/ML) |
+| 인프라 (Docker Compose, K8s, PostgreSQL 21 스키마) | Class A | 기본 V&V |
 
 ---
 
@@ -229,11 +229,59 @@ Level 5: 임상 확인 (Clinical Validation)
 
 ---
 
-## 10. 문서 이력
+## 10. 구현된 테스트 산출물 현황
+
+### 10.1 E2E 테스트 (`tests/e2e/`)
+
+| 파일 | 시나리오 수 | 커버리지 |
+|------|----------|---------|
+| auth_flow_test.go | 5 | 회원가입, 로그인, 중복, 토큰갱신, 로그아웃 |
+| measurement_flow_test.go | 5 | 전체 플로우, 차동측정 정확도, 멀티카트리지, 히스토리, 미인증 차단 |
+| device_management_test.go | 4 | 디바이스 CRUD, 멀티디바이스, 펌웨어, 접근제어 |
+| medical_service_test.go | 5 | 비대면진료, 처방전, 건강리포트, 응급알림, 프라이버시 |
+| community_family_test.go | 5 | 게시글 CRUD, 좋아요/댓글, 가족그룹, 데이터공유, 권한 |
+| admin_test.go | 5 | 사용자관리, 카트리지관리, 시스템설정, 감사로그, 번역관리 |
+| **합계** | **29** | 6개 도메인 전체 커버 |
+
+### 10.2 보안 테스트 (`tests/security/`)
+
+| 파일 | 테스트 수 | OWASP 커버리지 |
+|------|----------|--------------|
+| auth_security_test.go | 8 | A01 (권한), A04 (Rate Limit), A07 (인증) |
+| api_security_test.go | 9 | A03 (인젝션), A05 (설정), A06 (취약점), A08 (무결성), A09 (로깅) |
+| data_security_test.go | 11 | A02 (암호화), A10 (SSRF), GDPR/PIPA/HIPAA |
+| dependency_scan.sh | - | Go/Dart/Rust/Docker 의존성 스캔 |
+| **합계** | **28** | **OWASP Top 10 전 항목 (10/10)** |
+
+### 10.3 부하 테스트 (`tests/load/`, k6 기반)
+
+| 파일 | 시나리오 | 목표 지표 |
+|------|---------|----------|
+| auth_load_test.js | 인증 부하 | 500 VU, p95 < 200ms |
+| measurement_load_test.js | 측정 부하 | 200 VU, p95 < 500ms |
+| stress_test.js | 스트레스 | 2000 VU 단계적 증가 |
+| spike_test.js | 스파이크 | 0→1000 VU 급증 |
+| concurrent_users_test.js | 동시접속 | 1000 동시 사용자 |
+| api_gateway_load_test.js | 게이트웨이 | 혼합 트래픽 500 VU |
+
+### 10.4 위험 통제 검증 (ISO 14971 ↔ V&V 연계)
+
+| FMEA ID | 위험 | 통제 조치 | 검증 테스트 |
+|---------|------|---------|-----------|
+| FM-AI-002 | AI 위음성 | SafetyValidator 이중검증 | ai/mod.rs 단위테스트 3개 |
+| FM-BLE-001 | BLE 연결 끊김 | BleStateMachine + ReconnectionStrategy | ble/mod.rs 단위테스트 5개 |
+| FM-BLE-003 | 데이터 손실 | ChunkReassembler + CRC32 | ble/mod.rs 단위테스트 1개 |
+| FM-SYNC-001 | 오프라인 동기화 실패 | CRDT (GCounter, LWWRegister, ORSet) | sync 모듈 테스트 |
+| FM-CRYPTO-001 | 암호화 실패 | AES-256-GCM + 키체인 | security 테스트 11개 |
+
+---
+
+## 11. 문서 이력
 
 | 버전 | 날짜 | 변경 내용 | 작성자 |
 |------|------|----------|--------|
 | 1.0 | 2026-02-10 | 초안 작성 | Claude |
+| 1.1 | 2026-02-14 | 서비스 수 정정 (4→22), 구현된 테스트 산출물 현황 추가, ISO 14971 연계 추가 | Claude |
 
 ---
 

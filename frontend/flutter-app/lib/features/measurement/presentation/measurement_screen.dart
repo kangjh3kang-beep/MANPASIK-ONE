@@ -55,7 +55,7 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
 
   Future<void> _readCartridge() async {
     try {
-      final info = await RustFfiStub.nfcReadCartridge();
+      final info = await RustBridge.nfcReadCartridge();
       if (!mounted) return;
       setState(() => _cartridgeId = info.cartridgeId);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -213,7 +213,7 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
                         onPressed: () async {
                           await _endSession();
                           if (!mounted) return;
-                          context.push('/measurement/result');
+                          context.push('/measure/result');
                           _reset();
                         },
                       ),

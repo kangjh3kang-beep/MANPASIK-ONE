@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:manpasik/shared/widgets/jagae_pattern.dart';
+import 'package:manpasik/shared/widgets/scale_button.dart';
 
 class MeasurementCard extends StatelessWidget {
   final DateTime date;
@@ -47,24 +48,24 @@ class MeasurementCard extends StatelessWidget {
     final label = _getResultLabel(resultType);
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: KoreanEdgeBorder(
-        borderRadius: BorderRadius.circular(16),
-        child: Card(
-          elevation: 0,
-          color: theme.colorScheme.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          margin: EdgeInsets.zero,
-          child: JagaeContainer(
-            opacity: 0.05,
-            showLattice: false,
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-            ),
-            child: InkWell(
-              onTap: onTap,
+      child: ScaleButton(
+        onPressed: onTap ?? () {},
+        child: KoreanEdgeBorder(
+          borderRadius: BorderRadius.circular(16),
+          child: Card(
+            elevation: 0, // Remove elevation to avoid default shadow obscuring glass
+            color: Colors.white.withOpacity(0.05), // Glass Effect
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Colors.white.withOpacity(0.1), width: 0.5),
+            ),
+            margin: EdgeInsets.zero,
+            child: JagaeContainer(
+              opacity: 0.15,
+              showLattice: true,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Row(
@@ -73,7 +74,7 @@ class MeasurementCard extends StatelessWidget {
                       width: 48,
                       height: 48,
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.1),
+                        color: color.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Icon(

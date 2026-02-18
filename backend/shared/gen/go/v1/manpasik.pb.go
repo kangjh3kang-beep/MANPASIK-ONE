@@ -22,6 +22,116 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type SocialProvider int32
+
+const (
+	SocialProvider_SOCIAL_PROVIDER_UNSPECIFIED SocialProvider = 0
+	SocialProvider_SOCIAL_PROVIDER_GOOGLE      SocialProvider = 1
+	SocialProvider_SOCIAL_PROVIDER_APPLE       SocialProvider = 2
+	SocialProvider_SOCIAL_PROVIDER_KAKAO       SocialProvider = 3
+	SocialProvider_SOCIAL_PROVIDER_NAVER       SocialProvider = 4
+)
+
+// Enum value maps for SocialProvider.
+var (
+	SocialProvider_name = map[int32]string{
+		0: "SOCIAL_PROVIDER_UNSPECIFIED",
+		1: "SOCIAL_PROVIDER_GOOGLE",
+		2: "SOCIAL_PROVIDER_APPLE",
+		3: "SOCIAL_PROVIDER_KAKAO",
+		4: "SOCIAL_PROVIDER_NAVER",
+	}
+	SocialProvider_value = map[string]int32{
+		"SOCIAL_PROVIDER_UNSPECIFIED": 0,
+		"SOCIAL_PROVIDER_GOOGLE":      1,
+		"SOCIAL_PROVIDER_APPLE":       2,
+		"SOCIAL_PROVIDER_KAKAO":       3,
+		"SOCIAL_PROVIDER_NAVER":       4,
+	}
+)
+
+func (x SocialProvider) Enum() *SocialProvider {
+	p := new(SocialProvider)
+	*p = x
+	return p
+}
+
+func (x SocialProvider) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SocialProvider) Descriptor() protoreflect.EnumDescriptor {
+	return file_manpasik_proto_enumTypes[0].Descriptor()
+}
+
+func (SocialProvider) Type() protoreflect.EnumType {
+	return &file_manpasik_proto_enumTypes[0]
+}
+
+func (x SocialProvider) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SocialProvider.Descriptor instead.
+func (SocialProvider) EnumDescriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{0}
+}
+
+type Gender int32
+
+const (
+	Gender_GENDER_UNSPECIFIED       Gender = 0
+	Gender_GENDER_MALE              Gender = 1
+	Gender_GENDER_FEMALE            Gender = 2
+	Gender_GENDER_OTHER             Gender = 3
+	Gender_GENDER_PREFER_NOT_TO_SAY Gender = 4
+)
+
+// Enum value maps for Gender.
+var (
+	Gender_name = map[int32]string{
+		0: "GENDER_UNSPECIFIED",
+		1: "GENDER_MALE",
+		2: "GENDER_FEMALE",
+		3: "GENDER_OTHER",
+		4: "GENDER_PREFER_NOT_TO_SAY",
+	}
+	Gender_value = map[string]int32{
+		"GENDER_UNSPECIFIED":       0,
+		"GENDER_MALE":              1,
+		"GENDER_FEMALE":            2,
+		"GENDER_OTHER":             3,
+		"GENDER_PREFER_NOT_TO_SAY": 4,
+	}
+)
+
+func (x Gender) Enum() *Gender {
+	p := new(Gender)
+	*p = x
+	return p
+}
+
+func (x Gender) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Gender) Descriptor() protoreflect.EnumDescriptor {
+	return file_manpasik_proto_enumTypes[1].Descriptor()
+}
+
+func (Gender) Type() protoreflect.EnumType {
+	return &file_manpasik_proto_enumTypes[1]
+}
+
+func (x Gender) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Gender.Descriptor instead.
+func (Gender) EnumDescriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{1}
+}
+
 type DeviceStatus int32
 
 const (
@@ -64,11 +174,11 @@ func (x DeviceStatus) String() string {
 }
 
 func (DeviceStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[0].Descriptor()
+	return file_manpasik_proto_enumTypes[2].Descriptor()
 }
 
 func (DeviceStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[0]
+	return &file_manpasik_proto_enumTypes[2]
 }
 
 func (x DeviceStatus) Number() protoreflect.EnumNumber {
@@ -77,7 +187,7 @@ func (x DeviceStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DeviceStatus.Descriptor instead.
 func (DeviceStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{0}
+	return file_manpasik_proto_rawDescGZIP(), []int{2}
 }
 
 type CommandType int32
@@ -122,11 +232,11 @@ func (x CommandType) String() string {
 }
 
 func (CommandType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[1].Descriptor()
+	return file_manpasik_proto_enumTypes[3].Descriptor()
 }
 
 func (CommandType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[1]
+	return &file_manpasik_proto_enumTypes[3]
 }
 
 func (x CommandType) Number() protoreflect.EnumNumber {
@@ -135,7 +245,7 @@ func (x CommandType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CommandType.Descriptor instead.
 func (CommandType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{1}
+	return file_manpasik_proto_rawDescGZIP(), []int{3}
 }
 
 type SubscriptionTier int32
@@ -174,11 +284,11 @@ func (x SubscriptionTier) String() string {
 }
 
 func (SubscriptionTier) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[2].Descriptor()
+	return file_manpasik_proto_enumTypes[4].Descriptor()
 }
 
 func (SubscriptionTier) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[2]
+	return &file_manpasik_proto_enumTypes[4]
 }
 
 func (x SubscriptionTier) Number() protoreflect.EnumNumber {
@@ -187,7 +297,7 @@ func (x SubscriptionTier) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SubscriptionTier.Descriptor instead.
 func (SubscriptionTier) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{2}
+	return file_manpasik_proto_rawDescGZIP(), []int{4}
 }
 
 type SubscriptionStatus int32
@@ -232,11 +342,11 @@ func (x SubscriptionStatus) String() string {
 }
 
 func (SubscriptionStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[3].Descriptor()
+	return file_manpasik_proto_enumTypes[5].Descriptor()
 }
 
 func (SubscriptionStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[3]
+	return &file_manpasik_proto_enumTypes[5]
 }
 
 func (x SubscriptionStatus) Number() protoreflect.EnumNumber {
@@ -245,7 +355,7 @@ func (x SubscriptionStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SubscriptionStatus.Descriptor instead.
 func (SubscriptionStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{3}
+	return file_manpasik_proto_rawDescGZIP(), []int{5}
 }
 
 type ProductCategory int32
@@ -287,11 +397,11 @@ func (x ProductCategory) String() string {
 }
 
 func (ProductCategory) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[4].Descriptor()
+	return file_manpasik_proto_enumTypes[6].Descriptor()
 }
 
 func (ProductCategory) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[4]
+	return &file_manpasik_proto_enumTypes[6]
 }
 
 func (x ProductCategory) Number() protoreflect.EnumNumber {
@@ -300,7 +410,7 @@ func (x ProductCategory) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ProductCategory.Descriptor instead.
 func (ProductCategory) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{4}
+	return file_manpasik_proto_rawDescGZIP(), []int{6}
 }
 
 type OrderStatus int32
@@ -348,11 +458,11 @@ func (x OrderStatus) String() string {
 }
 
 func (OrderStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[5].Descriptor()
+	return file_manpasik_proto_enumTypes[7].Descriptor()
 }
 
 func (OrderStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[5]
+	return &file_manpasik_proto_enumTypes[7]
 }
 
 func (x OrderStatus) Number() protoreflect.EnumNumber {
@@ -361,7 +471,7 @@ func (x OrderStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use OrderStatus.Descriptor instead.
 func (OrderStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{5}
+	return file_manpasik_proto_rawDescGZIP(), []int{7}
 }
 
 type PaymentType int32
@@ -397,11 +507,11 @@ func (x PaymentType) String() string {
 }
 
 func (PaymentType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[6].Descriptor()
+	return file_manpasik_proto_enumTypes[8].Descriptor()
 }
 
 func (PaymentType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[6]
+	return &file_manpasik_proto_enumTypes[8]
 }
 
 func (x PaymentType) Number() protoreflect.EnumNumber {
@@ -410,7 +520,7 @@ func (x PaymentType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PaymentType.Descriptor instead.
 func (PaymentType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{6}
+	return file_manpasik_proto_rawDescGZIP(), []int{8}
 }
 
 type PaymentStatus int32
@@ -458,11 +568,11 @@ func (x PaymentStatus) String() string {
 }
 
 func (PaymentStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[7].Descriptor()
+	return file_manpasik_proto_enumTypes[9].Descriptor()
 }
 
 func (PaymentStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[7]
+	return &file_manpasik_proto_enumTypes[9]
 }
 
 func (x PaymentStatus) Number() protoreflect.EnumNumber {
@@ -471,7 +581,7 @@ func (x PaymentStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PaymentStatus.Descriptor instead.
 func (PaymentStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{7}
+	return file_manpasik_proto_rawDescGZIP(), []int{9}
 }
 
 type AiModelType int32
@@ -516,11 +626,11 @@ func (x AiModelType) String() string {
 }
 
 func (AiModelType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[8].Descriptor()
+	return file_manpasik_proto_enumTypes[10].Descriptor()
 }
 
 func (AiModelType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[8]
+	return &file_manpasik_proto_enumTypes[10]
 }
 
 func (x AiModelType) Number() protoreflect.EnumNumber {
@@ -529,7 +639,7 @@ func (x AiModelType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use AiModelType.Descriptor instead.
 func (AiModelType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{8}
+	return file_manpasik_proto_rawDescGZIP(), []int{10}
 }
 
 type RiskLevel int32
@@ -571,11 +681,11 @@ func (x RiskLevel) String() string {
 }
 
 func (RiskLevel) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[9].Descriptor()
+	return file_manpasik_proto_enumTypes[11].Descriptor()
 }
 
 func (RiskLevel) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[9]
+	return &file_manpasik_proto_enumTypes[11]
 }
 
 func (x RiskLevel) Number() protoreflect.EnumNumber {
@@ -584,7 +694,7 @@ func (x RiskLevel) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use RiskLevel.Descriptor instead.
 func (RiskLevel) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{9}
+	return file_manpasik_proto_rawDescGZIP(), []int{11}
 }
 
 type CalibrationType int32
@@ -623,11 +733,11 @@ func (x CalibrationType) String() string {
 }
 
 func (CalibrationType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[10].Descriptor()
+	return file_manpasik_proto_enumTypes[12].Descriptor()
 }
 
 func (CalibrationType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[10]
+	return &file_manpasik_proto_enumTypes[12]
 }
 
 func (x CalibrationType) Number() protoreflect.EnumNumber {
@@ -636,7 +746,7 @@ func (x CalibrationType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CalibrationType.Descriptor instead.
 func (CalibrationType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{10}
+	return file_manpasik_proto_rawDescGZIP(), []int{12}
 }
 
 type CalibrationStatus int32
@@ -678,11 +788,11 @@ func (x CalibrationStatus) String() string {
 }
 
 func (CalibrationStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[11].Descriptor()
+	return file_manpasik_proto_enumTypes[13].Descriptor()
 }
 
 func (CalibrationStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[11]
+	return &file_manpasik_proto_enumTypes[13]
 }
 
 func (x CalibrationStatus) Number() protoreflect.EnumNumber {
@@ -691,7 +801,7 @@ func (x CalibrationStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CalibrationStatus.Descriptor instead.
 func (CalibrationStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{11}
+	return file_manpasik_proto_rawDescGZIP(), []int{13}
 }
 
 type GoalCategory int32
@@ -748,11 +858,11 @@ func (x GoalCategory) String() string {
 }
 
 func (GoalCategory) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[12].Descriptor()
+	return file_manpasik_proto_enumTypes[14].Descriptor()
 }
 
 func (GoalCategory) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[12]
+	return &file_manpasik_proto_enumTypes[14]
 }
 
 func (x GoalCategory) Number() protoreflect.EnumNumber {
@@ -761,7 +871,7 @@ func (x GoalCategory) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GoalCategory.Descriptor instead.
 func (GoalCategory) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{12}
+	return file_manpasik_proto_rawDescGZIP(), []int{14}
 }
 
 type GoalStatus int32
@@ -803,11 +913,11 @@ func (x GoalStatus) String() string {
 }
 
 func (GoalStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[13].Descriptor()
+	return file_manpasik_proto_enumTypes[15].Descriptor()
 }
 
 func (GoalStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[13]
+	return &file_manpasik_proto_enumTypes[15]
 }
 
 func (x GoalStatus) Number() protoreflect.EnumNumber {
@@ -816,7 +926,7 @@ func (x GoalStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use GoalStatus.Descriptor instead.
 func (GoalStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{13}
+	return file_manpasik_proto_rawDescGZIP(), []int{15}
 }
 
 type CoachingType int32
@@ -864,11 +974,11 @@ func (x CoachingType) String() string {
 }
 
 func (CoachingType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[14].Descriptor()
+	return file_manpasik_proto_enumTypes[16].Descriptor()
 }
 
 func (CoachingType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[14]
+	return &file_manpasik_proto_enumTypes[16]
 }
 
 func (x CoachingType) Number() protoreflect.EnumNumber {
@@ -877,7 +987,7 @@ func (x CoachingType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CoachingType.Descriptor instead.
 func (CoachingType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{14}
+	return file_manpasik_proto_rawDescGZIP(), []int{16}
 }
 
 type RecommendationType int32
@@ -922,11 +1032,11 @@ func (x RecommendationType) String() string {
 }
 
 func (RecommendationType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[15].Descriptor()
+	return file_manpasik_proto_enumTypes[17].Descriptor()
 }
 
 func (RecommendationType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[15]
+	return &file_manpasik_proto_enumTypes[17]
 }
 
 func (x RecommendationType) Number() protoreflect.EnumNumber {
@@ -935,7 +1045,7 @@ func (x RecommendationType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use RecommendationType.Descriptor instead.
 func (RecommendationType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{15}
+	return file_manpasik_proto_rawDescGZIP(), []int{17}
 }
 
 // 카트리지 접근 레벨
@@ -981,11 +1091,11 @@ func (x CartridgeAccessLevel) String() string {
 }
 
 func (CartridgeAccessLevel) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[16].Descriptor()
+	return file_manpasik_proto_enumTypes[18].Descriptor()
 }
 
 func (CartridgeAccessLevel) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[16]
+	return &file_manpasik_proto_enumTypes[18]
 }
 
 func (x CartridgeAccessLevel) Number() protoreflect.EnumNumber {
@@ -994,7 +1104,7 @@ func (x CartridgeAccessLevel) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use CartridgeAccessLevel.Descriptor instead.
 func (CartridgeAccessLevel) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{16}
+	return file_manpasik_proto_rawDescGZIP(), []int{18}
 }
 
 type FacilityType int32
@@ -1039,11 +1149,11 @@ func (x FacilityType) String() string {
 }
 
 func (FacilityType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[17].Descriptor()
+	return file_manpasik_proto_enumTypes[19].Descriptor()
 }
 
 func (FacilityType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[17]
+	return &file_manpasik_proto_enumTypes[19]
 }
 
 func (x FacilityType) Number() protoreflect.EnumNumber {
@@ -1052,7 +1162,7 @@ func (x FacilityType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FacilityType.Descriptor instead.
 func (FacilityType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{17}
+	return file_manpasik_proto_rawDescGZIP(), []int{19}
 }
 
 type DoctorSpecialty int32
@@ -1112,11 +1222,11 @@ func (x DoctorSpecialty) String() string {
 }
 
 func (DoctorSpecialty) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[18].Descriptor()
+	return file_manpasik_proto_enumTypes[20].Descriptor()
 }
 
 func (DoctorSpecialty) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[18]
+	return &file_manpasik_proto_enumTypes[20]
 }
 
 func (x DoctorSpecialty) Number() protoreflect.EnumNumber {
@@ -1125,7 +1235,7 @@ func (x DoctorSpecialty) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DoctorSpecialty.Descriptor instead.
 func (DoctorSpecialty) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{18}
+	return file_manpasik_proto_rawDescGZIP(), []int{20}
 }
 
 type ReservationStatus int32
@@ -1170,11 +1280,11 @@ func (x ReservationStatus) String() string {
 }
 
 func (ReservationStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[19].Descriptor()
+	return file_manpasik_proto_enumTypes[21].Descriptor()
 }
 
 func (ReservationStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[19]
+	return &file_manpasik_proto_enumTypes[21]
 }
 
 func (x ReservationStatus) Number() protoreflect.EnumNumber {
@@ -1183,7 +1293,7 @@ func (x ReservationStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ReservationStatus.Descriptor instead.
 func (ReservationStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{19}
+	return file_manpasik_proto_rawDescGZIP(), []int{21}
 }
 
 type AdminRole int32
@@ -1228,11 +1338,11 @@ func (x AdminRole) String() string {
 }
 
 func (AdminRole) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[20].Descriptor()
+	return file_manpasik_proto_enumTypes[22].Descriptor()
 }
 
 func (AdminRole) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[20]
+	return &file_manpasik_proto_enumTypes[22]
 }
 
 func (x AdminRole) Number() protoreflect.EnumNumber {
@@ -1241,7 +1351,7 @@ func (x AdminRole) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use AdminRole.Descriptor instead.
 func (AdminRole) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{20}
+	return file_manpasik_proto_rawDescGZIP(), []int{22}
 }
 
 type AuditAction int32
@@ -1292,11 +1402,11 @@ func (x AuditAction) String() string {
 }
 
 func (AuditAction) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[21].Descriptor()
+	return file_manpasik_proto_enumTypes[23].Descriptor()
 }
 
 func (AuditAction) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[21]
+	return &file_manpasik_proto_enumTypes[23]
 }
 
 func (x AuditAction) Number() protoreflect.EnumNumber {
@@ -1305,7 +1415,7 @@ func (x AuditAction) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use AuditAction.Descriptor instead.
 func (AuditAction) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{21}
+	return file_manpasik_proto_rawDescGZIP(), []int{23}
 }
 
 type FamilyRole int32
@@ -1350,11 +1460,11 @@ func (x FamilyRole) String() string {
 }
 
 func (FamilyRole) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[22].Descriptor()
+	return file_manpasik_proto_enumTypes[24].Descriptor()
 }
 
 func (FamilyRole) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[22]
+	return &file_manpasik_proto_enumTypes[24]
 }
 
 func (x FamilyRole) Number() protoreflect.EnumNumber {
@@ -1363,7 +1473,7 @@ func (x FamilyRole) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FamilyRole.Descriptor instead.
 func (FamilyRole) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{22}
+	return file_manpasik_proto_rawDescGZIP(), []int{24}
 }
 
 type InvitationStatus int32
@@ -1405,11 +1515,11 @@ func (x InvitationStatus) String() string {
 }
 
 func (InvitationStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[23].Descriptor()
+	return file_manpasik_proto_enumTypes[25].Descriptor()
 }
 
 func (InvitationStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[23]
+	return &file_manpasik_proto_enumTypes[25]
 }
 
 func (x InvitationStatus) Number() protoreflect.EnumNumber {
@@ -1418,7 +1528,7 @@ func (x InvitationStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use InvitationStatus.Descriptor instead.
 func (InvitationStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{23}
+	return file_manpasik_proto_rawDescGZIP(), []int{25}
 }
 
 type HealthRecordType int32
@@ -1469,11 +1579,11 @@ func (x HealthRecordType) String() string {
 }
 
 func (HealthRecordType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[24].Descriptor()
+	return file_manpasik_proto_enumTypes[26].Descriptor()
 }
 
 func (HealthRecordType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[24]
+	return &file_manpasik_proto_enumTypes[26]
 }
 
 func (x HealthRecordType) Number() protoreflect.EnumNumber {
@@ -1482,7 +1592,7 @@ func (x HealthRecordType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use HealthRecordType.Descriptor instead.
 func (HealthRecordType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{24}
+	return file_manpasik_proto_rawDescGZIP(), []int{26}
 }
 
 type FHIRResourceType int32
@@ -1533,11 +1643,11 @@ func (x FHIRResourceType) String() string {
 }
 
 func (FHIRResourceType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[25].Descriptor()
+	return file_manpasik_proto_enumTypes[27].Descriptor()
 }
 
 func (FHIRResourceType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[25]
+	return &file_manpasik_proto_enumTypes[27]
 }
 
 func (x FHIRResourceType) Number() protoreflect.EnumNumber {
@@ -1546,7 +1656,7 @@ func (x FHIRResourceType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use FHIRResourceType.Descriptor instead.
 func (FHIRResourceType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{25}
+	return file_manpasik_proto_rawDescGZIP(), []int{27}
 }
 
 type PrescriptionStatus int32
@@ -1594,11 +1704,11 @@ func (x PrescriptionStatus) String() string {
 }
 
 func (PrescriptionStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[26].Descriptor()
+	return file_manpasik_proto_enumTypes[28].Descriptor()
 }
 
 func (PrescriptionStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[26]
+	return &file_manpasik_proto_enumTypes[28]
 }
 
 func (x PrescriptionStatus) Number() protoreflect.EnumNumber {
@@ -1607,7 +1717,7 @@ func (x PrescriptionStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PrescriptionStatus.Descriptor instead.
 func (PrescriptionStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{26}
+	return file_manpasik_proto_rawDescGZIP(), []int{28}
 }
 
 type DrugInteractionSeverity int32
@@ -1652,11 +1762,11 @@ func (x DrugInteractionSeverity) String() string {
 }
 
 func (DrugInteractionSeverity) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[27].Descriptor()
+	return file_manpasik_proto_enumTypes[29].Descriptor()
 }
 
 func (DrugInteractionSeverity) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[27]
+	return &file_manpasik_proto_enumTypes[29]
 }
 
 func (x DrugInteractionSeverity) Number() protoreflect.EnumNumber {
@@ -1665,7 +1775,7 @@ func (x DrugInteractionSeverity) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use DrugInteractionSeverity.Descriptor instead.
 func (DrugInteractionSeverity) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{27}
+	return file_manpasik_proto_rawDescGZIP(), []int{29}
 }
 
 type PostCategory int32
@@ -1713,11 +1823,11 @@ func (x PostCategory) String() string {
 }
 
 func (PostCategory) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[28].Descriptor()
+	return file_manpasik_proto_enumTypes[30].Descriptor()
 }
 
 func (PostCategory) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[28]
+	return &file_manpasik_proto_enumTypes[30]
 }
 
 func (x PostCategory) Number() protoreflect.EnumNumber {
@@ -1726,7 +1836,7 @@ func (x PostCategory) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use PostCategory.Descriptor instead.
 func (PostCategory) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{28}
+	return file_manpasik_proto_rawDescGZIP(), []int{30}
 }
 
 type ChallengeStatus int32
@@ -1768,11 +1878,11 @@ func (x ChallengeStatus) String() string {
 }
 
 func (ChallengeStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[29].Descriptor()
+	return file_manpasik_proto_enumTypes[31].Descriptor()
 }
 
 func (ChallengeStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[29]
+	return &file_manpasik_proto_enumTypes[31]
 }
 
 func (x ChallengeStatus) Number() protoreflect.EnumNumber {
@@ -1781,7 +1891,7 @@ func (x ChallengeStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ChallengeStatus.Descriptor instead.
 func (ChallengeStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{29}
+	return file_manpasik_proto_rawDescGZIP(), []int{31}
 }
 
 type ChallengeType int32
@@ -1826,11 +1936,11 @@ func (x ChallengeType) String() string {
 }
 
 func (ChallengeType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[30].Descriptor()
+	return file_manpasik_proto_enumTypes[32].Descriptor()
 }
 
 func (ChallengeType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[30]
+	return &file_manpasik_proto_enumTypes[32]
 }
 
 func (x ChallengeType) Number() protoreflect.EnumNumber {
@@ -1839,7 +1949,7 @@ func (x ChallengeType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ChallengeType.Descriptor instead.
 func (ChallengeType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{30}
+	return file_manpasik_proto_rawDescGZIP(), []int{32}
 }
 
 type RoomType int32
@@ -1881,11 +1991,11 @@ func (x RoomType) String() string {
 }
 
 func (RoomType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[31].Descriptor()
+	return file_manpasik_proto_enumTypes[33].Descriptor()
 }
 
 func (RoomType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[31]
+	return &file_manpasik_proto_enumTypes[33]
 }
 
 func (x RoomType) Number() protoreflect.EnumNumber {
@@ -1894,7 +2004,7 @@ func (x RoomType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use RoomType.Descriptor instead.
 func (RoomType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{31}
+	return file_manpasik_proto_rawDescGZIP(), []int{33}
 }
 
 type RoomStatus int32
@@ -1936,11 +2046,11 @@ func (x RoomStatus) String() string {
 }
 
 func (RoomStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[32].Descriptor()
+	return file_manpasik_proto_enumTypes[34].Descriptor()
 }
 
 func (RoomStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[32]
+	return &file_manpasik_proto_enumTypes[34]
 }
 
 func (x RoomStatus) Number() protoreflect.EnumNumber {
@@ -1949,7 +2059,7 @@ func (x RoomStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use RoomStatus.Descriptor instead.
 func (RoomStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{32}
+	return file_manpasik_proto_rawDescGZIP(), []int{34}
 }
 
 type SignalType int32
@@ -1997,11 +2107,11 @@ func (x SignalType) String() string {
 }
 
 func (SignalType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[33].Descriptor()
+	return file_manpasik_proto_enumTypes[35].Descriptor()
 }
 
 func (SignalType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[33]
+	return &file_manpasik_proto_enumTypes[35]
 }
 
 func (x SignalType) Number() protoreflect.EnumNumber {
@@ -2010,7 +2120,7 @@ func (x SignalType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SignalType.Descriptor instead.
 func (SignalType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{33}
+	return file_manpasik_proto_rawDescGZIP(), []int{35}
 }
 
 type NotificationType int32
@@ -2061,11 +2171,11 @@ func (x NotificationType) String() string {
 }
 
 func (NotificationType) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[34].Descriptor()
+	return file_manpasik_proto_enumTypes[36].Descriptor()
 }
 
 func (NotificationType) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[34]
+	return &file_manpasik_proto_enumTypes[36]
 }
 
 func (x NotificationType) Number() protoreflect.EnumNumber {
@@ -2074,7 +2184,7 @@ func (x NotificationType) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use NotificationType.Descriptor instead.
 func (NotificationType) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{34}
+	return file_manpasik_proto_rawDescGZIP(), []int{36}
 }
 
 type NotificationChannel int32
@@ -2116,11 +2226,11 @@ func (x NotificationChannel) String() string {
 }
 
 func (NotificationChannel) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[35].Descriptor()
+	return file_manpasik_proto_enumTypes[37].Descriptor()
 }
 
 func (NotificationChannel) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[35]
+	return &file_manpasik_proto_enumTypes[37]
 }
 
 func (x NotificationChannel) Number() protoreflect.EnumNumber {
@@ -2129,7 +2239,7 @@ func (x NotificationChannel) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use NotificationChannel.Descriptor instead.
 func (NotificationChannel) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{35}
+	return file_manpasik_proto_rawDescGZIP(), []int{37}
 }
 
 type NotificationPriority int32
@@ -2171,11 +2281,11 @@ func (x NotificationPriority) String() string {
 }
 
 func (NotificationPriority) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[36].Descriptor()
+	return file_manpasik_proto_enumTypes[38].Descriptor()
 }
 
 func (NotificationPriority) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[36]
+	return &file_manpasik_proto_enumTypes[38]
 }
 
 func (x NotificationPriority) Number() protoreflect.EnumNumber {
@@ -2184,7 +2294,7 @@ func (x NotificationPriority) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use NotificationPriority.Descriptor instead.
 func (NotificationPriority) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{36}
+	return file_manpasik_proto_rawDescGZIP(), []int{38}
 }
 
 type ConsultationStatus int32
@@ -2235,11 +2345,11 @@ func (x ConsultationStatus) String() string {
 }
 
 func (ConsultationStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[37].Descriptor()
+	return file_manpasik_proto_enumTypes[39].Descriptor()
 }
 
 func (ConsultationStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[37]
+	return &file_manpasik_proto_enumTypes[39]
 }
 
 func (x ConsultationStatus) Number() protoreflect.EnumNumber {
@@ -2248,7 +2358,7 @@ func (x ConsultationStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use ConsultationStatus.Descriptor instead.
 func (ConsultationStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{37}
+	return file_manpasik_proto_rawDescGZIP(), []int{39}
 }
 
 type VideoSessionStatus int32
@@ -2290,11 +2400,11 @@ func (x VideoSessionStatus) String() string {
 }
 
 func (VideoSessionStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_manpasik_proto_enumTypes[38].Descriptor()
+	return file_manpasik_proto_enumTypes[40].Descriptor()
 }
 
 func (VideoSessionStatus) Type() protoreflect.EnumType {
-	return &file_manpasik_proto_enumTypes[38]
+	return &file_manpasik_proto_enumTypes[40]
 }
 
 func (x VideoSessionStatus) Number() protoreflect.EnumNumber {
@@ -2303,16 +2413,31 @@ func (x VideoSessionStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use VideoSessionStatus.Descriptor instead.
 func (VideoSessionStatus) EnumDescriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{38}
+	return file_manpasik_proto_rawDescGZIP(), []int{40}
 }
 
 type RegisterRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
-	Password      string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
-	DisplayName   string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	Email       string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	Password    string                 `protobuf:"bytes,2,opt,name=password,proto3" json:"password,omitempty"`
+	DisplayName string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	// 건강 프로필 (온보딩 시 선택 입력)
+	BirthDate             string   `protobuf:"bytes,4,opt,name=birth_date,json=birthDate,proto3" json:"birth_date,omitempty"` // YYYY-MM-DD
+	Gender                Gender   `protobuf:"varint,5,opt,name=gender,proto3,enum=manpasik.v1.Gender" json:"gender,omitempty"`
+	BloodType             string   `protobuf:"bytes,6,opt,name=blood_type,json=bloodType,proto3" json:"blood_type,omitempty"` // "A+", "B-", "O+", "AB+" 등
+	HeightCm              float64  `protobuf:"fixed64,7,opt,name=height_cm,json=heightCm,proto3" json:"height_cm,omitempty"`
+	WeightKg              float64  `protobuf:"fixed64,8,opt,name=weight_kg,json=weightKg,proto3" json:"weight_kg,omitempty"`
+	MedicalConditions     []string `protobuf:"bytes,9,rep,name=medical_conditions,json=medicalConditions,proto3" json:"medical_conditions,omitempty"` // "diabetes", "hypertension" 등
+	Allergies             []string `protobuf:"bytes,10,rep,name=allergies,proto3" json:"allergies,omitempty"`
+	EmergencyContactName  string   `protobuf:"bytes,11,opt,name=emergency_contact_name,json=emergencyContactName,proto3" json:"emergency_contact_name,omitempty"`
+	EmergencyContactPhone string   `protobuf:"bytes,12,opt,name=emergency_contact_phone,json=emergencyContactPhone,proto3" json:"emergency_contact_phone,omitempty"`
+	// 약관 동의
+	TermsAgreed      bool `protobuf:"varint,13,opt,name=terms_agreed,json=termsAgreed,proto3" json:"terms_agreed,omitempty"`
+	PrivacyAgreed    bool `protobuf:"varint,14,opt,name=privacy_agreed,json=privacyAgreed,proto3" json:"privacy_agreed,omitempty"`
+	HealthDataAgreed bool `protobuf:"varint,15,opt,name=health_data_agreed,json=healthDataAgreed,proto3" json:"health_data_agreed,omitempty"` // 건강정보 수집 동의 (필수)
+	MarketingAgreed  bool `protobuf:"varint,16,opt,name=marketing_agreed,json=marketingAgreed,proto3" json:"marketing_agreed,omitempty"`      // 마케팅 동의 (선택)
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
 }
 
 func (x *RegisterRequest) Reset() {
@@ -2364,6 +2489,97 @@ func (x *RegisterRequest) GetDisplayName() string {
 		return x.DisplayName
 	}
 	return ""
+}
+
+func (x *RegisterRequest) GetBirthDate() string {
+	if x != nil {
+		return x.BirthDate
+	}
+	return ""
+}
+
+func (x *RegisterRequest) GetGender() Gender {
+	if x != nil {
+		return x.Gender
+	}
+	return Gender_GENDER_UNSPECIFIED
+}
+
+func (x *RegisterRequest) GetBloodType() string {
+	if x != nil {
+		return x.BloodType
+	}
+	return ""
+}
+
+func (x *RegisterRequest) GetHeightCm() float64 {
+	if x != nil {
+		return x.HeightCm
+	}
+	return 0
+}
+
+func (x *RegisterRequest) GetWeightKg() float64 {
+	if x != nil {
+		return x.WeightKg
+	}
+	return 0
+}
+
+func (x *RegisterRequest) GetMedicalConditions() []string {
+	if x != nil {
+		return x.MedicalConditions
+	}
+	return nil
+}
+
+func (x *RegisterRequest) GetAllergies() []string {
+	if x != nil {
+		return x.Allergies
+	}
+	return nil
+}
+
+func (x *RegisterRequest) GetEmergencyContactName() string {
+	if x != nil {
+		return x.EmergencyContactName
+	}
+	return ""
+}
+
+func (x *RegisterRequest) GetEmergencyContactPhone() string {
+	if x != nil {
+		return x.EmergencyContactPhone
+	}
+	return ""
+}
+
+func (x *RegisterRequest) GetTermsAgreed() bool {
+	if x != nil {
+		return x.TermsAgreed
+	}
+	return false
+}
+
+func (x *RegisterRequest) GetPrivacyAgreed() bool {
+	if x != nil {
+		return x.PrivacyAgreed
+	}
+	return false
+}
+
+func (x *RegisterRequest) GetHealthDataAgreed() bool {
+	if x != nil {
+		return x.HealthDataAgreed
+	}
+	return false
+}
+
+func (x *RegisterRequest) GetMarketingAgreed() bool {
+	if x != nil {
+		return x.MarketingAgreed
+	}
+	return false
 }
 
 type RegisterResponse struct {
@@ -2782,6 +2998,170 @@ func (x *ValidateTokenResponse) GetRole() string {
 	return ""
 }
 
+type SocialLoginRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Provider      SocialProvider         `protobuf:"varint,1,opt,name=provider,proto3,enum=manpasik.v1.SocialProvider" json:"provider,omitempty"`
+	IdToken       string                 `protobuf:"bytes,2,opt,name=id_token,json=idToken,proto3" json:"id_token,omitempty"`             // OAuth2 ID 토큰
+	AccessToken   string                 `protobuf:"bytes,3,opt,name=access_token,json=accessToken,proto3" json:"access_token,omitempty"` // OAuth2 액세스 토큰
+	Nonce         string                 `protobuf:"bytes,4,opt,name=nonce,proto3" json:"nonce,omitempty"`                                // OIDC nonce (Apple Sign In)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SocialLoginRequest) Reset() {
+	*x = SocialLoginRequest{}
+	mi := &file_manpasik_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SocialLoginRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SocialLoginRequest) ProtoMessage() {}
+
+func (x *SocialLoginRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SocialLoginRequest.ProtoReflect.Descriptor instead.
+func (*SocialLoginRequest) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *SocialLoginRequest) GetProvider() SocialProvider {
+	if x != nil {
+		return x.Provider
+	}
+	return SocialProvider_SOCIAL_PROVIDER_UNSPECIFIED
+}
+
+func (x *SocialLoginRequest) GetIdToken() string {
+	if x != nil {
+		return x.IdToken
+	}
+	return ""
+}
+
+func (x *SocialLoginRequest) GetAccessToken() string {
+	if x != nil {
+		return x.AccessToken
+	}
+	return ""
+}
+
+func (x *SocialLoginRequest) GetNonce() string {
+	if x != nil {
+		return x.Nonce
+	}
+	return ""
+}
+
+type ResetPasswordRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Email         string                 `protobuf:"bytes,1,opt,name=email,proto3" json:"email,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResetPasswordRequest) Reset() {
+	*x = ResetPasswordRequest{}
+	mi := &file_manpasik_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResetPasswordRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResetPasswordRequest) ProtoMessage() {}
+
+func (x *ResetPasswordRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResetPasswordRequest.ProtoReflect.Descriptor instead.
+func (*ResetPasswordRequest) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ResetPasswordRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+type ResetPasswordResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"` // "비밀번호 재설정 링크가 이메일로 전송되었습니다."
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ResetPasswordResponse) Reset() {
+	*x = ResetPasswordResponse{}
+	mi := &file_manpasik_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ResetPasswordResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ResetPasswordResponse) ProtoMessage() {}
+
+func (x *ResetPasswordResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ResetPasswordResponse.ProtoReflect.Descriptor instead.
+func (*ResetPasswordResponse) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ResetPasswordResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *ResetPasswordResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 type StartSessionRequest struct {
 	state              protoimpl.MessageState `protogen:"open.v1"`
 	DeviceId           string                 `protobuf:"bytes,1,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
@@ -2795,7 +3175,7 @@ type StartSessionRequest struct {
 
 func (x *StartSessionRequest) Reset() {
 	*x = StartSessionRequest{}
-	mi := &file_manpasik_proto_msgTypes[9]
+	mi := &file_manpasik_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2807,7 +3187,7 @@ func (x *StartSessionRequest) String() string {
 func (*StartSessionRequest) ProtoMessage() {}
 
 func (x *StartSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[9]
+	mi := &file_manpasik_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2820,7 +3200,7 @@ func (x *StartSessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartSessionRequest.ProtoReflect.Descriptor instead.
 func (*StartSessionRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{9}
+	return file_manpasik_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *StartSessionRequest) GetDeviceId() string {
@@ -2868,7 +3248,7 @@ type StartSessionResponse struct {
 
 func (x *StartSessionResponse) Reset() {
 	*x = StartSessionResponse{}
-	mi := &file_manpasik_proto_msgTypes[10]
+	mi := &file_manpasik_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2880,7 +3260,7 @@ func (x *StartSessionResponse) String() string {
 func (*StartSessionResponse) ProtoMessage() {}
 
 func (x *StartSessionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[10]
+	mi := &file_manpasik_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2893,7 +3273,7 @@ func (x *StartSessionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartSessionResponse.ProtoReflect.Descriptor instead.
 func (*StartSessionResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{10}
+	return file_manpasik_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *StartSessionResponse) GetSessionId() string {
@@ -2923,7 +3303,7 @@ type MeasurementData struct {
 
 func (x *MeasurementData) Reset() {
 	*x = MeasurementData{}
-	mi := &file_manpasik_proto_msgTypes[11]
+	mi := &file_manpasik_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2935,7 +3315,7 @@ func (x *MeasurementData) String() string {
 func (*MeasurementData) ProtoMessage() {}
 
 func (x *MeasurementData) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[11]
+	mi := &file_manpasik_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2948,7 +3328,7 @@ func (x *MeasurementData) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MeasurementData.ProtoReflect.Descriptor instead.
 func (*MeasurementData) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{11}
+	return file_manpasik_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *MeasurementData) GetSessionId() string {
@@ -2998,7 +3378,7 @@ type DifferentialCorrection struct {
 
 func (x *DifferentialCorrection) Reset() {
 	*x = DifferentialCorrection{}
-	mi := &file_manpasik_proto_msgTypes[12]
+	mi := &file_manpasik_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3010,7 +3390,7 @@ func (x *DifferentialCorrection) String() string {
 func (*DifferentialCorrection) ProtoMessage() {}
 
 func (x *DifferentialCorrection) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[12]
+	mi := &file_manpasik_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3023,7 +3403,7 @@ func (x *DifferentialCorrection) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DifferentialCorrection.ProtoReflect.Descriptor instead.
 func (*DifferentialCorrection) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{12}
+	return file_manpasik_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *DifferentialCorrection) GetSDet() float64 {
@@ -3065,7 +3445,7 @@ type EnvironmentMeta struct {
 
 func (x *EnvironmentMeta) Reset() {
 	*x = EnvironmentMeta{}
-	mi := &file_manpasik_proto_msgTypes[13]
+	mi := &file_manpasik_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3077,7 +3457,7 @@ func (x *EnvironmentMeta) String() string {
 func (*EnvironmentMeta) ProtoMessage() {}
 
 func (x *EnvironmentMeta) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[13]
+	mi := &file_manpasik_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3090,7 +3470,7 @@ func (x *EnvironmentMeta) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnvironmentMeta.ProtoReflect.Descriptor instead.
 func (*EnvironmentMeta) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{13}
+	return file_manpasik_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *EnvironmentMeta) GetTempC() float32 {
@@ -3128,7 +3508,7 @@ type MeasurementResult struct {
 
 func (x *MeasurementResult) Reset() {
 	*x = MeasurementResult{}
-	mi := &file_manpasik_proto_msgTypes[14]
+	mi := &file_manpasik_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3140,7 +3520,7 @@ func (x *MeasurementResult) String() string {
 func (*MeasurementResult) ProtoMessage() {}
 
 func (x *MeasurementResult) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[14]
+	mi := &file_manpasik_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3153,7 +3533,7 @@ func (x *MeasurementResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MeasurementResult.ProtoReflect.Descriptor instead.
 func (*MeasurementResult) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{14}
+	return file_manpasik_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *MeasurementResult) GetSessionId() string {
@@ -3207,7 +3587,7 @@ type EndSessionRequest struct {
 
 func (x *EndSessionRequest) Reset() {
 	*x = EndSessionRequest{}
-	mi := &file_manpasik_proto_msgTypes[15]
+	mi := &file_manpasik_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3219,7 +3599,7 @@ func (x *EndSessionRequest) String() string {
 func (*EndSessionRequest) ProtoMessage() {}
 
 func (x *EndSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[15]
+	mi := &file_manpasik_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3232,7 +3612,7 @@ func (x *EndSessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndSessionRequest.ProtoReflect.Descriptor instead.
 func (*EndSessionRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{15}
+	return file_manpasik_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *EndSessionRequest) GetSessionId() string {
@@ -3253,7 +3633,7 @@ type EndSessionResponse struct {
 
 func (x *EndSessionResponse) Reset() {
 	*x = EndSessionResponse{}
-	mi := &file_manpasik_proto_msgTypes[16]
+	mi := &file_manpasik_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3265,7 +3645,7 @@ func (x *EndSessionResponse) String() string {
 func (*EndSessionResponse) ProtoMessage() {}
 
 func (x *EndSessionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[16]
+	mi := &file_manpasik_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3278,7 +3658,7 @@ func (x *EndSessionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndSessionResponse.ProtoReflect.Descriptor instead.
 func (*EndSessionResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{16}
+	return file_manpasik_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *EndSessionResponse) GetSessionId() string {
@@ -3315,7 +3695,7 @@ type GetHistoryRequest struct {
 
 func (x *GetHistoryRequest) Reset() {
 	*x = GetHistoryRequest{}
-	mi := &file_manpasik_proto_msgTypes[17]
+	mi := &file_manpasik_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3327,7 +3707,7 @@ func (x *GetHistoryRequest) String() string {
 func (*GetHistoryRequest) ProtoMessage() {}
 
 func (x *GetHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[17]
+	mi := &file_manpasik_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3340,7 +3720,7 @@ func (x *GetHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{17}
+	return file_manpasik_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *GetHistoryRequest) GetUserId() string {
@@ -3388,7 +3768,7 @@ type GetHistoryResponse struct {
 
 func (x *GetHistoryResponse) Reset() {
 	*x = GetHistoryResponse{}
-	mi := &file_manpasik_proto_msgTypes[18]
+	mi := &file_manpasik_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3400,7 +3780,7 @@ func (x *GetHistoryResponse) String() string {
 func (*GetHistoryResponse) ProtoMessage() {}
 
 func (x *GetHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[18]
+	mi := &file_manpasik_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3413,7 +3793,7 @@ func (x *GetHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHistoryResponse.ProtoReflect.Descriptor instead.
 func (*GetHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{18}
+	return file_manpasik_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *GetHistoryResponse) GetMeasurements() []*MeasurementSummary {
@@ -3443,7 +3823,7 @@ type MeasurementSummary struct {
 
 func (x *MeasurementSummary) Reset() {
 	*x = MeasurementSummary{}
-	mi := &file_manpasik_proto_msgTypes[19]
+	mi := &file_manpasik_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3455,7 +3835,7 @@ func (x *MeasurementSummary) String() string {
 func (*MeasurementSummary) ProtoMessage() {}
 
 func (x *MeasurementSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[19]
+	mi := &file_manpasik_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3468,7 +3848,7 @@ func (x *MeasurementSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MeasurementSummary.ProtoReflect.Descriptor instead.
 func (*MeasurementSummary) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{19}
+	return file_manpasik_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *MeasurementSummary) GetSessionId() string {
@@ -3518,7 +3898,7 @@ type RegisterDeviceRequest struct {
 
 func (x *RegisterDeviceRequest) Reset() {
 	*x = RegisterDeviceRequest{}
-	mi := &file_manpasik_proto_msgTypes[20]
+	mi := &file_manpasik_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3530,7 +3910,7 @@ func (x *RegisterDeviceRequest) String() string {
 func (*RegisterDeviceRequest) ProtoMessage() {}
 
 func (x *RegisterDeviceRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[20]
+	mi := &file_manpasik_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3543,7 +3923,7 @@ func (x *RegisterDeviceRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterDeviceRequest.ProtoReflect.Descriptor instead.
 func (*RegisterDeviceRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{20}
+	return file_manpasik_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *RegisterDeviceRequest) GetDeviceId() string {
@@ -3585,7 +3965,7 @@ type RegisterDeviceResponse struct {
 
 func (x *RegisterDeviceResponse) Reset() {
 	*x = RegisterDeviceResponse{}
-	mi := &file_manpasik_proto_msgTypes[21]
+	mi := &file_manpasik_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3597,7 +3977,7 @@ func (x *RegisterDeviceResponse) String() string {
 func (*RegisterDeviceResponse) ProtoMessage() {}
 
 func (x *RegisterDeviceResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[21]
+	mi := &file_manpasik_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3610,7 +3990,7 @@ func (x *RegisterDeviceResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisterDeviceResponse.ProtoReflect.Descriptor instead.
 func (*RegisterDeviceResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{21}
+	return file_manpasik_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *RegisterDeviceResponse) GetDeviceId() string {
@@ -3643,7 +4023,7 @@ type ListDevicesRequest struct {
 
 func (x *ListDevicesRequest) Reset() {
 	*x = ListDevicesRequest{}
-	mi := &file_manpasik_proto_msgTypes[22]
+	mi := &file_manpasik_proto_msgTypes[25]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3655,7 +4035,7 @@ func (x *ListDevicesRequest) String() string {
 func (*ListDevicesRequest) ProtoMessage() {}
 
 func (x *ListDevicesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[22]
+	mi := &file_manpasik_proto_msgTypes[25]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3668,7 +4048,7 @@ func (x *ListDevicesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDevicesRequest.ProtoReflect.Descriptor instead.
 func (*ListDevicesRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{22}
+	return file_manpasik_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *ListDevicesRequest) GetUserId() string {
@@ -3687,7 +4067,7 @@ type ListDevicesResponse struct {
 
 func (x *ListDevicesResponse) Reset() {
 	*x = ListDevicesResponse{}
-	mi := &file_manpasik_proto_msgTypes[23]
+	mi := &file_manpasik_proto_msgTypes[26]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3699,7 +4079,7 @@ func (x *ListDevicesResponse) String() string {
 func (*ListDevicesResponse) ProtoMessage() {}
 
 func (x *ListDevicesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[23]
+	mi := &file_manpasik_proto_msgTypes[26]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3712,7 +4092,7 @@ func (x *ListDevicesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDevicesResponse.ProtoReflect.Descriptor instead.
 func (*ListDevicesResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{23}
+	return file_manpasik_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *ListDevicesResponse) GetDevices() []*DeviceInfo {
@@ -3736,7 +4116,7 @@ type DeviceInfo struct {
 
 func (x *DeviceInfo) Reset() {
 	*x = DeviceInfo{}
-	mi := &file_manpasik_proto_msgTypes[24]
+	mi := &file_manpasik_proto_msgTypes[27]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3748,7 +4128,7 @@ func (x *DeviceInfo) String() string {
 func (*DeviceInfo) ProtoMessage() {}
 
 func (x *DeviceInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[24]
+	mi := &file_manpasik_proto_msgTypes[27]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3761,7 +4141,7 @@ func (x *DeviceInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeviceInfo.ProtoReflect.Descriptor instead.
 func (*DeviceInfo) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{24}
+	return file_manpasik_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *DeviceInfo) GetDeviceId() string {
@@ -3819,7 +4199,7 @@ type DeviceStatusUpdate struct {
 
 func (x *DeviceStatusUpdate) Reset() {
 	*x = DeviceStatusUpdate{}
-	mi := &file_manpasik_proto_msgTypes[25]
+	mi := &file_manpasik_proto_msgTypes[28]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3831,7 +4211,7 @@ func (x *DeviceStatusUpdate) String() string {
 func (*DeviceStatusUpdate) ProtoMessage() {}
 
 func (x *DeviceStatusUpdate) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[25]
+	mi := &file_manpasik_proto_msgTypes[28]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3844,7 +4224,7 @@ func (x *DeviceStatusUpdate) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeviceStatusUpdate.ProtoReflect.Descriptor instead.
 func (*DeviceStatusUpdate) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{25}
+	return file_manpasik_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *DeviceStatusUpdate) GetDeviceId() string {
@@ -3893,7 +4273,7 @@ type DeviceCommand struct {
 
 func (x *DeviceCommand) Reset() {
 	*x = DeviceCommand{}
-	mi := &file_manpasik_proto_msgTypes[26]
+	mi := &file_manpasik_proto_msgTypes[29]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3905,7 +4285,7 @@ func (x *DeviceCommand) String() string {
 func (*DeviceCommand) ProtoMessage() {}
 
 func (x *DeviceCommand) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[26]
+	mi := &file_manpasik_proto_msgTypes[29]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3918,7 +4298,7 @@ func (x *DeviceCommand) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeviceCommand.ProtoReflect.Descriptor instead.
 func (*DeviceCommand) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{26}
+	return file_manpasik_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *DeviceCommand) GetCommandId() string {
@@ -3952,7 +4332,7 @@ type OtaRequest struct {
 
 func (x *OtaRequest) Reset() {
 	*x = OtaRequest{}
-	mi := &file_manpasik_proto_msgTypes[27]
+	mi := &file_manpasik_proto_msgTypes[30]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -3964,7 +4344,7 @@ func (x *OtaRequest) String() string {
 func (*OtaRequest) ProtoMessage() {}
 
 func (x *OtaRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[27]
+	mi := &file_manpasik_proto_msgTypes[30]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3977,7 +4357,7 @@ func (x *OtaRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OtaRequest.ProtoReflect.Descriptor instead.
 func (*OtaRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{27}
+	return file_manpasik_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *OtaRequest) GetDeviceId() string {
@@ -4005,7 +4385,7 @@ type OtaResponse struct {
 
 func (x *OtaResponse) Reset() {
 	*x = OtaResponse{}
-	mi := &file_manpasik_proto_msgTypes[28]
+	mi := &file_manpasik_proto_msgTypes[31]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4017,7 +4397,7 @@ func (x *OtaResponse) String() string {
 func (*OtaResponse) ProtoMessage() {}
 
 func (x *OtaResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[28]
+	mi := &file_manpasik_proto_msgTypes[31]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4030,7 +4410,7 @@ func (x *OtaResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OtaResponse.ProtoReflect.Descriptor instead.
 func (*OtaResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{28}
+	return file_manpasik_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *OtaResponse) GetUpdateId() string {
@@ -4063,7 +4443,7 @@ type GetProfileRequest struct {
 
 func (x *GetProfileRequest) Reset() {
 	*x = GetProfileRequest{}
-	mi := &file_manpasik_proto_msgTypes[29]
+	mi := &file_manpasik_proto_msgTypes[32]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4075,7 +4455,7 @@ func (x *GetProfileRequest) String() string {
 func (*GetProfileRequest) ProtoMessage() {}
 
 func (x *GetProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[29]
+	mi := &file_manpasik_proto_msgTypes[32]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4088,7 +4468,7 @@ func (x *GetProfileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProfileRequest.ProtoReflect.Descriptor instead.
 func (*GetProfileRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{29}
+	return file_manpasik_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *GetProfileRequest) GetUserId() string {
@@ -4099,19 +4479,29 @@ func (x *GetProfileRequest) GetUserId() string {
 }
 
 type UpdateProfileRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	DisplayName   string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
-	AvatarUrl     string                 `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
-	Language      string                 `protobuf:"bytes,4,opt,name=language,proto3" json:"language,omitempty"`
-	Timezone      string                 `protobuf:"bytes,5,opt,name=timezone,proto3" json:"timezone,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state       protoimpl.MessageState `protogen:"open.v1"`
+	UserId      string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	DisplayName string                 `protobuf:"bytes,2,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	AvatarUrl   string                 `protobuf:"bytes,3,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	Language    string                 `protobuf:"bytes,4,opt,name=language,proto3" json:"language,omitempty"`
+	Timezone    string                 `protobuf:"bytes,5,opt,name=timezone,proto3" json:"timezone,omitempty"`
+	// 건강 프로필
+	BirthDate             string   `protobuf:"bytes,6,opt,name=birth_date,json=birthDate,proto3" json:"birth_date,omitempty"` // YYYY-MM-DD
+	Gender                Gender   `protobuf:"varint,7,opt,name=gender,proto3,enum=manpasik.v1.Gender" json:"gender,omitempty"`
+	BloodType             string   `protobuf:"bytes,8,opt,name=blood_type,json=bloodType,proto3" json:"blood_type,omitempty"`
+	HeightCm              float64  `protobuf:"fixed64,9,opt,name=height_cm,json=heightCm,proto3" json:"height_cm,omitempty"`
+	WeightKg              float64  `protobuf:"fixed64,10,opt,name=weight_kg,json=weightKg,proto3" json:"weight_kg,omitempty"`
+	MedicalConditions     []string `protobuf:"bytes,11,rep,name=medical_conditions,json=medicalConditions,proto3" json:"medical_conditions,omitempty"`
+	Allergies             []string `protobuf:"bytes,12,rep,name=allergies,proto3" json:"allergies,omitempty"`
+	EmergencyContactName  string   `protobuf:"bytes,13,opt,name=emergency_contact_name,json=emergencyContactName,proto3" json:"emergency_contact_name,omitempty"`
+	EmergencyContactPhone string   `protobuf:"bytes,14,opt,name=emergency_contact_phone,json=emergencyContactPhone,proto3" json:"emergency_contact_phone,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
 }
 
 func (x *UpdateProfileRequest) Reset() {
 	*x = UpdateProfileRequest{}
-	mi := &file_manpasik_proto_msgTypes[30]
+	mi := &file_manpasik_proto_msgTypes[33]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4123,7 +4513,7 @@ func (x *UpdateProfileRequest) String() string {
 func (*UpdateProfileRequest) ProtoMessage() {}
 
 func (x *UpdateProfileRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[30]
+	mi := &file_manpasik_proto_msgTypes[33]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4136,7 +4526,7 @@ func (x *UpdateProfileRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateProfileRequest.ProtoReflect.Descriptor instead.
 func (*UpdateProfileRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{30}
+	return file_manpasik_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *UpdateProfileRequest) GetUserId() string {
@@ -4174,6 +4564,69 @@ func (x *UpdateProfileRequest) GetTimezone() string {
 	return ""
 }
 
+func (x *UpdateProfileRequest) GetBirthDate() string {
+	if x != nil {
+		return x.BirthDate
+	}
+	return ""
+}
+
+func (x *UpdateProfileRequest) GetGender() Gender {
+	if x != nil {
+		return x.Gender
+	}
+	return Gender_GENDER_UNSPECIFIED
+}
+
+func (x *UpdateProfileRequest) GetBloodType() string {
+	if x != nil {
+		return x.BloodType
+	}
+	return ""
+}
+
+func (x *UpdateProfileRequest) GetHeightCm() float64 {
+	if x != nil {
+		return x.HeightCm
+	}
+	return 0
+}
+
+func (x *UpdateProfileRequest) GetWeightKg() float64 {
+	if x != nil {
+		return x.WeightKg
+	}
+	return 0
+}
+
+func (x *UpdateProfileRequest) GetMedicalConditions() []string {
+	if x != nil {
+		return x.MedicalConditions
+	}
+	return nil
+}
+
+func (x *UpdateProfileRequest) GetAllergies() []string {
+	if x != nil {
+		return x.Allergies
+	}
+	return nil
+}
+
+func (x *UpdateProfileRequest) GetEmergencyContactName() string {
+	if x != nil {
+		return x.EmergencyContactName
+	}
+	return ""
+}
+
+func (x *UpdateProfileRequest) GetEmergencyContactPhone() string {
+	if x != nil {
+		return x.EmergencyContactPhone
+	}
+	return ""
+}
+
 type UserProfile struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	UserId           string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -4184,13 +4637,26 @@ type UserProfile struct {
 	Timezone         string                 `protobuf:"bytes,6,opt,name=timezone,proto3" json:"timezone,omitempty"`
 	SubscriptionTier SubscriptionTier       `protobuf:"varint,7,opt,name=subscription_tier,json=subscriptionTier,proto3,enum=manpasik.v1.SubscriptionTier" json:"subscription_tier,omitempty"`
 	CreatedAt        *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	unknownFields    protoimpl.UnknownFields
-	sizeCache        protoimpl.SizeCache
+	// 건강 프로필
+	BirthDate             string   `protobuf:"bytes,9,opt,name=birth_date,json=birthDate,proto3" json:"birth_date,omitempty"` // YYYY-MM-DD
+	Gender                Gender   `protobuf:"varint,10,opt,name=gender,proto3,enum=manpasik.v1.Gender" json:"gender,omitempty"`
+	BloodType             string   `protobuf:"bytes,11,opt,name=blood_type,json=bloodType,proto3" json:"blood_type,omitempty"` // "A+", "B-", "O+", "AB+" 등
+	HeightCm              float64  `protobuf:"fixed64,12,opt,name=height_cm,json=heightCm,proto3" json:"height_cm,omitempty"`
+	WeightKg              float64  `protobuf:"fixed64,13,opt,name=weight_kg,json=weightKg,proto3" json:"weight_kg,omitempty"`
+	MedicalConditions     []string `protobuf:"bytes,14,rep,name=medical_conditions,json=medicalConditions,proto3" json:"medical_conditions,omitempty"`
+	Allergies             []string `protobuf:"bytes,15,rep,name=allergies,proto3" json:"allergies,omitempty"`
+	EmergencyContactName  string   `protobuf:"bytes,16,opt,name=emergency_contact_name,json=emergencyContactName,proto3" json:"emergency_contact_name,omitempty"`
+	EmergencyContactPhone string   `protobuf:"bytes,17,opt,name=emergency_contact_phone,json=emergencyContactPhone,proto3" json:"emergency_contact_phone,omitempty"`
+	// 소셜 로그인 정보
+	SocialProvider SocialProvider `protobuf:"varint,18,opt,name=social_provider,json=socialProvider,proto3,enum=manpasik.v1.SocialProvider" json:"social_provider,omitempty"` // 소셜 로그인 사용자의 경우
+	SocialId       string         `protobuf:"bytes,19,opt,name=social_id,json=socialId,proto3" json:"social_id,omitempty"`                                                    // 소셜 계정 고유 ID
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *UserProfile) Reset() {
 	*x = UserProfile{}
-	mi := &file_manpasik_proto_msgTypes[31]
+	mi := &file_manpasik_proto_msgTypes[34]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4202,7 +4668,7 @@ func (x *UserProfile) String() string {
 func (*UserProfile) ProtoMessage() {}
 
 func (x *UserProfile) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[31]
+	mi := &file_manpasik_proto_msgTypes[34]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4215,7 +4681,7 @@ func (x *UserProfile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserProfile.ProtoReflect.Descriptor instead.
 func (*UserProfile) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{31}
+	return file_manpasik_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *UserProfile) GetUserId() string {
@@ -4274,6 +4740,83 @@ func (x *UserProfile) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *UserProfile) GetBirthDate() string {
+	if x != nil {
+		return x.BirthDate
+	}
+	return ""
+}
+
+func (x *UserProfile) GetGender() Gender {
+	if x != nil {
+		return x.Gender
+	}
+	return Gender_GENDER_UNSPECIFIED
+}
+
+func (x *UserProfile) GetBloodType() string {
+	if x != nil {
+		return x.BloodType
+	}
+	return ""
+}
+
+func (x *UserProfile) GetHeightCm() float64 {
+	if x != nil {
+		return x.HeightCm
+	}
+	return 0
+}
+
+func (x *UserProfile) GetWeightKg() float64 {
+	if x != nil {
+		return x.WeightKg
+	}
+	return 0
+}
+
+func (x *UserProfile) GetMedicalConditions() []string {
+	if x != nil {
+		return x.MedicalConditions
+	}
+	return nil
+}
+
+func (x *UserProfile) GetAllergies() []string {
+	if x != nil {
+		return x.Allergies
+	}
+	return nil
+}
+
+func (x *UserProfile) GetEmergencyContactName() string {
+	if x != nil {
+		return x.EmergencyContactName
+	}
+	return ""
+}
+
+func (x *UserProfile) GetEmergencyContactPhone() string {
+	if x != nil {
+		return x.EmergencyContactPhone
+	}
+	return ""
+}
+
+func (x *UserProfile) GetSocialProvider() SocialProvider {
+	if x != nil {
+		return x.SocialProvider
+	}
+	return SocialProvider_SOCIAL_PROVIDER_UNSPECIFIED
+}
+
+func (x *UserProfile) GetSocialId() string {
+	if x != nil {
+		return x.SocialId
+	}
+	return ""
+}
+
 type GetSubscriptionRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
@@ -4283,7 +4826,7 @@ type GetSubscriptionRequest struct {
 
 func (x *GetSubscriptionRequest) Reset() {
 	*x = GetSubscriptionRequest{}
-	mi := &file_manpasik_proto_msgTypes[32]
+	mi := &file_manpasik_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4295,7 +4838,7 @@ func (x *GetSubscriptionRequest) String() string {
 func (*GetSubscriptionRequest) ProtoMessage() {}
 
 func (x *GetSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[32]
+	mi := &file_manpasik_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4308,7 +4851,7 @@ func (x *GetSubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*GetSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{32}
+	return file_manpasik_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *GetSubscriptionRequest) GetUserId() string {
@@ -4334,7 +4877,7 @@ type SubscriptionInfo struct {
 
 func (x *SubscriptionInfo) Reset() {
 	*x = SubscriptionInfo{}
-	mi := &file_manpasik_proto_msgTypes[33]
+	mi := &file_manpasik_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4346,7 +4889,7 @@ func (x *SubscriptionInfo) String() string {
 func (*SubscriptionInfo) ProtoMessage() {}
 
 func (x *SubscriptionInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[33]
+	mi := &file_manpasik_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4359,7 +4902,7 @@ func (x *SubscriptionInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscriptionInfo.ProtoReflect.Descriptor instead.
 func (*SubscriptionInfo) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{33}
+	return file_manpasik_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *SubscriptionInfo) GetUserId() string {
@@ -4428,7 +4971,7 @@ type CreateSubscriptionRequest struct {
 
 func (x *CreateSubscriptionRequest) Reset() {
 	*x = CreateSubscriptionRequest{}
-	mi := &file_manpasik_proto_msgTypes[34]
+	mi := &file_manpasik_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4440,7 +4983,7 @@ func (x *CreateSubscriptionRequest) String() string {
 func (*CreateSubscriptionRequest) ProtoMessage() {}
 
 func (x *CreateSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[34]
+	mi := &file_manpasik_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4453,7 +4996,7 @@ func (x *CreateSubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*CreateSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{34}
+	return file_manpasik_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *CreateSubscriptionRequest) GetUserId() string {
@@ -4479,7 +5022,7 @@ type GetSubscriptionDetailRequest struct {
 
 func (x *GetSubscriptionDetailRequest) Reset() {
 	*x = GetSubscriptionDetailRequest{}
-	mi := &file_manpasik_proto_msgTypes[35]
+	mi := &file_manpasik_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4491,7 +5034,7 @@ func (x *GetSubscriptionDetailRequest) String() string {
 func (*GetSubscriptionDetailRequest) ProtoMessage() {}
 
 func (x *GetSubscriptionDetailRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[35]
+	mi := &file_manpasik_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4504,7 +5047,7 @@ func (x *GetSubscriptionDetailRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSubscriptionDetailRequest.ProtoReflect.Descriptor instead.
 func (*GetSubscriptionDetailRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{35}
+	return file_manpasik_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *GetSubscriptionDetailRequest) GetUserId() string {
@@ -4525,7 +5068,7 @@ type UpdateSubscriptionRequest struct {
 
 func (x *UpdateSubscriptionRequest) Reset() {
 	*x = UpdateSubscriptionRequest{}
-	mi := &file_manpasik_proto_msgTypes[36]
+	mi := &file_manpasik_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4537,7 +5080,7 @@ func (x *UpdateSubscriptionRequest) String() string {
 func (*UpdateSubscriptionRequest) ProtoMessage() {}
 
 func (x *UpdateSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[36]
+	mi := &file_manpasik_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4550,7 +5093,7 @@ func (x *UpdateSubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*UpdateSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{36}
+	return file_manpasik_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *UpdateSubscriptionRequest) GetUserId() string {
@@ -4584,7 +5127,7 @@ type CancelSubscriptionRequest struct {
 
 func (x *CancelSubscriptionRequest) Reset() {
 	*x = CancelSubscriptionRequest{}
-	mi := &file_manpasik_proto_msgTypes[37]
+	mi := &file_manpasik_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4596,7 +5139,7 @@ func (x *CancelSubscriptionRequest) String() string {
 func (*CancelSubscriptionRequest) ProtoMessage() {}
 
 func (x *CancelSubscriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[37]
+	mi := &file_manpasik_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4609,7 +5152,7 @@ func (x *CancelSubscriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelSubscriptionRequest.ProtoReflect.Descriptor instead.
 func (*CancelSubscriptionRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{37}
+	return file_manpasik_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *CancelSubscriptionRequest) GetUserId() string {
@@ -4637,7 +5180,7 @@ type CancelSubscriptionResponse struct {
 
 func (x *CancelSubscriptionResponse) Reset() {
 	*x = CancelSubscriptionResponse{}
-	mi := &file_manpasik_proto_msgTypes[38]
+	mi := &file_manpasik_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4649,7 +5192,7 @@ func (x *CancelSubscriptionResponse) String() string {
 func (*CancelSubscriptionResponse) ProtoMessage() {}
 
 func (x *CancelSubscriptionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[38]
+	mi := &file_manpasik_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4662,7 +5205,7 @@ func (x *CancelSubscriptionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelSubscriptionResponse.ProtoReflect.Descriptor instead.
 func (*CancelSubscriptionResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{38}
+	return file_manpasik_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *CancelSubscriptionResponse) GetSuccess() bool {
@@ -4707,7 +5250,7 @@ type SubscriptionDetail struct {
 
 func (x *SubscriptionDetail) Reset() {
 	*x = SubscriptionDetail{}
-	mi := &file_manpasik_proto_msgTypes[39]
+	mi := &file_manpasik_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4719,7 +5262,7 @@ func (x *SubscriptionDetail) String() string {
 func (*SubscriptionDetail) ProtoMessage() {}
 
 func (x *SubscriptionDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[39]
+	mi := &file_manpasik_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4732,7 +5275,7 @@ func (x *SubscriptionDetail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscriptionDetail.ProtoReflect.Descriptor instead.
 func (*SubscriptionDetail) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{39}
+	return file_manpasik_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *SubscriptionDetail) GetSubscriptionId() string {
@@ -4836,7 +5379,7 @@ type CheckFeatureAccessRequest struct {
 
 func (x *CheckFeatureAccessRequest) Reset() {
 	*x = CheckFeatureAccessRequest{}
-	mi := &file_manpasik_proto_msgTypes[40]
+	mi := &file_manpasik_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4848,7 +5391,7 @@ func (x *CheckFeatureAccessRequest) String() string {
 func (*CheckFeatureAccessRequest) ProtoMessage() {}
 
 func (x *CheckFeatureAccessRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[40]
+	mi := &file_manpasik_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4861,7 +5404,7 @@ func (x *CheckFeatureAccessRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckFeatureAccessRequest.ProtoReflect.Descriptor instead.
 func (*CheckFeatureAccessRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{40}
+	return file_manpasik_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *CheckFeatureAccessRequest) GetUserId() string {
@@ -4890,7 +5433,7 @@ type CheckFeatureAccessResponse struct {
 
 func (x *CheckFeatureAccessResponse) Reset() {
 	*x = CheckFeatureAccessResponse{}
-	mi := &file_manpasik_proto_msgTypes[41]
+	mi := &file_manpasik_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4902,7 +5445,7 @@ func (x *CheckFeatureAccessResponse) String() string {
 func (*CheckFeatureAccessResponse) ProtoMessage() {}
 
 func (x *CheckFeatureAccessResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[41]
+	mi := &file_manpasik_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4915,7 +5458,7 @@ func (x *CheckFeatureAccessResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckFeatureAccessResponse.ProtoReflect.Descriptor instead.
 func (*CheckFeatureAccessResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{41}
+	return file_manpasik_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *CheckFeatureAccessResponse) GetAllowed() bool {
@@ -4954,7 +5497,7 @@ type ListSubscriptionPlansRequest struct {
 
 func (x *ListSubscriptionPlansRequest) Reset() {
 	*x = ListSubscriptionPlansRequest{}
-	mi := &file_manpasik_proto_msgTypes[42]
+	mi := &file_manpasik_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -4966,7 +5509,7 @@ func (x *ListSubscriptionPlansRequest) String() string {
 func (*ListSubscriptionPlansRequest) ProtoMessage() {}
 
 func (x *ListSubscriptionPlansRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[42]
+	mi := &file_manpasik_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -4979,7 +5522,7 @@ func (x *ListSubscriptionPlansRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSubscriptionPlansRequest.ProtoReflect.Descriptor instead.
 func (*ListSubscriptionPlansRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{42}
+	return file_manpasik_proto_rawDescGZIP(), []int{45}
 }
 
 type ListSubscriptionPlansResponse struct {
@@ -4991,7 +5534,7 @@ type ListSubscriptionPlansResponse struct {
 
 func (x *ListSubscriptionPlansResponse) Reset() {
 	*x = ListSubscriptionPlansResponse{}
-	mi := &file_manpasik_proto_msgTypes[43]
+	mi := &file_manpasik_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5003,7 +5546,7 @@ func (x *ListSubscriptionPlansResponse) String() string {
 func (*ListSubscriptionPlansResponse) ProtoMessage() {}
 
 func (x *ListSubscriptionPlansResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[43]
+	mi := &file_manpasik_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5016,7 +5559,7 @@ func (x *ListSubscriptionPlansResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSubscriptionPlansResponse.ProtoReflect.Descriptor instead.
 func (*ListSubscriptionPlansResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{43}
+	return file_manpasik_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *ListSubscriptionPlansResponse) GetPlans() []*SubscriptionPlan {
@@ -5043,7 +5586,7 @@ type SubscriptionPlan struct {
 
 func (x *SubscriptionPlan) Reset() {
 	*x = SubscriptionPlan{}
-	mi := &file_manpasik_proto_msgTypes[44]
+	mi := &file_manpasik_proto_msgTypes[47]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5055,7 +5598,7 @@ func (x *SubscriptionPlan) String() string {
 func (*SubscriptionPlan) ProtoMessage() {}
 
 func (x *SubscriptionPlan) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[44]
+	mi := &file_manpasik_proto_msgTypes[47]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5068,7 +5611,7 @@ func (x *SubscriptionPlan) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SubscriptionPlan.ProtoReflect.Descriptor instead.
 func (*SubscriptionPlan) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{44}
+	return file_manpasik_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *SubscriptionPlan) GetTier() SubscriptionTier {
@@ -5145,7 +5688,7 @@ type ListProductsRequest struct {
 
 func (x *ListProductsRequest) Reset() {
 	*x = ListProductsRequest{}
-	mi := &file_manpasik_proto_msgTypes[45]
+	mi := &file_manpasik_proto_msgTypes[48]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5157,7 +5700,7 @@ func (x *ListProductsRequest) String() string {
 func (*ListProductsRequest) ProtoMessage() {}
 
 func (x *ListProductsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[45]
+	mi := &file_manpasik_proto_msgTypes[48]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5170,7 +5713,7 @@ func (x *ListProductsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListProductsRequest.ProtoReflect.Descriptor instead.
 func (*ListProductsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{45}
+	return file_manpasik_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *ListProductsRequest) GetCategory() ProductCategory {
@@ -5204,7 +5747,7 @@ type ListProductsResponse struct {
 
 func (x *ListProductsResponse) Reset() {
 	*x = ListProductsResponse{}
-	mi := &file_manpasik_proto_msgTypes[46]
+	mi := &file_manpasik_proto_msgTypes[49]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5216,7 +5759,7 @@ func (x *ListProductsResponse) String() string {
 func (*ListProductsResponse) ProtoMessage() {}
 
 func (x *ListProductsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[46]
+	mi := &file_manpasik_proto_msgTypes[49]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5229,7 +5772,7 @@ func (x *ListProductsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListProductsResponse.ProtoReflect.Descriptor instead.
 func (*ListProductsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{46}
+	return file_manpasik_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *ListProductsResponse) GetProducts() []*Product {
@@ -5255,7 +5798,7 @@ type GetProductRequest struct {
 
 func (x *GetProductRequest) Reset() {
 	*x = GetProductRequest{}
-	mi := &file_manpasik_proto_msgTypes[47]
+	mi := &file_manpasik_proto_msgTypes[50]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5267,7 +5810,7 @@ func (x *GetProductRequest) String() string {
 func (*GetProductRequest) ProtoMessage() {}
 
 func (x *GetProductRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[47]
+	mi := &file_manpasik_proto_msgTypes[50]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5280,7 +5823,7 @@ func (x *GetProductRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetProductRequest.ProtoReflect.Descriptor instead.
 func (*GetProductRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{47}
+	return file_manpasik_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *GetProductRequest) GetProductId() string {
@@ -5307,7 +5850,7 @@ type Product struct {
 
 func (x *Product) Reset() {
 	*x = Product{}
-	mi := &file_manpasik_proto_msgTypes[48]
+	mi := &file_manpasik_proto_msgTypes[51]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5319,7 +5862,7 @@ func (x *Product) String() string {
 func (*Product) ProtoMessage() {}
 
 func (x *Product) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[48]
+	mi := &file_manpasik_proto_msgTypes[51]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5332,7 +5875,7 @@ func (x *Product) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Product.ProtoReflect.Descriptor instead.
 func (*Product) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{48}
+	return file_manpasik_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *Product) GetProductId() string {
@@ -5409,7 +5952,7 @@ type AddToCartRequest struct {
 
 func (x *AddToCartRequest) Reset() {
 	*x = AddToCartRequest{}
-	mi := &file_manpasik_proto_msgTypes[49]
+	mi := &file_manpasik_proto_msgTypes[52]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5421,7 +5964,7 @@ func (x *AddToCartRequest) String() string {
 func (*AddToCartRequest) ProtoMessage() {}
 
 func (x *AddToCartRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[49]
+	mi := &file_manpasik_proto_msgTypes[52]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5434,7 +5977,7 @@ func (x *AddToCartRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddToCartRequest.ProtoReflect.Descriptor instead.
 func (*AddToCartRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{49}
+	return file_manpasik_proto_rawDescGZIP(), []int{52}
 }
 
 func (x *AddToCartRequest) GetUserId() string {
@@ -5467,7 +6010,7 @@ type GetCartRequest struct {
 
 func (x *GetCartRequest) Reset() {
 	*x = GetCartRequest{}
-	mi := &file_manpasik_proto_msgTypes[50]
+	mi := &file_manpasik_proto_msgTypes[53]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5479,7 +6022,7 @@ func (x *GetCartRequest) String() string {
 func (*GetCartRequest) ProtoMessage() {}
 
 func (x *GetCartRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[50]
+	mi := &file_manpasik_proto_msgTypes[53]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5492,7 +6035,7 @@ func (x *GetCartRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCartRequest.ProtoReflect.Descriptor instead.
 func (*GetCartRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{50}
+	return file_manpasik_proto_rawDescGZIP(), []int{53}
 }
 
 func (x *GetCartRequest) GetUserId() string {
@@ -5512,7 +6055,7 @@ type RemoveFromCartRequest struct {
 
 func (x *RemoveFromCartRequest) Reset() {
 	*x = RemoveFromCartRequest{}
-	mi := &file_manpasik_proto_msgTypes[51]
+	mi := &file_manpasik_proto_msgTypes[54]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5524,7 +6067,7 @@ func (x *RemoveFromCartRequest) String() string {
 func (*RemoveFromCartRequest) ProtoMessage() {}
 
 func (x *RemoveFromCartRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[51]
+	mi := &file_manpasik_proto_msgTypes[54]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5537,7 +6080,7 @@ func (x *RemoveFromCartRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveFromCartRequest.ProtoReflect.Descriptor instead.
 func (*RemoveFromCartRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{51}
+	return file_manpasik_proto_rawDescGZIP(), []int{54}
 }
 
 func (x *RemoveFromCartRequest) GetUserId() string {
@@ -5565,7 +6108,7 @@ type Cart struct {
 
 func (x *Cart) Reset() {
 	*x = Cart{}
-	mi := &file_manpasik_proto_msgTypes[52]
+	mi := &file_manpasik_proto_msgTypes[55]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5577,7 +6120,7 @@ func (x *Cart) String() string {
 func (*Cart) ProtoMessage() {}
 
 func (x *Cart) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[52]
+	mi := &file_manpasik_proto_msgTypes[55]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5590,7 +6133,7 @@ func (x *Cart) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Cart.ProtoReflect.Descriptor instead.
 func (*Cart) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{52}
+	return file_manpasik_proto_rawDescGZIP(), []int{55}
 }
 
 func (x *Cart) GetUserId() string {
@@ -5628,7 +6171,7 @@ type CartItem struct {
 
 func (x *CartItem) Reset() {
 	*x = CartItem{}
-	mi := &file_manpasik_proto_msgTypes[53]
+	mi := &file_manpasik_proto_msgTypes[56]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5640,7 +6183,7 @@ func (x *CartItem) String() string {
 func (*CartItem) ProtoMessage() {}
 
 func (x *CartItem) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[53]
+	mi := &file_manpasik_proto_msgTypes[56]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5653,7 +6196,7 @@ func (x *CartItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CartItem.ProtoReflect.Descriptor instead.
 func (*CartItem) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{53}
+	return file_manpasik_proto_rawDescGZIP(), []int{56}
 }
 
 func (x *CartItem) GetCartItemId() string {
@@ -5709,7 +6252,7 @@ type CreateOrderRequest struct {
 
 func (x *CreateOrderRequest) Reset() {
 	*x = CreateOrderRequest{}
-	mi := &file_manpasik_proto_msgTypes[54]
+	mi := &file_manpasik_proto_msgTypes[57]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5721,7 +6264,7 @@ func (x *CreateOrderRequest) String() string {
 func (*CreateOrderRequest) ProtoMessage() {}
 
 func (x *CreateOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[54]
+	mi := &file_manpasik_proto_msgTypes[57]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5734,7 +6277,7 @@ func (x *CreateOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateOrderRequest.ProtoReflect.Descriptor instead.
 func (*CreateOrderRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{54}
+	return file_manpasik_proto_rawDescGZIP(), []int{57}
 }
 
 func (x *CreateOrderRequest) GetUserId() string {
@@ -5767,7 +6310,7 @@ type GetOrderRequest struct {
 
 func (x *GetOrderRequest) Reset() {
 	*x = GetOrderRequest{}
-	mi := &file_manpasik_proto_msgTypes[55]
+	mi := &file_manpasik_proto_msgTypes[58]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5779,7 +6322,7 @@ func (x *GetOrderRequest) String() string {
 func (*GetOrderRequest) ProtoMessage() {}
 
 func (x *GetOrderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[55]
+	mi := &file_manpasik_proto_msgTypes[58]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5792,7 +6335,7 @@ func (x *GetOrderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOrderRequest.ProtoReflect.Descriptor instead.
 func (*GetOrderRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{55}
+	return file_manpasik_proto_rawDescGZIP(), []int{58}
 }
 
 func (x *GetOrderRequest) GetOrderId() string {
@@ -5813,7 +6356,7 @@ type ListOrdersRequest struct {
 
 func (x *ListOrdersRequest) Reset() {
 	*x = ListOrdersRequest{}
-	mi := &file_manpasik_proto_msgTypes[56]
+	mi := &file_manpasik_proto_msgTypes[59]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5825,7 +6368,7 @@ func (x *ListOrdersRequest) String() string {
 func (*ListOrdersRequest) ProtoMessage() {}
 
 func (x *ListOrdersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[56]
+	mi := &file_manpasik_proto_msgTypes[59]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5838,7 +6381,7 @@ func (x *ListOrdersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOrdersRequest.ProtoReflect.Descriptor instead.
 func (*ListOrdersRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{56}
+	return file_manpasik_proto_rawDescGZIP(), []int{59}
 }
 
 func (x *ListOrdersRequest) GetUserId() string {
@@ -5872,7 +6415,7 @@ type ListOrdersResponse struct {
 
 func (x *ListOrdersResponse) Reset() {
 	*x = ListOrdersResponse{}
-	mi := &file_manpasik_proto_msgTypes[57]
+	mi := &file_manpasik_proto_msgTypes[60]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5884,7 +6427,7 @@ func (x *ListOrdersResponse) String() string {
 func (*ListOrdersResponse) ProtoMessage() {}
 
 func (x *ListOrdersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[57]
+	mi := &file_manpasik_proto_msgTypes[60]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5897,7 +6440,7 @@ func (x *ListOrdersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListOrdersResponse.ProtoReflect.Descriptor instead.
 func (*ListOrdersResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{57}
+	return file_manpasik_proto_rawDescGZIP(), []int{60}
 }
 
 func (x *ListOrdersResponse) GetOrders() []*Order {
@@ -5931,7 +6474,7 @@ type Order struct {
 
 func (x *Order) Reset() {
 	*x = Order{}
-	mi := &file_manpasik_proto_msgTypes[58]
+	mi := &file_manpasik_proto_msgTypes[61]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -5943,7 +6486,7 @@ func (x *Order) String() string {
 func (*Order) ProtoMessage() {}
 
 func (x *Order) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[58]
+	mi := &file_manpasik_proto_msgTypes[61]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -5956,7 +6499,7 @@ func (x *Order) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Order.ProtoReflect.Descriptor instead.
 func (*Order) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{58}
+	return file_manpasik_proto_rawDescGZIP(), []int{61}
 }
 
 func (x *Order) GetOrderId() string {
@@ -6035,7 +6578,7 @@ type OrderItem struct {
 
 func (x *OrderItem) Reset() {
 	*x = OrderItem{}
-	mi := &file_manpasik_proto_msgTypes[59]
+	mi := &file_manpasik_proto_msgTypes[62]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6047,7 +6590,7 @@ func (x *OrderItem) String() string {
 func (*OrderItem) ProtoMessage() {}
 
 func (x *OrderItem) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[59]
+	mi := &file_manpasik_proto_msgTypes[62]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6060,7 +6603,7 @@ func (x *OrderItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderItem.ProtoReflect.Descriptor instead.
 func (*OrderItem) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{59}
+	return file_manpasik_proto_rawDescGZIP(), []int{62}
 }
 
 func (x *OrderItem) GetProductId() string {
@@ -6112,7 +6655,7 @@ type CreatePaymentRequest struct {
 
 func (x *CreatePaymentRequest) Reset() {
 	*x = CreatePaymentRequest{}
-	mi := &file_manpasik_proto_msgTypes[60]
+	mi := &file_manpasik_proto_msgTypes[63]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6124,7 +6667,7 @@ func (x *CreatePaymentRequest) String() string {
 func (*CreatePaymentRequest) ProtoMessage() {}
 
 func (x *CreatePaymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[60]
+	mi := &file_manpasik_proto_msgTypes[63]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6137,7 +6680,7 @@ func (x *CreatePaymentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePaymentRequest.ProtoReflect.Descriptor instead.
 func (*CreatePaymentRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{60}
+	return file_manpasik_proto_rawDescGZIP(), []int{63}
 }
 
 func (x *CreatePaymentRequest) GetUserId() string {
@@ -6194,7 +6737,7 @@ type ConfirmPaymentRequest struct {
 
 func (x *ConfirmPaymentRequest) Reset() {
 	*x = ConfirmPaymentRequest{}
-	mi := &file_manpasik_proto_msgTypes[61]
+	mi := &file_manpasik_proto_msgTypes[64]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6206,7 +6749,7 @@ func (x *ConfirmPaymentRequest) String() string {
 func (*ConfirmPaymentRequest) ProtoMessage() {}
 
 func (x *ConfirmPaymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[61]
+	mi := &file_manpasik_proto_msgTypes[64]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6219,7 +6762,7 @@ func (x *ConfirmPaymentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfirmPaymentRequest.ProtoReflect.Descriptor instead.
 func (*ConfirmPaymentRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{61}
+	return file_manpasik_proto_rawDescGZIP(), []int{64}
 }
 
 func (x *ConfirmPaymentRequest) GetPaymentId() string {
@@ -6259,7 +6802,7 @@ type GetPaymentRequest struct {
 
 func (x *GetPaymentRequest) Reset() {
 	*x = GetPaymentRequest{}
-	mi := &file_manpasik_proto_msgTypes[62]
+	mi := &file_manpasik_proto_msgTypes[65]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6271,7 +6814,7 @@ func (x *GetPaymentRequest) String() string {
 func (*GetPaymentRequest) ProtoMessage() {}
 
 func (x *GetPaymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[62]
+	mi := &file_manpasik_proto_msgTypes[65]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6284,7 +6827,7 @@ func (x *GetPaymentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPaymentRequest.ProtoReflect.Descriptor instead.
 func (*GetPaymentRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{62}
+	return file_manpasik_proto_rawDescGZIP(), []int{65}
 }
 
 func (x *GetPaymentRequest) GetPaymentId() string {
@@ -6305,7 +6848,7 @@ type ListPaymentsRequest struct {
 
 func (x *ListPaymentsRequest) Reset() {
 	*x = ListPaymentsRequest{}
-	mi := &file_manpasik_proto_msgTypes[63]
+	mi := &file_manpasik_proto_msgTypes[66]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6317,7 +6860,7 @@ func (x *ListPaymentsRequest) String() string {
 func (*ListPaymentsRequest) ProtoMessage() {}
 
 func (x *ListPaymentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[63]
+	mi := &file_manpasik_proto_msgTypes[66]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6330,7 +6873,7 @@ func (x *ListPaymentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPaymentsRequest.ProtoReflect.Descriptor instead.
 func (*ListPaymentsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{63}
+	return file_manpasik_proto_rawDescGZIP(), []int{66}
 }
 
 func (x *ListPaymentsRequest) GetUserId() string {
@@ -6364,7 +6907,7 @@ type ListPaymentsResponse struct {
 
 func (x *ListPaymentsResponse) Reset() {
 	*x = ListPaymentsResponse{}
-	mi := &file_manpasik_proto_msgTypes[64]
+	mi := &file_manpasik_proto_msgTypes[67]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6376,7 +6919,7 @@ func (x *ListPaymentsResponse) String() string {
 func (*ListPaymentsResponse) ProtoMessage() {}
 
 func (x *ListPaymentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[64]
+	mi := &file_manpasik_proto_msgTypes[67]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6389,7 +6932,7 @@ func (x *ListPaymentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPaymentsResponse.ProtoReflect.Descriptor instead.
 func (*ListPaymentsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{64}
+	return file_manpasik_proto_rawDescGZIP(), []int{67}
 }
 
 func (x *ListPaymentsResponse) GetPayments() []*PaymentDetail {
@@ -6426,7 +6969,7 @@ type PaymentDetail struct {
 
 func (x *PaymentDetail) Reset() {
 	*x = PaymentDetail{}
-	mi := &file_manpasik_proto_msgTypes[65]
+	mi := &file_manpasik_proto_msgTypes[68]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6438,7 +6981,7 @@ func (x *PaymentDetail) String() string {
 func (*PaymentDetail) ProtoMessage() {}
 
 func (x *PaymentDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[65]
+	mi := &file_manpasik_proto_msgTypes[68]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6451,7 +6994,7 @@ func (x *PaymentDetail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PaymentDetail.ProtoReflect.Descriptor instead.
 func (*PaymentDetail) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{65}
+	return file_manpasik_proto_rawDescGZIP(), []int{68}
 }
 
 func (x *PaymentDetail) GetPaymentId() string {
@@ -6549,7 +7092,7 @@ type RefundPaymentRequest struct {
 
 func (x *RefundPaymentRequest) Reset() {
 	*x = RefundPaymentRequest{}
-	mi := &file_manpasik_proto_msgTypes[66]
+	mi := &file_manpasik_proto_msgTypes[69]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6561,7 +7104,7 @@ func (x *RefundPaymentRequest) String() string {
 func (*RefundPaymentRequest) ProtoMessage() {}
 
 func (x *RefundPaymentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[66]
+	mi := &file_manpasik_proto_msgTypes[69]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6574,7 +7117,7 @@ func (x *RefundPaymentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RefundPaymentRequest.ProtoReflect.Descriptor instead.
 func (*RefundPaymentRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{66}
+	return file_manpasik_proto_rawDescGZIP(), []int{69}
 }
 
 func (x *RefundPaymentRequest) GetPaymentId() string {
@@ -6611,7 +7154,7 @@ type RefundResponse struct {
 
 func (x *RefundResponse) Reset() {
 	*x = RefundResponse{}
-	mi := &file_manpasik_proto_msgTypes[67]
+	mi := &file_manpasik_proto_msgTypes[70]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6623,7 +7166,7 @@ func (x *RefundResponse) String() string {
 func (*RefundResponse) ProtoMessage() {}
 
 func (x *RefundResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[67]
+	mi := &file_manpasik_proto_msgTypes[70]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6636,7 +7179,7 @@ func (x *RefundResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RefundResponse.ProtoReflect.Descriptor instead.
 func (*RefundResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{67}
+	return file_manpasik_proto_rawDescGZIP(), []int{70}
 }
 
 func (x *RefundResponse) GetRefundId() string {
@@ -6685,7 +7228,7 @@ type AnalyzeMeasurementRequest struct {
 
 func (x *AnalyzeMeasurementRequest) Reset() {
 	*x = AnalyzeMeasurementRequest{}
-	mi := &file_manpasik_proto_msgTypes[68]
+	mi := &file_manpasik_proto_msgTypes[71]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6697,7 +7240,7 @@ func (x *AnalyzeMeasurementRequest) String() string {
 func (*AnalyzeMeasurementRequest) ProtoMessage() {}
 
 func (x *AnalyzeMeasurementRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[68]
+	mi := &file_manpasik_proto_msgTypes[71]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6710,7 +7253,7 @@ func (x *AnalyzeMeasurementRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AnalyzeMeasurementRequest.ProtoReflect.Descriptor instead.
 func (*AnalyzeMeasurementRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{68}
+	return file_manpasik_proto_rawDescGZIP(), []int{71}
 }
 
 func (x *AnalyzeMeasurementRequest) GetUserId() string {
@@ -6749,7 +7292,7 @@ type BiomarkerResult struct {
 
 func (x *BiomarkerResult) Reset() {
 	*x = BiomarkerResult{}
-	mi := &file_manpasik_proto_msgTypes[69]
+	mi := &file_manpasik_proto_msgTypes[72]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6761,7 +7304,7 @@ func (x *BiomarkerResult) String() string {
 func (*BiomarkerResult) ProtoMessage() {}
 
 func (x *BiomarkerResult) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[69]
+	mi := &file_manpasik_proto_msgTypes[72]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6774,7 +7317,7 @@ func (x *BiomarkerResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BiomarkerResult.ProtoReflect.Descriptor instead.
 func (*BiomarkerResult) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{69}
+	return file_manpasik_proto_rawDescGZIP(), []int{72}
 }
 
 func (x *BiomarkerResult) GetBiomarkerName() string {
@@ -6840,7 +7383,7 @@ type AnomalyFlag struct {
 
 func (x *AnomalyFlag) Reset() {
 	*x = AnomalyFlag{}
-	mi := &file_manpasik_proto_msgTypes[70]
+	mi := &file_manpasik_proto_msgTypes[73]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6852,7 +7395,7 @@ func (x *AnomalyFlag) String() string {
 func (*AnomalyFlag) ProtoMessage() {}
 
 func (x *AnomalyFlag) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[70]
+	mi := &file_manpasik_proto_msgTypes[73]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6865,7 +7408,7 @@ func (x *AnomalyFlag) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AnomalyFlag.ProtoReflect.Descriptor instead.
 func (*AnomalyFlag) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{70}
+	return file_manpasik_proto_rawDescGZIP(), []int{73}
 }
 
 func (x *AnomalyFlag) GetMetricName() string {
@@ -6926,7 +7469,7 @@ type AnalysisResult struct {
 
 func (x *AnalysisResult) Reset() {
 	*x = AnalysisResult{}
-	mi := &file_manpasik_proto_msgTypes[71]
+	mi := &file_manpasik_proto_msgTypes[74]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -6938,7 +7481,7 @@ func (x *AnalysisResult) String() string {
 func (*AnalysisResult) ProtoMessage() {}
 
 func (x *AnalysisResult) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[71]
+	mi := &file_manpasik_proto_msgTypes[74]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -6951,7 +7494,7 @@ func (x *AnalysisResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AnalysisResult.ProtoReflect.Descriptor instead.
 func (*AnalysisResult) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{71}
+	return file_manpasik_proto_rawDescGZIP(), []int{74}
 }
 
 func (x *AnalysisResult) GetAnalysisId() string {
@@ -7020,7 +7563,7 @@ type GetHealthScoreRequest struct {
 
 func (x *GetHealthScoreRequest) Reset() {
 	*x = GetHealthScoreRequest{}
-	mi := &file_manpasik_proto_msgTypes[72]
+	mi := &file_manpasik_proto_msgTypes[75]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7032,7 +7575,7 @@ func (x *GetHealthScoreRequest) String() string {
 func (*GetHealthScoreRequest) ProtoMessage() {}
 
 func (x *GetHealthScoreRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[72]
+	mi := &file_manpasik_proto_msgTypes[75]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7045,7 +7588,7 @@ func (x *GetHealthScoreRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHealthScoreRequest.ProtoReflect.Descriptor instead.
 func (*GetHealthScoreRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{72}
+	return file_manpasik_proto_rawDescGZIP(), []int{75}
 }
 
 func (x *GetHealthScoreRequest) GetUserId() string {
@@ -7076,7 +7619,7 @@ type HealthScoreResponse struct {
 
 func (x *HealthScoreResponse) Reset() {
 	*x = HealthScoreResponse{}
-	mi := &file_manpasik_proto_msgTypes[73]
+	mi := &file_manpasik_proto_msgTypes[76]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7088,7 +7631,7 @@ func (x *HealthScoreResponse) String() string {
 func (*HealthScoreResponse) ProtoMessage() {}
 
 func (x *HealthScoreResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[73]
+	mi := &file_manpasik_proto_msgTypes[76]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7101,7 +7644,7 @@ func (x *HealthScoreResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthScoreResponse.ProtoReflect.Descriptor instead.
 func (*HealthScoreResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{73}
+	return file_manpasik_proto_rawDescGZIP(), []int{76}
 }
 
 func (x *HealthScoreResponse) GetUserId() string {
@@ -7158,7 +7701,7 @@ type PredictTrendRequest struct {
 
 func (x *PredictTrendRequest) Reset() {
 	*x = PredictTrendRequest{}
-	mi := &file_manpasik_proto_msgTypes[74]
+	mi := &file_manpasik_proto_msgTypes[77]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7170,7 +7713,7 @@ func (x *PredictTrendRequest) String() string {
 func (*PredictTrendRequest) ProtoMessage() {}
 
 func (x *PredictTrendRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[74]
+	mi := &file_manpasik_proto_msgTypes[77]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7183,7 +7726,7 @@ func (x *PredictTrendRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PredictTrendRequest.ProtoReflect.Descriptor instead.
 func (*PredictTrendRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{74}
+	return file_manpasik_proto_rawDescGZIP(), []int{77}
 }
 
 func (x *PredictTrendRequest) GetUserId() string {
@@ -7226,7 +7769,7 @@ type TrendDataPoint struct {
 
 func (x *TrendDataPoint) Reset() {
 	*x = TrendDataPoint{}
-	mi := &file_manpasik_proto_msgTypes[75]
+	mi := &file_manpasik_proto_msgTypes[78]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7238,7 +7781,7 @@ func (x *TrendDataPoint) String() string {
 func (*TrendDataPoint) ProtoMessage() {}
 
 func (x *TrendDataPoint) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[75]
+	mi := &file_manpasik_proto_msgTypes[78]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7251,7 +7794,7 @@ func (x *TrendDataPoint) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrendDataPoint.ProtoReflect.Descriptor instead.
 func (*TrendDataPoint) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{75}
+	return file_manpasik_proto_rawDescGZIP(), []int{78}
 }
 
 func (x *TrendDataPoint) GetTimestamp() *timestamppb.Timestamp {
@@ -7297,7 +7840,7 @@ type TrendPrediction struct {
 
 func (x *TrendPrediction) Reset() {
 	*x = TrendPrediction{}
-	mi := &file_manpasik_proto_msgTypes[76]
+	mi := &file_manpasik_proto_msgTypes[79]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7309,7 +7852,7 @@ func (x *TrendPrediction) String() string {
 func (*TrendPrediction) ProtoMessage() {}
 
 func (x *TrendPrediction) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[76]
+	mi := &file_manpasik_proto_msgTypes[79]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7322,7 +7865,7 @@ func (x *TrendPrediction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TrendPrediction.ProtoReflect.Descriptor instead.
 func (*TrendPrediction) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{76}
+	return file_manpasik_proto_rawDescGZIP(), []int{79}
 }
 
 func (x *TrendPrediction) GetUserId() string {
@@ -7383,7 +7926,7 @@ type GetModelInfoRequest struct {
 
 func (x *GetModelInfoRequest) Reset() {
 	*x = GetModelInfoRequest{}
-	mi := &file_manpasik_proto_msgTypes[77]
+	mi := &file_manpasik_proto_msgTypes[80]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7395,7 +7938,7 @@ func (x *GetModelInfoRequest) String() string {
 func (*GetModelInfoRequest) ProtoMessage() {}
 
 func (x *GetModelInfoRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[77]
+	mi := &file_manpasik_proto_msgTypes[80]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7408,7 +7951,7 @@ func (x *GetModelInfoRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetModelInfoRequest.ProtoReflect.Descriptor instead.
 func (*GetModelInfoRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{77}
+	return file_manpasik_proto_rawDescGZIP(), []int{80}
 }
 
 func (x *GetModelInfoRequest) GetModelType() AiModelType {
@@ -7433,7 +7976,7 @@ type ModelInfo struct {
 
 func (x *ModelInfo) Reset() {
 	*x = ModelInfo{}
-	mi := &file_manpasik_proto_msgTypes[78]
+	mi := &file_manpasik_proto_msgTypes[81]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7445,7 +7988,7 @@ func (x *ModelInfo) String() string {
 func (*ModelInfo) ProtoMessage() {}
 
 func (x *ModelInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[78]
+	mi := &file_manpasik_proto_msgTypes[81]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7458,7 +8001,7 @@ func (x *ModelInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ModelInfo.ProtoReflect.Descriptor instead.
 func (*ModelInfo) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{78}
+	return file_manpasik_proto_rawDescGZIP(), []int{81}
 }
 
 func (x *ModelInfo) GetModelType() AiModelType {
@@ -7518,7 +8061,7 @@ type ListModelsRequest struct {
 
 func (x *ListModelsRequest) Reset() {
 	*x = ListModelsRequest{}
-	mi := &file_manpasik_proto_msgTypes[79]
+	mi := &file_manpasik_proto_msgTypes[82]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7530,7 +8073,7 @@ func (x *ListModelsRequest) String() string {
 func (*ListModelsRequest) ProtoMessage() {}
 
 func (x *ListModelsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[79]
+	mi := &file_manpasik_proto_msgTypes[82]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7543,7 +8086,7 @@ func (x *ListModelsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListModelsRequest.ProtoReflect.Descriptor instead.
 func (*ListModelsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{79}
+	return file_manpasik_proto_rawDescGZIP(), []int{82}
 }
 
 type ListModelsResponse struct {
@@ -7555,7 +8098,7 @@ type ListModelsResponse struct {
 
 func (x *ListModelsResponse) Reset() {
 	*x = ListModelsResponse{}
-	mi := &file_manpasik_proto_msgTypes[80]
+	mi := &file_manpasik_proto_msgTypes[83]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7567,7 +8110,7 @@ func (x *ListModelsResponse) String() string {
 func (*ListModelsResponse) ProtoMessage() {}
 
 func (x *ListModelsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[80]
+	mi := &file_manpasik_proto_msgTypes[83]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7580,7 +8123,7 @@ func (x *ListModelsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListModelsResponse.ProtoReflect.Descriptor instead.
 func (*ListModelsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{80}
+	return file_manpasik_proto_rawDescGZIP(), []int{83}
 }
 
 func (x *ListModelsResponse) GetModels() []*ModelInfo {
@@ -7600,7 +8143,7 @@ type ReadCartridgeRequest struct {
 
 func (x *ReadCartridgeRequest) Reset() {
 	*x = ReadCartridgeRequest{}
-	mi := &file_manpasik_proto_msgTypes[81]
+	mi := &file_manpasik_proto_msgTypes[84]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7612,7 +8155,7 @@ func (x *ReadCartridgeRequest) String() string {
 func (*ReadCartridgeRequest) ProtoMessage() {}
 
 func (x *ReadCartridgeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[81]
+	mi := &file_manpasik_proto_msgTypes[84]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7625,7 +8168,7 @@ func (x *ReadCartridgeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReadCartridgeRequest.ProtoReflect.Descriptor instead.
 func (*ReadCartridgeRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{81}
+	return file_manpasik_proto_rawDescGZIP(), []int{84}
 }
 
 func (x *ReadCartridgeRequest) GetNfcTagData() []byte {
@@ -7669,7 +8212,7 @@ type CartridgeDetail struct {
 
 func (x *CartridgeDetail) Reset() {
 	*x = CartridgeDetail{}
-	mi := &file_manpasik_proto_msgTypes[82]
+	mi := &file_manpasik_proto_msgTypes[85]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7681,7 +8224,7 @@ func (x *CartridgeDetail) String() string {
 func (*CartridgeDetail) ProtoMessage() {}
 
 func (x *CartridgeDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[82]
+	mi := &file_manpasik_proto_msgTypes[85]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7694,7 +8237,7 @@ func (x *CartridgeDetail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CartridgeDetail.ProtoReflect.Descriptor instead.
 func (*CartridgeDetail) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{82}
+	return file_manpasik_proto_rawDescGZIP(), []int{85}
 }
 
 func (x *CartridgeDetail) GetCartridgeUid() string {
@@ -7843,7 +8386,7 @@ type RecordUsageRequest struct {
 
 func (x *RecordUsageRequest) Reset() {
 	*x = RecordUsageRequest{}
-	mi := &file_manpasik_proto_msgTypes[83]
+	mi := &file_manpasik_proto_msgTypes[86]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7855,7 +8398,7 @@ func (x *RecordUsageRequest) String() string {
 func (*RecordUsageRequest) ProtoMessage() {}
 
 func (x *RecordUsageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[83]
+	mi := &file_manpasik_proto_msgTypes[86]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7868,7 +8411,7 @@ func (x *RecordUsageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordUsageRequest.ProtoReflect.Descriptor instead.
 func (*RecordUsageRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{83}
+	return file_manpasik_proto_rawDescGZIP(), []int{86}
 }
 
 func (x *RecordUsageRequest) GetUserId() string {
@@ -7918,7 +8461,7 @@ type RecordUsageResponse struct {
 
 func (x *RecordUsageResponse) Reset() {
 	*x = RecordUsageResponse{}
-	mi := &file_manpasik_proto_msgTypes[84]
+	mi := &file_manpasik_proto_msgTypes[87]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7930,7 +8473,7 @@ func (x *RecordUsageResponse) String() string {
 func (*RecordUsageResponse) ProtoMessage() {}
 
 func (x *RecordUsageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[84]
+	mi := &file_manpasik_proto_msgTypes[87]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -7943,7 +8486,7 @@ func (x *RecordUsageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordUsageResponse.ProtoReflect.Descriptor instead.
 func (*RecordUsageResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{84}
+	return file_manpasik_proto_rawDescGZIP(), []int{87}
 }
 
 func (x *RecordUsageResponse) GetSuccess() bool {
@@ -7985,7 +8528,7 @@ type GetUsageHistoryRequest struct {
 
 func (x *GetUsageHistoryRequest) Reset() {
 	*x = GetUsageHistoryRequest{}
-	mi := &file_manpasik_proto_msgTypes[85]
+	mi := &file_manpasik_proto_msgTypes[88]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -7997,7 +8540,7 @@ func (x *GetUsageHistoryRequest) String() string {
 func (*GetUsageHistoryRequest) ProtoMessage() {}
 
 func (x *GetUsageHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[85]
+	mi := &file_manpasik_proto_msgTypes[88]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8010,7 +8553,7 @@ func (x *GetUsageHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUsageHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetUsageHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{85}
+	return file_manpasik_proto_rawDescGZIP(), []int{88}
 }
 
 func (x *GetUsageHistoryRequest) GetUserId() string {
@@ -8044,7 +8587,7 @@ type GetUsageHistoryResponse struct {
 
 func (x *GetUsageHistoryResponse) Reset() {
 	*x = GetUsageHistoryResponse{}
-	mi := &file_manpasik_proto_msgTypes[86]
+	mi := &file_manpasik_proto_msgTypes[89]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8056,7 +8599,7 @@ func (x *GetUsageHistoryResponse) String() string {
 func (*GetUsageHistoryResponse) ProtoMessage() {}
 
 func (x *GetUsageHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[86]
+	mi := &file_manpasik_proto_msgTypes[89]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8069,7 +8612,7 @@ func (x *GetUsageHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUsageHistoryResponse.ProtoReflect.Descriptor instead.
 func (*GetUsageHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{86}
+	return file_manpasik_proto_rawDescGZIP(), []int{89}
 }
 
 func (x *GetUsageHistoryResponse) GetRecords() []*CartridgeUsageRecord {
@@ -8102,7 +8645,7 @@ type CartridgeUsageRecord struct {
 
 func (x *CartridgeUsageRecord) Reset() {
 	*x = CartridgeUsageRecord{}
-	mi := &file_manpasik_proto_msgTypes[87]
+	mi := &file_manpasik_proto_msgTypes[90]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8114,7 +8657,7 @@ func (x *CartridgeUsageRecord) String() string {
 func (*CartridgeUsageRecord) ProtoMessage() {}
 
 func (x *CartridgeUsageRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[87]
+	mi := &file_manpasik_proto_msgTypes[90]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8127,7 +8670,7 @@ func (x *CartridgeUsageRecord) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CartridgeUsageRecord.ProtoReflect.Descriptor instead.
 func (*CartridgeUsageRecord) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{87}
+	return file_manpasik_proto_rawDescGZIP(), []int{90}
 }
 
 func (x *CartridgeUsageRecord) GetRecordId() string {
@@ -8196,7 +8739,7 @@ type GetCartridgeTypeRequest struct {
 
 func (x *GetCartridgeTypeRequest) Reset() {
 	*x = GetCartridgeTypeRequest{}
-	mi := &file_manpasik_proto_msgTypes[88]
+	mi := &file_manpasik_proto_msgTypes[91]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8208,7 +8751,7 @@ func (x *GetCartridgeTypeRequest) String() string {
 func (*GetCartridgeTypeRequest) ProtoMessage() {}
 
 func (x *GetCartridgeTypeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[88]
+	mi := &file_manpasik_proto_msgTypes[91]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8221,7 +8764,7 @@ func (x *GetCartridgeTypeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCartridgeTypeRequest.ProtoReflect.Descriptor instead.
 func (*GetCartridgeTypeRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{88}
+	return file_manpasik_proto_rawDescGZIP(), []int{91}
 }
 
 func (x *GetCartridgeTypeRequest) GetCategoryCode() int32 {
@@ -8246,7 +8789,7 @@ type ListCategoriesRequest struct {
 
 func (x *ListCategoriesRequest) Reset() {
 	*x = ListCategoriesRequest{}
-	mi := &file_manpasik_proto_msgTypes[89]
+	mi := &file_manpasik_proto_msgTypes[92]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8258,7 +8801,7 @@ func (x *ListCategoriesRequest) String() string {
 func (*ListCategoriesRequest) ProtoMessage() {}
 
 func (x *ListCategoriesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[89]
+	mi := &file_manpasik_proto_msgTypes[92]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8271,7 +8814,7 @@ func (x *ListCategoriesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCategoriesRequest.ProtoReflect.Descriptor instead.
 func (*ListCategoriesRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{89}
+	return file_manpasik_proto_rawDescGZIP(), []int{92}
 }
 
 type ListCategoriesResponse struct {
@@ -8283,7 +8826,7 @@ type ListCategoriesResponse struct {
 
 func (x *ListCategoriesResponse) Reset() {
 	*x = ListCategoriesResponse{}
-	mi := &file_manpasik_proto_msgTypes[90]
+	mi := &file_manpasik_proto_msgTypes[93]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8295,7 +8838,7 @@ func (x *ListCategoriesResponse) String() string {
 func (*ListCategoriesResponse) ProtoMessage() {}
 
 func (x *ListCategoriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[90]
+	mi := &file_manpasik_proto_msgTypes[93]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8308,7 +8851,7 @@ func (x *ListCategoriesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCategoriesResponse.ProtoReflect.Descriptor instead.
 func (*ListCategoriesResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{90}
+	return file_manpasik_proto_rawDescGZIP(), []int{93}
 }
 
 func (x *ListCategoriesResponse) GetCategories() []*CartridgeCategoryInfo {
@@ -8327,7 +8870,7 @@ type ListTypesByCategoryRequest struct {
 
 func (x *ListTypesByCategoryRequest) Reset() {
 	*x = ListTypesByCategoryRequest{}
-	mi := &file_manpasik_proto_msgTypes[91]
+	mi := &file_manpasik_proto_msgTypes[94]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8339,7 +8882,7 @@ func (x *ListTypesByCategoryRequest) String() string {
 func (*ListTypesByCategoryRequest) ProtoMessage() {}
 
 func (x *ListTypesByCategoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[91]
+	mi := &file_manpasik_proto_msgTypes[94]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8352,7 +8895,7 @@ func (x *ListTypesByCategoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTypesByCategoryRequest.ProtoReflect.Descriptor instead.
 func (*ListTypesByCategoryRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{91}
+	return file_manpasik_proto_rawDescGZIP(), []int{94}
 }
 
 func (x *ListTypesByCategoryRequest) GetCategoryCode() int32 {
@@ -8371,7 +8914,7 @@ type ListTypesByCategoryResponse struct {
 
 func (x *ListTypesByCategoryResponse) Reset() {
 	*x = ListTypesByCategoryResponse{}
-	mi := &file_manpasik_proto_msgTypes[92]
+	mi := &file_manpasik_proto_msgTypes[95]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8383,7 +8926,7 @@ func (x *ListTypesByCategoryResponse) String() string {
 func (*ListTypesByCategoryResponse) ProtoMessage() {}
 
 func (x *ListTypesByCategoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[92]
+	mi := &file_manpasik_proto_msgTypes[95]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8396,7 +8939,7 @@ func (x *ListTypesByCategoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTypesByCategoryResponse.ProtoReflect.Descriptor instead.
 func (*ListTypesByCategoryResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{92}
+	return file_manpasik_proto_rawDescGZIP(), []int{95}
 }
 
 func (x *ListTypesByCategoryResponse) GetTypes() []*CartridgeTypeInfo {
@@ -8415,7 +8958,7 @@ type GetRemainingUsesRequest struct {
 
 func (x *GetRemainingUsesRequest) Reset() {
 	*x = GetRemainingUsesRequest{}
-	mi := &file_manpasik_proto_msgTypes[93]
+	mi := &file_manpasik_proto_msgTypes[96]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8427,7 +8970,7 @@ func (x *GetRemainingUsesRequest) String() string {
 func (*GetRemainingUsesRequest) ProtoMessage() {}
 
 func (x *GetRemainingUsesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[93]
+	mi := &file_manpasik_proto_msgTypes[96]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8440,7 +8983,7 @@ func (x *GetRemainingUsesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRemainingUsesRequest.ProtoReflect.Descriptor instead.
 func (*GetRemainingUsesRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{93}
+	return file_manpasik_proto_rawDescGZIP(), []int{96}
 }
 
 func (x *GetRemainingUsesRequest) GetCartridgeUid() string {
@@ -8463,7 +9006,7 @@ type GetRemainingUsesResponse struct {
 
 func (x *GetRemainingUsesResponse) Reset() {
 	*x = GetRemainingUsesResponse{}
-	mi := &file_manpasik_proto_msgTypes[94]
+	mi := &file_manpasik_proto_msgTypes[97]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8475,7 +9018,7 @@ func (x *GetRemainingUsesResponse) String() string {
 func (*GetRemainingUsesResponse) ProtoMessage() {}
 
 func (x *GetRemainingUsesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[94]
+	mi := &file_manpasik_proto_msgTypes[97]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8488,7 +9031,7 @@ func (x *GetRemainingUsesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRemainingUsesResponse.ProtoReflect.Descriptor instead.
 func (*GetRemainingUsesResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{94}
+	return file_manpasik_proto_rawDescGZIP(), []int{97}
 }
 
 func (x *GetRemainingUsesResponse) GetCartridgeUid() string {
@@ -8538,7 +9081,7 @@ type ValidateCartridgeRequest struct {
 
 func (x *ValidateCartridgeRequest) Reset() {
 	*x = ValidateCartridgeRequest{}
-	mi := &file_manpasik_proto_msgTypes[95]
+	mi := &file_manpasik_proto_msgTypes[98]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8550,7 +9093,7 @@ func (x *ValidateCartridgeRequest) String() string {
 func (*ValidateCartridgeRequest) ProtoMessage() {}
 
 func (x *ValidateCartridgeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[95]
+	mi := &file_manpasik_proto_msgTypes[98]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8563,7 +9106,7 @@ func (x *ValidateCartridgeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateCartridgeRequest.ProtoReflect.Descriptor instead.
 func (*ValidateCartridgeRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{95}
+	return file_manpasik_proto_rawDescGZIP(), []int{98}
 }
 
 func (x *ValidateCartridgeRequest) GetCartridgeUid() string {
@@ -8607,7 +9150,7 @@ type ValidateCartridgeResponse struct {
 
 func (x *ValidateCartridgeResponse) Reset() {
 	*x = ValidateCartridgeResponse{}
-	mi := &file_manpasik_proto_msgTypes[96]
+	mi := &file_manpasik_proto_msgTypes[99]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8619,7 +9162,7 @@ func (x *ValidateCartridgeResponse) String() string {
 func (*ValidateCartridgeResponse) ProtoMessage() {}
 
 func (x *ValidateCartridgeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[96]
+	mi := &file_manpasik_proto_msgTypes[99]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8632,7 +9175,7 @@ func (x *ValidateCartridgeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateCartridgeResponse.ProtoReflect.Descriptor instead.
 func (*ValidateCartridgeResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{96}
+	return file_manpasik_proto_rawDescGZIP(), []int{99}
 }
 
 func (x *ValidateCartridgeResponse) GetIsValid() bool {
@@ -8688,7 +9231,7 @@ type RegisterFactoryCalibrationRequest struct {
 
 func (x *RegisterFactoryCalibrationRequest) Reset() {
 	*x = RegisterFactoryCalibrationRequest{}
-	mi := &file_manpasik_proto_msgTypes[97]
+	mi := &file_manpasik_proto_msgTypes[100]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8700,7 +9243,7 @@ func (x *RegisterFactoryCalibrationRequest) String() string {
 func (*RegisterFactoryCalibrationRequest) ProtoMessage() {}
 
 func (x *RegisterFactoryCalibrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[97]
+	mi := &file_manpasik_proto_msgTypes[100]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8713,7 +9256,7 @@ func (x *RegisterFactoryCalibrationRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use RegisterFactoryCalibrationRequest.ProtoReflect.Descriptor instead.
 func (*RegisterFactoryCalibrationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{97}
+	return file_manpasik_proto_rawDescGZIP(), []int{100}
 }
 
 func (x *RegisterFactoryCalibrationRequest) GetDeviceId() string {
@@ -8802,7 +9345,7 @@ type PerformFieldCalibrationRequest struct {
 
 func (x *PerformFieldCalibrationRequest) Reset() {
 	*x = PerformFieldCalibrationRequest{}
-	mi := &file_manpasik_proto_msgTypes[98]
+	mi := &file_manpasik_proto_msgTypes[101]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8814,7 +9357,7 @@ func (x *PerformFieldCalibrationRequest) String() string {
 func (*PerformFieldCalibrationRequest) ProtoMessage() {}
 
 func (x *PerformFieldCalibrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[98]
+	mi := &file_manpasik_proto_msgTypes[101]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8827,7 +9370,7 @@ func (x *PerformFieldCalibrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PerformFieldCalibrationRequest.ProtoReflect.Descriptor instead.
 func (*PerformFieldCalibrationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{98}
+	return file_manpasik_proto_rawDescGZIP(), []int{101}
 }
 
 func (x *PerformFieldCalibrationRequest) GetDeviceId() string {
@@ -8897,7 +9440,7 @@ type GetCalibrationRequest struct {
 
 func (x *GetCalibrationRequest) Reset() {
 	*x = GetCalibrationRequest{}
-	mi := &file_manpasik_proto_msgTypes[99]
+	mi := &file_manpasik_proto_msgTypes[102]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8909,7 +9452,7 @@ func (x *GetCalibrationRequest) String() string {
 func (*GetCalibrationRequest) ProtoMessage() {}
 
 func (x *GetCalibrationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[99]
+	mi := &file_manpasik_proto_msgTypes[102]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8922,7 +9465,7 @@ func (x *GetCalibrationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCalibrationRequest.ProtoReflect.Descriptor instead.
 func (*GetCalibrationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{99}
+	return file_manpasik_proto_rawDescGZIP(), []int{102}
 }
 
 func (x *GetCalibrationRequest) GetDeviceId() string {
@@ -8970,7 +9513,7 @@ type CalibrationRecord struct {
 
 func (x *CalibrationRecord) Reset() {
 	*x = CalibrationRecord{}
-	mi := &file_manpasik_proto_msgTypes[100]
+	mi := &file_manpasik_proto_msgTypes[103]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -8982,7 +9525,7 @@ func (x *CalibrationRecord) String() string {
 func (*CalibrationRecord) ProtoMessage() {}
 
 func (x *CalibrationRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[100]
+	mi := &file_manpasik_proto_msgTypes[103]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -8995,7 +9538,7 @@ func (x *CalibrationRecord) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CalibrationRecord.ProtoReflect.Descriptor instead.
 func (*CalibrationRecord) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{100}
+	return file_manpasik_proto_rawDescGZIP(), []int{103}
 }
 
 func (x *CalibrationRecord) GetCalibrationId() string {
@@ -9121,7 +9664,7 @@ type ListCalibrationHistoryRequest struct {
 
 func (x *ListCalibrationHistoryRequest) Reset() {
 	*x = ListCalibrationHistoryRequest{}
-	mi := &file_manpasik_proto_msgTypes[101]
+	mi := &file_manpasik_proto_msgTypes[104]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9133,7 +9676,7 @@ func (x *ListCalibrationHistoryRequest) String() string {
 func (*ListCalibrationHistoryRequest) ProtoMessage() {}
 
 func (x *ListCalibrationHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[101]
+	mi := &file_manpasik_proto_msgTypes[104]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9146,7 +9689,7 @@ func (x *ListCalibrationHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCalibrationHistoryRequest.ProtoReflect.Descriptor instead.
 func (*ListCalibrationHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{101}
+	return file_manpasik_proto_rawDescGZIP(), []int{104}
 }
 
 func (x *ListCalibrationHistoryRequest) GetDeviceId() string {
@@ -9180,7 +9723,7 @@ type ListCalibrationHistoryResponse struct {
 
 func (x *ListCalibrationHistoryResponse) Reset() {
 	*x = ListCalibrationHistoryResponse{}
-	mi := &file_manpasik_proto_msgTypes[102]
+	mi := &file_manpasik_proto_msgTypes[105]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9192,7 +9735,7 @@ func (x *ListCalibrationHistoryResponse) String() string {
 func (*ListCalibrationHistoryResponse) ProtoMessage() {}
 
 func (x *ListCalibrationHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[102]
+	mi := &file_manpasik_proto_msgTypes[105]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9205,7 +9748,7 @@ func (x *ListCalibrationHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCalibrationHistoryResponse.ProtoReflect.Descriptor instead.
 func (*ListCalibrationHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{102}
+	return file_manpasik_proto_rawDescGZIP(), []int{105}
 }
 
 func (x *ListCalibrationHistoryResponse) GetRecords() []*CalibrationRecord {
@@ -9233,7 +9776,7 @@ type CheckCalibrationStatusRequest struct {
 
 func (x *CheckCalibrationStatusRequest) Reset() {
 	*x = CheckCalibrationStatusRequest{}
-	mi := &file_manpasik_proto_msgTypes[103]
+	mi := &file_manpasik_proto_msgTypes[106]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9245,7 +9788,7 @@ func (x *CheckCalibrationStatusRequest) String() string {
 func (*CheckCalibrationStatusRequest) ProtoMessage() {}
 
 func (x *CheckCalibrationStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[103]
+	mi := &file_manpasik_proto_msgTypes[106]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9258,7 +9801,7 @@ func (x *CheckCalibrationStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckCalibrationStatusRequest.ProtoReflect.Descriptor instead.
 func (*CheckCalibrationStatusRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{103}
+	return file_manpasik_proto_rawDescGZIP(), []int{106}
 }
 
 func (x *CheckCalibrationStatusRequest) GetDeviceId() string {
@@ -9297,7 +9840,7 @@ type CalibrationStatusResponse struct {
 
 func (x *CalibrationStatusResponse) Reset() {
 	*x = CalibrationStatusResponse{}
-	mi := &file_manpasik_proto_msgTypes[104]
+	mi := &file_manpasik_proto_msgTypes[107]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9309,7 +9852,7 @@ func (x *CalibrationStatusResponse) String() string {
 func (*CalibrationStatusResponse) ProtoMessage() {}
 
 func (x *CalibrationStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[104]
+	mi := &file_manpasik_proto_msgTypes[107]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9322,7 +9865,7 @@ func (x *CalibrationStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CalibrationStatusResponse.ProtoReflect.Descriptor instead.
 func (*CalibrationStatusResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{104}
+	return file_manpasik_proto_rawDescGZIP(), []int{107}
 }
 
 func (x *CalibrationStatusResponse) GetStatus() CalibrationStatus {
@@ -9382,7 +9925,7 @@ type ListCalibrationModelsRequest struct {
 
 func (x *ListCalibrationModelsRequest) Reset() {
 	*x = ListCalibrationModelsRequest{}
-	mi := &file_manpasik_proto_msgTypes[105]
+	mi := &file_manpasik_proto_msgTypes[108]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9394,7 +9937,7 @@ func (x *ListCalibrationModelsRequest) String() string {
 func (*ListCalibrationModelsRequest) ProtoMessage() {}
 
 func (x *ListCalibrationModelsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[105]
+	mi := &file_manpasik_proto_msgTypes[108]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9407,7 +9950,7 @@ func (x *ListCalibrationModelsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCalibrationModelsRequest.ProtoReflect.Descriptor instead.
 func (*ListCalibrationModelsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{105}
+	return file_manpasik_proto_rawDescGZIP(), []int{108}
 }
 
 type CalibrationModel struct {
@@ -9427,7 +9970,7 @@ type CalibrationModel struct {
 
 func (x *CalibrationModel) Reset() {
 	*x = CalibrationModel{}
-	mi := &file_manpasik_proto_msgTypes[106]
+	mi := &file_manpasik_proto_msgTypes[109]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9439,7 +9982,7 @@ func (x *CalibrationModel) String() string {
 func (*CalibrationModel) ProtoMessage() {}
 
 func (x *CalibrationModel) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[106]
+	mi := &file_manpasik_proto_msgTypes[109]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9452,7 +9995,7 @@ func (x *CalibrationModel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CalibrationModel.ProtoReflect.Descriptor instead.
 func (*CalibrationModel) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{106}
+	return file_manpasik_proto_rawDescGZIP(), []int{109}
 }
 
 func (x *CalibrationModel) GetModelId() string {
@@ -9527,7 +10070,7 @@ type ListCalibrationModelsResponse struct {
 
 func (x *ListCalibrationModelsResponse) Reset() {
 	*x = ListCalibrationModelsResponse{}
-	mi := &file_manpasik_proto_msgTypes[107]
+	mi := &file_manpasik_proto_msgTypes[110]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9539,7 +10082,7 @@ func (x *ListCalibrationModelsResponse) String() string {
 func (*ListCalibrationModelsResponse) ProtoMessage() {}
 
 func (x *ListCalibrationModelsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[107]
+	mi := &file_manpasik_proto_msgTypes[110]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9552,7 +10095,7 @@ func (x *ListCalibrationModelsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCalibrationModelsResponse.ProtoReflect.Descriptor instead.
 func (*ListCalibrationModelsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{107}
+	return file_manpasik_proto_rawDescGZIP(), []int{110}
 }
 
 func (x *ListCalibrationModelsResponse) GetModels() []*CalibrationModel {
@@ -9577,7 +10120,7 @@ type SetHealthGoalRequest struct {
 
 func (x *SetHealthGoalRequest) Reset() {
 	*x = SetHealthGoalRequest{}
-	mi := &file_manpasik_proto_msgTypes[108]
+	mi := &file_manpasik_proto_msgTypes[111]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9589,7 +10132,7 @@ func (x *SetHealthGoalRequest) String() string {
 func (*SetHealthGoalRequest) ProtoMessage() {}
 
 func (x *SetHealthGoalRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[108]
+	mi := &file_manpasik_proto_msgTypes[111]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9602,7 +10145,7 @@ func (x *SetHealthGoalRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetHealthGoalRequest.ProtoReflect.Descriptor instead.
 func (*SetHealthGoalRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{108}
+	return file_manpasik_proto_rawDescGZIP(), []int{111}
 }
 
 func (x *SetHealthGoalRequest) GetUserId() string {
@@ -9675,7 +10218,7 @@ type HealthGoal struct {
 
 func (x *HealthGoal) Reset() {
 	*x = HealthGoal{}
-	mi := &file_manpasik_proto_msgTypes[109]
+	mi := &file_manpasik_proto_msgTypes[112]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9687,7 +10230,7 @@ func (x *HealthGoal) String() string {
 func (*HealthGoal) ProtoMessage() {}
 
 func (x *HealthGoal) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[109]
+	mi := &file_manpasik_proto_msgTypes[112]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9700,7 +10243,7 @@ func (x *HealthGoal) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthGoal.ProtoReflect.Descriptor instead.
 func (*HealthGoal) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{109}
+	return file_manpasik_proto_rawDescGZIP(), []int{112}
 }
 
 func (x *HealthGoal) GetGoalId() string {
@@ -9804,7 +10347,7 @@ type GetHealthGoalsRequest struct {
 
 func (x *GetHealthGoalsRequest) Reset() {
 	*x = GetHealthGoalsRequest{}
-	mi := &file_manpasik_proto_msgTypes[110]
+	mi := &file_manpasik_proto_msgTypes[113]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9816,7 +10359,7 @@ func (x *GetHealthGoalsRequest) String() string {
 func (*GetHealthGoalsRequest) ProtoMessage() {}
 
 func (x *GetHealthGoalsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[110]
+	mi := &file_manpasik_proto_msgTypes[113]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9829,7 +10372,7 @@ func (x *GetHealthGoalsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHealthGoalsRequest.ProtoReflect.Descriptor instead.
 func (*GetHealthGoalsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{110}
+	return file_manpasik_proto_rawDescGZIP(), []int{113}
 }
 
 func (x *GetHealthGoalsRequest) GetUserId() string {
@@ -9855,7 +10398,7 @@ type GetHealthGoalsResponse struct {
 
 func (x *GetHealthGoalsResponse) Reset() {
 	*x = GetHealthGoalsResponse{}
-	mi := &file_manpasik_proto_msgTypes[111]
+	mi := &file_manpasik_proto_msgTypes[114]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9867,7 +10410,7 @@ func (x *GetHealthGoalsResponse) String() string {
 func (*GetHealthGoalsResponse) ProtoMessage() {}
 
 func (x *GetHealthGoalsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[111]
+	mi := &file_manpasik_proto_msgTypes[114]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9880,7 +10423,7 @@ func (x *GetHealthGoalsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHealthGoalsResponse.ProtoReflect.Descriptor instead.
 func (*GetHealthGoalsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{111}
+	return file_manpasik_proto_rawDescGZIP(), []int{114}
 }
 
 func (x *GetHealthGoalsResponse) GetGoals() []*HealthGoal {
@@ -9901,7 +10444,7 @@ type GenerateCoachingRequest struct {
 
 func (x *GenerateCoachingRequest) Reset() {
 	*x = GenerateCoachingRequest{}
-	mi := &file_manpasik_proto_msgTypes[112]
+	mi := &file_manpasik_proto_msgTypes[115]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9913,7 +10456,7 @@ func (x *GenerateCoachingRequest) String() string {
 func (*GenerateCoachingRequest) ProtoMessage() {}
 
 func (x *GenerateCoachingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[112]
+	mi := &file_manpasik_proto_msgTypes[115]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9926,7 +10469,7 @@ func (x *GenerateCoachingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateCoachingRequest.ProtoReflect.Descriptor instead.
 func (*GenerateCoachingRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{112}
+	return file_manpasik_proto_rawDescGZIP(), []int{115}
 }
 
 func (x *GenerateCoachingRequest) GetUserId() string {
@@ -9968,7 +10511,7 @@ type CoachingMessage struct {
 
 func (x *CoachingMessage) Reset() {
 	*x = CoachingMessage{}
-	mi := &file_manpasik_proto_msgTypes[113]
+	mi := &file_manpasik_proto_msgTypes[116]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -9980,7 +10523,7 @@ func (x *CoachingMessage) String() string {
 func (*CoachingMessage) ProtoMessage() {}
 
 func (x *CoachingMessage) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[113]
+	mi := &file_manpasik_proto_msgTypes[116]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -9993,7 +10536,7 @@ func (x *CoachingMessage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CoachingMessage.ProtoReflect.Descriptor instead.
 func (*CoachingMessage) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{113}
+	return file_manpasik_proto_rawDescGZIP(), []int{116}
 }
 
 func (x *CoachingMessage) GetMessageId() string {
@@ -10078,7 +10621,7 @@ type ListCoachingMessagesRequest struct {
 
 func (x *ListCoachingMessagesRequest) Reset() {
 	*x = ListCoachingMessagesRequest{}
-	mi := &file_manpasik_proto_msgTypes[114]
+	mi := &file_manpasik_proto_msgTypes[117]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10090,7 +10633,7 @@ func (x *ListCoachingMessagesRequest) String() string {
 func (*ListCoachingMessagesRequest) ProtoMessage() {}
 
 func (x *ListCoachingMessagesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[114]
+	mi := &file_manpasik_proto_msgTypes[117]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10103,7 +10646,7 @@ func (x *ListCoachingMessagesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCoachingMessagesRequest.ProtoReflect.Descriptor instead.
 func (*ListCoachingMessagesRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{114}
+	return file_manpasik_proto_rawDescGZIP(), []int{117}
 }
 
 func (x *ListCoachingMessagesRequest) GetUserId() string {
@@ -10144,7 +10687,7 @@ type ListCoachingMessagesResponse struct {
 
 func (x *ListCoachingMessagesResponse) Reset() {
 	*x = ListCoachingMessagesResponse{}
-	mi := &file_manpasik_proto_msgTypes[115]
+	mi := &file_manpasik_proto_msgTypes[118]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10156,7 +10699,7 @@ func (x *ListCoachingMessagesResponse) String() string {
 func (*ListCoachingMessagesResponse) ProtoMessage() {}
 
 func (x *ListCoachingMessagesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[115]
+	mi := &file_manpasik_proto_msgTypes[118]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10169,7 +10712,7 @@ func (x *ListCoachingMessagesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCoachingMessagesResponse.ProtoReflect.Descriptor instead.
 func (*ListCoachingMessagesResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{115}
+	return file_manpasik_proto_rawDescGZIP(), []int{118}
 }
 
 func (x *ListCoachingMessagesResponse) GetMessages() []*CoachingMessage {
@@ -10196,7 +10739,7 @@ type GenerateDailyReportRequest struct {
 
 func (x *GenerateDailyReportRequest) Reset() {
 	*x = GenerateDailyReportRequest{}
-	mi := &file_manpasik_proto_msgTypes[116]
+	mi := &file_manpasik_proto_msgTypes[119]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10208,7 +10751,7 @@ func (x *GenerateDailyReportRequest) String() string {
 func (*GenerateDailyReportRequest) ProtoMessage() {}
 
 func (x *GenerateDailyReportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[116]
+	mi := &file_manpasik_proto_msgTypes[119]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10221,7 +10764,7 @@ func (x *GenerateDailyReportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GenerateDailyReportRequest.ProtoReflect.Descriptor instead.
 func (*GenerateDailyReportRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{116}
+	return file_manpasik_proto_rawDescGZIP(), []int{119}
 }
 
 func (x *GenerateDailyReportRequest) GetUserId() string {
@@ -10254,7 +10797,7 @@ type DailyHealthReport struct {
 
 func (x *DailyHealthReport) Reset() {
 	*x = DailyHealthReport{}
-	mi := &file_manpasik_proto_msgTypes[117]
+	mi := &file_manpasik_proto_msgTypes[120]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10266,7 +10809,7 @@ func (x *DailyHealthReport) String() string {
 func (*DailyHealthReport) ProtoMessage() {}
 
 func (x *DailyHealthReport) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[117]
+	mi := &file_manpasik_proto_msgTypes[120]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10279,7 +10822,7 @@ func (x *DailyHealthReport) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DailyHealthReport.ProtoReflect.Descriptor instead.
 func (*DailyHealthReport) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{117}
+	return file_manpasik_proto_rawDescGZIP(), []int{120}
 }
 
 func (x *DailyHealthReport) GetReportId() string {
@@ -10348,7 +10891,7 @@ type GetWeeklyReportRequest struct {
 
 func (x *GetWeeklyReportRequest) Reset() {
 	*x = GetWeeklyReportRequest{}
-	mi := &file_manpasik_proto_msgTypes[118]
+	mi := &file_manpasik_proto_msgTypes[121]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10360,7 +10903,7 @@ func (x *GetWeeklyReportRequest) String() string {
 func (*GetWeeklyReportRequest) ProtoMessage() {}
 
 func (x *GetWeeklyReportRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[118]
+	mi := &file_manpasik_proto_msgTypes[121]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10373,7 +10916,7 @@ func (x *GetWeeklyReportRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetWeeklyReportRequest.ProtoReflect.Descriptor instead.
 func (*GetWeeklyReportRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{118}
+	return file_manpasik_proto_rawDescGZIP(), []int{121}
 }
 
 func (x *GetWeeklyReportRequest) GetUserId() string {
@@ -10410,7 +10953,7 @@ type WeeklyHealthReport struct {
 
 func (x *WeeklyHealthReport) Reset() {
 	*x = WeeklyHealthReport{}
-	mi := &file_manpasik_proto_msgTypes[119]
+	mi := &file_manpasik_proto_msgTypes[122]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10422,7 +10965,7 @@ func (x *WeeklyHealthReport) String() string {
 func (*WeeklyHealthReport) ProtoMessage() {}
 
 func (x *WeeklyHealthReport) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[119]
+	mi := &file_manpasik_proto_msgTypes[122]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10435,7 +10978,7 @@ func (x *WeeklyHealthReport) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use WeeklyHealthReport.ProtoReflect.Descriptor instead.
 func (*WeeklyHealthReport) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{119}
+	return file_manpasik_proto_rawDescGZIP(), []int{122}
 }
 
 func (x *WeeklyHealthReport) GetReportId() string {
@@ -10533,7 +11076,7 @@ type GetRecommendationsRequest struct {
 
 func (x *GetRecommendationsRequest) Reset() {
 	*x = GetRecommendationsRequest{}
-	mi := &file_manpasik_proto_msgTypes[120]
+	mi := &file_manpasik_proto_msgTypes[123]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10545,7 +11088,7 @@ func (x *GetRecommendationsRequest) String() string {
 func (*GetRecommendationsRequest) ProtoMessage() {}
 
 func (x *GetRecommendationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[120]
+	mi := &file_manpasik_proto_msgTypes[123]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10558,7 +11101,7 @@ func (x *GetRecommendationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRecommendationsRequest.ProtoReflect.Descriptor instead.
 func (*GetRecommendationsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{120}
+	return file_manpasik_proto_rawDescGZIP(), []int{123}
 }
 
 func (x *GetRecommendationsRequest) GetUserId() string {
@@ -10599,7 +11142,7 @@ type Recommendation struct {
 
 func (x *Recommendation) Reset() {
 	*x = Recommendation{}
-	mi := &file_manpasik_proto_msgTypes[121]
+	mi := &file_manpasik_proto_msgTypes[124]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10611,7 +11154,7 @@ func (x *Recommendation) String() string {
 func (*Recommendation) ProtoMessage() {}
 
 func (x *Recommendation) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[121]
+	mi := &file_manpasik_proto_msgTypes[124]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10624,7 +11167,7 @@ func (x *Recommendation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Recommendation.ProtoReflect.Descriptor instead.
 func (*Recommendation) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{121}
+	return file_manpasik_proto_rawDescGZIP(), []int{124}
 }
 
 func (x *Recommendation) GetRecommendationId() string {
@@ -10699,7 +11242,7 @@ type GetRecommendationsResponse struct {
 
 func (x *GetRecommendationsResponse) Reset() {
 	*x = GetRecommendationsResponse{}
-	mi := &file_manpasik_proto_msgTypes[122]
+	mi := &file_manpasik_proto_msgTypes[125]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10711,7 +11254,7 @@ func (x *GetRecommendationsResponse) String() string {
 func (*GetRecommendationsResponse) ProtoMessage() {}
 
 func (x *GetRecommendationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[122]
+	mi := &file_manpasik_proto_msgTypes[125]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10724,7 +11267,7 @@ func (x *GetRecommendationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRecommendationsResponse.ProtoReflect.Descriptor instead.
 func (*GetRecommendationsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{122}
+	return file_manpasik_proto_rawDescGZIP(), []int{125}
 }
 
 func (x *GetRecommendationsResponse) GetRecommendations() []*Recommendation {
@@ -10749,7 +11292,7 @@ type CartridgeCategoryInfo struct {
 
 func (x *CartridgeCategoryInfo) Reset() {
 	*x = CartridgeCategoryInfo{}
-	mi := &file_manpasik_proto_msgTypes[123]
+	mi := &file_manpasik_proto_msgTypes[126]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10761,7 +11304,7 @@ func (x *CartridgeCategoryInfo) String() string {
 func (*CartridgeCategoryInfo) ProtoMessage() {}
 
 func (x *CartridgeCategoryInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[123]
+	mi := &file_manpasik_proto_msgTypes[126]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10774,7 +11317,7 @@ func (x *CartridgeCategoryInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CartridgeCategoryInfo.ProtoReflect.Descriptor instead.
 func (*CartridgeCategoryInfo) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{123}
+	return file_manpasik_proto_rawDescGZIP(), []int{126}
 }
 
 func (x *CartridgeCategoryInfo) GetCode() int32 {
@@ -10841,7 +11384,7 @@ type CartridgeTypeInfo struct {
 
 func (x *CartridgeTypeInfo) Reset() {
 	*x = CartridgeTypeInfo{}
-	mi := &file_manpasik_proto_msgTypes[124]
+	mi := &file_manpasik_proto_msgTypes[127]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10853,7 +11396,7 @@ func (x *CartridgeTypeInfo) String() string {
 func (*CartridgeTypeInfo) ProtoMessage() {}
 
 func (x *CartridgeTypeInfo) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[124]
+	mi := &file_manpasik_proto_msgTypes[127]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10866,7 +11409,7 @@ func (x *CartridgeTypeInfo) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CartridgeTypeInfo.ProtoReflect.Descriptor instead.
 func (*CartridgeTypeInfo) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{124}
+	return file_manpasik_proto_rawDescGZIP(), []int{127}
 }
 
 func (x *CartridgeTypeInfo) GetCategoryCode() int32 {
@@ -10972,7 +11515,7 @@ type CheckCartridgeAccessRequest struct {
 
 func (x *CheckCartridgeAccessRequest) Reset() {
 	*x = CheckCartridgeAccessRequest{}
-	mi := &file_manpasik_proto_msgTypes[125]
+	mi := &file_manpasik_proto_msgTypes[128]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -10984,7 +11527,7 @@ func (x *CheckCartridgeAccessRequest) String() string {
 func (*CheckCartridgeAccessRequest) ProtoMessage() {}
 
 func (x *CheckCartridgeAccessRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[125]
+	mi := &file_manpasik_proto_msgTypes[128]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -10997,7 +11540,7 @@ func (x *CheckCartridgeAccessRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckCartridgeAccessRequest.ProtoReflect.Descriptor instead.
 func (*CheckCartridgeAccessRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{125}
+	return file_manpasik_proto_rawDescGZIP(), []int{128}
 }
 
 func (x *CheckCartridgeAccessRequest) GetUserId() string {
@@ -11038,7 +11581,7 @@ type CheckCartridgeAccessResponse struct {
 
 func (x *CheckCartridgeAccessResponse) Reset() {
 	*x = CheckCartridgeAccessResponse{}
-	mi := &file_manpasik_proto_msgTypes[126]
+	mi := &file_manpasik_proto_msgTypes[129]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11050,7 +11593,7 @@ func (x *CheckCartridgeAccessResponse) String() string {
 func (*CheckCartridgeAccessResponse) ProtoMessage() {}
 
 func (x *CheckCartridgeAccessResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[126]
+	mi := &file_manpasik_proto_msgTypes[129]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11063,7 +11606,7 @@ func (x *CheckCartridgeAccessResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckCartridgeAccessResponse.ProtoReflect.Descriptor instead.
 func (*CheckCartridgeAccessResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{126}
+	return file_manpasik_proto_rawDescGZIP(), []int{129}
 }
 
 func (x *CheckCartridgeAccessResponse) GetAllowed() bool {
@@ -11132,7 +11675,7 @@ type ListAccessibleCartridgesRequest struct {
 
 func (x *ListAccessibleCartridgesRequest) Reset() {
 	*x = ListAccessibleCartridgesRequest{}
-	mi := &file_manpasik_proto_msgTypes[127]
+	mi := &file_manpasik_proto_msgTypes[130]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11144,7 +11687,7 @@ func (x *ListAccessibleCartridgesRequest) String() string {
 func (*ListAccessibleCartridgesRequest) ProtoMessage() {}
 
 func (x *ListAccessibleCartridgesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[127]
+	mi := &file_manpasik_proto_msgTypes[130]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11157,7 +11700,7 @@ func (x *ListAccessibleCartridgesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAccessibleCartridgesRequest.ProtoReflect.Descriptor instead.
 func (*ListAccessibleCartridgesRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{127}
+	return file_manpasik_proto_rawDescGZIP(), []int{130}
 }
 
 func (x *ListAccessibleCartridgesRequest) GetUserId() string {
@@ -11177,7 +11720,7 @@ type ListAccessibleCartridgesResponse struct {
 
 func (x *ListAccessibleCartridgesResponse) Reset() {
 	*x = ListAccessibleCartridgesResponse{}
-	mi := &file_manpasik_proto_msgTypes[128]
+	mi := &file_manpasik_proto_msgTypes[131]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11189,7 +11732,7 @@ func (x *ListAccessibleCartridgesResponse) String() string {
 func (*ListAccessibleCartridgesResponse) ProtoMessage() {}
 
 func (x *ListAccessibleCartridgesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[128]
+	mi := &file_manpasik_proto_msgTypes[131]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11202,7 +11745,7 @@ func (x *ListAccessibleCartridgesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAccessibleCartridgesResponse.ProtoReflect.Descriptor instead.
 func (*ListAccessibleCartridgesResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{128}
+	return file_manpasik_proto_rawDescGZIP(), []int{131}
 }
 
 func (x *ListAccessibleCartridgesResponse) GetEntries() []*CartridgeAccessEntry {
@@ -11225,7 +11768,7 @@ type CartridgeAccessEntry struct {
 
 func (x *CartridgeAccessEntry) Reset() {
 	*x = CartridgeAccessEntry{}
-	mi := &file_manpasik_proto_msgTypes[129]
+	mi := &file_manpasik_proto_msgTypes[132]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11237,7 +11780,7 @@ func (x *CartridgeAccessEntry) String() string {
 func (*CartridgeAccessEntry) ProtoMessage() {}
 
 func (x *CartridgeAccessEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[129]
+	mi := &file_manpasik_proto_msgTypes[132]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11250,7 +11793,7 @@ func (x *CartridgeAccessEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CartridgeAccessEntry.ProtoReflect.Descriptor instead.
 func (*CartridgeAccessEntry) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{129}
+	return file_manpasik_proto_rawDescGZIP(), []int{132}
 }
 
 func (x *CartridgeAccessEntry) GetTypeInfo() *CartridgeTypeInfo {
@@ -11297,7 +11840,7 @@ type SearchFacilitiesRequest struct {
 
 func (x *SearchFacilitiesRequest) Reset() {
 	*x = SearchFacilitiesRequest{}
-	mi := &file_manpasik_proto_msgTypes[130]
+	mi := &file_manpasik_proto_msgTypes[133]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11309,7 +11852,7 @@ func (x *SearchFacilitiesRequest) String() string {
 func (*SearchFacilitiesRequest) ProtoMessage() {}
 
 func (x *SearchFacilitiesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[130]
+	mi := &file_manpasik_proto_msgTypes[133]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11322,7 +11865,7 @@ func (x *SearchFacilitiesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchFacilitiesRequest.ProtoReflect.Descriptor instead.
 func (*SearchFacilitiesRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{130}
+	return file_manpasik_proto_rawDescGZIP(), []int{133}
 }
 
 func (x *SearchFacilitiesRequest) GetLatitude() float64 {
@@ -11391,7 +11934,7 @@ type SearchFacilitiesResponse struct {
 
 func (x *SearchFacilitiesResponse) Reset() {
 	*x = SearchFacilitiesResponse{}
-	mi := &file_manpasik_proto_msgTypes[131]
+	mi := &file_manpasik_proto_msgTypes[134]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11403,7 +11946,7 @@ func (x *SearchFacilitiesResponse) String() string {
 func (*SearchFacilitiesResponse) ProtoMessage() {}
 
 func (x *SearchFacilitiesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[131]
+	mi := &file_manpasik_proto_msgTypes[134]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11416,7 +11959,7 @@ func (x *SearchFacilitiesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SearchFacilitiesResponse.ProtoReflect.Descriptor instead.
 func (*SearchFacilitiesResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{131}
+	return file_manpasik_proto_rawDescGZIP(), []int{134}
 }
 
 func (x *SearchFacilitiesResponse) GetFacilities() []*Facility {
@@ -11442,7 +11985,7 @@ type GetFacilityRequest struct {
 
 func (x *GetFacilityRequest) Reset() {
 	*x = GetFacilityRequest{}
-	mi := &file_manpasik_proto_msgTypes[132]
+	mi := &file_manpasik_proto_msgTypes[135]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11454,7 +11997,7 @@ func (x *GetFacilityRequest) String() string {
 func (*GetFacilityRequest) ProtoMessage() {}
 
 func (x *GetFacilityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[132]
+	mi := &file_manpasik_proto_msgTypes[135]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11467,7 +12010,7 @@ func (x *GetFacilityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFacilityRequest.ProtoReflect.Descriptor instead.
 func (*GetFacilityRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{132}
+	return file_manpasik_proto_rawDescGZIP(), []int{135}
 }
 
 func (x *GetFacilityRequest) GetFacilityId() string {
@@ -11498,7 +12041,7 @@ type Facility struct {
 
 func (x *Facility) Reset() {
 	*x = Facility{}
-	mi := &file_manpasik_proto_msgTypes[133]
+	mi := &file_manpasik_proto_msgTypes[136]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11510,7 +12053,7 @@ func (x *Facility) String() string {
 func (*Facility) ProtoMessage() {}
 
 func (x *Facility) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[133]
+	mi := &file_manpasik_proto_msgTypes[136]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11523,7 +12066,7 @@ func (x *Facility) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Facility.ProtoReflect.Descriptor instead.
 func (*Facility) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{133}
+	return file_manpasik_proto_rawDescGZIP(), []int{136}
 }
 
 func (x *Facility) GetFacilityId() string {
@@ -11629,7 +12172,7 @@ type GetAvailableSlotsRequest struct {
 
 func (x *GetAvailableSlotsRequest) Reset() {
 	*x = GetAvailableSlotsRequest{}
-	mi := &file_manpasik_proto_msgTypes[134]
+	mi := &file_manpasik_proto_msgTypes[137]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11641,7 +12184,7 @@ func (x *GetAvailableSlotsRequest) String() string {
 func (*GetAvailableSlotsRequest) ProtoMessage() {}
 
 func (x *GetAvailableSlotsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[134]
+	mi := &file_manpasik_proto_msgTypes[137]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11654,7 +12197,7 @@ func (x *GetAvailableSlotsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAvailableSlotsRequest.ProtoReflect.Descriptor instead.
 func (*GetAvailableSlotsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{134}
+	return file_manpasik_proto_rawDescGZIP(), []int{137}
 }
 
 func (x *GetAvailableSlotsRequest) GetFacilityId() string {
@@ -11694,7 +12237,7 @@ type GetAvailableSlotsResponse struct {
 
 func (x *GetAvailableSlotsResponse) Reset() {
 	*x = GetAvailableSlotsResponse{}
-	mi := &file_manpasik_proto_msgTypes[135]
+	mi := &file_manpasik_proto_msgTypes[138]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11706,7 +12249,7 @@ func (x *GetAvailableSlotsResponse) String() string {
 func (*GetAvailableSlotsResponse) ProtoMessage() {}
 
 func (x *GetAvailableSlotsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[135]
+	mi := &file_manpasik_proto_msgTypes[138]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11719,7 +12262,7 @@ func (x *GetAvailableSlotsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAvailableSlotsResponse.ProtoReflect.Descriptor instead.
 func (*GetAvailableSlotsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{135}
+	return file_manpasik_proto_rawDescGZIP(), []int{138}
 }
 
 func (x *GetAvailableSlotsResponse) GetSlots() []*TimeSlot {
@@ -11743,7 +12286,7 @@ type TimeSlot struct {
 
 func (x *TimeSlot) Reset() {
 	*x = TimeSlot{}
-	mi := &file_manpasik_proto_msgTypes[136]
+	mi := &file_manpasik_proto_msgTypes[139]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11755,7 +12298,7 @@ func (x *TimeSlot) String() string {
 func (*TimeSlot) ProtoMessage() {}
 
 func (x *TimeSlot) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[136]
+	mi := &file_manpasik_proto_msgTypes[139]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11768,7 +12311,7 @@ func (x *TimeSlot) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TimeSlot.ProtoReflect.Descriptor instead.
 func (*TimeSlot) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{136}
+	return file_manpasik_proto_rawDescGZIP(), []int{139}
 }
 
 func (x *TimeSlot) GetSlotId() string {
@@ -11828,7 +12371,7 @@ type CreateReservationRequest struct {
 
 func (x *CreateReservationRequest) Reset() {
 	*x = CreateReservationRequest{}
-	mi := &file_manpasik_proto_msgTypes[137]
+	mi := &file_manpasik_proto_msgTypes[140]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11840,7 +12383,7 @@ func (x *CreateReservationRequest) String() string {
 func (*CreateReservationRequest) ProtoMessage() {}
 
 func (x *CreateReservationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[137]
+	mi := &file_manpasik_proto_msgTypes[140]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11853,7 +12396,7 @@ func (x *CreateReservationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateReservationRequest.ProtoReflect.Descriptor instead.
 func (*CreateReservationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{137}
+	return file_manpasik_proto_rawDescGZIP(), []int{140}
 }
 
 func (x *CreateReservationRequest) GetUserId() string {
@@ -11926,7 +12469,7 @@ type Reservation struct {
 
 func (x *Reservation) Reset() {
 	*x = Reservation{}
-	mi := &file_manpasik_proto_msgTypes[138]
+	mi := &file_manpasik_proto_msgTypes[141]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -11938,7 +12481,7 @@ func (x *Reservation) String() string {
 func (*Reservation) ProtoMessage() {}
 
 func (x *Reservation) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[138]
+	mi := &file_manpasik_proto_msgTypes[141]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -11951,7 +12494,7 @@ func (x *Reservation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Reservation.ProtoReflect.Descriptor instead.
 func (*Reservation) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{138}
+	return file_manpasik_proto_rawDescGZIP(), []int{141}
 }
 
 func (x *Reservation) GetReservationId() string {
@@ -12054,7 +12597,7 @@ type GetReservationRequest struct {
 
 func (x *GetReservationRequest) Reset() {
 	*x = GetReservationRequest{}
-	mi := &file_manpasik_proto_msgTypes[139]
+	mi := &file_manpasik_proto_msgTypes[142]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12066,7 +12609,7 @@ func (x *GetReservationRequest) String() string {
 func (*GetReservationRequest) ProtoMessage() {}
 
 func (x *GetReservationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[139]
+	mi := &file_manpasik_proto_msgTypes[142]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12079,7 +12622,7 @@ func (x *GetReservationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetReservationRequest.ProtoReflect.Descriptor instead.
 func (*GetReservationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{139}
+	return file_manpasik_proto_rawDescGZIP(), []int{142}
 }
 
 func (x *GetReservationRequest) GetReservationId() string {
@@ -12101,7 +12644,7 @@ type ListReservationsRequest struct {
 
 func (x *ListReservationsRequest) Reset() {
 	*x = ListReservationsRequest{}
-	mi := &file_manpasik_proto_msgTypes[140]
+	mi := &file_manpasik_proto_msgTypes[143]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12113,7 +12656,7 @@ func (x *ListReservationsRequest) String() string {
 func (*ListReservationsRequest) ProtoMessage() {}
 
 func (x *ListReservationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[140]
+	mi := &file_manpasik_proto_msgTypes[143]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12126,7 +12669,7 @@ func (x *ListReservationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListReservationsRequest.ProtoReflect.Descriptor instead.
 func (*ListReservationsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{140}
+	return file_manpasik_proto_rawDescGZIP(), []int{143}
 }
 
 func (x *ListReservationsRequest) GetUserId() string {
@@ -12167,7 +12710,7 @@ type ListReservationsResponse struct {
 
 func (x *ListReservationsResponse) Reset() {
 	*x = ListReservationsResponse{}
-	mi := &file_manpasik_proto_msgTypes[141]
+	mi := &file_manpasik_proto_msgTypes[144]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12179,7 +12722,7 @@ func (x *ListReservationsResponse) String() string {
 func (*ListReservationsResponse) ProtoMessage() {}
 
 func (x *ListReservationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[141]
+	mi := &file_manpasik_proto_msgTypes[144]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12192,7 +12735,7 @@ func (x *ListReservationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListReservationsResponse.ProtoReflect.Descriptor instead.
 func (*ListReservationsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{141}
+	return file_manpasik_proto_rawDescGZIP(), []int{144}
 }
 
 func (x *ListReservationsResponse) GetReservations() []*Reservation {
@@ -12219,7 +12762,7 @@ type CancelReservationRequest struct {
 
 func (x *CancelReservationRequest) Reset() {
 	*x = CancelReservationRequest{}
-	mi := &file_manpasik_proto_msgTypes[142]
+	mi := &file_manpasik_proto_msgTypes[145]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12231,7 +12774,7 @@ func (x *CancelReservationRequest) String() string {
 func (*CancelReservationRequest) ProtoMessage() {}
 
 func (x *CancelReservationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[142]
+	mi := &file_manpasik_proto_msgTypes[145]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12244,7 +12787,7 @@ func (x *CancelReservationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelReservationRequest.ProtoReflect.Descriptor instead.
 func (*CancelReservationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{142}
+	return file_manpasik_proto_rawDescGZIP(), []int{145}
 }
 
 func (x *CancelReservationRequest) GetReservationId() string {
@@ -12271,7 +12814,7 @@ type CancelReservationResponse struct {
 
 func (x *CancelReservationResponse) Reset() {
 	*x = CancelReservationResponse{}
-	mi := &file_manpasik_proto_msgTypes[143]
+	mi := &file_manpasik_proto_msgTypes[146]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12283,7 +12826,7 @@ func (x *CancelReservationResponse) String() string {
 func (*CancelReservationResponse) ProtoMessage() {}
 
 func (x *CancelReservationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[143]
+	mi := &file_manpasik_proto_msgTypes[146]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12296,7 +12839,7 @@ func (x *CancelReservationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancelReservationResponse.ProtoReflect.Descriptor instead.
 func (*CancelReservationResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{143}
+	return file_manpasik_proto_rawDescGZIP(), []int{146}
 }
 
 func (x *CancelReservationResponse) GetSuccess() bool {
@@ -12327,7 +12870,7 @@ type CreateAdminRequest struct {
 
 func (x *CreateAdminRequest) Reset() {
 	*x = CreateAdminRequest{}
-	mi := &file_manpasik_proto_msgTypes[144]
+	mi := &file_manpasik_proto_msgTypes[147]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12339,7 +12882,7 @@ func (x *CreateAdminRequest) String() string {
 func (*CreateAdminRequest) ProtoMessage() {}
 
 func (x *CreateAdminRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[144]
+	mi := &file_manpasik_proto_msgTypes[147]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12352,7 +12895,7 @@ func (x *CreateAdminRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateAdminRequest.ProtoReflect.Descriptor instead.
 func (*CreateAdminRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{144}
+	return file_manpasik_proto_rawDescGZIP(), []int{147}
 }
 
 func (x *CreateAdminRequest) GetEmail() string {
@@ -12406,7 +12949,7 @@ type GetAdminRequest struct {
 
 func (x *GetAdminRequest) Reset() {
 	*x = GetAdminRequest{}
-	mi := &file_manpasik_proto_msgTypes[145]
+	mi := &file_manpasik_proto_msgTypes[148]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12418,7 +12961,7 @@ func (x *GetAdminRequest) String() string {
 func (*GetAdminRequest) ProtoMessage() {}
 
 func (x *GetAdminRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[145]
+	mi := &file_manpasik_proto_msgTypes[148]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12431,7 +12974,7 @@ func (x *GetAdminRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAdminRequest.ProtoReflect.Descriptor instead.
 func (*GetAdminRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{145}
+	return file_manpasik_proto_rawDescGZIP(), []int{148}
 }
 
 func (x *GetAdminRequest) GetAdminId() string {
@@ -12453,7 +12996,7 @@ type ListAdminsRequest struct {
 
 func (x *ListAdminsRequest) Reset() {
 	*x = ListAdminsRequest{}
-	mi := &file_manpasik_proto_msgTypes[146]
+	mi := &file_manpasik_proto_msgTypes[149]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12465,7 +13008,7 @@ func (x *ListAdminsRequest) String() string {
 func (*ListAdminsRequest) ProtoMessage() {}
 
 func (x *ListAdminsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[146]
+	mi := &file_manpasik_proto_msgTypes[149]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12478,7 +13021,7 @@ func (x *ListAdminsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAdminsRequest.ProtoReflect.Descriptor instead.
 func (*ListAdminsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{146}
+	return file_manpasik_proto_rawDescGZIP(), []int{149}
 }
 
 func (x *ListAdminsRequest) GetRoleFilter() AdminRole {
@@ -12519,7 +13062,7 @@ type ListAdminsResponse struct {
 
 func (x *ListAdminsResponse) Reset() {
 	*x = ListAdminsResponse{}
-	mi := &file_manpasik_proto_msgTypes[147]
+	mi := &file_manpasik_proto_msgTypes[150]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12531,7 +13074,7 @@ func (x *ListAdminsResponse) String() string {
 func (*ListAdminsResponse) ProtoMessage() {}
 
 func (x *ListAdminsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[147]
+	mi := &file_manpasik_proto_msgTypes[150]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12544,7 +13087,7 @@ func (x *ListAdminsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAdminsResponse.ProtoReflect.Descriptor instead.
 func (*ListAdminsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{147}
+	return file_manpasik_proto_rawDescGZIP(), []int{150}
 }
 
 func (x *ListAdminsResponse) GetAdmins() []*AdminUser {
@@ -12573,7 +13116,7 @@ type UpdateAdminRoleRequest struct {
 
 func (x *UpdateAdminRoleRequest) Reset() {
 	*x = UpdateAdminRoleRequest{}
-	mi := &file_manpasik_proto_msgTypes[148]
+	mi := &file_manpasik_proto_msgTypes[151]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12585,7 +13128,7 @@ func (x *UpdateAdminRoleRequest) String() string {
 func (*UpdateAdminRoleRequest) ProtoMessage() {}
 
 func (x *UpdateAdminRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[148]
+	mi := &file_manpasik_proto_msgTypes[151]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12598,7 +13141,7 @@ func (x *UpdateAdminRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateAdminRoleRequest.ProtoReflect.Descriptor instead.
 func (*UpdateAdminRoleRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{148}
+	return file_manpasik_proto_rawDescGZIP(), []int{151}
 }
 
 func (x *UpdateAdminRoleRequest) GetAdminId() string {
@@ -12639,7 +13182,7 @@ type DeactivateAdminRequest struct {
 
 func (x *DeactivateAdminRequest) Reset() {
 	*x = DeactivateAdminRequest{}
-	mi := &file_manpasik_proto_msgTypes[149]
+	mi := &file_manpasik_proto_msgTypes[152]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12651,7 +13194,7 @@ func (x *DeactivateAdminRequest) String() string {
 func (*DeactivateAdminRequest) ProtoMessage() {}
 
 func (x *DeactivateAdminRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[149]
+	mi := &file_manpasik_proto_msgTypes[152]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12664,7 +13207,7 @@ func (x *DeactivateAdminRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeactivateAdminRequest.ProtoReflect.Descriptor instead.
 func (*DeactivateAdminRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{149}
+	return file_manpasik_proto_rawDescGZIP(), []int{152}
 }
 
 func (x *DeactivateAdminRequest) GetAdminId() string {
@@ -12698,7 +13241,7 @@ type AdminUser struct {
 
 func (x *AdminUser) Reset() {
 	*x = AdminUser{}
-	mi := &file_manpasik_proto_msgTypes[150]
+	mi := &file_manpasik_proto_msgTypes[153]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12710,7 +13253,7 @@ func (x *AdminUser) String() string {
 func (*AdminUser) ProtoMessage() {}
 
 func (x *AdminUser) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[150]
+	mi := &file_manpasik_proto_msgTypes[153]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12723,7 +13266,7 @@ func (x *AdminUser) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminUser.ProtoReflect.Descriptor instead.
 func (*AdminUser) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{150}
+	return file_manpasik_proto_rawDescGZIP(), []int{153}
 }
 
 func (x *AdminUser) GetAdminId() string {
@@ -12802,7 +13345,7 @@ type AdminListUsersRequest struct {
 
 func (x *AdminListUsersRequest) Reset() {
 	*x = AdminListUsersRequest{}
-	mi := &file_manpasik_proto_msgTypes[151]
+	mi := &file_manpasik_proto_msgTypes[154]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12814,7 +13357,7 @@ func (x *AdminListUsersRequest) String() string {
 func (*AdminListUsersRequest) ProtoMessage() {}
 
 func (x *AdminListUsersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[151]
+	mi := &file_manpasik_proto_msgTypes[154]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12827,7 +13370,7 @@ func (x *AdminListUsersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListUsersRequest.ProtoReflect.Descriptor instead.
 func (*AdminListUsersRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{151}
+	return file_manpasik_proto_rawDescGZIP(), []int{154}
 }
 
 func (x *AdminListUsersRequest) GetQuery() string {
@@ -12875,7 +13418,7 @@ type AdminListUsersResponse struct {
 
 func (x *AdminListUsersResponse) Reset() {
 	*x = AdminListUsersResponse{}
-	mi := &file_manpasik_proto_msgTypes[152]
+	mi := &file_manpasik_proto_msgTypes[155]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12887,7 +13430,7 @@ func (x *AdminListUsersResponse) String() string {
 func (*AdminListUsersResponse) ProtoMessage() {}
 
 func (x *AdminListUsersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[152]
+	mi := &file_manpasik_proto_msgTypes[155]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12900,7 +13443,7 @@ func (x *AdminListUsersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminListUsersResponse.ProtoReflect.Descriptor instead.
 func (*AdminListUsersResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{152}
+	return file_manpasik_proto_rawDescGZIP(), []int{155}
 }
 
 func (x *AdminListUsersResponse) GetUsers() []*AdminUserSummary {
@@ -12934,7 +13477,7 @@ type AdminUserSummary struct {
 
 func (x *AdminUserSummary) Reset() {
 	*x = AdminUserSummary{}
-	mi := &file_manpasik_proto_msgTypes[153]
+	mi := &file_manpasik_proto_msgTypes[156]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -12946,7 +13489,7 @@ func (x *AdminUserSummary) String() string {
 func (*AdminUserSummary) ProtoMessage() {}
 
 func (x *AdminUserSummary) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[153]
+	mi := &file_manpasik_proto_msgTypes[156]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -12959,7 +13502,7 @@ func (x *AdminUserSummary) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AdminUserSummary.ProtoReflect.Descriptor instead.
 func (*AdminUserSummary) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{153}
+	return file_manpasik_proto_rawDescGZIP(), []int{156}
 }
 
 func (x *AdminUserSummary) GetUserId() string {
@@ -13033,7 +13576,7 @@ type GetSystemStatsRequest struct {
 
 func (x *GetSystemStatsRequest) Reset() {
 	*x = GetSystemStatsRequest{}
-	mi := &file_manpasik_proto_msgTypes[154]
+	mi := &file_manpasik_proto_msgTypes[157]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13045,7 +13588,7 @@ func (x *GetSystemStatsRequest) String() string {
 func (*GetSystemStatsRequest) ProtoMessage() {}
 
 func (x *GetSystemStatsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[154]
+	mi := &file_manpasik_proto_msgTypes[157]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13058,7 +13601,7 @@ func (x *GetSystemStatsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSystemStatsRequest.ProtoReflect.Descriptor instead.
 func (*GetSystemStatsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{154}
+	return file_manpasik_proto_rawDescGZIP(), []int{157}
 }
 
 type GetSystemStatsResponse struct {
@@ -13076,7 +13619,7 @@ type GetSystemStatsResponse struct {
 
 func (x *GetSystemStatsResponse) Reset() {
 	*x = GetSystemStatsResponse{}
-	mi := &file_manpasik_proto_msgTypes[155]
+	mi := &file_manpasik_proto_msgTypes[158]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13088,7 +13631,7 @@ func (x *GetSystemStatsResponse) String() string {
 func (*GetSystemStatsResponse) ProtoMessage() {}
 
 func (x *GetSystemStatsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[155]
+	mi := &file_manpasik_proto_msgTypes[158]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13101,7 +13644,7 @@ func (x *GetSystemStatsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSystemStatsResponse.ProtoReflect.Descriptor instead.
 func (*GetSystemStatsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{155}
+	return file_manpasik_proto_rawDescGZIP(), []int{158}
 }
 
 func (x *GetSystemStatsResponse) GetTotalUsers() int32 {
@@ -13167,7 +13710,7 @@ type GetAuditLogRequest struct {
 
 func (x *GetAuditLogRequest) Reset() {
 	*x = GetAuditLogRequest{}
-	mi := &file_manpasik_proto_msgTypes[156]
+	mi := &file_manpasik_proto_msgTypes[159]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13179,7 +13722,7 @@ func (x *GetAuditLogRequest) String() string {
 func (*GetAuditLogRequest) ProtoMessage() {}
 
 func (x *GetAuditLogRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[156]
+	mi := &file_manpasik_proto_msgTypes[159]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13192,7 +13735,7 @@ func (x *GetAuditLogRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAuditLogRequest.ProtoReflect.Descriptor instead.
 func (*GetAuditLogRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{156}
+	return file_manpasik_proto_rawDescGZIP(), []int{159}
 }
 
 func (x *GetAuditLogRequest) GetAdminId() string {
@@ -13247,7 +13790,7 @@ type GetAuditLogResponse struct {
 
 func (x *GetAuditLogResponse) Reset() {
 	*x = GetAuditLogResponse{}
-	mi := &file_manpasik_proto_msgTypes[157]
+	mi := &file_manpasik_proto_msgTypes[160]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13259,7 +13802,7 @@ func (x *GetAuditLogResponse) String() string {
 func (*GetAuditLogResponse) ProtoMessage() {}
 
 func (x *GetAuditLogResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[157]
+	mi := &file_manpasik_proto_msgTypes[160]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13272,7 +13815,7 @@ func (x *GetAuditLogResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetAuditLogResponse.ProtoReflect.Descriptor instead.
 func (*GetAuditLogResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{157}
+	return file_manpasik_proto_rawDescGZIP(), []int{160}
 }
 
 func (x *GetAuditLogResponse) GetEntries() []*AuditLogEntry {
@@ -13306,7 +13849,7 @@ type AuditLogEntry struct {
 
 func (x *AuditLogEntry) Reset() {
 	*x = AuditLogEntry{}
-	mi := &file_manpasik_proto_msgTypes[158]
+	mi := &file_manpasik_proto_msgTypes[161]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13318,7 +13861,7 @@ func (x *AuditLogEntry) String() string {
 func (*AuditLogEntry) ProtoMessage() {}
 
 func (x *AuditLogEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[158]
+	mi := &file_manpasik_proto_msgTypes[161]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13331,7 +13874,7 @@ func (x *AuditLogEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AuditLogEntry.ProtoReflect.Descriptor instead.
 func (*AuditLogEntry) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{158}
+	return file_manpasik_proto_rawDescGZIP(), []int{161}
 }
 
 func (x *AuditLogEntry) GetEntryId() string {
@@ -13408,7 +13951,7 @@ type SetSystemConfigRequest struct {
 
 func (x *SetSystemConfigRequest) Reset() {
 	*x = SetSystemConfigRequest{}
-	mi := &file_manpasik_proto_msgTypes[159]
+	mi := &file_manpasik_proto_msgTypes[162]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13420,7 +13963,7 @@ func (x *SetSystemConfigRequest) String() string {
 func (*SetSystemConfigRequest) ProtoMessage() {}
 
 func (x *SetSystemConfigRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[159]
+	mi := &file_manpasik_proto_msgTypes[162]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13433,7 +13976,7 @@ func (x *SetSystemConfigRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetSystemConfigRequest.ProtoReflect.Descriptor instead.
 func (*SetSystemConfigRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{159}
+	return file_manpasik_proto_rawDescGZIP(), []int{162}
 }
 
 func (x *SetSystemConfigRequest) GetKey() string {
@@ -13466,7 +14009,7 @@ type GetSystemConfigRequest struct {
 
 func (x *GetSystemConfigRequest) Reset() {
 	*x = GetSystemConfigRequest{}
-	mi := &file_manpasik_proto_msgTypes[160]
+	mi := &file_manpasik_proto_msgTypes[163]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13478,7 +14021,7 @@ func (x *GetSystemConfigRequest) String() string {
 func (*GetSystemConfigRequest) ProtoMessage() {}
 
 func (x *GetSystemConfigRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[160]
+	mi := &file_manpasik_proto_msgTypes[163]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13491,7 +14034,7 @@ func (x *GetSystemConfigRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSystemConfigRequest.ProtoReflect.Descriptor instead.
 func (*GetSystemConfigRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{160}
+	return file_manpasik_proto_rawDescGZIP(), []int{163}
 }
 
 func (x *GetSystemConfigRequest) GetKey() string {
@@ -13514,7 +14057,7 @@ type SystemConfig struct {
 
 func (x *SystemConfig) Reset() {
 	*x = SystemConfig{}
-	mi := &file_manpasik_proto_msgTypes[161]
+	mi := &file_manpasik_proto_msgTypes[164]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13526,7 +14069,7 @@ func (x *SystemConfig) String() string {
 func (*SystemConfig) ProtoMessage() {}
 
 func (x *SystemConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[161]
+	mi := &file_manpasik_proto_msgTypes[164]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13539,7 +14082,7 @@ func (x *SystemConfig) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SystemConfig.ProtoReflect.Descriptor instead.
 func (*SystemConfig) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{161}
+	return file_manpasik_proto_rawDescGZIP(), []int{164}
 }
 
 func (x *SystemConfig) GetKey() string {
@@ -13588,7 +14131,7 @@ type CreateFamilyGroupRequest struct {
 
 func (x *CreateFamilyGroupRequest) Reset() {
 	*x = CreateFamilyGroupRequest{}
-	mi := &file_manpasik_proto_msgTypes[162]
+	mi := &file_manpasik_proto_msgTypes[165]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13600,7 +14143,7 @@ func (x *CreateFamilyGroupRequest) String() string {
 func (*CreateFamilyGroupRequest) ProtoMessage() {}
 
 func (x *CreateFamilyGroupRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[162]
+	mi := &file_manpasik_proto_msgTypes[165]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13613,7 +14156,7 @@ func (x *CreateFamilyGroupRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateFamilyGroupRequest.ProtoReflect.Descriptor instead.
 func (*CreateFamilyGroupRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{162}
+	return file_manpasik_proto_rawDescGZIP(), []int{165}
 }
 
 func (x *CreateFamilyGroupRequest) GetOwnerUserId() string {
@@ -13646,7 +14189,7 @@ type GetFamilyGroupRequest struct {
 
 func (x *GetFamilyGroupRequest) Reset() {
 	*x = GetFamilyGroupRequest{}
-	mi := &file_manpasik_proto_msgTypes[163]
+	mi := &file_manpasik_proto_msgTypes[166]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13658,7 +14201,7 @@ func (x *GetFamilyGroupRequest) String() string {
 func (*GetFamilyGroupRequest) ProtoMessage() {}
 
 func (x *GetFamilyGroupRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[163]
+	mi := &file_manpasik_proto_msgTypes[166]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13671,7 +14214,7 @@ func (x *GetFamilyGroupRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetFamilyGroupRequest.ProtoReflect.Descriptor instead.
 func (*GetFamilyGroupRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{163}
+	return file_manpasik_proto_rawDescGZIP(), []int{166}
 }
 
 func (x *GetFamilyGroupRequest) GetGroupId() string {
@@ -13697,7 +14240,7 @@ type FamilyGroup struct {
 
 func (x *FamilyGroup) Reset() {
 	*x = FamilyGroup{}
-	mi := &file_manpasik_proto_msgTypes[164]
+	mi := &file_manpasik_proto_msgTypes[167]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13709,7 +14252,7 @@ func (x *FamilyGroup) String() string {
 func (*FamilyGroup) ProtoMessage() {}
 
 func (x *FamilyGroup) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[164]
+	mi := &file_manpasik_proto_msgTypes[167]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13722,7 +14265,7 @@ func (x *FamilyGroup) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FamilyGroup.ProtoReflect.Descriptor instead.
 func (*FamilyGroup) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{164}
+	return file_manpasik_proto_rawDescGZIP(), []int{167}
 }
 
 func (x *FamilyGroup) GetGroupId() string {
@@ -13796,7 +14339,7 @@ type FamilyMember struct {
 
 func (x *FamilyMember) Reset() {
 	*x = FamilyMember{}
-	mi := &file_manpasik_proto_msgTypes[165]
+	mi := &file_manpasik_proto_msgTypes[168]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13808,7 +14351,7 @@ func (x *FamilyMember) String() string {
 func (*FamilyMember) ProtoMessage() {}
 
 func (x *FamilyMember) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[165]
+	mi := &file_manpasik_proto_msgTypes[168]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13821,7 +14364,7 @@ func (x *FamilyMember) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FamilyMember.ProtoReflect.Descriptor instead.
 func (*FamilyMember) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{165}
+	return file_manpasik_proto_rawDescGZIP(), []int{168}
 }
 
 func (x *FamilyMember) GetUserId() string {
@@ -13886,7 +14429,7 @@ type InviteMemberRequest struct {
 
 func (x *InviteMemberRequest) Reset() {
 	*x = InviteMemberRequest{}
-	mi := &file_manpasik_proto_msgTypes[166]
+	mi := &file_manpasik_proto_msgTypes[169]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13898,7 +14441,7 @@ func (x *InviteMemberRequest) String() string {
 func (*InviteMemberRequest) ProtoMessage() {}
 
 func (x *InviteMemberRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[166]
+	mi := &file_manpasik_proto_msgTypes[169]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13911,7 +14454,7 @@ func (x *InviteMemberRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InviteMemberRequest.ProtoReflect.Descriptor instead.
 func (*InviteMemberRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{166}
+	return file_manpasik_proto_rawDescGZIP(), []int{169}
 }
 
 func (x *InviteMemberRequest) GetGroupId() string {
@@ -13967,7 +14510,7 @@ type FamilyInvitation struct {
 
 func (x *FamilyInvitation) Reset() {
 	*x = FamilyInvitation{}
-	mi := &file_manpasik_proto_msgTypes[167]
+	mi := &file_manpasik_proto_msgTypes[170]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -13979,7 +14522,7 @@ func (x *FamilyInvitation) String() string {
 func (*FamilyInvitation) ProtoMessage() {}
 
 func (x *FamilyInvitation) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[167]
+	mi := &file_manpasik_proto_msgTypes[170]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -13992,7 +14535,7 @@ func (x *FamilyInvitation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FamilyInvitation.ProtoReflect.Descriptor instead.
 func (*FamilyInvitation) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{167}
+	return file_manpasik_proto_rawDescGZIP(), []int{170}
 }
 
 func (x *FamilyInvitation) GetInvitationId() string {
@@ -14076,7 +14619,7 @@ type RespondToInvitationRequest struct {
 
 func (x *RespondToInvitationRequest) Reset() {
 	*x = RespondToInvitationRequest{}
-	mi := &file_manpasik_proto_msgTypes[168]
+	mi := &file_manpasik_proto_msgTypes[171]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14088,7 +14631,7 @@ func (x *RespondToInvitationRequest) String() string {
 func (*RespondToInvitationRequest) ProtoMessage() {}
 
 func (x *RespondToInvitationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[168]
+	mi := &file_manpasik_proto_msgTypes[171]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14101,7 +14644,7 @@ func (x *RespondToInvitationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RespondToInvitationRequest.ProtoReflect.Descriptor instead.
 func (*RespondToInvitationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{168}
+	return file_manpasik_proto_rawDescGZIP(), []int{171}
 }
 
 func (x *RespondToInvitationRequest) GetInvitationId() string {
@@ -14136,7 +14679,7 @@ type RespondToInvitationResponse struct {
 
 func (x *RespondToInvitationResponse) Reset() {
 	*x = RespondToInvitationResponse{}
-	mi := &file_manpasik_proto_msgTypes[169]
+	mi := &file_manpasik_proto_msgTypes[172]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14148,7 +14691,7 @@ func (x *RespondToInvitationResponse) String() string {
 func (*RespondToInvitationResponse) ProtoMessage() {}
 
 func (x *RespondToInvitationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[169]
+	mi := &file_manpasik_proto_msgTypes[172]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14161,7 +14704,7 @@ func (x *RespondToInvitationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RespondToInvitationResponse.ProtoReflect.Descriptor instead.
 func (*RespondToInvitationResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{169}
+	return file_manpasik_proto_rawDescGZIP(), []int{172}
 }
 
 func (x *RespondToInvitationResponse) GetSuccess() bool {
@@ -14196,7 +14739,7 @@ type RemoveMemberRequest struct {
 
 func (x *RemoveMemberRequest) Reset() {
 	*x = RemoveMemberRequest{}
-	mi := &file_manpasik_proto_msgTypes[170]
+	mi := &file_manpasik_proto_msgTypes[173]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14208,7 +14751,7 @@ func (x *RemoveMemberRequest) String() string {
 func (*RemoveMemberRequest) ProtoMessage() {}
 
 func (x *RemoveMemberRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[170]
+	mi := &file_manpasik_proto_msgTypes[173]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14221,7 +14764,7 @@ func (x *RemoveMemberRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveMemberRequest.ProtoReflect.Descriptor instead.
 func (*RemoveMemberRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{170}
+	return file_manpasik_proto_rawDescGZIP(), []int{173}
 }
 
 func (x *RemoveMemberRequest) GetGroupId() string {
@@ -14255,7 +14798,7 @@ type RemoveMemberResponse struct {
 
 func (x *RemoveMemberResponse) Reset() {
 	*x = RemoveMemberResponse{}
-	mi := &file_manpasik_proto_msgTypes[171]
+	mi := &file_manpasik_proto_msgTypes[174]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14267,7 +14810,7 @@ func (x *RemoveMemberResponse) String() string {
 func (*RemoveMemberResponse) ProtoMessage() {}
 
 func (x *RemoveMemberResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[171]
+	mi := &file_manpasik_proto_msgTypes[174]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14280,7 +14823,7 @@ func (x *RemoveMemberResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveMemberResponse.ProtoReflect.Descriptor instead.
 func (*RemoveMemberResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{171}
+	return file_manpasik_proto_rawDescGZIP(), []int{174}
 }
 
 func (x *RemoveMemberResponse) GetSuccess() bool {
@@ -14309,7 +14852,7 @@ type UpdateMemberRoleRequest struct {
 
 func (x *UpdateMemberRoleRequest) Reset() {
 	*x = UpdateMemberRoleRequest{}
-	mi := &file_manpasik_proto_msgTypes[172]
+	mi := &file_manpasik_proto_msgTypes[175]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14321,7 +14864,7 @@ func (x *UpdateMemberRoleRequest) String() string {
 func (*UpdateMemberRoleRequest) ProtoMessage() {}
 
 func (x *UpdateMemberRoleRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[172]
+	mi := &file_manpasik_proto_msgTypes[175]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14334,7 +14877,7 @@ func (x *UpdateMemberRoleRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateMemberRoleRequest.ProtoReflect.Descriptor instead.
 func (*UpdateMemberRoleRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{172}
+	return file_manpasik_proto_rawDescGZIP(), []int{175}
 }
 
 func (x *UpdateMemberRoleRequest) GetGroupId() string {
@@ -14374,7 +14917,7 @@ type ListFamilyMembersRequest struct {
 
 func (x *ListFamilyMembersRequest) Reset() {
 	*x = ListFamilyMembersRequest{}
-	mi := &file_manpasik_proto_msgTypes[173]
+	mi := &file_manpasik_proto_msgTypes[176]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14386,7 +14929,7 @@ func (x *ListFamilyMembersRequest) String() string {
 func (*ListFamilyMembersRequest) ProtoMessage() {}
 
 func (x *ListFamilyMembersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[173]
+	mi := &file_manpasik_proto_msgTypes[176]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14399,7 +14942,7 @@ func (x *ListFamilyMembersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListFamilyMembersRequest.ProtoReflect.Descriptor instead.
 func (*ListFamilyMembersRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{173}
+	return file_manpasik_proto_rawDescGZIP(), []int{176}
 }
 
 func (x *ListFamilyMembersRequest) GetGroupId() string {
@@ -14418,7 +14961,7 @@ type ListFamilyMembersResponse struct {
 
 func (x *ListFamilyMembersResponse) Reset() {
 	*x = ListFamilyMembersResponse{}
-	mi := &file_manpasik_proto_msgTypes[174]
+	mi := &file_manpasik_proto_msgTypes[177]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14430,7 +14973,7 @@ func (x *ListFamilyMembersResponse) String() string {
 func (*ListFamilyMembersResponse) ProtoMessage() {}
 
 func (x *ListFamilyMembersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[174]
+	mi := &file_manpasik_proto_msgTypes[177]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14443,7 +14986,7 @@ func (x *ListFamilyMembersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListFamilyMembersResponse.ProtoReflect.Descriptor instead.
 func (*ListFamilyMembersResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{174}
+	return file_manpasik_proto_rawDescGZIP(), []int{177}
 }
 
 func (x *ListFamilyMembersResponse) GetMembers() []*FamilyMember {
@@ -14454,21 +14997,27 @@ func (x *ListFamilyMembersResponse) GetMembers() []*FamilyMember {
 }
 
 type SetSharingPreferencesRequest struct {
-	state              protoimpl.MessageState `protogen:"open.v1"`
-	GroupId            string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
-	UserId             string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	ShareMeasurements  bool                   `protobuf:"varint,3,opt,name=share_measurements,json=shareMeasurements,proto3" json:"share_measurements,omitempty"`
-	ShareHealthRecords bool                   `protobuf:"varint,4,opt,name=share_health_records,json=shareHealthRecords,proto3" json:"share_health_records,omitempty"`
-	SharePrescriptions bool                   `protobuf:"varint,5,opt,name=share_prescriptions,json=sharePrescriptions,proto3" json:"share_prescriptions,omitempty"`
-	ShareCoaching      bool                   `protobuf:"varint,6,opt,name=share_coaching,json=shareCoaching,proto3" json:"share_coaching,omitempty"`
-	SharedWithUserIds  []string               `protobuf:"bytes,7,rep,name=shared_with_user_ids,json=sharedWithUserIds,proto3" json:"shared_with_user_ids,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	GroupId              string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	UserId               string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	ShareMeasurements    bool                   `protobuf:"varint,3,opt,name=share_measurements,json=shareMeasurements,proto3" json:"share_measurements,omitempty"`
+	ShareHealthRecords   bool                   `protobuf:"varint,4,opt,name=share_health_records,json=shareHealthRecords,proto3" json:"share_health_records,omitempty"`
+	SharePrescriptions   bool                   `protobuf:"varint,5,opt,name=share_prescriptions,json=sharePrescriptions,proto3" json:"share_prescriptions,omitempty"`
+	ShareCoaching        bool                   `protobuf:"varint,6,opt,name=share_coaching,json=shareCoaching,proto3" json:"share_coaching,omitempty"`
+	SharedWithUserIds    []string               `protobuf:"bytes,7,rep,name=shared_with_user_ids,json=sharedWithUserIds,proto3" json:"shared_with_user_ids,omitempty"`
+	ShareHealthScore     bool                   `protobuf:"varint,8,opt,name=share_health_score,json=shareHealthScore,proto3" json:"share_health_score,omitempty"`
+	ShareGoals           bool                   `protobuf:"varint,9,opt,name=share_goals,json=shareGoals,proto3" json:"share_goals,omitempty"`
+	ShareAlerts          bool                   `protobuf:"varint,10,opt,name=share_alerts,json=shareAlerts,proto3" json:"share_alerts,omitempty"`
+	MeasurementDaysLimit int32                  `protobuf:"varint,11,opt,name=measurement_days_limit,json=measurementDaysLimit,proto3" json:"measurement_days_limit,omitempty"`
+	AllowedBiomarkers    []string               `protobuf:"bytes,12,rep,name=allowed_biomarkers,json=allowedBiomarkers,proto3" json:"allowed_biomarkers,omitempty"`
+	RequireApproval      bool                   `protobuf:"varint,13,opt,name=require_approval,json=requireApproval,proto3" json:"require_approval,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *SetSharingPreferencesRequest) Reset() {
 	*x = SetSharingPreferencesRequest{}
-	mi := &file_manpasik_proto_msgTypes[175]
+	mi := &file_manpasik_proto_msgTypes[178]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14480,7 +15029,7 @@ func (x *SetSharingPreferencesRequest) String() string {
 func (*SetSharingPreferencesRequest) ProtoMessage() {}
 
 func (x *SetSharingPreferencesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[175]
+	mi := &file_manpasik_proto_msgTypes[178]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14493,7 +15042,7 @@ func (x *SetSharingPreferencesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetSharingPreferencesRequest.ProtoReflect.Descriptor instead.
 func (*SetSharingPreferencesRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{175}
+	return file_manpasik_proto_rawDescGZIP(), []int{178}
 }
 
 func (x *SetSharingPreferencesRequest) GetGroupId() string {
@@ -14545,23 +15094,71 @@ func (x *SetSharingPreferencesRequest) GetSharedWithUserIds() []string {
 	return nil
 }
 
+func (x *SetSharingPreferencesRequest) GetShareHealthScore() bool {
+	if x != nil {
+		return x.ShareHealthScore
+	}
+	return false
+}
+
+func (x *SetSharingPreferencesRequest) GetShareGoals() bool {
+	if x != nil {
+		return x.ShareGoals
+	}
+	return false
+}
+
+func (x *SetSharingPreferencesRequest) GetShareAlerts() bool {
+	if x != nil {
+		return x.ShareAlerts
+	}
+	return false
+}
+
+func (x *SetSharingPreferencesRequest) GetMeasurementDaysLimit() int32 {
+	if x != nil {
+		return x.MeasurementDaysLimit
+	}
+	return 0
+}
+
+func (x *SetSharingPreferencesRequest) GetAllowedBiomarkers() []string {
+	if x != nil {
+		return x.AllowedBiomarkers
+	}
+	return nil
+}
+
+func (x *SetSharingPreferencesRequest) GetRequireApproval() bool {
+	if x != nil {
+		return x.RequireApproval
+	}
+	return false
+}
+
 type SharingPreferences struct {
-	state              protoimpl.MessageState `protogen:"open.v1"`
-	UserId             string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	GroupId            string                 `protobuf:"bytes,2,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
-	ShareMeasurements  bool                   `protobuf:"varint,3,opt,name=share_measurements,json=shareMeasurements,proto3" json:"share_measurements,omitempty"`
-	ShareHealthRecords bool                   `protobuf:"varint,4,opt,name=share_health_records,json=shareHealthRecords,proto3" json:"share_health_records,omitempty"`
-	SharePrescriptions bool                   `protobuf:"varint,5,opt,name=share_prescriptions,json=sharePrescriptions,proto3" json:"share_prescriptions,omitempty"`
-	ShareCoaching      bool                   `protobuf:"varint,6,opt,name=share_coaching,json=shareCoaching,proto3" json:"share_coaching,omitempty"`
-	SharedWithUserIds  []string               `protobuf:"bytes,7,rep,name=shared_with_user_ids,json=sharedWithUserIds,proto3" json:"shared_with_user_ids,omitempty"`
-	UpdatedAt          *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
-	unknownFields      protoimpl.UnknownFields
-	sizeCache          protoimpl.SizeCache
+	state                protoimpl.MessageState `protogen:"open.v1"`
+	UserId               string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	GroupId              string                 `protobuf:"bytes,2,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	ShareMeasurements    bool                   `protobuf:"varint,3,opt,name=share_measurements,json=shareMeasurements,proto3" json:"share_measurements,omitempty"`
+	ShareHealthRecords   bool                   `protobuf:"varint,4,opt,name=share_health_records,json=shareHealthRecords,proto3" json:"share_health_records,omitempty"`
+	SharePrescriptions   bool                   `protobuf:"varint,5,opt,name=share_prescriptions,json=sharePrescriptions,proto3" json:"share_prescriptions,omitempty"`
+	ShareCoaching        bool                   `protobuf:"varint,6,opt,name=share_coaching,json=shareCoaching,proto3" json:"share_coaching,omitempty"`
+	SharedWithUserIds    []string               `protobuf:"bytes,7,rep,name=shared_with_user_ids,json=sharedWithUserIds,proto3" json:"shared_with_user_ids,omitempty"`
+	UpdatedAt            *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	ShareHealthScore     bool                   `protobuf:"varint,9,opt,name=share_health_score,json=shareHealthScore,proto3" json:"share_health_score,omitempty"`
+	ShareGoals           bool                   `protobuf:"varint,10,opt,name=share_goals,json=shareGoals,proto3" json:"share_goals,omitempty"`
+	ShareAlerts          bool                   `protobuf:"varint,11,opt,name=share_alerts,json=shareAlerts,proto3" json:"share_alerts,omitempty"`
+	MeasurementDaysLimit int32                  `protobuf:"varint,12,opt,name=measurement_days_limit,json=measurementDaysLimit,proto3" json:"measurement_days_limit,omitempty"`
+	AllowedBiomarkers    []string               `protobuf:"bytes,13,rep,name=allowed_biomarkers,json=allowedBiomarkers,proto3" json:"allowed_biomarkers,omitempty"`
+	RequireApproval      bool                   `protobuf:"varint,14,opt,name=require_approval,json=requireApproval,proto3" json:"require_approval,omitempty"`
+	unknownFields        protoimpl.UnknownFields
+	sizeCache            protoimpl.SizeCache
 }
 
 func (x *SharingPreferences) Reset() {
 	*x = SharingPreferences{}
-	mi := &file_manpasik_proto_msgTypes[176]
+	mi := &file_manpasik_proto_msgTypes[179]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14573,7 +15170,7 @@ func (x *SharingPreferences) String() string {
 func (*SharingPreferences) ProtoMessage() {}
 
 func (x *SharingPreferences) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[176]
+	mi := &file_manpasik_proto_msgTypes[179]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14586,7 +15183,7 @@ func (x *SharingPreferences) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SharingPreferences.ProtoReflect.Descriptor instead.
 func (*SharingPreferences) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{176}
+	return file_manpasik_proto_rawDescGZIP(), []int{179}
 }
 
 func (x *SharingPreferences) GetUserId() string {
@@ -14645,6 +15242,48 @@ func (x *SharingPreferences) GetUpdatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *SharingPreferences) GetShareHealthScore() bool {
+	if x != nil {
+		return x.ShareHealthScore
+	}
+	return false
+}
+
+func (x *SharingPreferences) GetShareGoals() bool {
+	if x != nil {
+		return x.ShareGoals
+	}
+	return false
+}
+
+func (x *SharingPreferences) GetShareAlerts() bool {
+	if x != nil {
+		return x.ShareAlerts
+	}
+	return false
+}
+
+func (x *SharingPreferences) GetMeasurementDaysLimit() int32 {
+	if x != nil {
+		return x.MeasurementDaysLimit
+	}
+	return 0
+}
+
+func (x *SharingPreferences) GetAllowedBiomarkers() []string {
+	if x != nil {
+		return x.AllowedBiomarkers
+	}
+	return nil
+}
+
+func (x *SharingPreferences) GetRequireApproval() bool {
+	if x != nil {
+		return x.RequireApproval
+	}
+	return false
+}
+
 type GetSharedHealthDataRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	GroupId         string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
@@ -14656,7 +15295,7 @@ type GetSharedHealthDataRequest struct {
 
 func (x *GetSharedHealthDataRequest) Reset() {
 	*x = GetSharedHealthDataRequest{}
-	mi := &file_manpasik_proto_msgTypes[177]
+	mi := &file_manpasik_proto_msgTypes[180]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14668,7 +15307,7 @@ func (x *GetSharedHealthDataRequest) String() string {
 func (*GetSharedHealthDataRequest) ProtoMessage() {}
 
 func (x *GetSharedHealthDataRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[177]
+	mi := &file_manpasik_proto_msgTypes[180]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14681,7 +15320,7 @@ func (x *GetSharedHealthDataRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSharedHealthDataRequest.ProtoReflect.Descriptor instead.
 func (*GetSharedHealthDataRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{177}
+	return file_manpasik_proto_rawDescGZIP(), []int{180}
 }
 
 func (x *GetSharedHealthDataRequest) GetGroupId() string {
@@ -14718,7 +15357,7 @@ type GetSharedHealthDataResponse struct {
 
 func (x *GetSharedHealthDataResponse) Reset() {
 	*x = GetSharedHealthDataResponse{}
-	mi := &file_manpasik_proto_msgTypes[178]
+	mi := &file_manpasik_proto_msgTypes[181]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14730,7 +15369,7 @@ func (x *GetSharedHealthDataResponse) String() string {
 func (*GetSharedHealthDataResponse) ProtoMessage() {}
 
 func (x *GetSharedHealthDataResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[178]
+	mi := &file_manpasik_proto_msgTypes[181]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14743,7 +15382,7 @@ func (x *GetSharedHealthDataResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSharedHealthDataResponse.ProtoReflect.Descriptor instead.
 func (*GetSharedHealthDataResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{178}
+	return file_manpasik_proto_rawDescGZIP(), []int{181}
 }
 
 func (x *GetSharedHealthDataResponse) GetTargetUserId() string {
@@ -14796,7 +15435,7 @@ type CreateHealthRecordRequest struct {
 
 func (x *CreateHealthRecordRequest) Reset() {
 	*x = CreateHealthRecordRequest{}
-	mi := &file_manpasik_proto_msgTypes[179]
+	mi := &file_manpasik_proto_msgTypes[182]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14808,7 +15447,7 @@ func (x *CreateHealthRecordRequest) String() string {
 func (*CreateHealthRecordRequest) ProtoMessage() {}
 
 func (x *CreateHealthRecordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[179]
+	mi := &file_manpasik_proto_msgTypes[182]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14821,7 +15460,7 @@ func (x *CreateHealthRecordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateHealthRecordRequest.ProtoReflect.Descriptor instead.
 func (*CreateHealthRecordRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{179}
+	return file_manpasik_proto_rawDescGZIP(), []int{182}
 }
 
 func (x *CreateHealthRecordRequest) GetUserId() string {
@@ -14882,7 +15521,7 @@ type GetHealthRecordRequest struct {
 
 func (x *GetHealthRecordRequest) Reset() {
 	*x = GetHealthRecordRequest{}
-	mi := &file_manpasik_proto_msgTypes[180]
+	mi := &file_manpasik_proto_msgTypes[183]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14894,7 +15533,7 @@ func (x *GetHealthRecordRequest) String() string {
 func (*GetHealthRecordRequest) ProtoMessage() {}
 
 func (x *GetHealthRecordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[180]
+	mi := &file_manpasik_proto_msgTypes[183]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14907,7 +15546,7 @@ func (x *GetHealthRecordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHealthRecordRequest.ProtoReflect.Descriptor instead.
 func (*GetHealthRecordRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{180}
+	return file_manpasik_proto_rawDescGZIP(), []int{183}
 }
 
 func (x *GetHealthRecordRequest) GetRecordId() string {
@@ -14929,7 +15568,7 @@ type ListHealthRecordsRequest struct {
 
 func (x *ListHealthRecordsRequest) Reset() {
 	*x = ListHealthRecordsRequest{}
-	mi := &file_manpasik_proto_msgTypes[181]
+	mi := &file_manpasik_proto_msgTypes[184]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -14941,7 +15580,7 @@ func (x *ListHealthRecordsRequest) String() string {
 func (*ListHealthRecordsRequest) ProtoMessage() {}
 
 func (x *ListHealthRecordsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[181]
+	mi := &file_manpasik_proto_msgTypes[184]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -14954,7 +15593,7 @@ func (x *ListHealthRecordsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListHealthRecordsRequest.ProtoReflect.Descriptor instead.
 func (*ListHealthRecordsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{181}
+	return file_manpasik_proto_rawDescGZIP(), []int{184}
 }
 
 func (x *ListHealthRecordsRequest) GetUserId() string {
@@ -14995,7 +15634,7 @@ type ListHealthRecordsResponse struct {
 
 func (x *ListHealthRecordsResponse) Reset() {
 	*x = ListHealthRecordsResponse{}
-	mi := &file_manpasik_proto_msgTypes[182]
+	mi := &file_manpasik_proto_msgTypes[185]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15007,7 +15646,7 @@ func (x *ListHealthRecordsResponse) String() string {
 func (*ListHealthRecordsResponse) ProtoMessage() {}
 
 func (x *ListHealthRecordsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[182]
+	mi := &file_manpasik_proto_msgTypes[185]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15020,7 +15659,7 @@ func (x *ListHealthRecordsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListHealthRecordsResponse.ProtoReflect.Descriptor instead.
 func (*ListHealthRecordsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{182}
+	return file_manpasik_proto_rawDescGZIP(), []int{185}
 }
 
 func (x *ListHealthRecordsResponse) GetRecords() []*HealthRecord {
@@ -15049,7 +15688,7 @@ type UpdateHealthRecordRequest struct {
 
 func (x *UpdateHealthRecordRequest) Reset() {
 	*x = UpdateHealthRecordRequest{}
-	mi := &file_manpasik_proto_msgTypes[183]
+	mi := &file_manpasik_proto_msgTypes[186]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15061,7 +15700,7 @@ func (x *UpdateHealthRecordRequest) String() string {
 func (*UpdateHealthRecordRequest) ProtoMessage() {}
 
 func (x *UpdateHealthRecordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[183]
+	mi := &file_manpasik_proto_msgTypes[186]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15074,7 +15713,7 @@ func (x *UpdateHealthRecordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateHealthRecordRequest.ProtoReflect.Descriptor instead.
 func (*UpdateHealthRecordRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{183}
+	return file_manpasik_proto_rawDescGZIP(), []int{186}
 }
 
 func (x *UpdateHealthRecordRequest) GetRecordId() string {
@@ -15114,7 +15753,7 @@ type DeleteHealthRecordRequest struct {
 
 func (x *DeleteHealthRecordRequest) Reset() {
 	*x = DeleteHealthRecordRequest{}
-	mi := &file_manpasik_proto_msgTypes[184]
+	mi := &file_manpasik_proto_msgTypes[187]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15126,7 +15765,7 @@ func (x *DeleteHealthRecordRequest) String() string {
 func (*DeleteHealthRecordRequest) ProtoMessage() {}
 
 func (x *DeleteHealthRecordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[184]
+	mi := &file_manpasik_proto_msgTypes[187]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15139,7 +15778,7 @@ func (x *DeleteHealthRecordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteHealthRecordRequest.ProtoReflect.Descriptor instead.
 func (*DeleteHealthRecordRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{184}
+	return file_manpasik_proto_rawDescGZIP(), []int{187}
 }
 
 func (x *DeleteHealthRecordRequest) GetRecordId() string {
@@ -15159,7 +15798,7 @@ type DeleteHealthRecordResponse struct {
 
 func (x *DeleteHealthRecordResponse) Reset() {
 	*x = DeleteHealthRecordResponse{}
-	mi := &file_manpasik_proto_msgTypes[185]
+	mi := &file_manpasik_proto_msgTypes[188]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15171,7 +15810,7 @@ func (x *DeleteHealthRecordResponse) String() string {
 func (*DeleteHealthRecordResponse) ProtoMessage() {}
 
 func (x *DeleteHealthRecordResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[185]
+	mi := &file_manpasik_proto_msgTypes[188]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15184,7 +15823,7 @@ func (x *DeleteHealthRecordResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteHealthRecordResponse.ProtoReflect.Descriptor instead.
 func (*DeleteHealthRecordResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{185}
+	return file_manpasik_proto_rawDescGZIP(), []int{188}
 }
 
 func (x *DeleteHealthRecordResponse) GetSuccess() bool {
@@ -15219,7 +15858,7 @@ type HealthRecord struct {
 
 func (x *HealthRecord) Reset() {
 	*x = HealthRecord{}
-	mi := &file_manpasik_proto_msgTypes[186]
+	mi := &file_manpasik_proto_msgTypes[189]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15231,7 +15870,7 @@ func (x *HealthRecord) String() string {
 func (*HealthRecord) ProtoMessage() {}
 
 func (x *HealthRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[186]
+	mi := &file_manpasik_proto_msgTypes[189]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15244,7 +15883,7 @@ func (x *HealthRecord) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthRecord.ProtoReflect.Descriptor instead.
 func (*HealthRecord) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{186}
+	return file_manpasik_proto_rawDescGZIP(), []int{189}
 }
 
 func (x *HealthRecord) GetRecordId() string {
@@ -15328,7 +15967,7 @@ type ExportToFHIRRequest struct {
 
 func (x *ExportToFHIRRequest) Reset() {
 	*x = ExportToFHIRRequest{}
-	mi := &file_manpasik_proto_msgTypes[187]
+	mi := &file_manpasik_proto_msgTypes[190]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15340,7 +15979,7 @@ func (x *ExportToFHIRRequest) String() string {
 func (*ExportToFHIRRequest) ProtoMessage() {}
 
 func (x *ExportToFHIRRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[187]
+	mi := &file_manpasik_proto_msgTypes[190]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15353,7 +15992,7 @@ func (x *ExportToFHIRRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportToFHIRRequest.ProtoReflect.Descriptor instead.
 func (*ExportToFHIRRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{187}
+	return file_manpasik_proto_rawDescGZIP(), []int{190}
 }
 
 func (x *ExportToFHIRRequest) GetUserId() string {
@@ -15388,7 +16027,7 @@ type ExportToFHIRResponse struct {
 
 func (x *ExportToFHIRResponse) Reset() {
 	*x = ExportToFHIRResponse{}
-	mi := &file_manpasik_proto_msgTypes[188]
+	mi := &file_manpasik_proto_msgTypes[191]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15400,7 +16039,7 @@ func (x *ExportToFHIRResponse) String() string {
 func (*ExportToFHIRResponse) ProtoMessage() {}
 
 func (x *ExportToFHIRResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[188]
+	mi := &file_manpasik_proto_msgTypes[191]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15413,7 +16052,7 @@ func (x *ExportToFHIRResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportToFHIRResponse.ProtoReflect.Descriptor instead.
 func (*ExportToFHIRResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{188}
+	return file_manpasik_proto_rawDescGZIP(), []int{191}
 }
 
 func (x *ExportToFHIRResponse) GetFhirBundleJson() string {
@@ -15447,7 +16086,7 @@ type ImportFromFHIRRequest struct {
 
 func (x *ImportFromFHIRRequest) Reset() {
 	*x = ImportFromFHIRRequest{}
-	mi := &file_manpasik_proto_msgTypes[189]
+	mi := &file_manpasik_proto_msgTypes[192]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15459,7 +16098,7 @@ func (x *ImportFromFHIRRequest) String() string {
 func (*ImportFromFHIRRequest) ProtoMessage() {}
 
 func (x *ImportFromFHIRRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[189]
+	mi := &file_manpasik_proto_msgTypes[192]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15472,7 +16111,7 @@ func (x *ImportFromFHIRRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImportFromFHIRRequest.ProtoReflect.Descriptor instead.
 func (*ImportFromFHIRRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{189}
+	return file_manpasik_proto_rawDescGZIP(), []int{192}
 }
 
 func (x *ImportFromFHIRRequest) GetUserId() string {
@@ -15501,7 +16140,7 @@ type ImportFromFHIRResponse struct {
 
 func (x *ImportFromFHIRResponse) Reset() {
 	*x = ImportFromFHIRResponse{}
-	mi := &file_manpasik_proto_msgTypes[190]
+	mi := &file_manpasik_proto_msgTypes[193]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15513,7 +16152,7 @@ func (x *ImportFromFHIRResponse) String() string {
 func (*ImportFromFHIRResponse) ProtoMessage() {}
 
 func (x *ImportFromFHIRResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[190]
+	mi := &file_manpasik_proto_msgTypes[193]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15526,7 +16165,7 @@ func (x *ImportFromFHIRResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ImportFromFHIRResponse.ProtoReflect.Descriptor instead.
 func (*ImportFromFHIRResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{190}
+	return file_manpasik_proto_rawDescGZIP(), []int{193}
 }
 
 func (x *ImportFromFHIRResponse) GetImportedCount() int32 {
@@ -15566,7 +16205,7 @@ type GetHealthSummaryRequest struct {
 
 func (x *GetHealthSummaryRequest) Reset() {
 	*x = GetHealthSummaryRequest{}
-	mi := &file_manpasik_proto_msgTypes[191]
+	mi := &file_manpasik_proto_msgTypes[194]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15578,7 +16217,7 @@ func (x *GetHealthSummaryRequest) String() string {
 func (*GetHealthSummaryRequest) ProtoMessage() {}
 
 func (x *GetHealthSummaryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[191]
+	mi := &file_manpasik_proto_msgTypes[194]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15591,7 +16230,7 @@ func (x *GetHealthSummaryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHealthSummaryRequest.ProtoReflect.Descriptor instead.
 func (*GetHealthSummaryRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{191}
+	return file_manpasik_proto_rawDescGZIP(), []int{194}
 }
 
 func (x *GetHealthSummaryRequest) GetUserId() string {
@@ -15614,7 +16253,7 @@ type GetHealthSummaryResponse struct {
 
 func (x *GetHealthSummaryResponse) Reset() {
 	*x = GetHealthSummaryResponse{}
-	mi := &file_manpasik_proto_msgTypes[192]
+	mi := &file_manpasik_proto_msgTypes[195]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15626,7 +16265,7 @@ func (x *GetHealthSummaryResponse) String() string {
 func (*GetHealthSummaryResponse) ProtoMessage() {}
 
 func (x *GetHealthSummaryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[192]
+	mi := &file_manpasik_proto_msgTypes[195]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15639,7 +16278,7 @@ func (x *GetHealthSummaryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetHealthSummaryResponse.ProtoReflect.Descriptor instead.
 func (*GetHealthSummaryResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{192}
+	return file_manpasik_proto_rawDescGZIP(), []int{195}
 }
 
 func (x *GetHealthSummaryResponse) GetUserId() string {
@@ -15692,7 +16331,7 @@ type CreatePrescriptionRequest struct {
 
 func (x *CreatePrescriptionRequest) Reset() {
 	*x = CreatePrescriptionRequest{}
-	mi := &file_manpasik_proto_msgTypes[193]
+	mi := &file_manpasik_proto_msgTypes[196]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15704,7 +16343,7 @@ func (x *CreatePrescriptionRequest) String() string {
 func (*CreatePrescriptionRequest) ProtoMessage() {}
 
 func (x *CreatePrescriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[193]
+	mi := &file_manpasik_proto_msgTypes[196]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15717,7 +16356,7 @@ func (x *CreatePrescriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePrescriptionRequest.ProtoReflect.Descriptor instead.
 func (*CreatePrescriptionRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{193}
+	return file_manpasik_proto_rawDescGZIP(), []int{196}
 }
 
 func (x *CreatePrescriptionRequest) GetUserId() string {
@@ -15778,7 +16417,7 @@ type GetPrescriptionRequest struct {
 
 func (x *GetPrescriptionRequest) Reset() {
 	*x = GetPrescriptionRequest{}
-	mi := &file_manpasik_proto_msgTypes[194]
+	mi := &file_manpasik_proto_msgTypes[197]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15790,7 +16429,7 @@ func (x *GetPrescriptionRequest) String() string {
 func (*GetPrescriptionRequest) ProtoMessage() {}
 
 func (x *GetPrescriptionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[194]
+	mi := &file_manpasik_proto_msgTypes[197]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15803,7 +16442,7 @@ func (x *GetPrescriptionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPrescriptionRequest.ProtoReflect.Descriptor instead.
 func (*GetPrescriptionRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{194}
+	return file_manpasik_proto_rawDescGZIP(), []int{197}
 }
 
 func (x *GetPrescriptionRequest) GetPrescriptionId() string {
@@ -15825,7 +16464,7 @@ type ListPrescriptionsRequest struct {
 
 func (x *ListPrescriptionsRequest) Reset() {
 	*x = ListPrescriptionsRequest{}
-	mi := &file_manpasik_proto_msgTypes[195]
+	mi := &file_manpasik_proto_msgTypes[198]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15837,7 +16476,7 @@ func (x *ListPrescriptionsRequest) String() string {
 func (*ListPrescriptionsRequest) ProtoMessage() {}
 
 func (x *ListPrescriptionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[195]
+	mi := &file_manpasik_proto_msgTypes[198]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15850,7 +16489,7 @@ func (x *ListPrescriptionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPrescriptionsRequest.ProtoReflect.Descriptor instead.
 func (*ListPrescriptionsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{195}
+	return file_manpasik_proto_rawDescGZIP(), []int{198}
 }
 
 func (x *ListPrescriptionsRequest) GetUserId() string {
@@ -15891,7 +16530,7 @@ type ListPrescriptionsResponse struct {
 
 func (x *ListPrescriptionsResponse) Reset() {
 	*x = ListPrescriptionsResponse{}
-	mi := &file_manpasik_proto_msgTypes[196]
+	mi := &file_manpasik_proto_msgTypes[199]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15903,7 +16542,7 @@ func (x *ListPrescriptionsResponse) String() string {
 func (*ListPrescriptionsResponse) ProtoMessage() {}
 
 func (x *ListPrescriptionsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[196]
+	mi := &file_manpasik_proto_msgTypes[199]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15916,7 +16555,7 @@ func (x *ListPrescriptionsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPrescriptionsResponse.ProtoReflect.Descriptor instead.
 func (*ListPrescriptionsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{196}
+	return file_manpasik_proto_rawDescGZIP(), []int{199}
 }
 
 func (x *ListPrescriptionsResponse) GetPrescriptions() []*Prescription {
@@ -15943,7 +16582,7 @@ type UpdatePrescriptionStatusRequest struct {
 
 func (x *UpdatePrescriptionStatusRequest) Reset() {
 	*x = UpdatePrescriptionStatusRequest{}
-	mi := &file_manpasik_proto_msgTypes[197]
+	mi := &file_manpasik_proto_msgTypes[200]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -15955,7 +16594,7 @@ func (x *UpdatePrescriptionStatusRequest) String() string {
 func (*UpdatePrescriptionStatusRequest) ProtoMessage() {}
 
 func (x *UpdatePrescriptionStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[197]
+	mi := &file_manpasik_proto_msgTypes[200]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -15968,7 +16607,7 @@ func (x *UpdatePrescriptionStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdatePrescriptionStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdatePrescriptionStatusRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{197}
+	return file_manpasik_proto_rawDescGZIP(), []int{200}
 }
 
 func (x *UpdatePrescriptionStatusRequest) GetPrescriptionId() string {
@@ -15995,7 +16634,7 @@ type AddMedicationRequest struct {
 
 func (x *AddMedicationRequest) Reset() {
 	*x = AddMedicationRequest{}
-	mi := &file_manpasik_proto_msgTypes[198]
+	mi := &file_manpasik_proto_msgTypes[201]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16007,7 +16646,7 @@ func (x *AddMedicationRequest) String() string {
 func (*AddMedicationRequest) ProtoMessage() {}
 
 func (x *AddMedicationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[198]
+	mi := &file_manpasik_proto_msgTypes[201]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16020,7 +16659,7 @@ func (x *AddMedicationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AddMedicationRequest.ProtoReflect.Descriptor instead.
 func (*AddMedicationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{198}
+	return file_manpasik_proto_rawDescGZIP(), []int{201}
 }
 
 func (x *AddMedicationRequest) GetPrescriptionId() string {
@@ -16047,7 +16686,7 @@ type RemoveMedicationRequest struct {
 
 func (x *RemoveMedicationRequest) Reset() {
 	*x = RemoveMedicationRequest{}
-	mi := &file_manpasik_proto_msgTypes[199]
+	mi := &file_manpasik_proto_msgTypes[202]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16059,7 +16698,7 @@ func (x *RemoveMedicationRequest) String() string {
 func (*RemoveMedicationRequest) ProtoMessage() {}
 
 func (x *RemoveMedicationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[199]
+	mi := &file_manpasik_proto_msgTypes[202]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16072,7 +16711,7 @@ func (x *RemoveMedicationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RemoveMedicationRequest.ProtoReflect.Descriptor instead.
 func (*RemoveMedicationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{199}
+	return file_manpasik_proto_rawDescGZIP(), []int{202}
 }
 
 func (x *RemoveMedicationRequest) GetPrescriptionId() string {
@@ -16109,7 +16748,7 @@ type Prescription struct {
 
 func (x *Prescription) Reset() {
 	*x = Prescription{}
-	mi := &file_manpasik_proto_msgTypes[200]
+	mi := &file_manpasik_proto_msgTypes[203]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16121,7 +16760,7 @@ func (x *Prescription) String() string {
 func (*Prescription) ProtoMessage() {}
 
 func (x *Prescription) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[200]
+	mi := &file_manpasik_proto_msgTypes[203]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16134,7 +16773,7 @@ func (x *Prescription) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Prescription.ProtoReflect.Descriptor instead.
 func (*Prescription) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{200}
+	return file_manpasik_proto_rawDescGZIP(), []int{203}
 }
 
 func (x *Prescription) GetPrescriptionId() string {
@@ -16237,7 +16876,7 @@ type Medication struct {
 
 func (x *Medication) Reset() {
 	*x = Medication{}
-	mi := &file_manpasik_proto_msgTypes[201]
+	mi := &file_manpasik_proto_msgTypes[204]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16249,7 +16888,7 @@ func (x *Medication) String() string {
 func (*Medication) ProtoMessage() {}
 
 func (x *Medication) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[201]
+	mi := &file_manpasik_proto_msgTypes[204]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16262,7 +16901,7 @@ func (x *Medication) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Medication.ProtoReflect.Descriptor instead.
 func (*Medication) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{201}
+	return file_manpasik_proto_rawDescGZIP(), []int{204}
 }
 
 func (x *Medication) GetMedicationId() string {
@@ -16331,7 +16970,7 @@ type CheckDrugInteractionRequest struct {
 
 func (x *CheckDrugInteractionRequest) Reset() {
 	*x = CheckDrugInteractionRequest{}
-	mi := &file_manpasik_proto_msgTypes[202]
+	mi := &file_manpasik_proto_msgTypes[205]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16343,7 +16982,7 @@ func (x *CheckDrugInteractionRequest) String() string {
 func (*CheckDrugInteractionRequest) ProtoMessage() {}
 
 func (x *CheckDrugInteractionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[202]
+	mi := &file_manpasik_proto_msgTypes[205]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16356,7 +16995,7 @@ func (x *CheckDrugInteractionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckDrugInteractionRequest.ProtoReflect.Descriptor instead.
 func (*CheckDrugInteractionRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{202}
+	return file_manpasik_proto_rawDescGZIP(), []int{205}
 }
 
 func (x *CheckDrugInteractionRequest) GetMedicationNames() []string {
@@ -16383,7 +17022,7 @@ type CheckDrugInteractionResponse struct {
 
 func (x *CheckDrugInteractionResponse) Reset() {
 	*x = CheckDrugInteractionResponse{}
-	mi := &file_manpasik_proto_msgTypes[203]
+	mi := &file_manpasik_proto_msgTypes[206]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16395,7 +17034,7 @@ func (x *CheckDrugInteractionResponse) String() string {
 func (*CheckDrugInteractionResponse) ProtoMessage() {}
 
 func (x *CheckDrugInteractionResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[203]
+	mi := &file_manpasik_proto_msgTypes[206]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16408,7 +17047,7 @@ func (x *CheckDrugInteractionResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckDrugInteractionResponse.ProtoReflect.Descriptor instead.
 func (*CheckDrugInteractionResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{203}
+	return file_manpasik_proto_rawDescGZIP(), []int{206}
 }
 
 func (x *CheckDrugInteractionResponse) GetInteractions() []*DrugInteraction {
@@ -16438,7 +17077,7 @@ type DrugInteraction struct {
 
 func (x *DrugInteraction) Reset() {
 	*x = DrugInteraction{}
-	mi := &file_manpasik_proto_msgTypes[204]
+	mi := &file_manpasik_proto_msgTypes[207]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16450,7 +17089,7 @@ func (x *DrugInteraction) String() string {
 func (*DrugInteraction) ProtoMessage() {}
 
 func (x *DrugInteraction) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[204]
+	mi := &file_manpasik_proto_msgTypes[207]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16463,7 +17102,7 @@ func (x *DrugInteraction) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DrugInteraction.ProtoReflect.Descriptor instead.
 func (*DrugInteraction) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{204}
+	return file_manpasik_proto_rawDescGZIP(), []int{207}
 }
 
 func (x *DrugInteraction) GetDrugA() string {
@@ -16511,7 +17150,7 @@ type GetMedicationRemindersRequest struct {
 
 func (x *GetMedicationRemindersRequest) Reset() {
 	*x = GetMedicationRemindersRequest{}
-	mi := &file_manpasik_proto_msgTypes[205]
+	mi := &file_manpasik_proto_msgTypes[208]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16523,7 +17162,7 @@ func (x *GetMedicationRemindersRequest) String() string {
 func (*GetMedicationRemindersRequest) ProtoMessage() {}
 
 func (x *GetMedicationRemindersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[205]
+	mi := &file_manpasik_proto_msgTypes[208]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16536,7 +17175,7 @@ func (x *GetMedicationRemindersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMedicationRemindersRequest.ProtoReflect.Descriptor instead.
 func (*GetMedicationRemindersRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{205}
+	return file_manpasik_proto_rawDescGZIP(), []int{208}
 }
 
 func (x *GetMedicationRemindersRequest) GetUserId() string {
@@ -16562,7 +17201,7 @@ type GetMedicationRemindersResponse struct {
 
 func (x *GetMedicationRemindersResponse) Reset() {
 	*x = GetMedicationRemindersResponse{}
-	mi := &file_manpasik_proto_msgTypes[206]
+	mi := &file_manpasik_proto_msgTypes[209]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16574,7 +17213,7 @@ func (x *GetMedicationRemindersResponse) String() string {
 func (*GetMedicationRemindersResponse) ProtoMessage() {}
 
 func (x *GetMedicationRemindersResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[206]
+	mi := &file_manpasik_proto_msgTypes[209]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16587,7 +17226,7 @@ func (x *GetMedicationRemindersResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetMedicationRemindersResponse.ProtoReflect.Descriptor instead.
 func (*GetMedicationRemindersResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{206}
+	return file_manpasik_proto_rawDescGZIP(), []int{209}
 }
 
 func (x *GetMedicationRemindersResponse) GetReminders() []*MedicationReminder {
@@ -16612,7 +17251,7 @@ type MedicationReminder struct {
 
 func (x *MedicationReminder) Reset() {
 	*x = MedicationReminder{}
-	mi := &file_manpasik_proto_msgTypes[207]
+	mi := &file_manpasik_proto_msgTypes[210]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16624,7 +17263,7 @@ func (x *MedicationReminder) String() string {
 func (*MedicationReminder) ProtoMessage() {}
 
 func (x *MedicationReminder) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[207]
+	mi := &file_manpasik_proto_msgTypes[210]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16637,7 +17276,7 @@ func (x *MedicationReminder) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MedicationReminder.ProtoReflect.Descriptor instead.
 func (*MedicationReminder) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{207}
+	return file_manpasik_proto_rawDescGZIP(), []int{210}
 }
 
 func (x *MedicationReminder) GetReminderId() string {
@@ -16702,7 +17341,7 @@ type CreatePostRequest struct {
 
 func (x *CreatePostRequest) Reset() {
 	*x = CreatePostRequest{}
-	mi := &file_manpasik_proto_msgTypes[208]
+	mi := &file_manpasik_proto_msgTypes[211]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16714,7 +17353,7 @@ func (x *CreatePostRequest) String() string {
 func (*CreatePostRequest) ProtoMessage() {}
 
 func (x *CreatePostRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[208]
+	mi := &file_manpasik_proto_msgTypes[211]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16727,7 +17366,7 @@ func (x *CreatePostRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreatePostRequest.ProtoReflect.Descriptor instead.
 func (*CreatePostRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{208}
+	return file_manpasik_proto_rawDescGZIP(), []int{211}
 }
 
 func (x *CreatePostRequest) GetAuthorId() string {
@@ -16774,7 +17413,7 @@ type GetPostRequest struct {
 
 func (x *GetPostRequest) Reset() {
 	*x = GetPostRequest{}
-	mi := &file_manpasik_proto_msgTypes[209]
+	mi := &file_manpasik_proto_msgTypes[212]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16786,7 +17425,7 @@ func (x *GetPostRequest) String() string {
 func (*GetPostRequest) ProtoMessage() {}
 
 func (x *GetPostRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[209]
+	mi := &file_manpasik_proto_msgTypes[212]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16799,7 +17438,7 @@ func (x *GetPostRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetPostRequest.ProtoReflect.Descriptor instead.
 func (*GetPostRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{209}
+	return file_manpasik_proto_rawDescGZIP(), []int{212}
 }
 
 func (x *GetPostRequest) GetPostId() string {
@@ -16822,7 +17461,7 @@ type ListPostsRequest struct {
 
 func (x *ListPostsRequest) Reset() {
 	*x = ListPostsRequest{}
-	mi := &file_manpasik_proto_msgTypes[210]
+	mi := &file_manpasik_proto_msgTypes[213]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16834,7 +17473,7 @@ func (x *ListPostsRequest) String() string {
 func (*ListPostsRequest) ProtoMessage() {}
 
 func (x *ListPostsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[210]
+	mi := &file_manpasik_proto_msgTypes[213]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16847,7 +17486,7 @@ func (x *ListPostsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPostsRequest.ProtoReflect.Descriptor instead.
 func (*ListPostsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{210}
+	return file_manpasik_proto_rawDescGZIP(), []int{213}
 }
 
 func (x *ListPostsRequest) GetCategory() PostCategory {
@@ -16895,7 +17534,7 @@ type ListPostsResponse struct {
 
 func (x *ListPostsResponse) Reset() {
 	*x = ListPostsResponse{}
-	mi := &file_manpasik_proto_msgTypes[211]
+	mi := &file_manpasik_proto_msgTypes[214]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16907,7 +17546,7 @@ func (x *ListPostsResponse) String() string {
 func (*ListPostsResponse) ProtoMessage() {}
 
 func (x *ListPostsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[211]
+	mi := &file_manpasik_proto_msgTypes[214]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16920,7 +17559,7 @@ func (x *ListPostsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListPostsResponse.ProtoReflect.Descriptor instead.
 func (*ListPostsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{211}
+	return file_manpasik_proto_rawDescGZIP(), []int{214}
 }
 
 func (x *ListPostsResponse) GetPosts() []*Post {
@@ -16957,7 +17596,7 @@ type Post struct {
 
 func (x *Post) Reset() {
 	*x = Post{}
-	mi := &file_manpasik_proto_msgTypes[212]
+	mi := &file_manpasik_proto_msgTypes[215]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -16969,7 +17608,7 @@ func (x *Post) String() string {
 func (*Post) ProtoMessage() {}
 
 func (x *Post) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[212]
+	mi := &file_manpasik_proto_msgTypes[215]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -16982,7 +17621,7 @@ func (x *Post) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Post.ProtoReflect.Descriptor instead.
 func (*Post) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{212}
+	return file_manpasik_proto_rawDescGZIP(), []int{215}
 }
 
 func (x *Post) GetPostId() string {
@@ -17079,7 +17718,7 @@ type LikePostRequest struct {
 
 func (x *LikePostRequest) Reset() {
 	*x = LikePostRequest{}
-	mi := &file_manpasik_proto_msgTypes[213]
+	mi := &file_manpasik_proto_msgTypes[216]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17091,7 +17730,7 @@ func (x *LikePostRequest) String() string {
 func (*LikePostRequest) ProtoMessage() {}
 
 func (x *LikePostRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[213]
+	mi := &file_manpasik_proto_msgTypes[216]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17104,7 +17743,7 @@ func (x *LikePostRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LikePostRequest.ProtoReflect.Descriptor instead.
 func (*LikePostRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{213}
+	return file_manpasik_proto_rawDescGZIP(), []int{216}
 }
 
 func (x *LikePostRequest) GetPostId() string {
@@ -17132,7 +17771,7 @@ type LikePostResponse struct {
 
 func (x *LikePostResponse) Reset() {
 	*x = LikePostResponse{}
-	mi := &file_manpasik_proto_msgTypes[214]
+	mi := &file_manpasik_proto_msgTypes[217]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17144,7 +17783,7 @@ func (x *LikePostResponse) String() string {
 func (*LikePostResponse) ProtoMessage() {}
 
 func (x *LikePostResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[214]
+	mi := &file_manpasik_proto_msgTypes[217]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17157,7 +17796,7 @@ func (x *LikePostResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LikePostResponse.ProtoReflect.Descriptor instead.
 func (*LikePostResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{214}
+	return file_manpasik_proto_rawDescGZIP(), []int{217}
 }
 
 func (x *LikePostResponse) GetSuccess() bool {
@@ -17193,7 +17832,7 @@ type CreateCommentRequest struct {
 
 func (x *CreateCommentRequest) Reset() {
 	*x = CreateCommentRequest{}
-	mi := &file_manpasik_proto_msgTypes[215]
+	mi := &file_manpasik_proto_msgTypes[218]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17205,7 +17844,7 @@ func (x *CreateCommentRequest) String() string {
 func (*CreateCommentRequest) ProtoMessage() {}
 
 func (x *CreateCommentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[215]
+	mi := &file_manpasik_proto_msgTypes[218]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17218,7 +17857,7 @@ func (x *CreateCommentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateCommentRequest.ProtoReflect.Descriptor instead.
 func (*CreateCommentRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{215}
+	return file_manpasik_proto_rawDescGZIP(), []int{218}
 }
 
 func (x *CreateCommentRequest) GetPostId() string {
@@ -17260,7 +17899,7 @@ type ListCommentsRequest struct {
 
 func (x *ListCommentsRequest) Reset() {
 	*x = ListCommentsRequest{}
-	mi := &file_manpasik_proto_msgTypes[216]
+	mi := &file_manpasik_proto_msgTypes[219]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17272,7 +17911,7 @@ func (x *ListCommentsRequest) String() string {
 func (*ListCommentsRequest) ProtoMessage() {}
 
 func (x *ListCommentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[216]
+	mi := &file_manpasik_proto_msgTypes[219]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17285,7 +17924,7 @@ func (x *ListCommentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCommentsRequest.ProtoReflect.Descriptor instead.
 func (*ListCommentsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{216}
+	return file_manpasik_proto_rawDescGZIP(), []int{219}
 }
 
 func (x *ListCommentsRequest) GetPostId() string {
@@ -17319,7 +17958,7 @@ type ListCommentsResponse struct {
 
 func (x *ListCommentsResponse) Reset() {
 	*x = ListCommentsResponse{}
-	mi := &file_manpasik_proto_msgTypes[217]
+	mi := &file_manpasik_proto_msgTypes[220]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17331,7 +17970,7 @@ func (x *ListCommentsResponse) String() string {
 func (*ListCommentsResponse) ProtoMessage() {}
 
 func (x *ListCommentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[217]
+	mi := &file_manpasik_proto_msgTypes[220]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17344,7 +17983,7 @@ func (x *ListCommentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListCommentsResponse.ProtoReflect.Descriptor instead.
 func (*ListCommentsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{217}
+	return file_manpasik_proto_rawDescGZIP(), []int{220}
 }
 
 func (x *ListCommentsResponse) GetComments() []*Comment {
@@ -17377,7 +18016,7 @@ type Comment struct {
 
 func (x *Comment) Reset() {
 	*x = Comment{}
-	mi := &file_manpasik_proto_msgTypes[218]
+	mi := &file_manpasik_proto_msgTypes[221]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17389,7 +18028,7 @@ func (x *Comment) String() string {
 func (*Comment) ProtoMessage() {}
 
 func (x *Comment) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[218]
+	mi := &file_manpasik_proto_msgTypes[221]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17402,7 +18041,7 @@ func (x *Comment) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Comment.ProtoReflect.Descriptor instead.
 func (*Comment) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{218}
+	return file_manpasik_proto_rawDescGZIP(), []int{221}
 }
 
 func (x *Comment) GetCommentId() string {
@@ -17478,7 +18117,7 @@ type CreateChallengeRequest struct {
 
 func (x *CreateChallengeRequest) Reset() {
 	*x = CreateChallengeRequest{}
-	mi := &file_manpasik_proto_msgTypes[219]
+	mi := &file_manpasik_proto_msgTypes[222]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17490,7 +18129,7 @@ func (x *CreateChallengeRequest) String() string {
 func (*CreateChallengeRequest) ProtoMessage() {}
 
 func (x *CreateChallengeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[219]
+	mi := &file_manpasik_proto_msgTypes[222]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17503,7 +18142,7 @@ func (x *CreateChallengeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateChallengeRequest.ProtoReflect.Descriptor instead.
 func (*CreateChallengeRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{219}
+	return file_manpasik_proto_rawDescGZIP(), []int{222}
 }
 
 func (x *CreateChallengeRequest) GetCreatorId() string {
@@ -17578,7 +18217,7 @@ type GetChallengeRequest struct {
 
 func (x *GetChallengeRequest) Reset() {
 	*x = GetChallengeRequest{}
-	mi := &file_manpasik_proto_msgTypes[220]
+	mi := &file_manpasik_proto_msgTypes[223]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17590,7 +18229,7 @@ func (x *GetChallengeRequest) String() string {
 func (*GetChallengeRequest) ProtoMessage() {}
 
 func (x *GetChallengeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[220]
+	mi := &file_manpasik_proto_msgTypes[223]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17603,7 +18242,7 @@ func (x *GetChallengeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetChallengeRequest.ProtoReflect.Descriptor instead.
 func (*GetChallengeRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{220}
+	return file_manpasik_proto_rawDescGZIP(), []int{223}
 }
 
 func (x *GetChallengeRequest) GetChallengeId() string {
@@ -17634,7 +18273,7 @@ type Challenge struct {
 
 func (x *Challenge) Reset() {
 	*x = Challenge{}
-	mi := &file_manpasik_proto_msgTypes[221]
+	mi := &file_manpasik_proto_msgTypes[224]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17646,7 +18285,7 @@ func (x *Challenge) String() string {
 func (*Challenge) ProtoMessage() {}
 
 func (x *Challenge) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[221]
+	mi := &file_manpasik_proto_msgTypes[224]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17659,7 +18298,7 @@ func (x *Challenge) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Challenge.ProtoReflect.Descriptor instead.
 func (*Challenge) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{221}
+	return file_manpasik_proto_rawDescGZIP(), []int{224}
 }
 
 func (x *Challenge) GetChallengeId() string {
@@ -17763,7 +18402,7 @@ type JoinChallengeRequest struct {
 
 func (x *JoinChallengeRequest) Reset() {
 	*x = JoinChallengeRequest{}
-	mi := &file_manpasik_proto_msgTypes[222]
+	mi := &file_manpasik_proto_msgTypes[225]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17775,7 +18414,7 @@ func (x *JoinChallengeRequest) String() string {
 func (*JoinChallengeRequest) ProtoMessage() {}
 
 func (x *JoinChallengeRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[222]
+	mi := &file_manpasik_proto_msgTypes[225]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17788,7 +18427,7 @@ func (x *JoinChallengeRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JoinChallengeRequest.ProtoReflect.Descriptor instead.
 func (*JoinChallengeRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{222}
+	return file_manpasik_proto_rawDescGZIP(), []int{225}
 }
 
 func (x *JoinChallengeRequest) GetChallengeId() string {
@@ -17816,7 +18455,7 @@ type JoinChallengeResponse struct {
 
 func (x *JoinChallengeResponse) Reset() {
 	*x = JoinChallengeResponse{}
-	mi := &file_manpasik_proto_msgTypes[223]
+	mi := &file_manpasik_proto_msgTypes[226]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17828,7 +18467,7 @@ func (x *JoinChallengeResponse) String() string {
 func (*JoinChallengeResponse) ProtoMessage() {}
 
 func (x *JoinChallengeResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[223]
+	mi := &file_manpasik_proto_msgTypes[226]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17841,7 +18480,7 @@ func (x *JoinChallengeResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JoinChallengeResponse.ProtoReflect.Descriptor instead.
 func (*JoinChallengeResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{223}
+	return file_manpasik_proto_rawDescGZIP(), []int{226}
 }
 
 func (x *JoinChallengeResponse) GetSuccess() bool {
@@ -17877,7 +18516,7 @@ type ListChallengesRequest struct {
 
 func (x *ListChallengesRequest) Reset() {
 	*x = ListChallengesRequest{}
-	mi := &file_manpasik_proto_msgTypes[224]
+	mi := &file_manpasik_proto_msgTypes[227]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17889,7 +18528,7 @@ func (x *ListChallengesRequest) String() string {
 func (*ListChallengesRequest) ProtoMessage() {}
 
 func (x *ListChallengesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[224]
+	mi := &file_manpasik_proto_msgTypes[227]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17902,7 +18541,7 @@ func (x *ListChallengesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListChallengesRequest.ProtoReflect.Descriptor instead.
 func (*ListChallengesRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{224}
+	return file_manpasik_proto_rawDescGZIP(), []int{227}
 }
 
 func (x *ListChallengesRequest) GetTypeFilter() ChallengeType {
@@ -17943,7 +18582,7 @@ type ListChallengesResponse struct {
 
 func (x *ListChallengesResponse) Reset() {
 	*x = ListChallengesResponse{}
-	mi := &file_manpasik_proto_msgTypes[225]
+	mi := &file_manpasik_proto_msgTypes[228]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -17955,7 +18594,7 @@ func (x *ListChallengesResponse) String() string {
 func (*ListChallengesResponse) ProtoMessage() {}
 
 func (x *ListChallengesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[225]
+	mi := &file_manpasik_proto_msgTypes[228]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -17968,7 +18607,7 @@ func (x *ListChallengesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListChallengesResponse.ProtoReflect.Descriptor instead.
 func (*ListChallengesResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{225}
+	return file_manpasik_proto_rawDescGZIP(), []int{228}
 }
 
 func (x *ListChallengesResponse) GetChallenges() []*Challenge {
@@ -17999,7 +18638,7 @@ type CreateRoomRequest struct {
 
 func (x *CreateRoomRequest) Reset() {
 	*x = CreateRoomRequest{}
-	mi := &file_manpasik_proto_msgTypes[226]
+	mi := &file_manpasik_proto_msgTypes[229]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18011,7 +18650,7 @@ func (x *CreateRoomRequest) String() string {
 func (*CreateRoomRequest) ProtoMessage() {}
 
 func (x *CreateRoomRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[226]
+	mi := &file_manpasik_proto_msgTypes[229]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18024,7 +18663,7 @@ func (x *CreateRoomRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateRoomRequest.ProtoReflect.Descriptor instead.
 func (*CreateRoomRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{226}
+	return file_manpasik_proto_rawDescGZIP(), []int{229}
 }
 
 func (x *CreateRoomRequest) GetHostUserId() string {
@@ -18078,7 +18717,7 @@ type GetRoomRequest struct {
 
 func (x *GetRoomRequest) Reset() {
 	*x = GetRoomRequest{}
-	mi := &file_manpasik_proto_msgTypes[227]
+	mi := &file_manpasik_proto_msgTypes[230]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18090,7 +18729,7 @@ func (x *GetRoomRequest) String() string {
 func (*GetRoomRequest) ProtoMessage() {}
 
 func (x *GetRoomRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[227]
+	mi := &file_manpasik_proto_msgTypes[230]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18103,7 +18742,7 @@ func (x *GetRoomRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRoomRequest.ProtoReflect.Descriptor instead.
 func (*GetRoomRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{227}
+	return file_manpasik_proto_rawDescGZIP(), []int{230}
 }
 
 func (x *GetRoomRequest) GetRoomId() string {
@@ -18132,7 +18771,7 @@ type Room struct {
 
 func (x *Room) Reset() {
 	*x = Room{}
-	mi := &file_manpasik_proto_msgTypes[228]
+	mi := &file_manpasik_proto_msgTypes[231]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18144,7 +18783,7 @@ func (x *Room) String() string {
 func (*Room) ProtoMessage() {}
 
 func (x *Room) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[228]
+	mi := &file_manpasik_proto_msgTypes[231]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18157,7 +18796,7 @@ func (x *Room) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Room.ProtoReflect.Descriptor instead.
 func (*Room) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{228}
+	return file_manpasik_proto_rawDescGZIP(), []int{231}
 }
 
 func (x *Room) GetRoomId() string {
@@ -18247,7 +18886,7 @@ type JoinRoomRequest struct {
 
 func (x *JoinRoomRequest) Reset() {
 	*x = JoinRoomRequest{}
-	mi := &file_manpasik_proto_msgTypes[229]
+	mi := &file_manpasik_proto_msgTypes[232]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18259,7 +18898,7 @@ func (x *JoinRoomRequest) String() string {
 func (*JoinRoomRequest) ProtoMessage() {}
 
 func (x *JoinRoomRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[229]
+	mi := &file_manpasik_proto_msgTypes[232]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18272,7 +18911,7 @@ func (x *JoinRoomRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JoinRoomRequest.ProtoReflect.Descriptor instead.
 func (*JoinRoomRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{229}
+	return file_manpasik_proto_rawDescGZIP(), []int{232}
 }
 
 func (x *JoinRoomRequest) GetRoomId() string {
@@ -18301,7 +18940,7 @@ type JoinRoomResponse struct {
 
 func (x *JoinRoomResponse) Reset() {
 	*x = JoinRoomResponse{}
-	mi := &file_manpasik_proto_msgTypes[230]
+	mi := &file_manpasik_proto_msgTypes[233]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18313,7 +18952,7 @@ func (x *JoinRoomResponse) String() string {
 func (*JoinRoomResponse) ProtoMessage() {}
 
 func (x *JoinRoomResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[230]
+	mi := &file_manpasik_proto_msgTypes[233]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18326,7 +18965,7 @@ func (x *JoinRoomResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use JoinRoomResponse.ProtoReflect.Descriptor instead.
 func (*JoinRoomResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{230}
+	return file_manpasik_proto_rawDescGZIP(), []int{233}
 }
 
 func (x *JoinRoomResponse) GetSuccess() bool {
@@ -18367,7 +19006,7 @@ type LeaveRoomRequest struct {
 
 func (x *LeaveRoomRequest) Reset() {
 	*x = LeaveRoomRequest{}
-	mi := &file_manpasik_proto_msgTypes[231]
+	mi := &file_manpasik_proto_msgTypes[234]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18379,7 +19018,7 @@ func (x *LeaveRoomRequest) String() string {
 func (*LeaveRoomRequest) ProtoMessage() {}
 
 func (x *LeaveRoomRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[231]
+	mi := &file_manpasik_proto_msgTypes[234]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18392,7 +19031,7 @@ func (x *LeaveRoomRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveRoomRequest.ProtoReflect.Descriptor instead.
 func (*LeaveRoomRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{231}
+	return file_manpasik_proto_rawDescGZIP(), []int{234}
 }
 
 func (x *LeaveRoomRequest) GetRoomId() string {
@@ -18419,7 +19058,7 @@ type LeaveRoomResponse struct {
 
 func (x *LeaveRoomResponse) Reset() {
 	*x = LeaveRoomResponse{}
-	mi := &file_manpasik_proto_msgTypes[232]
+	mi := &file_manpasik_proto_msgTypes[235]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18431,7 +19070,7 @@ func (x *LeaveRoomResponse) String() string {
 func (*LeaveRoomResponse) ProtoMessage() {}
 
 func (x *LeaveRoomResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[232]
+	mi := &file_manpasik_proto_msgTypes[235]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18444,7 +19083,7 @@ func (x *LeaveRoomResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LeaveRoomResponse.ProtoReflect.Descriptor instead.
 func (*LeaveRoomResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{232}
+	return file_manpasik_proto_rawDescGZIP(), []int{235}
 }
 
 func (x *LeaveRoomResponse) GetSuccess() bool {
@@ -18471,7 +19110,7 @@ type EndRoomRequest struct {
 
 func (x *EndRoomRequest) Reset() {
 	*x = EndRoomRequest{}
-	mi := &file_manpasik_proto_msgTypes[233]
+	mi := &file_manpasik_proto_msgTypes[236]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18483,7 +19122,7 @@ func (x *EndRoomRequest) String() string {
 func (*EndRoomRequest) ProtoMessage() {}
 
 func (x *EndRoomRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[233]
+	mi := &file_manpasik_proto_msgTypes[236]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18496,7 +19135,7 @@ func (x *EndRoomRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndRoomRequest.ProtoReflect.Descriptor instead.
 func (*EndRoomRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{233}
+	return file_manpasik_proto_rawDescGZIP(), []int{236}
 }
 
 func (x *EndRoomRequest) GetRoomId() string {
@@ -18527,7 +19166,7 @@ type Participant struct {
 
 func (x *Participant) Reset() {
 	*x = Participant{}
-	mi := &file_manpasik_proto_msgTypes[234]
+	mi := &file_manpasik_proto_msgTypes[237]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18539,7 +19178,7 @@ func (x *Participant) String() string {
 func (*Participant) ProtoMessage() {}
 
 func (x *Participant) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[234]
+	mi := &file_manpasik_proto_msgTypes[237]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18552,7 +19191,7 @@ func (x *Participant) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Participant.ProtoReflect.Descriptor instead.
 func (*Participant) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{234}
+	return file_manpasik_proto_rawDescGZIP(), []int{237}
 }
 
 func (x *Participant) GetUserId() string {
@@ -18610,7 +19249,7 @@ type SendSignalRequest struct {
 
 func (x *SendSignalRequest) Reset() {
 	*x = SendSignalRequest{}
-	mi := &file_manpasik_proto_msgTypes[235]
+	mi := &file_manpasik_proto_msgTypes[238]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18622,7 +19261,7 @@ func (x *SendSignalRequest) String() string {
 func (*SendSignalRequest) ProtoMessage() {}
 
 func (x *SendSignalRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[235]
+	mi := &file_manpasik_proto_msgTypes[238]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18635,7 +19274,7 @@ func (x *SendSignalRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendSignalRequest.ProtoReflect.Descriptor instead.
 func (*SendSignalRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{235}
+	return file_manpasik_proto_rawDescGZIP(), []int{238}
 }
 
 func (x *SendSignalRequest) GetRoomId() string {
@@ -18682,7 +19321,7 @@ type SendSignalResponse struct {
 
 func (x *SendSignalResponse) Reset() {
 	*x = SendSignalResponse{}
-	mi := &file_manpasik_proto_msgTypes[236]
+	mi := &file_manpasik_proto_msgTypes[239]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18694,7 +19333,7 @@ func (x *SendSignalResponse) String() string {
 func (*SendSignalResponse) ProtoMessage() {}
 
 func (x *SendSignalResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[236]
+	mi := &file_manpasik_proto_msgTypes[239]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18707,7 +19346,7 @@ func (x *SendSignalResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendSignalResponse.ProtoReflect.Descriptor instead.
 func (*SendSignalResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{236}
+	return file_manpasik_proto_rawDescGZIP(), []int{239}
 }
 
 func (x *SendSignalResponse) GetSuccess() bool {
@@ -18726,7 +19365,7 @@ type ListParticipantsRequest struct {
 
 func (x *ListParticipantsRequest) Reset() {
 	*x = ListParticipantsRequest{}
-	mi := &file_manpasik_proto_msgTypes[237]
+	mi := &file_manpasik_proto_msgTypes[240]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18738,7 +19377,7 @@ func (x *ListParticipantsRequest) String() string {
 func (*ListParticipantsRequest) ProtoMessage() {}
 
 func (x *ListParticipantsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[237]
+	mi := &file_manpasik_proto_msgTypes[240]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18751,7 +19390,7 @@ func (x *ListParticipantsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListParticipantsRequest.ProtoReflect.Descriptor instead.
 func (*ListParticipantsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{237}
+	return file_manpasik_proto_rawDescGZIP(), []int{240}
 }
 
 func (x *ListParticipantsRequest) GetRoomId() string {
@@ -18770,7 +19409,7 @@ type ListParticipantsResponse struct {
 
 func (x *ListParticipantsResponse) Reset() {
 	*x = ListParticipantsResponse{}
-	mi := &file_manpasik_proto_msgTypes[238]
+	mi := &file_manpasik_proto_msgTypes[241]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18782,7 +19421,7 @@ func (x *ListParticipantsResponse) String() string {
 func (*ListParticipantsResponse) ProtoMessage() {}
 
 func (x *ListParticipantsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[238]
+	mi := &file_manpasik_proto_msgTypes[241]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18795,7 +19434,7 @@ func (x *ListParticipantsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListParticipantsResponse.ProtoReflect.Descriptor instead.
 func (*ListParticipantsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{238}
+	return file_manpasik_proto_rawDescGZIP(), []int{241}
 }
 
 func (x *ListParticipantsResponse) GetParticipants() []*Participant {
@@ -18814,7 +19453,7 @@ type GetRoomStatsRequest struct {
 
 func (x *GetRoomStatsRequest) Reset() {
 	*x = GetRoomStatsRequest{}
-	mi := &file_manpasik_proto_msgTypes[239]
+	mi := &file_manpasik_proto_msgTypes[242]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18826,7 +19465,7 @@ func (x *GetRoomStatsRequest) String() string {
 func (*GetRoomStatsRequest) ProtoMessage() {}
 
 func (x *GetRoomStatsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[239]
+	mi := &file_manpasik_proto_msgTypes[242]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18839,7 +19478,7 @@ func (x *GetRoomStatsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRoomStatsRequest.ProtoReflect.Descriptor instead.
 func (*GetRoomStatsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{239}
+	return file_manpasik_proto_rawDescGZIP(), []int{242}
 }
 
 func (x *GetRoomStatsRequest) GetRoomId() string {
@@ -18863,7 +19502,7 @@ type GetRoomStatsResponse struct {
 
 func (x *GetRoomStatsResponse) Reset() {
 	*x = GetRoomStatsResponse{}
-	mi := &file_manpasik_proto_msgTypes[240]
+	mi := &file_manpasik_proto_msgTypes[243]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18875,7 +19514,7 @@ func (x *GetRoomStatsResponse) String() string {
 func (*GetRoomStatsResponse) ProtoMessage() {}
 
 func (x *GetRoomStatsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[240]
+	mi := &file_manpasik_proto_msgTypes[243]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18888,7 +19527,7 @@ func (x *GetRoomStatsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRoomStatsResponse.ProtoReflect.Descriptor instead.
 func (*GetRoomStatsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{240}
+	return file_manpasik_proto_rawDescGZIP(), []int{243}
 }
 
 func (x *GetRoomStatsResponse) GetRoomId() string {
@@ -18949,7 +19588,7 @@ type SendNotificationRequest struct {
 
 func (x *SendNotificationRequest) Reset() {
 	*x = SendNotificationRequest{}
-	mi := &file_manpasik_proto_msgTypes[241]
+	mi := &file_manpasik_proto_msgTypes[244]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -18961,7 +19600,7 @@ func (x *SendNotificationRequest) String() string {
 func (*SendNotificationRequest) ProtoMessage() {}
 
 func (x *SendNotificationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[241]
+	mi := &file_manpasik_proto_msgTypes[244]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -18974,7 +19613,7 @@ func (x *SendNotificationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendNotificationRequest.ProtoReflect.Descriptor instead.
 func (*SendNotificationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{241}
+	return file_manpasik_proto_rawDescGZIP(), []int{244}
 }
 
 func (x *SendNotificationRequest) GetUserId() string {
@@ -19053,7 +19692,7 @@ type Notification struct {
 
 func (x *Notification) Reset() {
 	*x = Notification{}
-	mi := &file_manpasik_proto_msgTypes[242]
+	mi := &file_manpasik_proto_msgTypes[245]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19065,7 +19704,7 @@ func (x *Notification) String() string {
 func (*Notification) ProtoMessage() {}
 
 func (x *Notification) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[242]
+	mi := &file_manpasik_proto_msgTypes[245]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19078,7 +19717,7 @@ func (x *Notification) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Notification.ProtoReflect.Descriptor instead.
 func (*Notification) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{242}
+	return file_manpasik_proto_rawDescGZIP(), []int{245}
 }
 
 func (x *Notification) GetNotificationId() string {
@@ -19178,7 +19817,7 @@ type ListNotificationsRequest struct {
 
 func (x *ListNotificationsRequest) Reset() {
 	*x = ListNotificationsRequest{}
-	mi := &file_manpasik_proto_msgTypes[243]
+	mi := &file_manpasik_proto_msgTypes[246]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19190,7 +19829,7 @@ func (x *ListNotificationsRequest) String() string {
 func (*ListNotificationsRequest) ProtoMessage() {}
 
 func (x *ListNotificationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[243]
+	mi := &file_manpasik_proto_msgTypes[246]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19203,7 +19842,7 @@ func (x *ListNotificationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNotificationsRequest.ProtoReflect.Descriptor instead.
 func (*ListNotificationsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{243}
+	return file_manpasik_proto_rawDescGZIP(), []int{246}
 }
 
 func (x *ListNotificationsRequest) GetUserId() string {
@@ -19251,7 +19890,7 @@ type ListNotificationsResponse struct {
 
 func (x *ListNotificationsResponse) Reset() {
 	*x = ListNotificationsResponse{}
-	mi := &file_manpasik_proto_msgTypes[244]
+	mi := &file_manpasik_proto_msgTypes[247]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19263,7 +19902,7 @@ func (x *ListNotificationsResponse) String() string {
 func (*ListNotificationsResponse) ProtoMessage() {}
 
 func (x *ListNotificationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[244]
+	mi := &file_manpasik_proto_msgTypes[247]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19276,7 +19915,7 @@ func (x *ListNotificationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListNotificationsResponse.ProtoReflect.Descriptor instead.
 func (*ListNotificationsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{244}
+	return file_manpasik_proto_rawDescGZIP(), []int{247}
 }
 
 func (x *ListNotificationsResponse) GetNotifications() []*Notification {
@@ -19302,7 +19941,7 @@ type MarkAsReadRequest struct {
 
 func (x *MarkAsReadRequest) Reset() {
 	*x = MarkAsReadRequest{}
-	mi := &file_manpasik_proto_msgTypes[245]
+	mi := &file_manpasik_proto_msgTypes[248]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19314,7 +19953,7 @@ func (x *MarkAsReadRequest) String() string {
 func (*MarkAsReadRequest) ProtoMessage() {}
 
 func (x *MarkAsReadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[245]
+	mi := &file_manpasik_proto_msgTypes[248]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19327,7 +19966,7 @@ func (x *MarkAsReadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarkAsReadRequest.ProtoReflect.Descriptor instead.
 func (*MarkAsReadRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{245}
+	return file_manpasik_proto_rawDescGZIP(), []int{248}
 }
 
 func (x *MarkAsReadRequest) GetNotificationId() string {
@@ -19346,7 +19985,7 @@ type MarkAsReadResponse struct {
 
 func (x *MarkAsReadResponse) Reset() {
 	*x = MarkAsReadResponse{}
-	mi := &file_manpasik_proto_msgTypes[246]
+	mi := &file_manpasik_proto_msgTypes[249]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19358,7 +19997,7 @@ func (x *MarkAsReadResponse) String() string {
 func (*MarkAsReadResponse) ProtoMessage() {}
 
 func (x *MarkAsReadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[246]
+	mi := &file_manpasik_proto_msgTypes[249]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19371,7 +20010,7 @@ func (x *MarkAsReadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarkAsReadResponse.ProtoReflect.Descriptor instead.
 func (*MarkAsReadResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{246}
+	return file_manpasik_proto_rawDescGZIP(), []int{249}
 }
 
 func (x *MarkAsReadResponse) GetSuccess() bool {
@@ -19390,7 +20029,7 @@ type MarkAllAsReadRequest struct {
 
 func (x *MarkAllAsReadRequest) Reset() {
 	*x = MarkAllAsReadRequest{}
-	mi := &file_manpasik_proto_msgTypes[247]
+	mi := &file_manpasik_proto_msgTypes[250]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19402,7 +20041,7 @@ func (x *MarkAllAsReadRequest) String() string {
 func (*MarkAllAsReadRequest) ProtoMessage() {}
 
 func (x *MarkAllAsReadRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[247]
+	mi := &file_manpasik_proto_msgTypes[250]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19415,7 +20054,7 @@ func (x *MarkAllAsReadRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarkAllAsReadRequest.ProtoReflect.Descriptor instead.
 func (*MarkAllAsReadRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{247}
+	return file_manpasik_proto_rawDescGZIP(), []int{250}
 }
 
 func (x *MarkAllAsReadRequest) GetUserId() string {
@@ -19434,7 +20073,7 @@ type MarkAllAsReadResponse struct {
 
 func (x *MarkAllAsReadResponse) Reset() {
 	*x = MarkAllAsReadResponse{}
-	mi := &file_manpasik_proto_msgTypes[248]
+	mi := &file_manpasik_proto_msgTypes[251]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19446,7 +20085,7 @@ func (x *MarkAllAsReadResponse) String() string {
 func (*MarkAllAsReadResponse) ProtoMessage() {}
 
 func (x *MarkAllAsReadResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[248]
+	mi := &file_manpasik_proto_msgTypes[251]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19459,7 +20098,7 @@ func (x *MarkAllAsReadResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MarkAllAsReadResponse.ProtoReflect.Descriptor instead.
 func (*MarkAllAsReadResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{248}
+	return file_manpasik_proto_rawDescGZIP(), []int{251}
 }
 
 func (x *MarkAllAsReadResponse) GetMarkedCount() int32 {
@@ -19478,7 +20117,7 @@ type GetUnreadCountRequest struct {
 
 func (x *GetUnreadCountRequest) Reset() {
 	*x = GetUnreadCountRequest{}
-	mi := &file_manpasik_proto_msgTypes[249]
+	mi := &file_manpasik_proto_msgTypes[252]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19490,7 +20129,7 @@ func (x *GetUnreadCountRequest) String() string {
 func (*GetUnreadCountRequest) ProtoMessage() {}
 
 func (x *GetUnreadCountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[249]
+	mi := &file_manpasik_proto_msgTypes[252]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19503,7 +20142,7 @@ func (x *GetUnreadCountRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUnreadCountRequest.ProtoReflect.Descriptor instead.
 func (*GetUnreadCountRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{249}
+	return file_manpasik_proto_rawDescGZIP(), []int{252}
 }
 
 func (x *GetUnreadCountRequest) GetUserId() string {
@@ -19522,7 +20161,7 @@ type GetUnreadCountResponse struct {
 
 func (x *GetUnreadCountResponse) Reset() {
 	*x = GetUnreadCountResponse{}
-	mi := &file_manpasik_proto_msgTypes[250]
+	mi := &file_manpasik_proto_msgTypes[253]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19534,7 +20173,7 @@ func (x *GetUnreadCountResponse) String() string {
 func (*GetUnreadCountResponse) ProtoMessage() {}
 
 func (x *GetUnreadCountResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[250]
+	mi := &file_manpasik_proto_msgTypes[253]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19547,7 +20186,7 @@ func (x *GetUnreadCountResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUnreadCountResponse.ProtoReflect.Descriptor instead.
 func (*GetUnreadCountResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{250}
+	return file_manpasik_proto_rawDescGZIP(), []int{253}
 }
 
 func (x *GetUnreadCountResponse) GetCount() int32 {
@@ -19576,7 +20215,7 @@ type UpdateNotificationPreferencesRequest struct {
 
 func (x *UpdateNotificationPreferencesRequest) Reset() {
 	*x = UpdateNotificationPreferencesRequest{}
-	mi := &file_manpasik_proto_msgTypes[251]
+	mi := &file_manpasik_proto_msgTypes[254]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19588,7 +20227,7 @@ func (x *UpdateNotificationPreferencesRequest) String() string {
 func (*UpdateNotificationPreferencesRequest) ProtoMessage() {}
 
 func (x *UpdateNotificationPreferencesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[251]
+	mi := &file_manpasik_proto_msgTypes[254]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19601,7 +20240,7 @@ func (x *UpdateNotificationPreferencesRequest) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use UpdateNotificationPreferencesRequest.ProtoReflect.Descriptor instead.
 func (*UpdateNotificationPreferencesRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{251}
+	return file_manpasik_proto_rawDescGZIP(), []int{254}
 }
 
 func (x *UpdateNotificationPreferencesRequest) GetUserId() string {
@@ -19690,7 +20329,7 @@ type GetNotificationPreferencesRequest struct {
 
 func (x *GetNotificationPreferencesRequest) Reset() {
 	*x = GetNotificationPreferencesRequest{}
-	mi := &file_manpasik_proto_msgTypes[252]
+	mi := &file_manpasik_proto_msgTypes[255]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19702,7 +20341,7 @@ func (x *GetNotificationPreferencesRequest) String() string {
 func (*GetNotificationPreferencesRequest) ProtoMessage() {}
 
 func (x *GetNotificationPreferencesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[252]
+	mi := &file_manpasik_proto_msgTypes[255]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19715,7 +20354,7 @@ func (x *GetNotificationPreferencesRequest) ProtoReflect() protoreflect.Message 
 
 // Deprecated: Use GetNotificationPreferencesRequest.ProtoReflect.Descriptor instead.
 func (*GetNotificationPreferencesRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{252}
+	return file_manpasik_proto_rawDescGZIP(), []int{255}
 }
 
 func (x *GetNotificationPreferencesRequest) GetUserId() string {
@@ -19745,7 +20384,7 @@ type NotificationPreferences struct {
 
 func (x *NotificationPreferences) Reset() {
 	*x = NotificationPreferences{}
-	mi := &file_manpasik_proto_msgTypes[253]
+	mi := &file_manpasik_proto_msgTypes[256]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19757,7 +20396,7 @@ func (x *NotificationPreferences) String() string {
 func (*NotificationPreferences) ProtoMessage() {}
 
 func (x *NotificationPreferences) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[253]
+	mi := &file_manpasik_proto_msgTypes[256]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19770,7 +20409,7 @@ func (x *NotificationPreferences) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use NotificationPreferences.ProtoReflect.Descriptor instead.
 func (*NotificationPreferences) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{253}
+	return file_manpasik_proto_rawDescGZIP(), []int{256}
 }
 
 func (x *NotificationPreferences) GetUserId() string {
@@ -19870,7 +20509,7 @@ type TranslateTextRequest struct {
 
 func (x *TranslateTextRequest) Reset() {
 	*x = TranslateTextRequest{}
-	mi := &file_manpasik_proto_msgTypes[254]
+	mi := &file_manpasik_proto_msgTypes[257]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19882,7 +20521,7 @@ func (x *TranslateTextRequest) String() string {
 func (*TranslateTextRequest) ProtoMessage() {}
 
 func (x *TranslateTextRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[254]
+	mi := &file_manpasik_proto_msgTypes[257]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19895,7 +20534,7 @@ func (x *TranslateTextRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TranslateTextRequest.ProtoReflect.Descriptor instead.
 func (*TranslateTextRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{254}
+	return file_manpasik_proto_rawDescGZIP(), []int{257}
 }
 
 func (x *TranslateTextRequest) GetText() string {
@@ -19947,7 +20586,7 @@ type TranslateTextResponse struct {
 
 func (x *TranslateTextResponse) Reset() {
 	*x = TranslateTextResponse{}
-	mi := &file_manpasik_proto_msgTypes[255]
+	mi := &file_manpasik_proto_msgTypes[258]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -19959,7 +20598,7 @@ func (x *TranslateTextResponse) String() string {
 func (*TranslateTextResponse) ProtoMessage() {}
 
 func (x *TranslateTextResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[255]
+	mi := &file_manpasik_proto_msgTypes[258]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -19972,7 +20611,7 @@ func (x *TranslateTextResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TranslateTextResponse.ProtoReflect.Descriptor instead.
 func (*TranslateTextResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{255}
+	return file_manpasik_proto_rawDescGZIP(), []int{258}
 }
 
 func (x *TranslateTextResponse) GetTranslatedText() string {
@@ -20026,7 +20665,7 @@ type DetectLanguageRequest struct {
 
 func (x *DetectLanguageRequest) Reset() {
 	*x = DetectLanguageRequest{}
-	mi := &file_manpasik_proto_msgTypes[256]
+	mi := &file_manpasik_proto_msgTypes[259]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20038,7 +20677,7 @@ func (x *DetectLanguageRequest) String() string {
 func (*DetectLanguageRequest) ProtoMessage() {}
 
 func (x *DetectLanguageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[256]
+	mi := &file_manpasik_proto_msgTypes[259]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20051,7 +20690,7 @@ func (x *DetectLanguageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DetectLanguageRequest.ProtoReflect.Descriptor instead.
 func (*DetectLanguageRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{256}
+	return file_manpasik_proto_rawDescGZIP(), []int{259}
 }
 
 func (x *DetectLanguageRequest) GetText() string {
@@ -20070,7 +20709,7 @@ type DetectLanguageResponse struct {
 
 func (x *DetectLanguageResponse) Reset() {
 	*x = DetectLanguageResponse{}
-	mi := &file_manpasik_proto_msgTypes[257]
+	mi := &file_manpasik_proto_msgTypes[260]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20082,7 +20721,7 @@ func (x *DetectLanguageResponse) String() string {
 func (*DetectLanguageResponse) ProtoMessage() {}
 
 func (x *DetectLanguageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[257]
+	mi := &file_manpasik_proto_msgTypes[260]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20095,7 +20734,7 @@ func (x *DetectLanguageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DetectLanguageResponse.ProtoReflect.Descriptor instead.
 func (*DetectLanguageResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{257}
+	return file_manpasik_proto_rawDescGZIP(), []int{260}
 }
 
 func (x *DetectLanguageResponse) GetLanguages() []*DetectedLanguage {
@@ -20116,7 +20755,7 @@ type DetectedLanguage struct {
 
 func (x *DetectedLanguage) Reset() {
 	*x = DetectedLanguage{}
-	mi := &file_manpasik_proto_msgTypes[258]
+	mi := &file_manpasik_proto_msgTypes[261]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20128,7 +20767,7 @@ func (x *DetectedLanguage) String() string {
 func (*DetectedLanguage) ProtoMessage() {}
 
 func (x *DetectedLanguage) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[258]
+	mi := &file_manpasik_proto_msgTypes[261]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20141,7 +20780,7 @@ func (x *DetectedLanguage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DetectedLanguage.ProtoReflect.Descriptor instead.
 func (*DetectedLanguage) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{258}
+	return file_manpasik_proto_rawDescGZIP(), []int{261}
 }
 
 func (x *DetectedLanguage) GetLanguageCode() string {
@@ -20173,7 +20812,7 @@ type ListSupportedLanguagesRequest struct {
 
 func (x *ListSupportedLanguagesRequest) Reset() {
 	*x = ListSupportedLanguagesRequest{}
-	mi := &file_manpasik_proto_msgTypes[259]
+	mi := &file_manpasik_proto_msgTypes[262]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20185,7 +20824,7 @@ func (x *ListSupportedLanguagesRequest) String() string {
 func (*ListSupportedLanguagesRequest) ProtoMessage() {}
 
 func (x *ListSupportedLanguagesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[259]
+	mi := &file_manpasik_proto_msgTypes[262]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20198,7 +20837,7 @@ func (x *ListSupportedLanguagesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSupportedLanguagesRequest.ProtoReflect.Descriptor instead.
 func (*ListSupportedLanguagesRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{259}
+	return file_manpasik_proto_rawDescGZIP(), []int{262}
 }
 
 type ListSupportedLanguagesResponse struct {
@@ -20210,7 +20849,7 @@ type ListSupportedLanguagesResponse struct {
 
 func (x *ListSupportedLanguagesResponse) Reset() {
 	*x = ListSupportedLanguagesResponse{}
-	mi := &file_manpasik_proto_msgTypes[260]
+	mi := &file_manpasik_proto_msgTypes[263]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20222,7 +20861,7 @@ func (x *ListSupportedLanguagesResponse) String() string {
 func (*ListSupportedLanguagesResponse) ProtoMessage() {}
 
 func (x *ListSupportedLanguagesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[260]
+	mi := &file_manpasik_proto_msgTypes[263]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20235,7 +20874,7 @@ func (x *ListSupportedLanguagesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSupportedLanguagesResponse.ProtoReflect.Descriptor instead.
 func (*ListSupportedLanguagesResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{260}
+	return file_manpasik_proto_rawDescGZIP(), []int{263}
 }
 
 func (x *ListSupportedLanguagesResponse) GetLanguages() []*SupportedLanguage {
@@ -20257,7 +20896,7 @@ type SupportedLanguage struct {
 
 func (x *SupportedLanguage) Reset() {
 	*x = SupportedLanguage{}
-	mi := &file_manpasik_proto_msgTypes[261]
+	mi := &file_manpasik_proto_msgTypes[264]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20269,7 +20908,7 @@ func (x *SupportedLanguage) String() string {
 func (*SupportedLanguage) ProtoMessage() {}
 
 func (x *SupportedLanguage) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[261]
+	mi := &file_manpasik_proto_msgTypes[264]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20282,7 +20921,7 @@ func (x *SupportedLanguage) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SupportedLanguage.ProtoReflect.Descriptor instead.
 func (*SupportedLanguage) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{261}
+	return file_manpasik_proto_rawDescGZIP(), []int{264}
 }
 
 func (x *SupportedLanguage) GetLanguageCode() string {
@@ -20325,7 +20964,7 @@ type TranslateBatchRequest struct {
 
 func (x *TranslateBatchRequest) Reset() {
 	*x = TranslateBatchRequest{}
-	mi := &file_manpasik_proto_msgTypes[262]
+	mi := &file_manpasik_proto_msgTypes[265]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20337,7 +20976,7 @@ func (x *TranslateBatchRequest) String() string {
 func (*TranslateBatchRequest) ProtoMessage() {}
 
 func (x *TranslateBatchRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[262]
+	mi := &file_manpasik_proto_msgTypes[265]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20350,7 +20989,7 @@ func (x *TranslateBatchRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TranslateBatchRequest.ProtoReflect.Descriptor instead.
 func (*TranslateBatchRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{262}
+	return file_manpasik_proto_rawDescGZIP(), []int{265}
 }
 
 func (x *TranslateBatchRequest) GetTexts() []string {
@@ -20390,7 +21029,7 @@ type TranslateBatchResponse struct {
 
 func (x *TranslateBatchResponse) Reset() {
 	*x = TranslateBatchResponse{}
-	mi := &file_manpasik_proto_msgTypes[263]
+	mi := &file_manpasik_proto_msgTypes[266]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20402,7 +21041,7 @@ func (x *TranslateBatchResponse) String() string {
 func (*TranslateBatchResponse) ProtoMessage() {}
 
 func (x *TranslateBatchResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[263]
+	mi := &file_manpasik_proto_msgTypes[266]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20415,7 +21054,7 @@ func (x *TranslateBatchResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TranslateBatchResponse.ProtoReflect.Descriptor instead.
 func (*TranslateBatchResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{263}
+	return file_manpasik_proto_rawDescGZIP(), []int{266}
 }
 
 func (x *TranslateBatchResponse) GetTranslations() []*TranslateTextResponse {
@@ -20436,7 +21075,7 @@ type GetTranslationHistoryRequest struct {
 
 func (x *GetTranslationHistoryRequest) Reset() {
 	*x = GetTranslationHistoryRequest{}
-	mi := &file_manpasik_proto_msgTypes[264]
+	mi := &file_manpasik_proto_msgTypes[267]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20448,7 +21087,7 @@ func (x *GetTranslationHistoryRequest) String() string {
 func (*GetTranslationHistoryRequest) ProtoMessage() {}
 
 func (x *GetTranslationHistoryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[264]
+	mi := &file_manpasik_proto_msgTypes[267]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20461,7 +21100,7 @@ func (x *GetTranslationHistoryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTranslationHistoryRequest.ProtoReflect.Descriptor instead.
 func (*GetTranslationHistoryRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{264}
+	return file_manpasik_proto_rawDescGZIP(), []int{267}
 }
 
 func (x *GetTranslationHistoryRequest) GetUserId() string {
@@ -20495,7 +21134,7 @@ type GetTranslationHistoryResponse struct {
 
 func (x *GetTranslationHistoryResponse) Reset() {
 	*x = GetTranslationHistoryResponse{}
-	mi := &file_manpasik_proto_msgTypes[265]
+	mi := &file_manpasik_proto_msgTypes[268]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20507,7 +21146,7 @@ func (x *GetTranslationHistoryResponse) String() string {
 func (*GetTranslationHistoryResponse) ProtoMessage() {}
 
 func (x *GetTranslationHistoryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[265]
+	mi := &file_manpasik_proto_msgTypes[268]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20520,7 +21159,7 @@ func (x *GetTranslationHistoryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTranslationHistoryResponse.ProtoReflect.Descriptor instead.
 func (*GetTranslationHistoryResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{265}
+	return file_manpasik_proto_rawDescGZIP(), []int{268}
 }
 
 func (x *GetTranslationHistoryResponse) GetRecords() []*TranslationRecord {
@@ -20553,7 +21192,7 @@ type TranslationRecord struct {
 
 func (x *TranslationRecord) Reset() {
 	*x = TranslationRecord{}
-	mi := &file_manpasik_proto_msgTypes[266]
+	mi := &file_manpasik_proto_msgTypes[269]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20565,7 +21204,7 @@ func (x *TranslationRecord) String() string {
 func (*TranslationRecord) ProtoMessage() {}
 
 func (x *TranslationRecord) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[266]
+	mi := &file_manpasik_proto_msgTypes[269]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20578,7 +21217,7 @@ func (x *TranslationRecord) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TranslationRecord.ProtoReflect.Descriptor instead.
 func (*TranslationRecord) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{266}
+	return file_manpasik_proto_rawDescGZIP(), []int{269}
 }
 
 func (x *TranslationRecord) GetRecordId() string {
@@ -20646,7 +21285,7 @@ type GetTranslationUsageRequest struct {
 
 func (x *GetTranslationUsageRequest) Reset() {
 	*x = GetTranslationUsageRequest{}
-	mi := &file_manpasik_proto_msgTypes[267]
+	mi := &file_manpasik_proto_msgTypes[270]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20658,7 +21297,7 @@ func (x *GetTranslationUsageRequest) String() string {
 func (*GetTranslationUsageRequest) ProtoMessage() {}
 
 func (x *GetTranslationUsageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[267]
+	mi := &file_manpasik_proto_msgTypes[270]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20671,7 +21310,7 @@ func (x *GetTranslationUsageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTranslationUsageRequest.ProtoReflect.Descriptor instead.
 func (*GetTranslationUsageRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{267}
+	return file_manpasik_proto_rawDescGZIP(), []int{270}
 }
 
 func (x *GetTranslationUsageRequest) GetUserId() string {
@@ -20695,7 +21334,7 @@ type GetTranslationUsageResponse struct {
 
 func (x *GetTranslationUsageResponse) Reset() {
 	*x = GetTranslationUsageResponse{}
-	mi := &file_manpasik_proto_msgTypes[268]
+	mi := &file_manpasik_proto_msgTypes[271]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20707,7 +21346,7 @@ func (x *GetTranslationUsageResponse) String() string {
 func (*GetTranslationUsageResponse) ProtoMessage() {}
 
 func (x *GetTranslationUsageResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[268]
+	mi := &file_manpasik_proto_msgTypes[271]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20720,7 +21359,7 @@ func (x *GetTranslationUsageResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTranslationUsageResponse.ProtoReflect.Descriptor instead.
 func (*GetTranslationUsageResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{268}
+	return file_manpasik_proto_rawDescGZIP(), []int{271}
 }
 
 func (x *GetTranslationUsageResponse) GetUserId() string {
@@ -20774,7 +21413,7 @@ type ListDoctorsByFacilityRequest struct {
 
 func (x *ListDoctorsByFacilityRequest) Reset() {
 	*x = ListDoctorsByFacilityRequest{}
-	mi := &file_manpasik_proto_msgTypes[269]
+	mi := &file_manpasik_proto_msgTypes[272]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20786,7 +21425,7 @@ func (x *ListDoctorsByFacilityRequest) String() string {
 func (*ListDoctorsByFacilityRequest) ProtoMessage() {}
 
 func (x *ListDoctorsByFacilityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[269]
+	mi := &file_manpasik_proto_msgTypes[272]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20799,7 +21438,7 @@ func (x *ListDoctorsByFacilityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDoctorsByFacilityRequest.ProtoReflect.Descriptor instead.
 func (*ListDoctorsByFacilityRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{269}
+	return file_manpasik_proto_rawDescGZIP(), []int{272}
 }
 
 func (x *ListDoctorsByFacilityRequest) GetFacilityId() string {
@@ -20818,7 +21457,7 @@ type ListDoctorsByFacilityResponse struct {
 
 func (x *ListDoctorsByFacilityResponse) Reset() {
 	*x = ListDoctorsByFacilityResponse{}
-	mi := &file_manpasik_proto_msgTypes[270]
+	mi := &file_manpasik_proto_msgTypes[273]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20830,7 +21469,7 @@ func (x *ListDoctorsByFacilityResponse) String() string {
 func (*ListDoctorsByFacilityResponse) ProtoMessage() {}
 
 func (x *ListDoctorsByFacilityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[270]
+	mi := &file_manpasik_proto_msgTypes[273]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20843,7 +21482,7 @@ func (x *ListDoctorsByFacilityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListDoctorsByFacilityResponse.ProtoReflect.Descriptor instead.
 func (*ListDoctorsByFacilityResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{270}
+	return file_manpasik_proto_rawDescGZIP(), []int{273}
 }
 
 func (x *ListDoctorsByFacilityResponse) GetDoctors() []*Doctor {
@@ -20870,7 +21509,7 @@ type Doctor struct {
 
 func (x *Doctor) Reset() {
 	*x = Doctor{}
-	mi := &file_manpasik_proto_msgTypes[271]
+	mi := &file_manpasik_proto_msgTypes[274]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20882,7 +21521,7 @@ func (x *Doctor) String() string {
 func (*Doctor) ProtoMessage() {}
 
 func (x *Doctor) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[271]
+	mi := &file_manpasik_proto_msgTypes[274]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20895,7 +21534,7 @@ func (x *Doctor) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Doctor.ProtoReflect.Descriptor instead.
 func (*Doctor) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{271}
+	return file_manpasik_proto_rawDescGZIP(), []int{274}
 }
 
 func (x *Doctor) GetDoctorId() string {
@@ -20971,7 +21610,7 @@ type GetDoctorAvailabilityRequest struct {
 
 func (x *GetDoctorAvailabilityRequest) Reset() {
 	*x = GetDoctorAvailabilityRequest{}
-	mi := &file_manpasik_proto_msgTypes[272]
+	mi := &file_manpasik_proto_msgTypes[275]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -20983,7 +21622,7 @@ func (x *GetDoctorAvailabilityRequest) String() string {
 func (*GetDoctorAvailabilityRequest) ProtoMessage() {}
 
 func (x *GetDoctorAvailabilityRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[272]
+	mi := &file_manpasik_proto_msgTypes[275]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -20996,7 +21635,7 @@ func (x *GetDoctorAvailabilityRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDoctorAvailabilityRequest.ProtoReflect.Descriptor instead.
 func (*GetDoctorAvailabilityRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{272}
+	return file_manpasik_proto_rawDescGZIP(), []int{275}
 }
 
 func (x *GetDoctorAvailabilityRequest) GetDoctorId() string {
@@ -21022,7 +21661,7 @@ type GetDoctorAvailabilityResponse struct {
 
 func (x *GetDoctorAvailabilityResponse) Reset() {
 	*x = GetDoctorAvailabilityResponse{}
-	mi := &file_manpasik_proto_msgTypes[273]
+	mi := &file_manpasik_proto_msgTypes[276]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21034,7 +21673,7 @@ func (x *GetDoctorAvailabilityResponse) String() string {
 func (*GetDoctorAvailabilityResponse) ProtoMessage() {}
 
 func (x *GetDoctorAvailabilityResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[273]
+	mi := &file_manpasik_proto_msgTypes[276]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21047,7 +21686,7 @@ func (x *GetDoctorAvailabilityResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDoctorAvailabilityResponse.ProtoReflect.Descriptor instead.
 func (*GetDoctorAvailabilityResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{273}
+	return file_manpasik_proto_rawDescGZIP(), []int{276}
 }
 
 func (x *GetDoctorAvailabilityResponse) GetSlots() []*TimeSlotDetail {
@@ -21068,7 +21707,7 @@ type TimeSlotDetail struct {
 
 func (x *TimeSlotDetail) Reset() {
 	*x = TimeSlotDetail{}
-	mi := &file_manpasik_proto_msgTypes[274]
+	mi := &file_manpasik_proto_msgTypes[277]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21080,7 +21719,7 @@ func (x *TimeSlotDetail) String() string {
 func (*TimeSlotDetail) ProtoMessage() {}
 
 func (x *TimeSlotDetail) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[274]
+	mi := &file_manpasik_proto_msgTypes[277]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21093,7 +21732,7 @@ func (x *TimeSlotDetail) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TimeSlotDetail.ProtoReflect.Descriptor instead.
 func (*TimeSlotDetail) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{274}
+	return file_manpasik_proto_rawDescGZIP(), []int{277}
 }
 
 func (x *TimeSlotDetail) GetStartTime() string {
@@ -21128,7 +21767,7 @@ type SelectDoctorRequest struct {
 
 func (x *SelectDoctorRequest) Reset() {
 	*x = SelectDoctorRequest{}
-	mi := &file_manpasik_proto_msgTypes[275]
+	mi := &file_manpasik_proto_msgTypes[278]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21140,7 +21779,7 @@ func (x *SelectDoctorRequest) String() string {
 func (*SelectDoctorRequest) ProtoMessage() {}
 
 func (x *SelectDoctorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[275]
+	mi := &file_manpasik_proto_msgTypes[278]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21153,7 +21792,7 @@ func (x *SelectDoctorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SelectDoctorRequest.ProtoReflect.Descriptor instead.
 func (*SelectDoctorRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{275}
+	return file_manpasik_proto_rawDescGZIP(), []int{278}
 }
 
 func (x *SelectDoctorRequest) GetFacilityId() string {
@@ -21187,7 +21826,7 @@ type SelectDoctorResponse struct {
 
 func (x *SelectDoctorResponse) Reset() {
 	*x = SelectDoctorResponse{}
-	mi := &file_manpasik_proto_msgTypes[276]
+	mi := &file_manpasik_proto_msgTypes[279]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21199,7 +21838,7 @@ func (x *SelectDoctorResponse) String() string {
 func (*SelectDoctorResponse) ProtoMessage() {}
 
 func (x *SelectDoctorResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[276]
+	mi := &file_manpasik_proto_msgTypes[279]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21212,7 +21851,7 @@ func (x *SelectDoctorResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SelectDoctorResponse.ProtoReflect.Descriptor instead.
 func (*SelectDoctorResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{276}
+	return file_manpasik_proto_rawDescGZIP(), []int{279}
 }
 
 func (x *SelectDoctorResponse) GetDoctor() *Doctor {
@@ -21242,7 +21881,7 @@ type SelectPharmacyRequest struct {
 
 func (x *SelectPharmacyRequest) Reset() {
 	*x = SelectPharmacyRequest{}
-	mi := &file_manpasik_proto_msgTypes[277]
+	mi := &file_manpasik_proto_msgTypes[280]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21254,7 +21893,7 @@ func (x *SelectPharmacyRequest) String() string {
 func (*SelectPharmacyRequest) ProtoMessage() {}
 
 func (x *SelectPharmacyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[277]
+	mi := &file_manpasik_proto_msgTypes[280]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21267,7 +21906,7 @@ func (x *SelectPharmacyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SelectPharmacyRequest.ProtoReflect.Descriptor instead.
 func (*SelectPharmacyRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{277}
+	return file_manpasik_proto_rawDescGZIP(), []int{280}
 }
 
 func (x *SelectPharmacyRequest) GetPrescriptionId() string {
@@ -21315,7 +21954,7 @@ type SelectPharmacyResponse struct {
 
 func (x *SelectPharmacyResponse) Reset() {
 	*x = SelectPharmacyResponse{}
-	mi := &file_manpasik_proto_msgTypes[278]
+	mi := &file_manpasik_proto_msgTypes[281]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21327,7 +21966,7 @@ func (x *SelectPharmacyResponse) String() string {
 func (*SelectPharmacyResponse) ProtoMessage() {}
 
 func (x *SelectPharmacyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[278]
+	mi := &file_manpasik_proto_msgTypes[281]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21340,7 +21979,7 @@ func (x *SelectPharmacyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SelectPharmacyResponse.ProtoReflect.Descriptor instead.
 func (*SelectPharmacyResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{278}
+	return file_manpasik_proto_rawDescGZIP(), []int{281}
 }
 
 func (x *SelectPharmacyResponse) GetSuccess() bool {
@@ -21366,7 +22005,7 @@ type SendToPharmacyRequest struct {
 
 func (x *SendToPharmacyRequest) Reset() {
 	*x = SendToPharmacyRequest{}
-	mi := &file_manpasik_proto_msgTypes[279]
+	mi := &file_manpasik_proto_msgTypes[282]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21378,7 +22017,7 @@ func (x *SendToPharmacyRequest) String() string {
 func (*SendToPharmacyRequest) ProtoMessage() {}
 
 func (x *SendToPharmacyRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[279]
+	mi := &file_manpasik_proto_msgTypes[282]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21391,7 +22030,7 @@ func (x *SendToPharmacyRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendToPharmacyRequest.ProtoReflect.Descriptor instead.
 func (*SendToPharmacyRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{279}
+	return file_manpasik_proto_rawDescGZIP(), []int{282}
 }
 
 func (x *SendToPharmacyRequest) GetPrescriptionId() string {
@@ -21412,7 +22051,7 @@ type SendToPharmacyResponse struct {
 
 func (x *SendToPharmacyResponse) Reset() {
 	*x = SendToPharmacyResponse{}
-	mi := &file_manpasik_proto_msgTypes[280]
+	mi := &file_manpasik_proto_msgTypes[283]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21424,7 +22063,7 @@ func (x *SendToPharmacyResponse) String() string {
 func (*SendToPharmacyResponse) ProtoMessage() {}
 
 func (x *SendToPharmacyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[280]
+	mi := &file_manpasik_proto_msgTypes[283]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21437,7 +22076,7 @@ func (x *SendToPharmacyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SendToPharmacyResponse.ProtoReflect.Descriptor instead.
 func (*SendToPharmacyResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{280}
+	return file_manpasik_proto_rawDescGZIP(), []int{283}
 }
 
 func (x *SendToPharmacyResponse) GetFulfillmentToken() string {
@@ -21470,7 +22109,7 @@ type GetByTokenRequest struct {
 
 func (x *GetByTokenRequest) Reset() {
 	*x = GetByTokenRequest{}
-	mi := &file_manpasik_proto_msgTypes[281]
+	mi := &file_manpasik_proto_msgTypes[284]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21482,7 +22121,7 @@ func (x *GetByTokenRequest) String() string {
 func (*GetByTokenRequest) ProtoMessage() {}
 
 func (x *GetByTokenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[281]
+	mi := &file_manpasik_proto_msgTypes[284]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21495,7 +22134,7 @@ func (x *GetByTokenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetByTokenRequest.ProtoReflect.Descriptor instead.
 func (*GetByTokenRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{281}
+	return file_manpasik_proto_rawDescGZIP(), []int{284}
 }
 
 func (x *GetByTokenRequest) GetFulfillmentToken() string {
@@ -21515,7 +22154,7 @@ type UpdateDispensaryStatusRequest struct {
 
 func (x *UpdateDispensaryStatusRequest) Reset() {
 	*x = UpdateDispensaryStatusRequest{}
-	mi := &file_manpasik_proto_msgTypes[282]
+	mi := &file_manpasik_proto_msgTypes[285]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21527,7 +22166,7 @@ func (x *UpdateDispensaryStatusRequest) String() string {
 func (*UpdateDispensaryStatusRequest) ProtoMessage() {}
 
 func (x *UpdateDispensaryStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[282]
+	mi := &file_manpasik_proto_msgTypes[285]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21540,7 +22179,7 @@ func (x *UpdateDispensaryStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDispensaryStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdateDispensaryStatusRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{282}
+	return file_manpasik_proto_rawDescGZIP(), []int{285}
 }
 
 func (x *UpdateDispensaryStatusRequest) GetPrescriptionId() string {
@@ -21571,7 +22210,7 @@ type CreateConsentRequest struct {
 
 func (x *CreateConsentRequest) Reset() {
 	*x = CreateConsentRequest{}
-	mi := &file_manpasik_proto_msgTypes[283]
+	mi := &file_manpasik_proto_msgTypes[286]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21583,7 +22222,7 @@ func (x *CreateConsentRequest) String() string {
 func (*CreateConsentRequest) ProtoMessage() {}
 
 func (x *CreateConsentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[283]
+	mi := &file_manpasik_proto_msgTypes[286]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21596,7 +22235,7 @@ func (x *CreateConsentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateConsentRequest.ProtoReflect.Descriptor instead.
 func (*CreateConsentRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{283}
+	return file_manpasik_proto_rawDescGZIP(), []int{286}
 }
 
 func (x *CreateConsentRequest) GetUserId() string {
@@ -21661,7 +22300,7 @@ type DataSharingConsent struct {
 
 func (x *DataSharingConsent) Reset() {
 	*x = DataSharingConsent{}
-	mi := &file_manpasik_proto_msgTypes[284]
+	mi := &file_manpasik_proto_msgTypes[287]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21673,7 +22312,7 @@ func (x *DataSharingConsent) String() string {
 func (*DataSharingConsent) ProtoMessage() {}
 
 func (x *DataSharingConsent) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[284]
+	mi := &file_manpasik_proto_msgTypes[287]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21686,7 +22325,7 @@ func (x *DataSharingConsent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DataSharingConsent.ProtoReflect.Descriptor instead.
 func (*DataSharingConsent) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{284}
+	return file_manpasik_proto_rawDescGZIP(), []int{287}
 }
 
 func (x *DataSharingConsent) GetId() string {
@@ -21783,7 +22422,7 @@ type RevokeConsentRequest struct {
 
 func (x *RevokeConsentRequest) Reset() {
 	*x = RevokeConsentRequest{}
-	mi := &file_manpasik_proto_msgTypes[285]
+	mi := &file_manpasik_proto_msgTypes[288]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21795,7 +22434,7 @@ func (x *RevokeConsentRequest) String() string {
 func (*RevokeConsentRequest) ProtoMessage() {}
 
 func (x *RevokeConsentRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[285]
+	mi := &file_manpasik_proto_msgTypes[288]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21808,7 +22447,7 @@ func (x *RevokeConsentRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeConsentRequest.ProtoReflect.Descriptor instead.
 func (*RevokeConsentRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{285}
+	return file_manpasik_proto_rawDescGZIP(), []int{288}
 }
 
 func (x *RevokeConsentRequest) GetConsentId() string {
@@ -21834,7 +22473,7 @@ type RevokeConsentResponse struct {
 
 func (x *RevokeConsentResponse) Reset() {
 	*x = RevokeConsentResponse{}
-	mi := &file_manpasik_proto_msgTypes[286]
+	mi := &file_manpasik_proto_msgTypes[289]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21846,7 +22485,7 @@ func (x *RevokeConsentResponse) String() string {
 func (*RevokeConsentResponse) ProtoMessage() {}
 
 func (x *RevokeConsentResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[286]
+	mi := &file_manpasik_proto_msgTypes[289]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21859,7 +22498,7 @@ func (x *RevokeConsentResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RevokeConsentResponse.ProtoReflect.Descriptor instead.
 func (*RevokeConsentResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{286}
+	return file_manpasik_proto_rawDescGZIP(), []int{289}
 }
 
 func (x *RevokeConsentResponse) GetSuccess() bool {
@@ -21878,7 +22517,7 @@ type ListConsentsRequest struct {
 
 func (x *ListConsentsRequest) Reset() {
 	*x = ListConsentsRequest{}
-	mi := &file_manpasik_proto_msgTypes[287]
+	mi := &file_manpasik_proto_msgTypes[290]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21890,7 +22529,7 @@ func (x *ListConsentsRequest) String() string {
 func (*ListConsentsRequest) ProtoMessage() {}
 
 func (x *ListConsentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[287]
+	mi := &file_manpasik_proto_msgTypes[290]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21903,7 +22542,7 @@ func (x *ListConsentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListConsentsRequest.ProtoReflect.Descriptor instead.
 func (*ListConsentsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{287}
+	return file_manpasik_proto_rawDescGZIP(), []int{290}
 }
 
 func (x *ListConsentsRequest) GetUserId() string {
@@ -21922,7 +22561,7 @@ type ListConsentsResponse struct {
 
 func (x *ListConsentsResponse) Reset() {
 	*x = ListConsentsResponse{}
-	mi := &file_manpasik_proto_msgTypes[288]
+	mi := &file_manpasik_proto_msgTypes[291]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21934,7 +22573,7 @@ func (x *ListConsentsResponse) String() string {
 func (*ListConsentsResponse) ProtoMessage() {}
 
 func (x *ListConsentsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[288]
+	mi := &file_manpasik_proto_msgTypes[291]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21947,7 +22586,7 @@ func (x *ListConsentsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListConsentsResponse.ProtoReflect.Descriptor instead.
 func (*ListConsentsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{288}
+	return file_manpasik_proto_rawDescGZIP(), []int{291}
 }
 
 func (x *ListConsentsResponse) GetConsents() []*DataSharingConsent {
@@ -21966,7 +22605,7 @@ type ShareWithProviderRequest struct {
 
 func (x *ShareWithProviderRequest) Reset() {
 	*x = ShareWithProviderRequest{}
-	mi := &file_manpasik_proto_msgTypes[289]
+	mi := &file_manpasik_proto_msgTypes[292]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -21978,7 +22617,7 @@ func (x *ShareWithProviderRequest) String() string {
 func (*ShareWithProviderRequest) ProtoMessage() {}
 
 func (x *ShareWithProviderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[289]
+	mi := &file_manpasik_proto_msgTypes[292]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -21991,7 +22630,7 @@ func (x *ShareWithProviderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ShareWithProviderRequest.ProtoReflect.Descriptor instead.
 func (*ShareWithProviderRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{289}
+	return file_manpasik_proto_rawDescGZIP(), []int{292}
 }
 
 func (x *ShareWithProviderRequest) GetConsentId() string {
@@ -22012,7 +22651,7 @@ type ShareWithProviderResponse struct {
 
 func (x *ShareWithProviderResponse) Reset() {
 	*x = ShareWithProviderResponse{}
-	mi := &file_manpasik_proto_msgTypes[290]
+	mi := &file_manpasik_proto_msgTypes[293]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22024,7 +22663,7 @@ func (x *ShareWithProviderResponse) String() string {
 func (*ShareWithProviderResponse) ProtoMessage() {}
 
 func (x *ShareWithProviderResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[290]
+	mi := &file_manpasik_proto_msgTypes[293]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22037,7 +22676,7 @@ func (x *ShareWithProviderResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ShareWithProviderResponse.ProtoReflect.Descriptor instead.
 func (*ShareWithProviderResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{290}
+	return file_manpasik_proto_rawDescGZIP(), []int{293}
 }
 
 func (x *ShareWithProviderResponse) GetFhirBundleJson() string {
@@ -22072,7 +22711,7 @@ type GetDataAccessLogRequest struct {
 
 func (x *GetDataAccessLogRequest) Reset() {
 	*x = GetDataAccessLogRequest{}
-	mi := &file_manpasik_proto_msgTypes[291]
+	mi := &file_manpasik_proto_msgTypes[294]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22084,7 +22723,7 @@ func (x *GetDataAccessLogRequest) String() string {
 func (*GetDataAccessLogRequest) ProtoMessage() {}
 
 func (x *GetDataAccessLogRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[291]
+	mi := &file_manpasik_proto_msgTypes[294]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22097,7 +22736,7 @@ func (x *GetDataAccessLogRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDataAccessLogRequest.ProtoReflect.Descriptor instead.
 func (*GetDataAccessLogRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{291}
+	return file_manpasik_proto_rawDescGZIP(), []int{294}
 }
 
 func (x *GetDataAccessLogRequest) GetUserId() string {
@@ -22131,7 +22770,7 @@ type GetDataAccessLogResponse struct {
 
 func (x *GetDataAccessLogResponse) Reset() {
 	*x = GetDataAccessLogResponse{}
-	mi := &file_manpasik_proto_msgTypes[292]
+	mi := &file_manpasik_proto_msgTypes[295]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22143,7 +22782,7 @@ func (x *GetDataAccessLogResponse) String() string {
 func (*GetDataAccessLogResponse) ProtoMessage() {}
 
 func (x *GetDataAccessLogResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[292]
+	mi := &file_manpasik_proto_msgTypes[295]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22156,7 +22795,7 @@ func (x *GetDataAccessLogResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetDataAccessLogResponse.ProtoReflect.Descriptor instead.
 func (*GetDataAccessLogResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{292}
+	return file_manpasik_proto_rawDescGZIP(), []int{295}
 }
 
 func (x *GetDataAccessLogResponse) GetEntries() []*DataAccessLogEntry {
@@ -22189,7 +22828,7 @@ type DataAccessLogEntry struct {
 
 func (x *DataAccessLogEntry) Reset() {
 	*x = DataAccessLogEntry{}
-	mi := &file_manpasik_proto_msgTypes[293]
+	mi := &file_manpasik_proto_msgTypes[296]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22201,7 +22840,7 @@ func (x *DataAccessLogEntry) String() string {
 func (*DataAccessLogEntry) ProtoMessage() {}
 
 func (x *DataAccessLogEntry) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[293]
+	mi := &file_manpasik_proto_msgTypes[296]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22214,7 +22853,7 @@ func (x *DataAccessLogEntry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DataAccessLogEntry.ProtoReflect.Descriptor instead.
 func (*DataAccessLogEntry) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{293}
+	return file_manpasik_proto_rawDescGZIP(), []int{296}
 }
 
 func (x *DataAccessLogEntry) GetId() string {
@@ -22282,7 +22921,7 @@ type ExportSingleMeasurementRequest struct {
 
 func (x *ExportSingleMeasurementRequest) Reset() {
 	*x = ExportSingleMeasurementRequest{}
-	mi := &file_manpasik_proto_msgTypes[294]
+	mi := &file_manpasik_proto_msgTypes[297]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22294,7 +22933,7 @@ func (x *ExportSingleMeasurementRequest) String() string {
 func (*ExportSingleMeasurementRequest) ProtoMessage() {}
 
 func (x *ExportSingleMeasurementRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[294]
+	mi := &file_manpasik_proto_msgTypes[297]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22307,7 +22946,7 @@ func (x *ExportSingleMeasurementRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportSingleMeasurementRequest.ProtoReflect.Descriptor instead.
 func (*ExportSingleMeasurementRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{294}
+	return file_manpasik_proto_rawDescGZIP(), []int{297}
 }
 
 func (x *ExportSingleMeasurementRequest) GetSessionId() string {
@@ -22328,7 +22967,7 @@ type ExportToFHIRObservationsRequest struct {
 
 func (x *ExportToFHIRObservationsRequest) Reset() {
 	*x = ExportToFHIRObservationsRequest{}
-	mi := &file_manpasik_proto_msgTypes[295]
+	mi := &file_manpasik_proto_msgTypes[298]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22340,7 +22979,7 @@ func (x *ExportToFHIRObservationsRequest) String() string {
 func (*ExportToFHIRObservationsRequest) ProtoMessage() {}
 
 func (x *ExportToFHIRObservationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[295]
+	mi := &file_manpasik_proto_msgTypes[298]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22353,7 +22992,7 @@ func (x *ExportToFHIRObservationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportToFHIRObservationsRequest.ProtoReflect.Descriptor instead.
 func (*ExportToFHIRObservationsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{295}
+	return file_manpasik_proto_rawDescGZIP(), []int{298}
 }
 
 func (x *ExportToFHIRObservationsRequest) GetUserId() string {
@@ -22387,7 +23026,7 @@ type ExportFHIRResponse struct {
 
 func (x *ExportFHIRResponse) Reset() {
 	*x = ExportFHIRResponse{}
-	mi := &file_manpasik_proto_msgTypes[296]
+	mi := &file_manpasik_proto_msgTypes[299]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22399,7 +23038,7 @@ func (x *ExportFHIRResponse) String() string {
 func (*ExportFHIRResponse) ProtoMessage() {}
 
 func (x *ExportFHIRResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[296]
+	mi := &file_manpasik_proto_msgTypes[299]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22412,7 +23051,7 @@ func (x *ExportFHIRResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ExportFHIRResponse.ProtoReflect.Descriptor instead.
 func (*ExportFHIRResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{296}
+	return file_manpasik_proto_rawDescGZIP(), []int{299}
 }
 
 func (x *ExportFHIRResponse) GetFhirBundleJson() string {
@@ -22439,7 +23078,7 @@ type UpdateDeviceStatusRequest struct {
 
 func (x *UpdateDeviceStatusRequest) Reset() {
 	*x = UpdateDeviceStatusRequest{}
-	mi := &file_manpasik_proto_msgTypes[297]
+	mi := &file_manpasik_proto_msgTypes[300]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22451,7 +23090,7 @@ func (x *UpdateDeviceStatusRequest) String() string {
 func (*UpdateDeviceStatusRequest) ProtoMessage() {}
 
 func (x *UpdateDeviceStatusRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[297]
+	mi := &file_manpasik_proto_msgTypes[300]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22464,7 +23103,7 @@ func (x *UpdateDeviceStatusRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDeviceStatusRequest.ProtoReflect.Descriptor instead.
 func (*UpdateDeviceStatusRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{297}
+	return file_manpasik_proto_rawDescGZIP(), []int{300}
 }
 
 func (x *UpdateDeviceStatusRequest) GetDeviceId() string {
@@ -22491,7 +23130,7 @@ type UpdateDeviceStatusResponse struct {
 
 func (x *UpdateDeviceStatusResponse) Reset() {
 	*x = UpdateDeviceStatusResponse{}
-	mi := &file_manpasik_proto_msgTypes[298]
+	mi := &file_manpasik_proto_msgTypes[301]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22503,7 +23142,7 @@ func (x *UpdateDeviceStatusResponse) String() string {
 func (*UpdateDeviceStatusResponse) ProtoMessage() {}
 
 func (x *UpdateDeviceStatusResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[298]
+	mi := &file_manpasik_proto_msgTypes[301]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22516,7 +23155,7 @@ func (x *UpdateDeviceStatusResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateDeviceStatusResponse.ProtoReflect.Descriptor instead.
 func (*UpdateDeviceStatusResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{298}
+	return file_manpasik_proto_rawDescGZIP(), []int{301}
 }
 
 func (x *UpdateDeviceStatusResponse) GetSuccess() bool {
@@ -22543,7 +23182,7 @@ type ListAdminsByRegionRequest struct {
 
 func (x *ListAdminsByRegionRequest) Reset() {
 	*x = ListAdminsByRegionRequest{}
-	mi := &file_manpasik_proto_msgTypes[299]
+	mi := &file_manpasik_proto_msgTypes[302]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22555,7 +23194,7 @@ func (x *ListAdminsByRegionRequest) String() string {
 func (*ListAdminsByRegionRequest) ProtoMessage() {}
 
 func (x *ListAdminsByRegionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[299]
+	mi := &file_manpasik_proto_msgTypes[302]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22568,7 +23207,7 @@ func (x *ListAdminsByRegionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListAdminsByRegionRequest.ProtoReflect.Descriptor instead.
 func (*ListAdminsByRegionRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{299}
+	return file_manpasik_proto_rawDescGZIP(), []int{302}
 }
 
 func (x *ListAdminsByRegionRequest) GetCountryCode() string {
@@ -22596,7 +23235,7 @@ type ListSystemConfigsRequest struct {
 
 func (x *ListSystemConfigsRequest) Reset() {
 	*x = ListSystemConfigsRequest{}
-	mi := &file_manpasik_proto_msgTypes[300]
+	mi := &file_manpasik_proto_msgTypes[303]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22608,7 +23247,7 @@ func (x *ListSystemConfigsRequest) String() string {
 func (*ListSystemConfigsRequest) ProtoMessage() {}
 
 func (x *ListSystemConfigsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[300]
+	mi := &file_manpasik_proto_msgTypes[303]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22621,7 +23260,7 @@ func (x *ListSystemConfigsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSystemConfigsRequest.ProtoReflect.Descriptor instead.
 func (*ListSystemConfigsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{300}
+	return file_manpasik_proto_rawDescGZIP(), []int{303}
 }
 
 func (x *ListSystemConfigsRequest) GetLanguageCode() string {
@@ -22655,7 +23294,7 @@ type ListSystemConfigsResponse struct {
 
 func (x *ListSystemConfigsResponse) Reset() {
 	*x = ListSystemConfigsResponse{}
-	mi := &file_manpasik_proto_msgTypes[301]
+	mi := &file_manpasik_proto_msgTypes[304]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22667,7 +23306,7 @@ func (x *ListSystemConfigsResponse) String() string {
 func (*ListSystemConfigsResponse) ProtoMessage() {}
 
 func (x *ListSystemConfigsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[301]
+	mi := &file_manpasik_proto_msgTypes[304]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22680,7 +23319,7 @@ func (x *ListSystemConfigsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListSystemConfigsResponse.ProtoReflect.Descriptor instead.
 func (*ListSystemConfigsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{301}
+	return file_manpasik_proto_rawDescGZIP(), []int{304}
 }
 
 func (x *ListSystemConfigsResponse) GetConfigs() []*ConfigWithMeta {
@@ -22729,7 +23368,7 @@ type ConfigWithMeta struct {
 
 func (x *ConfigWithMeta) Reset() {
 	*x = ConfigWithMeta{}
-	mi := &file_manpasik_proto_msgTypes[302]
+	mi := &file_manpasik_proto_msgTypes[305]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22741,7 +23380,7 @@ func (x *ConfigWithMeta) String() string {
 func (*ConfigWithMeta) ProtoMessage() {}
 
 func (x *ConfigWithMeta) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[302]
+	mi := &file_manpasik_proto_msgTypes[305]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22754,7 +23393,7 @@ func (x *ConfigWithMeta) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfigWithMeta.ProtoReflect.Descriptor instead.
 func (*ConfigWithMeta) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{302}
+	return file_manpasik_proto_rawDescGZIP(), []int{305}
 }
 
 func (x *ConfigWithMeta) GetKey() string {
@@ -22935,7 +23574,7 @@ type GetConfigWithMetaRequest struct {
 
 func (x *GetConfigWithMetaRequest) Reset() {
 	*x = GetConfigWithMetaRequest{}
-	mi := &file_manpasik_proto_msgTypes[303]
+	mi := &file_manpasik_proto_msgTypes[306]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22947,7 +23586,7 @@ func (x *GetConfigWithMetaRequest) String() string {
 func (*GetConfigWithMetaRequest) ProtoMessage() {}
 
 func (x *GetConfigWithMetaRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[303]
+	mi := &file_manpasik_proto_msgTypes[306]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -22960,7 +23599,7 @@ func (x *GetConfigWithMetaRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetConfigWithMetaRequest.ProtoReflect.Descriptor instead.
 func (*GetConfigWithMetaRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{303}
+	return file_manpasik_proto_rawDescGZIP(), []int{306}
 }
 
 func (x *GetConfigWithMetaRequest) GetKey() string {
@@ -22987,7 +23626,7 @@ type ValidateConfigValueRequest struct {
 
 func (x *ValidateConfigValueRequest) Reset() {
 	*x = ValidateConfigValueRequest{}
-	mi := &file_manpasik_proto_msgTypes[304]
+	mi := &file_manpasik_proto_msgTypes[307]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -22999,7 +23638,7 @@ func (x *ValidateConfigValueRequest) String() string {
 func (*ValidateConfigValueRequest) ProtoMessage() {}
 
 func (x *ValidateConfigValueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[304]
+	mi := &file_manpasik_proto_msgTypes[307]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23012,7 +23651,7 @@ func (x *ValidateConfigValueRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateConfigValueRequest.ProtoReflect.Descriptor instead.
 func (*ValidateConfigValueRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{304}
+	return file_manpasik_proto_rawDescGZIP(), []int{307}
 }
 
 func (x *ValidateConfigValueRequest) GetKey() string {
@@ -23040,7 +23679,7 @@ type ValidateConfigValueResponse struct {
 
 func (x *ValidateConfigValueResponse) Reset() {
 	*x = ValidateConfigValueResponse{}
-	mi := &file_manpasik_proto_msgTypes[305]
+	mi := &file_manpasik_proto_msgTypes[308]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23052,7 +23691,7 @@ func (x *ValidateConfigValueResponse) String() string {
 func (*ValidateConfigValueResponse) ProtoMessage() {}
 
 func (x *ValidateConfigValueResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[305]
+	mi := &file_manpasik_proto_msgTypes[308]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23065,7 +23704,7 @@ func (x *ValidateConfigValueResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ValidateConfigValueResponse.ProtoReflect.Descriptor instead.
 func (*ValidateConfigValueResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{305}
+	return file_manpasik_proto_rawDescGZIP(), []int{308}
 }
 
 func (x *ValidateConfigValueResponse) GetValid() bool {
@@ -23099,7 +23738,7 @@ type BulkSetConfigsRequest struct {
 
 func (x *BulkSetConfigsRequest) Reset() {
 	*x = BulkSetConfigsRequest{}
-	mi := &file_manpasik_proto_msgTypes[306]
+	mi := &file_manpasik_proto_msgTypes[309]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23111,7 +23750,7 @@ func (x *BulkSetConfigsRequest) String() string {
 func (*BulkSetConfigsRequest) ProtoMessage() {}
 
 func (x *BulkSetConfigsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[306]
+	mi := &file_manpasik_proto_msgTypes[309]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23124,7 +23763,7 @@ func (x *BulkSetConfigsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BulkSetConfigsRequest.ProtoReflect.Descriptor instead.
 func (*BulkSetConfigsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{306}
+	return file_manpasik_proto_rawDescGZIP(), []int{309}
 }
 
 func (x *BulkSetConfigsRequest) GetConfigs() []*SetSystemConfigRequest {
@@ -23152,7 +23791,7 @@ type BulkSetConfigsResponse struct {
 
 func (x *BulkSetConfigsResponse) Reset() {
 	*x = BulkSetConfigsResponse{}
-	mi := &file_manpasik_proto_msgTypes[307]
+	mi := &file_manpasik_proto_msgTypes[310]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23164,7 +23803,7 @@ func (x *BulkSetConfigsResponse) String() string {
 func (*BulkSetConfigsResponse) ProtoMessage() {}
 
 func (x *BulkSetConfigsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[307]
+	mi := &file_manpasik_proto_msgTypes[310]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23177,7 +23816,7 @@ func (x *BulkSetConfigsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BulkSetConfigsResponse.ProtoReflect.Descriptor instead.
 func (*BulkSetConfigsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{307}
+	return file_manpasik_proto_rawDescGZIP(), []int{310}
 }
 
 func (x *BulkSetConfigsResponse) GetResults() []*ConfigChangeResult {
@@ -23212,7 +23851,7 @@ type ConfigChangeResult struct {
 
 func (x *ConfigChangeResult) Reset() {
 	*x = ConfigChangeResult{}
-	mi := &file_manpasik_proto_msgTypes[308]
+	mi := &file_manpasik_proto_msgTypes[311]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23224,7 +23863,7 @@ func (x *ConfigChangeResult) String() string {
 func (*ConfigChangeResult) ProtoMessage() {}
 
 func (x *ConfigChangeResult) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[308]
+	mi := &file_manpasik_proto_msgTypes[311]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23237,7 +23876,7 @@ func (x *ConfigChangeResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ConfigChangeResult.ProtoReflect.Descriptor instead.
 func (*ConfigChangeResult) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{308}
+	return file_manpasik_proto_rawDescGZIP(), []int{311}
 }
 
 func (x *ConfigChangeResult) GetKey() string {
@@ -23285,7 +23924,7 @@ type Consultation struct {
 
 func (x *Consultation) Reset() {
 	*x = Consultation{}
-	mi := &file_manpasik_proto_msgTypes[309]
+	mi := &file_manpasik_proto_msgTypes[312]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23297,7 +23936,7 @@ func (x *Consultation) String() string {
 func (*Consultation) ProtoMessage() {}
 
 func (x *Consultation) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[309]
+	mi := &file_manpasik_proto_msgTypes[312]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23310,7 +23949,7 @@ func (x *Consultation) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Consultation.ProtoReflect.Descriptor instead.
 func (*Consultation) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{309}
+	return file_manpasik_proto_rawDescGZIP(), []int{312}
 }
 
 func (x *Consultation) GetConsultationId() string {
@@ -23437,7 +24076,7 @@ type CreateConsultationRequest struct {
 
 func (x *CreateConsultationRequest) Reset() {
 	*x = CreateConsultationRequest{}
-	mi := &file_manpasik_proto_msgTypes[310]
+	mi := &file_manpasik_proto_msgTypes[313]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23449,7 +24088,7 @@ func (x *CreateConsultationRequest) String() string {
 func (*CreateConsultationRequest) ProtoMessage() {}
 
 func (x *CreateConsultationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[310]
+	mi := &file_manpasik_proto_msgTypes[313]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23462,7 +24101,7 @@ func (x *CreateConsultationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateConsultationRequest.ProtoReflect.Descriptor instead.
 func (*CreateConsultationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{310}
+	return file_manpasik_proto_rawDescGZIP(), []int{313}
 }
 
 func (x *CreateConsultationRequest) GetPatientUserId() string {
@@ -23502,7 +24141,7 @@ type GetConsultationRequest struct {
 
 func (x *GetConsultationRequest) Reset() {
 	*x = GetConsultationRequest{}
-	mi := &file_manpasik_proto_msgTypes[311]
+	mi := &file_manpasik_proto_msgTypes[314]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23514,7 +24153,7 @@ func (x *GetConsultationRequest) String() string {
 func (*GetConsultationRequest) ProtoMessage() {}
 
 func (x *GetConsultationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[311]
+	mi := &file_manpasik_proto_msgTypes[314]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23527,7 +24166,7 @@ func (x *GetConsultationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetConsultationRequest.ProtoReflect.Descriptor instead.
 func (*GetConsultationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{311}
+	return file_manpasik_proto_rawDescGZIP(), []int{314}
 }
 
 func (x *GetConsultationRequest) GetConsultationId() string {
@@ -23549,7 +24188,7 @@ type ListConsultationsRequest struct {
 
 func (x *ListConsultationsRequest) Reset() {
 	*x = ListConsultationsRequest{}
-	mi := &file_manpasik_proto_msgTypes[312]
+	mi := &file_manpasik_proto_msgTypes[315]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23561,7 +24200,7 @@ func (x *ListConsultationsRequest) String() string {
 func (*ListConsultationsRequest) ProtoMessage() {}
 
 func (x *ListConsultationsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[312]
+	mi := &file_manpasik_proto_msgTypes[315]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23574,7 +24213,7 @@ func (x *ListConsultationsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListConsultationsRequest.ProtoReflect.Descriptor instead.
 func (*ListConsultationsRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{312}
+	return file_manpasik_proto_rawDescGZIP(), []int{315}
 }
 
 func (x *ListConsultationsRequest) GetUserId() string {
@@ -23615,7 +24254,7 @@ type ListConsultationsResponse struct {
 
 func (x *ListConsultationsResponse) Reset() {
 	*x = ListConsultationsResponse{}
-	mi := &file_manpasik_proto_msgTypes[313]
+	mi := &file_manpasik_proto_msgTypes[316]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23627,7 +24266,7 @@ func (x *ListConsultationsResponse) String() string {
 func (*ListConsultationsResponse) ProtoMessage() {}
 
 func (x *ListConsultationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[313]
+	mi := &file_manpasik_proto_msgTypes[316]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23640,7 +24279,7 @@ func (x *ListConsultationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListConsultationsResponse.ProtoReflect.Descriptor instead.
 func (*ListConsultationsResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{313}
+	return file_manpasik_proto_rawDescGZIP(), []int{316}
 }
 
 func (x *ListConsultationsResponse) GetConsultations() []*Consultation {
@@ -23667,7 +24306,7 @@ type MatchDoctorRequest struct {
 
 func (x *MatchDoctorRequest) Reset() {
 	*x = MatchDoctorRequest{}
-	mi := &file_manpasik_proto_msgTypes[314]
+	mi := &file_manpasik_proto_msgTypes[317]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23679,7 +24318,7 @@ func (x *MatchDoctorRequest) String() string {
 func (*MatchDoctorRequest) ProtoMessage() {}
 
 func (x *MatchDoctorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[314]
+	mi := &file_manpasik_proto_msgTypes[317]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23692,7 +24331,7 @@ func (x *MatchDoctorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MatchDoctorRequest.ProtoReflect.Descriptor instead.
 func (*MatchDoctorRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{314}
+	return file_manpasik_proto_rawDescGZIP(), []int{317}
 }
 
 func (x *MatchDoctorRequest) GetSpecialty() DoctorSpecialty {
@@ -23719,7 +24358,7 @@ type MatchDoctorResponse struct {
 
 func (x *MatchDoctorResponse) Reset() {
 	*x = MatchDoctorResponse{}
-	mi := &file_manpasik_proto_msgTypes[315]
+	mi := &file_manpasik_proto_msgTypes[318]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23731,7 +24370,7 @@ func (x *MatchDoctorResponse) String() string {
 func (*MatchDoctorResponse) ProtoMessage() {}
 
 func (x *MatchDoctorResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[315]
+	mi := &file_manpasik_proto_msgTypes[318]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23744,7 +24383,7 @@ func (x *MatchDoctorResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MatchDoctorResponse.ProtoReflect.Descriptor instead.
 func (*MatchDoctorResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{315}
+	return file_manpasik_proto_rawDescGZIP(), []int{318}
 }
 
 func (x *MatchDoctorResponse) GetDoctors() []*DoctorProfile {
@@ -23780,7 +24419,7 @@ type DoctorProfile struct {
 
 func (x *DoctorProfile) Reset() {
 	*x = DoctorProfile{}
-	mi := &file_manpasik_proto_msgTypes[316]
+	mi := &file_manpasik_proto_msgTypes[319]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23792,7 +24431,7 @@ func (x *DoctorProfile) String() string {
 func (*DoctorProfile) ProtoMessage() {}
 
 func (x *DoctorProfile) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[316]
+	mi := &file_manpasik_proto_msgTypes[319]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23805,7 +24444,7 @@ func (x *DoctorProfile) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DoctorProfile.ProtoReflect.Descriptor instead.
 func (*DoctorProfile) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{316}
+	return file_manpasik_proto_rawDescGZIP(), []int{319}
 }
 
 func (x *DoctorProfile) GetDoctorId() string {
@@ -23895,7 +24534,7 @@ type StartVideoSessionRequest struct {
 
 func (x *StartVideoSessionRequest) Reset() {
 	*x = StartVideoSessionRequest{}
-	mi := &file_manpasik_proto_msgTypes[317]
+	mi := &file_manpasik_proto_msgTypes[320]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23907,7 +24546,7 @@ func (x *StartVideoSessionRequest) String() string {
 func (*StartVideoSessionRequest) ProtoMessage() {}
 
 func (x *StartVideoSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[317]
+	mi := &file_manpasik_proto_msgTypes[320]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23920,7 +24559,7 @@ func (x *StartVideoSessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StartVideoSessionRequest.ProtoReflect.Descriptor instead.
 func (*StartVideoSessionRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{317}
+	return file_manpasik_proto_rawDescGZIP(), []int{320}
 }
 
 func (x *StartVideoSessionRequest) GetConsultationId() string {
@@ -23953,7 +24592,7 @@ type VideoSession struct {
 
 func (x *VideoSession) Reset() {
 	*x = VideoSession{}
-	mi := &file_manpasik_proto_msgTypes[318]
+	mi := &file_manpasik_proto_msgTypes[321]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -23965,7 +24604,7 @@ func (x *VideoSession) String() string {
 func (*VideoSession) ProtoMessage() {}
 
 func (x *VideoSession) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[318]
+	mi := &file_manpasik_proto_msgTypes[321]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -23978,7 +24617,7 @@ func (x *VideoSession) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use VideoSession.ProtoReflect.Descriptor instead.
 func (*VideoSession) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{318}
+	return file_manpasik_proto_rawDescGZIP(), []int{321}
 }
 
 func (x *VideoSession) GetSessionId() string {
@@ -24049,7 +24688,7 @@ type EndVideoSessionRequest struct {
 
 func (x *EndVideoSessionRequest) Reset() {
 	*x = EndVideoSessionRequest{}
-	mi := &file_manpasik_proto_msgTypes[319]
+	mi := &file_manpasik_proto_msgTypes[322]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -24061,7 +24700,7 @@ func (x *EndVideoSessionRequest) String() string {
 func (*EndVideoSessionRequest) ProtoMessage() {}
 
 func (x *EndVideoSessionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[319]
+	mi := &file_manpasik_proto_msgTypes[322]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -24074,7 +24713,7 @@ func (x *EndVideoSessionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EndVideoSessionRequest.ProtoReflect.Descriptor instead.
 func (*EndVideoSessionRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{319}
+	return file_manpasik_proto_rawDescGZIP(), []int{322}
 }
 
 func (x *EndVideoSessionRequest) GetSessionId() string {
@@ -24115,7 +24754,7 @@ type RateConsultationRequest struct {
 
 func (x *RateConsultationRequest) Reset() {
 	*x = RateConsultationRequest{}
-	mi := &file_manpasik_proto_msgTypes[320]
+	mi := &file_manpasik_proto_msgTypes[323]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -24127,7 +24766,7 @@ func (x *RateConsultationRequest) String() string {
 func (*RateConsultationRequest) ProtoMessage() {}
 
 func (x *RateConsultationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[320]
+	mi := &file_manpasik_proto_msgTypes[323]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -24140,7 +24779,7 @@ func (x *RateConsultationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RateConsultationRequest.ProtoReflect.Descriptor instead.
 func (*RateConsultationRequest) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{320}
+	return file_manpasik_proto_rawDescGZIP(), []int{323}
 }
 
 func (x *RateConsultationRequest) GetConsultationId() string {
@@ -24167,7 +24806,7 @@ type RateConsultationResponse struct {
 
 func (x *RateConsultationResponse) Reset() {
 	*x = RateConsultationResponse{}
-	mi := &file_manpasik_proto_msgTypes[321]
+	mi := &file_manpasik_proto_msgTypes[324]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -24179,7 +24818,7 @@ func (x *RateConsultationResponse) String() string {
 func (*RateConsultationResponse) ProtoMessage() {}
 
 func (x *RateConsultationResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_manpasik_proto_msgTypes[321]
+	mi := &file_manpasik_proto_msgTypes[324]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -24192,7 +24831,7 @@ func (x *RateConsultationResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RateConsultationResponse.ProtoReflect.Descriptor instead.
 func (*RateConsultationResponse) Descriptor() ([]byte, []int) {
-	return file_manpasik_proto_rawDescGZIP(), []int{321}
+	return file_manpasik_proto_rawDescGZIP(), []int{324}
 }
 
 func (x *RateConsultationResponse) GetSuccess() bool {
@@ -24209,15 +24848,447 @@ func (x *RateConsultationResponse) GetNewAverageRating() float64 {
 	return 0
 }
 
+type SendFromTemplateRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	TemplateKey   string                 `protobuf:"bytes,1,opt,name=template_key,json=templateKey,proto3" json:"template_key,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Data          map[string]string      `protobuf:"bytes,3,rep,name=data,proto3" json:"data,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SendFromTemplateRequest) Reset() {
+	*x = SendFromTemplateRequest{}
+	mi := &file_manpasik_proto_msgTypes[325]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SendFromTemplateRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SendFromTemplateRequest) ProtoMessage() {}
+
+func (x *SendFromTemplateRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[325]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SendFromTemplateRequest.ProtoReflect.Descriptor instead.
+func (*SendFromTemplateRequest) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{325}
+}
+
+func (x *SendFromTemplateRequest) GetTemplateKey() string {
+	if x != nil {
+		return x.TemplateKey
+	}
+	return ""
+}
+
+func (x *SendFromTemplateRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *SendFromTemplateRequest) GetData() map[string]string {
+	if x != nil {
+		return x.Data
+	}
+	return nil
+}
+
+type ValidateSharingAccessRequest struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	GroupId         string                 `protobuf:"bytes,1,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
+	RequesterUserId string                 `protobuf:"bytes,2,opt,name=requester_user_id,json=requesterUserId,proto3" json:"requester_user_id,omitempty"`
+	TargetUserId    string                 `protobuf:"bytes,3,opt,name=target_user_id,json=targetUserId,proto3" json:"target_user_id,omitempty"`
+	Biomarker       string                 `protobuf:"bytes,4,opt,name=biomarker,proto3" json:"biomarker,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *ValidateSharingAccessRequest) Reset() {
+	*x = ValidateSharingAccessRequest{}
+	mi := &file_manpasik_proto_msgTypes[326]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ValidateSharingAccessRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ValidateSharingAccessRequest) ProtoMessage() {}
+
+func (x *ValidateSharingAccessRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[326]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ValidateSharingAccessRequest.ProtoReflect.Descriptor instead.
+func (*ValidateSharingAccessRequest) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{326}
+}
+
+func (x *ValidateSharingAccessRequest) GetGroupId() string {
+	if x != nil {
+		return x.GroupId
+	}
+	return ""
+}
+
+func (x *ValidateSharingAccessRequest) GetRequesterUserId() string {
+	if x != nil {
+		return x.RequesterUserId
+	}
+	return ""
+}
+
+func (x *ValidateSharingAccessRequest) GetTargetUserId() string {
+	if x != nil {
+		return x.TargetUserId
+	}
+	return ""
+}
+
+func (x *ValidateSharingAccessRequest) GetBiomarker() string {
+	if x != nil {
+		return x.Biomarker
+	}
+	return ""
+}
+
+type ValidateSharingAccessResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Allowed       bool                   `protobuf:"varint,1,opt,name=allowed,proto3" json:"allowed,omitempty"`
+	DenyReason    string                 `protobuf:"bytes,2,opt,name=deny_reason,json=denyReason,proto3" json:"deny_reason,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ValidateSharingAccessResponse) Reset() {
+	*x = ValidateSharingAccessResponse{}
+	mi := &file_manpasik_proto_msgTypes[327]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ValidateSharingAccessResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ValidateSharingAccessResponse) ProtoMessage() {}
+
+func (x *ValidateSharingAccessResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[327]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ValidateSharingAccessResponse.ProtoReflect.Descriptor instead.
+func (*ValidateSharingAccessResponse) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{327}
+}
+
+func (x *ValidateSharingAccessResponse) GetAllowed() bool {
+	if x != nil {
+		return x.Allowed
+	}
+	return false
+}
+
+func (x *ValidateSharingAccessResponse) GetDenyReason() string {
+	if x != nil {
+		return x.DenyReason
+	}
+	return ""
+}
+
+type GetAuditLogDetailsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Limit         int32                  `protobuf:"varint,1,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset        int32                  `protobuf:"varint,2,opt,name=offset,proto3" json:"offset,omitempty"`
+	AdminId       string                 `protobuf:"bytes,3,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"`
+	Action        string                 `protobuf:"bytes,4,opt,name=action,proto3" json:"action,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAuditLogDetailsRequest) Reset() {
+	*x = GetAuditLogDetailsRequest{}
+	mi := &file_manpasik_proto_msgTypes[328]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAuditLogDetailsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAuditLogDetailsRequest) ProtoMessage() {}
+
+func (x *GetAuditLogDetailsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[328]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAuditLogDetailsRequest.ProtoReflect.Descriptor instead.
+func (*GetAuditLogDetailsRequest) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{328}
+}
+
+func (x *GetAuditLogDetailsRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetAuditLogDetailsRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+func (x *GetAuditLogDetailsRequest) GetAdminId() string {
+	if x != nil {
+		return x.AdminId
+	}
+	return ""
+}
+
+func (x *GetAuditLogDetailsRequest) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+type GetAuditLogDetailsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Details       []*AuditLogDetail      `protobuf:"bytes,1,rep,name=details,proto3" json:"details,omitempty"`
+	Total         int32                  `protobuf:"varint,2,opt,name=total,proto3" json:"total,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetAuditLogDetailsResponse) Reset() {
+	*x = GetAuditLogDetailsResponse{}
+	mi := &file_manpasik_proto_msgTypes[329]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetAuditLogDetailsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetAuditLogDetailsResponse) ProtoMessage() {}
+
+func (x *GetAuditLogDetailsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[329]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetAuditLogDetailsResponse.ProtoReflect.Descriptor instead.
+func (*GetAuditLogDetailsResponse) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{329}
+}
+
+func (x *GetAuditLogDetailsResponse) GetDetails() []*AuditLogDetail {
+	if x != nil {
+		return x.Details
+	}
+	return nil
+}
+
+func (x *GetAuditLogDetailsResponse) GetTotal() int32 {
+	if x != nil {
+		return x.Total
+	}
+	return 0
+}
+
+type AuditLogDetail struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	AdminId       string                 `protobuf:"bytes,2,opt,name=admin_id,json=adminId,proto3" json:"admin_id,omitempty"`
+	Action        string                 `protobuf:"bytes,3,opt,name=action,proto3" json:"action,omitempty"`
+	ResourceType  string                 `protobuf:"bytes,4,opt,name=resource_type,json=resourceType,proto3" json:"resource_type,omitempty"`
+	ResourceId    string                 `protobuf:"bytes,5,opt,name=resource_id,json=resourceId,proto3" json:"resource_id,omitempty"`
+	OldValue      string                 `protobuf:"bytes,6,opt,name=old_value,json=oldValue,proto3" json:"old_value,omitempty"`
+	NewValue      string                 `protobuf:"bytes,7,opt,name=new_value,json=newValue,proto3" json:"new_value,omitempty"`
+	Description   string                 `protobuf:"bytes,8,opt,name=description,proto3" json:"description,omitempty"`
+	IpAddress     string                 `protobuf:"bytes,9,opt,name=ip_address,json=ipAddress,proto3" json:"ip_address,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,10,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AuditLogDetail) Reset() {
+	*x = AuditLogDetail{}
+	mi := &file_manpasik_proto_msgTypes[330]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AuditLogDetail) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AuditLogDetail) ProtoMessage() {}
+
+func (x *AuditLogDetail) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[330]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AuditLogDetail.ProtoReflect.Descriptor instead.
+func (*AuditLogDetail) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{330}
+}
+
+func (x *AuditLogDetail) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *AuditLogDetail) GetAdminId() string {
+	if x != nil {
+		return x.AdminId
+	}
+	return ""
+}
+
+func (x *AuditLogDetail) GetAction() string {
+	if x != nil {
+		return x.Action
+	}
+	return ""
+}
+
+func (x *AuditLogDetail) GetResourceType() string {
+	if x != nil {
+		return x.ResourceType
+	}
+	return ""
+}
+
+func (x *AuditLogDetail) GetResourceId() string {
+	if x != nil {
+		return x.ResourceId
+	}
+	return ""
+}
+
+func (x *AuditLogDetail) GetOldValue() string {
+	if x != nil {
+		return x.OldValue
+	}
+	return ""
+}
+
+func (x *AuditLogDetail) GetNewValue() string {
+	if x != nil {
+		return x.NewValue
+	}
+	return ""
+}
+
+func (x *AuditLogDetail) GetDescription() string {
+	if x != nil {
+		return x.Description
+	}
+	return ""
+}
+
+func (x *AuditLogDetail) GetIpAddress() string {
+	if x != nil {
+		return x.IpAddress
+	}
+	return ""
+}
+
+func (x *AuditLogDetail) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
 var File_manpasik_proto protoreflect.FileDescriptor
 
 const file_manpasik_proto_rawDesc = "" +
 	"\n" +
-	"\x0emanpasik.proto\x12\vmanpasik.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"f\n" +
+	"\x0emanpasik.proto\x12\vmanpasik.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xe9\x04\n" +
 	"\x0fRegisterRequest\x12\x14\n" +
 	"\x05email\x18\x01 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x02 \x01(\tR\bpassword\x12!\n" +
-	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\"x\n" +
+	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\x12\x1d\n" +
+	"\n" +
+	"birth_date\x18\x04 \x01(\tR\tbirthDate\x12+\n" +
+	"\x06gender\x18\x05 \x01(\x0e2\x13.manpasik.v1.GenderR\x06gender\x12\x1d\n" +
+	"\n" +
+	"blood_type\x18\x06 \x01(\tR\tbloodType\x12\x1b\n" +
+	"\theight_cm\x18\a \x01(\x01R\bheightCm\x12\x1b\n" +
+	"\tweight_kg\x18\b \x01(\x01R\bweightKg\x12-\n" +
+	"\x12medical_conditions\x18\t \x03(\tR\x11medicalConditions\x12\x1c\n" +
+	"\tallergies\x18\n" +
+	" \x03(\tR\tallergies\x124\n" +
+	"\x16emergency_contact_name\x18\v \x01(\tR\x14emergencyContactName\x126\n" +
+	"\x17emergency_contact_phone\x18\f \x01(\tR\x15emergencyContactPhone\x12!\n" +
+	"\fterms_agreed\x18\r \x01(\bR\vtermsAgreed\x12%\n" +
+	"\x0eprivacy_agreed\x18\x0e \x01(\bR\rprivacyAgreed\x12,\n" +
+	"\x12health_data_agreed\x18\x0f \x01(\bR\x10healthDataAgreed\x12)\n" +
+	"\x10marketing_agreed\x18\x10 \x01(\bR\x0fmarketingAgreed\"x\n" +
 	"\x10RegisterResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12!\n" +
@@ -24243,7 +25314,17 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x15ValidateTokenResponse\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12\x12\n" +
-	"\x04role\x18\x03 \x01(\tR\x04role\"\xcf\x01\n" +
+	"\x04role\x18\x03 \x01(\tR\x04role\"\xa1\x01\n" +
+	"\x12SocialLoginRequest\x127\n" +
+	"\bprovider\x18\x01 \x01(\x0e2\x1b.manpasik.v1.SocialProviderR\bprovider\x12\x19\n" +
+	"\bid_token\x18\x02 \x01(\tR\aidToken\x12!\n" +
+	"\faccess_token\x18\x03 \x01(\tR\vaccessToken\x12\x14\n" +
+	"\x05nonce\x18\x04 \x01(\tR\x05nonce\",\n" +
+	"\x14ResetPasswordRequest\x12\x14\n" +
+	"\x05email\x18\x01 \x01(\tR\x05email\"K\n" +
+	"\x15ResetPasswordResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\"\xcf\x01\n" +
 	"\x13StartSessionRequest\x12\x1b\n" +
 	"\tdevice_id\x18\x01 \x01(\tR\bdeviceId\x12!\n" +
 	"\fcartridge_id\x18\x02 \x01(\tR\vcartridgeId\x12\x17\n" +
@@ -24350,14 +25431,26 @@ const file_manpasik_proto_rawDesc = "" +
 	"\fdownload_url\x18\x02 \x01(\tR\vdownloadUrl\x12\x1a\n" +
 	"\bchecksum\x18\x03 \x01(\tR\bchecksum\",\n" +
 	"\x11GetProfileRequest\x12\x17\n" +
-	"\auser_id\x18\x01 \x01(\tR\x06userId\"\xa9\x01\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x89\x04\n" +
 	"\x14UpdateProfileRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12!\n" +
 	"\fdisplay_name\x18\x02 \x01(\tR\vdisplayName\x12\x1d\n" +
 	"\n" +
 	"avatar_url\x18\x03 \x01(\tR\tavatarUrl\x12\x1a\n" +
 	"\blanguage\x18\x04 \x01(\tR\blanguage\x12\x1a\n" +
-	"\btimezone\x18\x05 \x01(\tR\btimezone\"\xbd\x02\n" +
+	"\btimezone\x18\x05 \x01(\tR\btimezone\x12\x1d\n" +
+	"\n" +
+	"birth_date\x18\x06 \x01(\tR\tbirthDate\x12+\n" +
+	"\x06gender\x18\a \x01(\x0e2\x13.manpasik.v1.GenderR\x06gender\x12\x1d\n" +
+	"\n" +
+	"blood_type\x18\b \x01(\tR\tbloodType\x12\x1b\n" +
+	"\theight_cm\x18\t \x01(\x01R\bheightCm\x12\x1b\n" +
+	"\tweight_kg\x18\n" +
+	" \x01(\x01R\bweightKg\x12-\n" +
+	"\x12medical_conditions\x18\v \x03(\tR\x11medicalConditions\x12\x1c\n" +
+	"\tallergies\x18\f \x03(\tR\tallergies\x124\n" +
+	"\x16emergency_contact_name\x18\r \x01(\tR\x14emergencyContactName\x126\n" +
+	"\x17emergency_contact_phone\x18\x0e \x01(\tR\x15emergencyContactPhone\"\x80\x06\n" +
 	"\vUserProfile\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
 	"\x05email\x18\x02 \x01(\tR\x05email\x12!\n" +
@@ -24368,7 +25461,21 @@ const file_manpasik_proto_rawDesc = "" +
 	"\btimezone\x18\x06 \x01(\tR\btimezone\x12J\n" +
 	"\x11subscription_tier\x18\a \x01(\x0e2\x1d.manpasik.v1.SubscriptionTierR\x10subscriptionTier\x129\n" +
 	"\n" +
-	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"1\n" +
+	"created_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x1d\n" +
+	"\n" +
+	"birth_date\x18\t \x01(\tR\tbirthDate\x12+\n" +
+	"\x06gender\x18\n" +
+	" \x01(\x0e2\x13.manpasik.v1.GenderR\x06gender\x12\x1d\n" +
+	"\n" +
+	"blood_type\x18\v \x01(\tR\tbloodType\x12\x1b\n" +
+	"\theight_cm\x18\f \x01(\x01R\bheightCm\x12\x1b\n" +
+	"\tweight_kg\x18\r \x01(\x01R\bweightKg\x12-\n" +
+	"\x12medical_conditions\x18\x0e \x03(\tR\x11medicalConditions\x12\x1c\n" +
+	"\tallergies\x18\x0f \x03(\tR\tallergies\x124\n" +
+	"\x16emergency_contact_name\x18\x10 \x01(\tR\x14emergencyContactName\x126\n" +
+	"\x17emergency_contact_phone\x18\x11 \x01(\tR\x15emergencyContactPhone\x12D\n" +
+	"\x0fsocial_provider\x18\x12 \x01(\x0e2\x1b.manpasik.v1.SocialProviderR\x0esocialProvider\x12\x1b\n" +
+	"\tsocial_id\x18\x13 \x01(\tR\bsocialId\"1\n" +
 	"\x16GetSubscriptionRequest\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\"\x86\x03\n" +
 	"\x10SubscriptionInfo\x12\x17\n" +
@@ -25293,7 +26400,7 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x18ListFamilyMembersRequest\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\"P\n" +
 	"\x19ListFamilyMembersResponse\x123\n" +
-	"\amembers\x18\x01 \x03(\v2\x19.manpasik.v1.FamilyMemberR\amembers\"\xbc\x02\n" +
+	"\amembers\x18\x01 \x03(\v2\x19.manpasik.v1.FamilyMemberR\amembers\"\xbe\x04\n" +
 	"\x1cSetSharingPreferencesRequest\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12\x17\n" +
 	"\auser_id\x18\x02 \x01(\tR\x06userId\x12-\n" +
@@ -25301,7 +26408,15 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x14share_health_records\x18\x04 \x01(\bR\x12shareHealthRecords\x12/\n" +
 	"\x13share_prescriptions\x18\x05 \x01(\bR\x12sharePrescriptions\x12%\n" +
 	"\x0eshare_coaching\x18\x06 \x01(\bR\rshareCoaching\x12/\n" +
-	"\x14shared_with_user_ids\x18\a \x03(\tR\x11sharedWithUserIds\"\xed\x02\n" +
+	"\x14shared_with_user_ids\x18\a \x03(\tR\x11sharedWithUserIds\x12,\n" +
+	"\x12share_health_score\x18\b \x01(\bR\x10shareHealthScore\x12\x1f\n" +
+	"\vshare_goals\x18\t \x01(\bR\n" +
+	"shareGoals\x12!\n" +
+	"\fshare_alerts\x18\n" +
+	" \x01(\bR\vshareAlerts\x124\n" +
+	"\x16measurement_days_limit\x18\v \x01(\x05R\x14measurementDaysLimit\x12-\n" +
+	"\x12allowed_biomarkers\x18\f \x03(\tR\x11allowedBiomarkers\x12)\n" +
+	"\x10require_approval\x18\r \x01(\bR\x0frequireApproval\"\xef\x04\n" +
 	"\x12SharingPreferences\x12\x17\n" +
 	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x19\n" +
 	"\bgroup_id\x18\x02 \x01(\tR\agroupId\x12-\n" +
@@ -25311,7 +26426,15 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x0eshare_coaching\x18\x06 \x01(\bR\rshareCoaching\x12/\n" +
 	"\x14shared_with_user_ids\x18\a \x03(\tR\x11sharedWithUserIds\x129\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x89\x01\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12,\n" +
+	"\x12share_health_score\x18\t \x01(\bR\x10shareHealthScore\x12\x1f\n" +
+	"\vshare_goals\x18\n" +
+	" \x01(\bR\n" +
+	"shareGoals\x12!\n" +
+	"\fshare_alerts\x18\v \x01(\bR\vshareAlerts\x124\n" +
+	"\x16measurement_days_limit\x18\f \x01(\x05R\x14measurementDaysLimit\x12-\n" +
+	"\x12allowed_biomarkers\x18\r \x03(\tR\x11allowedBiomarkers\x12)\n" +
+	"\x10require_approval\x18\x0e \x01(\bR\x0frequireApproval\"\x89\x01\n" +
 	"\x1aGetSharedHealthDataRequest\x12\x19\n" +
 	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12*\n" +
 	"\x11requester_user_id\x18\x02 \x01(\tR\x0frequesterUserId\x12$\n" +
@@ -26140,7 +27263,58 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x06rating\x18\x02 \x01(\x01R\x06rating\"b\n" +
 	"\x18RateConsultationResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\x12,\n" +
-	"\x12new_average_rating\x18\x02 \x01(\x01R\x10newAverageRating*\xb0\x01\n" +
+	"\x12new_average_rating\x18\x02 \x01(\x01R\x10newAverageRating\"\xd2\x01\n" +
+	"\x17SendFromTemplateRequest\x12!\n" +
+	"\ftemplate_key\x18\x01 \x01(\tR\vtemplateKey\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12B\n" +
+	"\x04data\x18\x03 \x03(\v2..manpasik.v1.SendFromTemplateRequest.DataEntryR\x04data\x1a7\n" +
+	"\tDataEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xa9\x01\n" +
+	"\x1cValidateSharingAccessRequest\x12\x19\n" +
+	"\bgroup_id\x18\x01 \x01(\tR\agroupId\x12*\n" +
+	"\x11requester_user_id\x18\x02 \x01(\tR\x0frequesterUserId\x12$\n" +
+	"\x0etarget_user_id\x18\x03 \x01(\tR\ftargetUserId\x12\x1c\n" +
+	"\tbiomarker\x18\x04 \x01(\tR\tbiomarker\"Z\n" +
+	"\x1dValidateSharingAccessResponse\x12\x18\n" +
+	"\aallowed\x18\x01 \x01(\bR\aallowed\x12\x1f\n" +
+	"\vdeny_reason\x18\x02 \x01(\tR\n" +
+	"denyReason\"|\n" +
+	"\x19GetAuditLogDetailsRequest\x12\x14\n" +
+	"\x05limit\x18\x01 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x02 \x01(\x05R\x06offset\x12\x19\n" +
+	"\badmin_id\x18\x03 \x01(\tR\aadminId\x12\x16\n" +
+	"\x06action\x18\x04 \x01(\tR\x06action\"i\n" +
+	"\x1aGetAuditLogDetailsResponse\x125\n" +
+	"\adetails\x18\x01 \x03(\v2\x1b.manpasik.v1.AuditLogDetailR\adetails\x12\x14\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"\xcf\x02\n" +
+	"\x0eAuditLogDetail\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x19\n" +
+	"\badmin_id\x18\x02 \x01(\tR\aadminId\x12\x16\n" +
+	"\x06action\x18\x03 \x01(\tR\x06action\x12#\n" +
+	"\rresource_type\x18\x04 \x01(\tR\fresourceType\x12\x1f\n" +
+	"\vresource_id\x18\x05 \x01(\tR\n" +
+	"resourceId\x12\x1b\n" +
+	"\told_value\x18\x06 \x01(\tR\boldValue\x12\x1b\n" +
+	"\tnew_value\x18\a \x01(\tR\bnewValue\x12 \n" +
+	"\vdescription\x18\b \x01(\tR\vdescription\x12\x1d\n" +
+	"\n" +
+	"ip_address\x18\t \x01(\tR\tipAddress\x129\n" +
+	"\n" +
+	"created_at\x18\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt*\x9e\x01\n" +
+	"\x0eSocialProvider\x12\x1f\n" +
+	"\x1bSOCIAL_PROVIDER_UNSPECIFIED\x10\x00\x12\x1a\n" +
+	"\x16SOCIAL_PROVIDER_GOOGLE\x10\x01\x12\x19\n" +
+	"\x15SOCIAL_PROVIDER_APPLE\x10\x02\x12\x19\n" +
+	"\x15SOCIAL_PROVIDER_KAKAO\x10\x03\x12\x19\n" +
+	"\x15SOCIAL_PROVIDER_NAVER\x10\x04*t\n" +
+	"\x06Gender\x12\x16\n" +
+	"\x12GENDER_UNSPECIFIED\x10\x00\x12\x0f\n" +
+	"\vGENDER_MALE\x10\x01\x12\x11\n" +
+	"\rGENDER_FEMALE\x10\x02\x12\x10\n" +
+	"\fGENDER_OTHER\x10\x03\x12\x1c\n" +
+	"\x18GENDER_PREFER_NOT_TO_SAY\x10\x04*\xb0\x01\n" +
 	"\fDeviceStatus\x12\x19\n" +
 	"\x15DEVICE_STATUS_UNKNOWN\x10\x00\x12\x18\n" +
 	"\x14DEVICE_STATUS_ONLINE\x10\x01\x12\x19\n" +
@@ -26425,13 +27599,15 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x1cVIDEO_SESSION_STATUS_WAITING\x10\x01\x12\"\n" +
 	"\x1eVIDEO_SESSION_STATUS_CONNECTED\x10\x02\x12\x1e\n" +
 	"\x1aVIDEO_SESSION_STATUS_ENDED\x10\x03\x12\x1f\n" +
-	"\x1bVIDEO_SESSION_STATUS_FAILED\x10\x042\xff\x02\n" +
+	"\x1bVIDEO_SESSION_STATUS_FAILED\x10\x042\xa3\x04\n" +
 	"\vAuthService\x12G\n" +
 	"\bRegister\x12\x1c.manpasik.v1.RegisterRequest\x1a\x1d.manpasik.v1.RegisterResponse\x12>\n" +
-	"\x05Login\x12\x19.manpasik.v1.LoginRequest\x1a\x1a.manpasik.v1.LoginResponse\x12L\n" +
+	"\x05Login\x12\x19.manpasik.v1.LoginRequest\x1a\x1a.manpasik.v1.LoginResponse\x12J\n" +
+	"\vSocialLogin\x12\x1f.manpasik.v1.SocialLoginRequest\x1a\x1a.manpasik.v1.LoginResponse\x12L\n" +
 	"\fRefreshToken\x12 .manpasik.v1.RefreshTokenRequest\x1a\x1a.manpasik.v1.LoginResponse\x12A\n" +
 	"\x06Logout\x12\x1a.manpasik.v1.LogoutRequest\x1a\x1b.manpasik.v1.LogoutResponse\x12V\n" +
-	"\rValidateToken\x12!.manpasik.v1.ValidateTokenRequest\x1a\".manpasik.v1.ValidateTokenResponse2\xbd\x04\n" +
+	"\rValidateToken\x12!.manpasik.v1.ValidateTokenRequest\x1a\".manpasik.v1.ValidateTokenResponse\x12V\n" +
+	"\rResetPassword\x12!.manpasik.v1.ResetPasswordRequest\x1a\".manpasik.v1.ResetPasswordResponse2\xbd\x04\n" +
 	"\x12MeasurementService\x12S\n" +
 	"\fStartSession\x12 .manpasik.v1.StartSessionRequest\x1a!.manpasik.v1.StartSessionResponse\x12U\n" +
 	"\x11StreamMeasurement\x12\x1c.manpasik.v1.MeasurementData\x1a\x1e.manpasik.v1.MeasurementResult(\x010\x01\x12M\n" +
@@ -26519,7 +27695,7 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x11CancelReservation\x12%.manpasik.v1.CancelReservationRequest\x1a&.manpasik.v1.CancelReservationResponse\x12n\n" +
 	"\x15ListDoctorsByFacility\x12).manpasik.v1.ListDoctorsByFacilityRequest\x1a*.manpasik.v1.ListDoctorsByFacilityResponse\x12n\n" +
 	"\x15GetDoctorAvailability\x12).manpasik.v1.GetDoctorAvailabilityRequest\x1a*.manpasik.v1.GetDoctorAvailabilityResponse\x12S\n" +
-	"\fSelectDoctor\x12 .manpasik.v1.SelectDoctorRequest\x1a!.manpasik.v1.SelectDoctorResponse2\x91\n" +
+	"\fSelectDoctor\x12 .manpasik.v1.SelectDoctorRequest\x1a!.manpasik.v1.SelectDoctorResponse2\xf8\n" +
 	"\n" +
 	"\fAdminService\x12F\n" +
 	"\vCreateAdmin\x12\x1f.manpasik.v1.CreateAdminRequest\x1a\x16.manpasik.v1.AdminUser\x12@\n" +
@@ -26537,7 +27713,8 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x11ListSystemConfigs\x12%.manpasik.v1.ListSystemConfigsRequest\x1a&.manpasik.v1.ListSystemConfigsResponse\x12W\n" +
 	"\x11GetConfigWithMeta\x12%.manpasik.v1.GetConfigWithMetaRequest\x1a\x1b.manpasik.v1.ConfigWithMeta\x12h\n" +
 	"\x13ValidateConfigValue\x12'.manpasik.v1.ValidateConfigValueRequest\x1a(.manpasik.v1.ValidateConfigValueResponse\x12Y\n" +
-	"\x0eBulkSetConfigs\x12\".manpasik.v1.BulkSetConfigsRequest\x1a#.manpasik.v1.BulkSetConfigsResponse2\xcd\x06\n" +
+	"\x0eBulkSetConfigs\x12\".manpasik.v1.BulkSetConfigsRequest\x1a#.manpasik.v1.BulkSetConfigsResponse\x12e\n" +
+	"\x12GetAuditLogDetails\x12&.manpasik.v1.GetAuditLogDetailsRequest\x1a'.manpasik.v1.GetAuditLogDetailsResponse2\xbd\a\n" +
 	"\rFamilyService\x12T\n" +
 	"\x11CreateFamilyGroup\x12%.manpasik.v1.CreateFamilyGroupRequest\x1a\x18.manpasik.v1.FamilyGroup\x12N\n" +
 	"\x0eGetFamilyGroup\x12\".manpasik.v1.GetFamilyGroupRequest\x1a\x18.manpasik.v1.FamilyGroup\x12O\n" +
@@ -26547,7 +27724,8 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x10UpdateMemberRole\x12$.manpasik.v1.UpdateMemberRoleRequest\x1a\x19.manpasik.v1.FamilyMember\x12b\n" +
 	"\x11ListFamilyMembers\x12%.manpasik.v1.ListFamilyMembersRequest\x1a&.manpasik.v1.ListFamilyMembersResponse\x12c\n" +
 	"\x15SetSharingPreferences\x12).manpasik.v1.SetSharingPreferencesRequest\x1a\x1f.manpasik.v1.SharingPreferences\x12h\n" +
-	"\x13GetSharedHealthData\x12'.manpasik.v1.GetSharedHealthDataRequest\x1a(.manpasik.v1.GetSharedHealthDataResponse2\xc0\t\n" +
+	"\x13GetSharedHealthData\x12'.manpasik.v1.GetSharedHealthDataRequest\x1a(.manpasik.v1.GetSharedHealthDataResponse\x12n\n" +
+	"\x15ValidateSharingAccess\x12).manpasik.v1.ValidateSharingAccessRequest\x1a*.manpasik.v1.ValidateSharingAccessResponse2\xc0\t\n" +
 	"\x13HealthRecordService\x12Q\n" +
 	"\fCreateRecord\x12&.manpasik.v1.CreateHealthRecordRequest\x1a\x19.manpasik.v1.HealthRecord\x12K\n" +
 	"\tGetRecord\x12#.manpasik.v1.GetHealthRecordRequest\x1a\x19.manpasik.v1.HealthRecord\x12\\\n" +
@@ -26597,7 +27775,7 @@ const file_manpasik_proto_rawDesc = "" +
 	"\n" +
 	"SendSignal\x12\x1e.manpasik.v1.SendSignalRequest\x1a\x1f.manpasik.v1.SendSignalResponse\x12_\n" +
 	"\x10ListParticipants\x12$.manpasik.v1.ListParticipantsRequest\x1a%.manpasik.v1.ListParticipantsResponse\x12S\n" +
-	"\fGetRoomStats\x12 .manpasik.v1.GetRoomStatsRequest\x1a!.manpasik.v1.GetRoomStatsResponse2\xbe\x05\n" +
+	"\fGetRoomStats\x12 .manpasik.v1.GetRoomStatsRequest\x1a!.manpasik.v1.GetRoomStatsResponse2\x93\x06\n" +
 	"\x13NotificationService\x12S\n" +
 	"\x10SendNotification\x12$.manpasik.v1.SendNotificationRequest\x1a\x19.manpasik.v1.Notification\x12b\n" +
 	"\x11ListNotifications\x12%.manpasik.v1.ListNotificationsRequest\x1a&.manpasik.v1.ListNotificationsResponse\x12M\n" +
@@ -26606,7 +27784,8 @@ const file_manpasik_proto_rawDesc = "" +
 	"\rMarkAllAsRead\x12!.manpasik.v1.MarkAllAsReadRequest\x1a\".manpasik.v1.MarkAllAsReadResponse\x12Y\n" +
 	"\x0eGetUnreadCount\x12\".manpasik.v1.GetUnreadCountRequest\x1a#.manpasik.v1.GetUnreadCountResponse\x12x\n" +
 	"\x1dUpdateNotificationPreferences\x121.manpasik.v1.UpdateNotificationPreferencesRequest\x1a$.manpasik.v1.NotificationPreferences\x12r\n" +
-	"\x1aGetNotificationPreferences\x12..manpasik.v1.GetNotificationPreferencesRequest\x1a$.manpasik.v1.NotificationPreferences2\xef\x04\n" +
+	"\x1aGetNotificationPreferences\x12..manpasik.v1.GetNotificationPreferencesRequest\x1a$.manpasik.v1.NotificationPreferences\x12S\n" +
+	"\x10SendFromTemplate\x12$.manpasik.v1.SendFromTemplateRequest\x1a\x19.manpasik.v1.Notification2\xef\x04\n" +
 	"\x12TranslationService\x12V\n" +
 	"\rTranslateText\x12!.manpasik.v1.TranslateTextRequest\x1a\".manpasik.v1.TranslateTextResponse\x12Y\n" +
 	"\x0eDetectLanguage\x12\".manpasik.v1.DetectLanguageRequest\x1a#.manpasik.v1.DetectLanguageResponse\x12q\n" +
@@ -26635,988 +27814,1018 @@ func file_manpasik_proto_rawDescGZIP() []byte {
 	return file_manpasik_proto_rawDescData
 }
 
-var file_manpasik_proto_enumTypes = make([]protoimpl.EnumInfo, 39)
-var file_manpasik_proto_msgTypes = make([]protoimpl.MessageInfo, 333)
+var file_manpasik_proto_enumTypes = make([]protoimpl.EnumInfo, 41)
+var file_manpasik_proto_msgTypes = make([]protoimpl.MessageInfo, 343)
 var file_manpasik_proto_goTypes = []any{
-	(DeviceStatus)(0),                            // 0: manpasik.v1.DeviceStatus
-	(CommandType)(0),                             // 1: manpasik.v1.CommandType
-	(SubscriptionTier)(0),                        // 2: manpasik.v1.SubscriptionTier
-	(SubscriptionStatus)(0),                      // 3: manpasik.v1.SubscriptionStatus
-	(ProductCategory)(0),                         // 4: manpasik.v1.ProductCategory
-	(OrderStatus)(0),                             // 5: manpasik.v1.OrderStatus
-	(PaymentType)(0),                             // 6: manpasik.v1.PaymentType
-	(PaymentStatus)(0),                           // 7: manpasik.v1.PaymentStatus
-	(AiModelType)(0),                             // 8: manpasik.v1.AiModelType
-	(RiskLevel)(0),                               // 9: manpasik.v1.RiskLevel
-	(CalibrationType)(0),                         // 10: manpasik.v1.CalibrationType
-	(CalibrationStatus)(0),                       // 11: manpasik.v1.CalibrationStatus
-	(GoalCategory)(0),                            // 12: manpasik.v1.GoalCategory
-	(GoalStatus)(0),                              // 13: manpasik.v1.GoalStatus
-	(CoachingType)(0),                            // 14: manpasik.v1.CoachingType
-	(RecommendationType)(0),                      // 15: manpasik.v1.RecommendationType
-	(CartridgeAccessLevel)(0),                    // 16: manpasik.v1.CartridgeAccessLevel
-	(FacilityType)(0),                            // 17: manpasik.v1.FacilityType
-	(DoctorSpecialty)(0),                         // 18: manpasik.v1.DoctorSpecialty
-	(ReservationStatus)(0),                       // 19: manpasik.v1.ReservationStatus
-	(AdminRole)(0),                               // 20: manpasik.v1.AdminRole
-	(AuditAction)(0),                             // 21: manpasik.v1.AuditAction
-	(FamilyRole)(0),                              // 22: manpasik.v1.FamilyRole
-	(InvitationStatus)(0),                        // 23: manpasik.v1.InvitationStatus
-	(HealthRecordType)(0),                        // 24: manpasik.v1.HealthRecordType
-	(FHIRResourceType)(0),                        // 25: manpasik.v1.FHIRResourceType
-	(PrescriptionStatus)(0),                      // 26: manpasik.v1.PrescriptionStatus
-	(DrugInteractionSeverity)(0),                 // 27: manpasik.v1.DrugInteractionSeverity
-	(PostCategory)(0),                            // 28: manpasik.v1.PostCategory
-	(ChallengeStatus)(0),                         // 29: manpasik.v1.ChallengeStatus
-	(ChallengeType)(0),                           // 30: manpasik.v1.ChallengeType
-	(RoomType)(0),                                // 31: manpasik.v1.RoomType
-	(RoomStatus)(0),                              // 32: manpasik.v1.RoomStatus
-	(SignalType)(0),                              // 33: manpasik.v1.SignalType
-	(NotificationType)(0),                        // 34: manpasik.v1.NotificationType
-	(NotificationChannel)(0),                     // 35: manpasik.v1.NotificationChannel
-	(NotificationPriority)(0),                    // 36: manpasik.v1.NotificationPriority
-	(ConsultationStatus)(0),                      // 37: manpasik.v1.ConsultationStatus
-	(VideoSessionStatus)(0),                      // 38: manpasik.v1.VideoSessionStatus
-	(*RegisterRequest)(nil),                      // 39: manpasik.v1.RegisterRequest
-	(*RegisterResponse)(nil),                     // 40: manpasik.v1.RegisterResponse
-	(*LoginRequest)(nil),                         // 41: manpasik.v1.LoginRequest
-	(*LoginResponse)(nil),                        // 42: manpasik.v1.LoginResponse
-	(*RefreshTokenRequest)(nil),                  // 43: manpasik.v1.RefreshTokenRequest
-	(*LogoutRequest)(nil),                        // 44: manpasik.v1.LogoutRequest
-	(*LogoutResponse)(nil),                       // 45: manpasik.v1.LogoutResponse
-	(*ValidateTokenRequest)(nil),                 // 46: manpasik.v1.ValidateTokenRequest
-	(*ValidateTokenResponse)(nil),                // 47: manpasik.v1.ValidateTokenResponse
-	(*StartSessionRequest)(nil),                  // 48: manpasik.v1.StartSessionRequest
-	(*StartSessionResponse)(nil),                 // 49: manpasik.v1.StartSessionResponse
-	(*MeasurementData)(nil),                      // 50: manpasik.v1.MeasurementData
-	(*DifferentialCorrection)(nil),               // 51: manpasik.v1.DifferentialCorrection
-	(*EnvironmentMeta)(nil),                      // 52: manpasik.v1.EnvironmentMeta
-	(*MeasurementResult)(nil),                    // 53: manpasik.v1.MeasurementResult
-	(*EndSessionRequest)(nil),                    // 54: manpasik.v1.EndSessionRequest
-	(*EndSessionResponse)(nil),                   // 55: manpasik.v1.EndSessionResponse
-	(*GetHistoryRequest)(nil),                    // 56: manpasik.v1.GetHistoryRequest
-	(*GetHistoryResponse)(nil),                   // 57: manpasik.v1.GetHistoryResponse
-	(*MeasurementSummary)(nil),                   // 58: manpasik.v1.MeasurementSummary
-	(*RegisterDeviceRequest)(nil),                // 59: manpasik.v1.RegisterDeviceRequest
-	(*RegisterDeviceResponse)(nil),               // 60: manpasik.v1.RegisterDeviceResponse
-	(*ListDevicesRequest)(nil),                   // 61: manpasik.v1.ListDevicesRequest
-	(*ListDevicesResponse)(nil),                  // 62: manpasik.v1.ListDevicesResponse
-	(*DeviceInfo)(nil),                           // 63: manpasik.v1.DeviceInfo
-	(*DeviceStatusUpdate)(nil),                   // 64: manpasik.v1.DeviceStatusUpdate
-	(*DeviceCommand)(nil),                        // 65: manpasik.v1.DeviceCommand
-	(*OtaRequest)(nil),                           // 66: manpasik.v1.OtaRequest
-	(*OtaResponse)(nil),                          // 67: manpasik.v1.OtaResponse
-	(*GetProfileRequest)(nil),                    // 68: manpasik.v1.GetProfileRequest
-	(*UpdateProfileRequest)(nil),                 // 69: manpasik.v1.UpdateProfileRequest
-	(*UserProfile)(nil),                          // 70: manpasik.v1.UserProfile
-	(*GetSubscriptionRequest)(nil),               // 71: manpasik.v1.GetSubscriptionRequest
-	(*SubscriptionInfo)(nil),                     // 72: manpasik.v1.SubscriptionInfo
-	(*CreateSubscriptionRequest)(nil),            // 73: manpasik.v1.CreateSubscriptionRequest
-	(*GetSubscriptionDetailRequest)(nil),         // 74: manpasik.v1.GetSubscriptionDetailRequest
-	(*UpdateSubscriptionRequest)(nil),            // 75: manpasik.v1.UpdateSubscriptionRequest
-	(*CancelSubscriptionRequest)(nil),            // 76: manpasik.v1.CancelSubscriptionRequest
-	(*CancelSubscriptionResponse)(nil),           // 77: manpasik.v1.CancelSubscriptionResponse
-	(*SubscriptionDetail)(nil),                   // 78: manpasik.v1.SubscriptionDetail
-	(*CheckFeatureAccessRequest)(nil),            // 79: manpasik.v1.CheckFeatureAccessRequest
-	(*CheckFeatureAccessResponse)(nil),           // 80: manpasik.v1.CheckFeatureAccessResponse
-	(*ListSubscriptionPlansRequest)(nil),         // 81: manpasik.v1.ListSubscriptionPlansRequest
-	(*ListSubscriptionPlansResponse)(nil),        // 82: manpasik.v1.ListSubscriptionPlansResponse
-	(*SubscriptionPlan)(nil),                     // 83: manpasik.v1.SubscriptionPlan
-	(*ListProductsRequest)(nil),                  // 84: manpasik.v1.ListProductsRequest
-	(*ListProductsResponse)(nil),                 // 85: manpasik.v1.ListProductsResponse
-	(*GetProductRequest)(nil),                    // 86: manpasik.v1.GetProductRequest
-	(*Product)(nil),                              // 87: manpasik.v1.Product
-	(*AddToCartRequest)(nil),                     // 88: manpasik.v1.AddToCartRequest
-	(*GetCartRequest)(nil),                       // 89: manpasik.v1.GetCartRequest
-	(*RemoveFromCartRequest)(nil),                // 90: manpasik.v1.RemoveFromCartRequest
-	(*Cart)(nil),                                 // 91: manpasik.v1.Cart
-	(*CartItem)(nil),                             // 92: manpasik.v1.CartItem
-	(*CreateOrderRequest)(nil),                   // 93: manpasik.v1.CreateOrderRequest
-	(*GetOrderRequest)(nil),                      // 94: manpasik.v1.GetOrderRequest
-	(*ListOrdersRequest)(nil),                    // 95: manpasik.v1.ListOrdersRequest
-	(*ListOrdersResponse)(nil),                   // 96: manpasik.v1.ListOrdersResponse
-	(*Order)(nil),                                // 97: manpasik.v1.Order
-	(*OrderItem)(nil),                            // 98: manpasik.v1.OrderItem
-	(*CreatePaymentRequest)(nil),                 // 99: manpasik.v1.CreatePaymentRequest
-	(*ConfirmPaymentRequest)(nil),                // 100: manpasik.v1.ConfirmPaymentRequest
-	(*GetPaymentRequest)(nil),                    // 101: manpasik.v1.GetPaymentRequest
-	(*ListPaymentsRequest)(nil),                  // 102: manpasik.v1.ListPaymentsRequest
-	(*ListPaymentsResponse)(nil),                 // 103: manpasik.v1.ListPaymentsResponse
-	(*PaymentDetail)(nil),                        // 104: manpasik.v1.PaymentDetail
-	(*RefundPaymentRequest)(nil),                 // 105: manpasik.v1.RefundPaymentRequest
-	(*RefundResponse)(nil),                       // 106: manpasik.v1.RefundResponse
-	(*AnalyzeMeasurementRequest)(nil),            // 107: manpasik.v1.AnalyzeMeasurementRequest
-	(*BiomarkerResult)(nil),                      // 108: manpasik.v1.BiomarkerResult
-	(*AnomalyFlag)(nil),                          // 109: manpasik.v1.AnomalyFlag
-	(*AnalysisResult)(nil),                       // 110: manpasik.v1.AnalysisResult
-	(*GetHealthScoreRequest)(nil),                // 111: manpasik.v1.GetHealthScoreRequest
-	(*HealthScoreResponse)(nil),                  // 112: manpasik.v1.HealthScoreResponse
-	(*PredictTrendRequest)(nil),                  // 113: manpasik.v1.PredictTrendRequest
-	(*TrendDataPoint)(nil),                       // 114: manpasik.v1.TrendDataPoint
-	(*TrendPrediction)(nil),                      // 115: manpasik.v1.TrendPrediction
-	(*GetModelInfoRequest)(nil),                  // 116: manpasik.v1.GetModelInfoRequest
-	(*ModelInfo)(nil),                            // 117: manpasik.v1.ModelInfo
-	(*ListModelsRequest)(nil),                    // 118: manpasik.v1.ListModelsRequest
-	(*ListModelsResponse)(nil),                   // 119: manpasik.v1.ListModelsResponse
-	(*ReadCartridgeRequest)(nil),                 // 120: manpasik.v1.ReadCartridgeRequest
-	(*CartridgeDetail)(nil),                      // 121: manpasik.v1.CartridgeDetail
-	(*RecordUsageRequest)(nil),                   // 122: manpasik.v1.RecordUsageRequest
-	(*RecordUsageResponse)(nil),                  // 123: manpasik.v1.RecordUsageResponse
-	(*GetUsageHistoryRequest)(nil),               // 124: manpasik.v1.GetUsageHistoryRequest
-	(*GetUsageHistoryResponse)(nil),              // 125: manpasik.v1.GetUsageHistoryResponse
-	(*CartridgeUsageRecord)(nil),                 // 126: manpasik.v1.CartridgeUsageRecord
-	(*GetCartridgeTypeRequest)(nil),              // 127: manpasik.v1.GetCartridgeTypeRequest
-	(*ListCategoriesRequest)(nil),                // 128: manpasik.v1.ListCategoriesRequest
-	(*ListCategoriesResponse)(nil),               // 129: manpasik.v1.ListCategoriesResponse
-	(*ListTypesByCategoryRequest)(nil),           // 130: manpasik.v1.ListTypesByCategoryRequest
-	(*ListTypesByCategoryResponse)(nil),          // 131: manpasik.v1.ListTypesByCategoryResponse
-	(*GetRemainingUsesRequest)(nil),              // 132: manpasik.v1.GetRemainingUsesRequest
-	(*GetRemainingUsesResponse)(nil),             // 133: manpasik.v1.GetRemainingUsesResponse
-	(*ValidateCartridgeRequest)(nil),             // 134: manpasik.v1.ValidateCartridgeRequest
-	(*ValidateCartridgeResponse)(nil),            // 135: manpasik.v1.ValidateCartridgeResponse
-	(*RegisterFactoryCalibrationRequest)(nil),    // 136: manpasik.v1.RegisterFactoryCalibrationRequest
-	(*PerformFieldCalibrationRequest)(nil),       // 137: manpasik.v1.PerformFieldCalibrationRequest
-	(*GetCalibrationRequest)(nil),                // 138: manpasik.v1.GetCalibrationRequest
-	(*CalibrationRecord)(nil),                    // 139: manpasik.v1.CalibrationRecord
-	(*ListCalibrationHistoryRequest)(nil),        // 140: manpasik.v1.ListCalibrationHistoryRequest
-	(*ListCalibrationHistoryResponse)(nil),       // 141: manpasik.v1.ListCalibrationHistoryResponse
-	(*CheckCalibrationStatusRequest)(nil),        // 142: manpasik.v1.CheckCalibrationStatusRequest
-	(*CalibrationStatusResponse)(nil),            // 143: manpasik.v1.CalibrationStatusResponse
-	(*ListCalibrationModelsRequest)(nil),         // 144: manpasik.v1.ListCalibrationModelsRequest
-	(*CalibrationModel)(nil),                     // 145: manpasik.v1.CalibrationModel
-	(*ListCalibrationModelsResponse)(nil),        // 146: manpasik.v1.ListCalibrationModelsResponse
-	(*SetHealthGoalRequest)(nil),                 // 147: manpasik.v1.SetHealthGoalRequest
-	(*HealthGoal)(nil),                           // 148: manpasik.v1.HealthGoal
-	(*GetHealthGoalsRequest)(nil),                // 149: manpasik.v1.GetHealthGoalsRequest
-	(*GetHealthGoalsResponse)(nil),               // 150: manpasik.v1.GetHealthGoalsResponse
-	(*GenerateCoachingRequest)(nil),              // 151: manpasik.v1.GenerateCoachingRequest
-	(*CoachingMessage)(nil),                      // 152: manpasik.v1.CoachingMessage
-	(*ListCoachingMessagesRequest)(nil),          // 153: manpasik.v1.ListCoachingMessagesRequest
-	(*ListCoachingMessagesResponse)(nil),         // 154: manpasik.v1.ListCoachingMessagesResponse
-	(*GenerateDailyReportRequest)(nil),           // 155: manpasik.v1.GenerateDailyReportRequest
-	(*DailyHealthReport)(nil),                    // 156: manpasik.v1.DailyHealthReport
-	(*GetWeeklyReportRequest)(nil),               // 157: manpasik.v1.GetWeeklyReportRequest
-	(*WeeklyHealthReport)(nil),                   // 158: manpasik.v1.WeeklyHealthReport
-	(*GetRecommendationsRequest)(nil),            // 159: manpasik.v1.GetRecommendationsRequest
-	(*Recommendation)(nil),                       // 160: manpasik.v1.Recommendation
-	(*GetRecommendationsResponse)(nil),           // 161: manpasik.v1.GetRecommendationsResponse
-	(*CartridgeCategoryInfo)(nil),                // 162: manpasik.v1.CartridgeCategoryInfo
-	(*CartridgeTypeInfo)(nil),                    // 163: manpasik.v1.CartridgeTypeInfo
-	(*CheckCartridgeAccessRequest)(nil),          // 164: manpasik.v1.CheckCartridgeAccessRequest
-	(*CheckCartridgeAccessResponse)(nil),         // 165: manpasik.v1.CheckCartridgeAccessResponse
-	(*ListAccessibleCartridgesRequest)(nil),      // 166: manpasik.v1.ListAccessibleCartridgesRequest
-	(*ListAccessibleCartridgesResponse)(nil),     // 167: manpasik.v1.ListAccessibleCartridgesResponse
-	(*CartridgeAccessEntry)(nil),                 // 168: manpasik.v1.CartridgeAccessEntry
-	(*SearchFacilitiesRequest)(nil),              // 169: manpasik.v1.SearchFacilitiesRequest
-	(*SearchFacilitiesResponse)(nil),             // 170: manpasik.v1.SearchFacilitiesResponse
-	(*GetFacilityRequest)(nil),                   // 171: manpasik.v1.GetFacilityRequest
-	(*Facility)(nil),                             // 172: manpasik.v1.Facility
-	(*GetAvailableSlotsRequest)(nil),             // 173: manpasik.v1.GetAvailableSlotsRequest
-	(*GetAvailableSlotsResponse)(nil),            // 174: manpasik.v1.GetAvailableSlotsResponse
-	(*TimeSlot)(nil),                             // 175: manpasik.v1.TimeSlot
-	(*CreateReservationRequest)(nil),             // 176: manpasik.v1.CreateReservationRequest
-	(*Reservation)(nil),                          // 177: manpasik.v1.Reservation
-	(*GetReservationRequest)(nil),                // 178: manpasik.v1.GetReservationRequest
-	(*ListReservationsRequest)(nil),              // 179: manpasik.v1.ListReservationsRequest
-	(*ListReservationsResponse)(nil),             // 180: manpasik.v1.ListReservationsResponse
-	(*CancelReservationRequest)(nil),             // 181: manpasik.v1.CancelReservationRequest
-	(*CancelReservationResponse)(nil),            // 182: manpasik.v1.CancelReservationResponse
-	(*CreateAdminRequest)(nil),                   // 183: manpasik.v1.CreateAdminRequest
-	(*GetAdminRequest)(nil),                      // 184: manpasik.v1.GetAdminRequest
-	(*ListAdminsRequest)(nil),                    // 185: manpasik.v1.ListAdminsRequest
-	(*ListAdminsResponse)(nil),                   // 186: manpasik.v1.ListAdminsResponse
-	(*UpdateAdminRoleRequest)(nil),               // 187: manpasik.v1.UpdateAdminRoleRequest
-	(*DeactivateAdminRequest)(nil),               // 188: manpasik.v1.DeactivateAdminRequest
-	(*AdminUser)(nil),                            // 189: manpasik.v1.AdminUser
-	(*AdminListUsersRequest)(nil),                // 190: manpasik.v1.AdminListUsersRequest
-	(*AdminListUsersResponse)(nil),               // 191: manpasik.v1.AdminListUsersResponse
-	(*AdminUserSummary)(nil),                     // 192: manpasik.v1.AdminUserSummary
-	(*GetSystemStatsRequest)(nil),                // 193: manpasik.v1.GetSystemStatsRequest
-	(*GetSystemStatsResponse)(nil),               // 194: manpasik.v1.GetSystemStatsResponse
-	(*GetAuditLogRequest)(nil),                   // 195: manpasik.v1.GetAuditLogRequest
-	(*GetAuditLogResponse)(nil),                  // 196: manpasik.v1.GetAuditLogResponse
-	(*AuditLogEntry)(nil),                        // 197: manpasik.v1.AuditLogEntry
-	(*SetSystemConfigRequest)(nil),               // 198: manpasik.v1.SetSystemConfigRequest
-	(*GetSystemConfigRequest)(nil),               // 199: manpasik.v1.GetSystemConfigRequest
-	(*SystemConfig)(nil),                         // 200: manpasik.v1.SystemConfig
-	(*CreateFamilyGroupRequest)(nil),             // 201: manpasik.v1.CreateFamilyGroupRequest
-	(*GetFamilyGroupRequest)(nil),                // 202: manpasik.v1.GetFamilyGroupRequest
-	(*FamilyGroup)(nil),                          // 203: manpasik.v1.FamilyGroup
-	(*FamilyMember)(nil),                         // 204: manpasik.v1.FamilyMember
-	(*InviteMemberRequest)(nil),                  // 205: manpasik.v1.InviteMemberRequest
-	(*FamilyInvitation)(nil),                     // 206: manpasik.v1.FamilyInvitation
-	(*RespondToInvitationRequest)(nil),           // 207: manpasik.v1.RespondToInvitationRequest
-	(*RespondToInvitationResponse)(nil),          // 208: manpasik.v1.RespondToInvitationResponse
-	(*RemoveMemberRequest)(nil),                  // 209: manpasik.v1.RemoveMemberRequest
-	(*RemoveMemberResponse)(nil),                 // 210: manpasik.v1.RemoveMemberResponse
-	(*UpdateMemberRoleRequest)(nil),              // 211: manpasik.v1.UpdateMemberRoleRequest
-	(*ListFamilyMembersRequest)(nil),             // 212: manpasik.v1.ListFamilyMembersRequest
-	(*ListFamilyMembersResponse)(nil),            // 213: manpasik.v1.ListFamilyMembersResponse
-	(*SetSharingPreferencesRequest)(nil),         // 214: manpasik.v1.SetSharingPreferencesRequest
-	(*SharingPreferences)(nil),                   // 215: manpasik.v1.SharingPreferences
-	(*GetSharedHealthDataRequest)(nil),           // 216: manpasik.v1.GetSharedHealthDataRequest
-	(*GetSharedHealthDataResponse)(nil),          // 217: manpasik.v1.GetSharedHealthDataResponse
-	(*CreateHealthRecordRequest)(nil),            // 218: manpasik.v1.CreateHealthRecordRequest
-	(*GetHealthRecordRequest)(nil),               // 219: manpasik.v1.GetHealthRecordRequest
-	(*ListHealthRecordsRequest)(nil),             // 220: manpasik.v1.ListHealthRecordsRequest
-	(*ListHealthRecordsResponse)(nil),            // 221: manpasik.v1.ListHealthRecordsResponse
-	(*UpdateHealthRecordRequest)(nil),            // 222: manpasik.v1.UpdateHealthRecordRequest
-	(*DeleteHealthRecordRequest)(nil),            // 223: manpasik.v1.DeleteHealthRecordRequest
-	(*DeleteHealthRecordResponse)(nil),           // 224: manpasik.v1.DeleteHealthRecordResponse
-	(*HealthRecord)(nil),                         // 225: manpasik.v1.HealthRecord
-	(*ExportToFHIRRequest)(nil),                  // 226: manpasik.v1.ExportToFHIRRequest
-	(*ExportToFHIRResponse)(nil),                 // 227: manpasik.v1.ExportToFHIRResponse
-	(*ImportFromFHIRRequest)(nil),                // 228: manpasik.v1.ImportFromFHIRRequest
-	(*ImportFromFHIRResponse)(nil),               // 229: manpasik.v1.ImportFromFHIRResponse
-	(*GetHealthSummaryRequest)(nil),              // 230: manpasik.v1.GetHealthSummaryRequest
-	(*GetHealthSummaryResponse)(nil),             // 231: manpasik.v1.GetHealthSummaryResponse
-	(*CreatePrescriptionRequest)(nil),            // 232: manpasik.v1.CreatePrescriptionRequest
-	(*GetPrescriptionRequest)(nil),               // 233: manpasik.v1.GetPrescriptionRequest
-	(*ListPrescriptionsRequest)(nil),             // 234: manpasik.v1.ListPrescriptionsRequest
-	(*ListPrescriptionsResponse)(nil),            // 235: manpasik.v1.ListPrescriptionsResponse
-	(*UpdatePrescriptionStatusRequest)(nil),      // 236: manpasik.v1.UpdatePrescriptionStatusRequest
-	(*AddMedicationRequest)(nil),                 // 237: manpasik.v1.AddMedicationRequest
-	(*RemoveMedicationRequest)(nil),              // 238: manpasik.v1.RemoveMedicationRequest
-	(*Prescription)(nil),                         // 239: manpasik.v1.Prescription
-	(*Medication)(nil),                           // 240: manpasik.v1.Medication
-	(*CheckDrugInteractionRequest)(nil),          // 241: manpasik.v1.CheckDrugInteractionRequest
-	(*CheckDrugInteractionResponse)(nil),         // 242: manpasik.v1.CheckDrugInteractionResponse
-	(*DrugInteraction)(nil),                      // 243: manpasik.v1.DrugInteraction
-	(*GetMedicationRemindersRequest)(nil),        // 244: manpasik.v1.GetMedicationRemindersRequest
-	(*GetMedicationRemindersResponse)(nil),       // 245: manpasik.v1.GetMedicationRemindersResponse
-	(*MedicationReminder)(nil),                   // 246: manpasik.v1.MedicationReminder
-	(*CreatePostRequest)(nil),                    // 247: manpasik.v1.CreatePostRequest
-	(*GetPostRequest)(nil),                       // 248: manpasik.v1.GetPostRequest
-	(*ListPostsRequest)(nil),                     // 249: manpasik.v1.ListPostsRequest
-	(*ListPostsResponse)(nil),                    // 250: manpasik.v1.ListPostsResponse
-	(*Post)(nil),                                 // 251: manpasik.v1.Post
-	(*LikePostRequest)(nil),                      // 252: manpasik.v1.LikePostRequest
-	(*LikePostResponse)(nil),                     // 253: manpasik.v1.LikePostResponse
-	(*CreateCommentRequest)(nil),                 // 254: manpasik.v1.CreateCommentRequest
-	(*ListCommentsRequest)(nil),                  // 255: manpasik.v1.ListCommentsRequest
-	(*ListCommentsResponse)(nil),                 // 256: manpasik.v1.ListCommentsResponse
-	(*Comment)(nil),                              // 257: manpasik.v1.Comment
-	(*CreateChallengeRequest)(nil),               // 258: manpasik.v1.CreateChallengeRequest
-	(*GetChallengeRequest)(nil),                  // 259: manpasik.v1.GetChallengeRequest
-	(*Challenge)(nil),                            // 260: manpasik.v1.Challenge
-	(*JoinChallengeRequest)(nil),                 // 261: manpasik.v1.JoinChallengeRequest
-	(*JoinChallengeResponse)(nil),                // 262: manpasik.v1.JoinChallengeResponse
-	(*ListChallengesRequest)(nil),                // 263: manpasik.v1.ListChallengesRequest
-	(*ListChallengesResponse)(nil),               // 264: manpasik.v1.ListChallengesResponse
-	(*CreateRoomRequest)(nil),                    // 265: manpasik.v1.CreateRoomRequest
-	(*GetRoomRequest)(nil),                       // 266: manpasik.v1.GetRoomRequest
-	(*Room)(nil),                                 // 267: manpasik.v1.Room
-	(*JoinRoomRequest)(nil),                      // 268: manpasik.v1.JoinRoomRequest
-	(*JoinRoomResponse)(nil),                     // 269: manpasik.v1.JoinRoomResponse
-	(*LeaveRoomRequest)(nil),                     // 270: manpasik.v1.LeaveRoomRequest
-	(*LeaveRoomResponse)(nil),                    // 271: manpasik.v1.LeaveRoomResponse
-	(*EndRoomRequest)(nil),                       // 272: manpasik.v1.EndRoomRequest
-	(*Participant)(nil),                          // 273: manpasik.v1.Participant
-	(*SendSignalRequest)(nil),                    // 274: manpasik.v1.SendSignalRequest
-	(*SendSignalResponse)(nil),                   // 275: manpasik.v1.SendSignalResponse
-	(*ListParticipantsRequest)(nil),              // 276: manpasik.v1.ListParticipantsRequest
-	(*ListParticipantsResponse)(nil),             // 277: manpasik.v1.ListParticipantsResponse
-	(*GetRoomStatsRequest)(nil),                  // 278: manpasik.v1.GetRoomStatsRequest
-	(*GetRoomStatsResponse)(nil),                 // 279: manpasik.v1.GetRoomStatsResponse
-	(*SendNotificationRequest)(nil),              // 280: manpasik.v1.SendNotificationRequest
-	(*Notification)(nil),                         // 281: manpasik.v1.Notification
-	(*ListNotificationsRequest)(nil),             // 282: manpasik.v1.ListNotificationsRequest
-	(*ListNotificationsResponse)(nil),            // 283: manpasik.v1.ListNotificationsResponse
-	(*MarkAsReadRequest)(nil),                    // 284: manpasik.v1.MarkAsReadRequest
-	(*MarkAsReadResponse)(nil),                   // 285: manpasik.v1.MarkAsReadResponse
-	(*MarkAllAsReadRequest)(nil),                 // 286: manpasik.v1.MarkAllAsReadRequest
-	(*MarkAllAsReadResponse)(nil),                // 287: manpasik.v1.MarkAllAsReadResponse
-	(*GetUnreadCountRequest)(nil),                // 288: manpasik.v1.GetUnreadCountRequest
-	(*GetUnreadCountResponse)(nil),               // 289: manpasik.v1.GetUnreadCountResponse
-	(*UpdateNotificationPreferencesRequest)(nil), // 290: manpasik.v1.UpdateNotificationPreferencesRequest
-	(*GetNotificationPreferencesRequest)(nil),    // 291: manpasik.v1.GetNotificationPreferencesRequest
-	(*NotificationPreferences)(nil),              // 292: manpasik.v1.NotificationPreferences
-	(*TranslateTextRequest)(nil),                 // 293: manpasik.v1.TranslateTextRequest
-	(*TranslateTextResponse)(nil),                // 294: manpasik.v1.TranslateTextResponse
-	(*DetectLanguageRequest)(nil),                // 295: manpasik.v1.DetectLanguageRequest
-	(*DetectLanguageResponse)(nil),               // 296: manpasik.v1.DetectLanguageResponse
-	(*DetectedLanguage)(nil),                     // 297: manpasik.v1.DetectedLanguage
-	(*ListSupportedLanguagesRequest)(nil),        // 298: manpasik.v1.ListSupportedLanguagesRequest
-	(*ListSupportedLanguagesResponse)(nil),       // 299: manpasik.v1.ListSupportedLanguagesResponse
-	(*SupportedLanguage)(nil),                    // 300: manpasik.v1.SupportedLanguage
-	(*TranslateBatchRequest)(nil),                // 301: manpasik.v1.TranslateBatchRequest
-	(*TranslateBatchResponse)(nil),               // 302: manpasik.v1.TranslateBatchResponse
-	(*GetTranslationHistoryRequest)(nil),         // 303: manpasik.v1.GetTranslationHistoryRequest
-	(*GetTranslationHistoryResponse)(nil),        // 304: manpasik.v1.GetTranslationHistoryResponse
-	(*TranslationRecord)(nil),                    // 305: manpasik.v1.TranslationRecord
-	(*GetTranslationUsageRequest)(nil),           // 306: manpasik.v1.GetTranslationUsageRequest
-	(*GetTranslationUsageResponse)(nil),          // 307: manpasik.v1.GetTranslationUsageResponse
-	(*ListDoctorsByFacilityRequest)(nil),         // 308: manpasik.v1.ListDoctorsByFacilityRequest
-	(*ListDoctorsByFacilityResponse)(nil),        // 309: manpasik.v1.ListDoctorsByFacilityResponse
-	(*Doctor)(nil),                               // 310: manpasik.v1.Doctor
-	(*GetDoctorAvailabilityRequest)(nil),         // 311: manpasik.v1.GetDoctorAvailabilityRequest
-	(*GetDoctorAvailabilityResponse)(nil),        // 312: manpasik.v1.GetDoctorAvailabilityResponse
-	(*TimeSlotDetail)(nil),                       // 313: manpasik.v1.TimeSlotDetail
-	(*SelectDoctorRequest)(nil),                  // 314: manpasik.v1.SelectDoctorRequest
-	(*SelectDoctorResponse)(nil),                 // 315: manpasik.v1.SelectDoctorResponse
-	(*SelectPharmacyRequest)(nil),                // 316: manpasik.v1.SelectPharmacyRequest
-	(*SelectPharmacyResponse)(nil),               // 317: manpasik.v1.SelectPharmacyResponse
-	(*SendToPharmacyRequest)(nil),                // 318: manpasik.v1.SendToPharmacyRequest
-	(*SendToPharmacyResponse)(nil),               // 319: manpasik.v1.SendToPharmacyResponse
-	(*GetByTokenRequest)(nil),                    // 320: manpasik.v1.GetByTokenRequest
-	(*UpdateDispensaryStatusRequest)(nil),        // 321: manpasik.v1.UpdateDispensaryStatusRequest
-	(*CreateConsentRequest)(nil),                 // 322: manpasik.v1.CreateConsentRequest
-	(*DataSharingConsent)(nil),                   // 323: manpasik.v1.DataSharingConsent
-	(*RevokeConsentRequest)(nil),                 // 324: manpasik.v1.RevokeConsentRequest
-	(*RevokeConsentResponse)(nil),                // 325: manpasik.v1.RevokeConsentResponse
-	(*ListConsentsRequest)(nil),                  // 326: manpasik.v1.ListConsentsRequest
-	(*ListConsentsResponse)(nil),                 // 327: manpasik.v1.ListConsentsResponse
-	(*ShareWithProviderRequest)(nil),             // 328: manpasik.v1.ShareWithProviderRequest
-	(*ShareWithProviderResponse)(nil),            // 329: manpasik.v1.ShareWithProviderResponse
-	(*GetDataAccessLogRequest)(nil),              // 330: manpasik.v1.GetDataAccessLogRequest
-	(*GetDataAccessLogResponse)(nil),             // 331: manpasik.v1.GetDataAccessLogResponse
-	(*DataAccessLogEntry)(nil),                   // 332: manpasik.v1.DataAccessLogEntry
-	(*ExportSingleMeasurementRequest)(nil),       // 333: manpasik.v1.ExportSingleMeasurementRequest
-	(*ExportToFHIRObservationsRequest)(nil),      // 334: manpasik.v1.ExportToFHIRObservationsRequest
-	(*ExportFHIRResponse)(nil),                   // 335: manpasik.v1.ExportFHIRResponse
-	(*UpdateDeviceStatusRequest)(nil),            // 336: manpasik.v1.UpdateDeviceStatusRequest
-	(*UpdateDeviceStatusResponse)(nil),           // 337: manpasik.v1.UpdateDeviceStatusResponse
-	(*ListAdminsByRegionRequest)(nil),            // 338: manpasik.v1.ListAdminsByRegionRequest
-	(*ListSystemConfigsRequest)(nil),             // 339: manpasik.v1.ListSystemConfigsRequest
-	(*ListSystemConfigsResponse)(nil),            // 340: manpasik.v1.ListSystemConfigsResponse
-	(*ConfigWithMeta)(nil),                       // 341: manpasik.v1.ConfigWithMeta
-	(*GetConfigWithMetaRequest)(nil),             // 342: manpasik.v1.GetConfigWithMetaRequest
-	(*ValidateConfigValueRequest)(nil),           // 343: manpasik.v1.ValidateConfigValueRequest
-	(*ValidateConfigValueResponse)(nil),          // 344: manpasik.v1.ValidateConfigValueResponse
-	(*BulkSetConfigsRequest)(nil),                // 345: manpasik.v1.BulkSetConfigsRequest
-	(*BulkSetConfigsResponse)(nil),               // 346: manpasik.v1.BulkSetConfigsResponse
-	(*ConfigChangeResult)(nil),                   // 347: manpasik.v1.ConfigChangeResult
-	(*Consultation)(nil),                         // 348: manpasik.v1.Consultation
-	(*CreateConsultationRequest)(nil),            // 349: manpasik.v1.CreateConsultationRequest
-	(*GetConsultationRequest)(nil),               // 350: manpasik.v1.GetConsultationRequest
-	(*ListConsultationsRequest)(nil),             // 351: manpasik.v1.ListConsultationsRequest
-	(*ListConsultationsResponse)(nil),            // 352: manpasik.v1.ListConsultationsResponse
-	(*MatchDoctorRequest)(nil),                   // 353: manpasik.v1.MatchDoctorRequest
-	(*MatchDoctorResponse)(nil),                  // 354: manpasik.v1.MatchDoctorResponse
-	(*DoctorProfile)(nil),                        // 355: manpasik.v1.DoctorProfile
-	(*StartVideoSessionRequest)(nil),             // 356: manpasik.v1.StartVideoSessionRequest
-	(*VideoSession)(nil),                         // 357: manpasik.v1.VideoSession
-	(*EndVideoSessionRequest)(nil),               // 358: manpasik.v1.EndVideoSessionRequest
-	(*RateConsultationRequest)(nil),              // 359: manpasik.v1.RateConsultationRequest
-	(*RateConsultationResponse)(nil),             // 360: manpasik.v1.RateConsultationResponse
-	nil,                                          // 361: manpasik.v1.HealthScoreResponse.CategoryScoresEntry
-	nil,                                          // 362: manpasik.v1.GetSystemStatsResponse.UsersByTierEntry
-	nil,                                          // 363: manpasik.v1.GetSystemStatsResponse.MeasurementsByTypeEntry
-	nil,                                          // 364: manpasik.v1.CreateHealthRecordRequest.MetadataEntry
-	nil,                                          // 365: manpasik.v1.UpdateHealthRecordRequest.MetadataEntry
-	nil,                                          // 366: manpasik.v1.HealthRecord.MetadataEntry
-	nil,                                          // 367: manpasik.v1.GetHealthSummaryResponse.RecordsByTypeEntry
-	nil,                                          // 368: manpasik.v1.SendNotificationRequest.DataEntry
-	nil,                                          // 369: manpasik.v1.Notification.DataEntry
-	nil,                                          // 370: manpasik.v1.GetTranslationUsageResponse.ByLanguagePairEntry
-	nil,                                          // 371: manpasik.v1.ListSystemConfigsResponse.CategoryCountsEntry
-	(*timestamppb.Timestamp)(nil),                // 372: google.protobuf.Timestamp
+	(SocialProvider)(0),                          // 0: manpasik.v1.SocialProvider
+	(Gender)(0),                                  // 1: manpasik.v1.Gender
+	(DeviceStatus)(0),                            // 2: manpasik.v1.DeviceStatus
+	(CommandType)(0),                             // 3: manpasik.v1.CommandType
+	(SubscriptionTier)(0),                        // 4: manpasik.v1.SubscriptionTier
+	(SubscriptionStatus)(0),                      // 5: manpasik.v1.SubscriptionStatus
+	(ProductCategory)(0),                         // 6: manpasik.v1.ProductCategory
+	(OrderStatus)(0),                             // 7: manpasik.v1.OrderStatus
+	(PaymentType)(0),                             // 8: manpasik.v1.PaymentType
+	(PaymentStatus)(0),                           // 9: manpasik.v1.PaymentStatus
+	(AiModelType)(0),                             // 10: manpasik.v1.AiModelType
+	(RiskLevel)(0),                               // 11: manpasik.v1.RiskLevel
+	(CalibrationType)(0),                         // 12: manpasik.v1.CalibrationType
+	(CalibrationStatus)(0),                       // 13: manpasik.v1.CalibrationStatus
+	(GoalCategory)(0),                            // 14: manpasik.v1.GoalCategory
+	(GoalStatus)(0),                              // 15: manpasik.v1.GoalStatus
+	(CoachingType)(0),                            // 16: manpasik.v1.CoachingType
+	(RecommendationType)(0),                      // 17: manpasik.v1.RecommendationType
+	(CartridgeAccessLevel)(0),                    // 18: manpasik.v1.CartridgeAccessLevel
+	(FacilityType)(0),                            // 19: manpasik.v1.FacilityType
+	(DoctorSpecialty)(0),                         // 20: manpasik.v1.DoctorSpecialty
+	(ReservationStatus)(0),                       // 21: manpasik.v1.ReservationStatus
+	(AdminRole)(0),                               // 22: manpasik.v1.AdminRole
+	(AuditAction)(0),                             // 23: manpasik.v1.AuditAction
+	(FamilyRole)(0),                              // 24: manpasik.v1.FamilyRole
+	(InvitationStatus)(0),                        // 25: manpasik.v1.InvitationStatus
+	(HealthRecordType)(0),                        // 26: manpasik.v1.HealthRecordType
+	(FHIRResourceType)(0),                        // 27: manpasik.v1.FHIRResourceType
+	(PrescriptionStatus)(0),                      // 28: manpasik.v1.PrescriptionStatus
+	(DrugInteractionSeverity)(0),                 // 29: manpasik.v1.DrugInteractionSeverity
+	(PostCategory)(0),                            // 30: manpasik.v1.PostCategory
+	(ChallengeStatus)(0),                         // 31: manpasik.v1.ChallengeStatus
+	(ChallengeType)(0),                           // 32: manpasik.v1.ChallengeType
+	(RoomType)(0),                                // 33: manpasik.v1.RoomType
+	(RoomStatus)(0),                              // 34: manpasik.v1.RoomStatus
+	(SignalType)(0),                              // 35: manpasik.v1.SignalType
+	(NotificationType)(0),                        // 36: manpasik.v1.NotificationType
+	(NotificationChannel)(0),                     // 37: manpasik.v1.NotificationChannel
+	(NotificationPriority)(0),                    // 38: manpasik.v1.NotificationPriority
+	(ConsultationStatus)(0),                      // 39: manpasik.v1.ConsultationStatus
+	(VideoSessionStatus)(0),                      // 40: manpasik.v1.VideoSessionStatus
+	(*RegisterRequest)(nil),                      // 41: manpasik.v1.RegisterRequest
+	(*RegisterResponse)(nil),                     // 42: manpasik.v1.RegisterResponse
+	(*LoginRequest)(nil),                         // 43: manpasik.v1.LoginRequest
+	(*LoginResponse)(nil),                        // 44: manpasik.v1.LoginResponse
+	(*RefreshTokenRequest)(nil),                  // 45: manpasik.v1.RefreshTokenRequest
+	(*LogoutRequest)(nil),                        // 46: manpasik.v1.LogoutRequest
+	(*LogoutResponse)(nil),                       // 47: manpasik.v1.LogoutResponse
+	(*ValidateTokenRequest)(nil),                 // 48: manpasik.v1.ValidateTokenRequest
+	(*ValidateTokenResponse)(nil),                // 49: manpasik.v1.ValidateTokenResponse
+	(*SocialLoginRequest)(nil),                   // 50: manpasik.v1.SocialLoginRequest
+	(*ResetPasswordRequest)(nil),                 // 51: manpasik.v1.ResetPasswordRequest
+	(*ResetPasswordResponse)(nil),                // 52: manpasik.v1.ResetPasswordResponse
+	(*StartSessionRequest)(nil),                  // 53: manpasik.v1.StartSessionRequest
+	(*StartSessionResponse)(nil),                 // 54: manpasik.v1.StartSessionResponse
+	(*MeasurementData)(nil),                      // 55: manpasik.v1.MeasurementData
+	(*DifferentialCorrection)(nil),               // 56: manpasik.v1.DifferentialCorrection
+	(*EnvironmentMeta)(nil),                      // 57: manpasik.v1.EnvironmentMeta
+	(*MeasurementResult)(nil),                    // 58: manpasik.v1.MeasurementResult
+	(*EndSessionRequest)(nil),                    // 59: manpasik.v1.EndSessionRequest
+	(*EndSessionResponse)(nil),                   // 60: manpasik.v1.EndSessionResponse
+	(*GetHistoryRequest)(nil),                    // 61: manpasik.v1.GetHistoryRequest
+	(*GetHistoryResponse)(nil),                   // 62: manpasik.v1.GetHistoryResponse
+	(*MeasurementSummary)(nil),                   // 63: manpasik.v1.MeasurementSummary
+	(*RegisterDeviceRequest)(nil),                // 64: manpasik.v1.RegisterDeviceRequest
+	(*RegisterDeviceResponse)(nil),               // 65: manpasik.v1.RegisterDeviceResponse
+	(*ListDevicesRequest)(nil),                   // 66: manpasik.v1.ListDevicesRequest
+	(*ListDevicesResponse)(nil),                  // 67: manpasik.v1.ListDevicesResponse
+	(*DeviceInfo)(nil),                           // 68: manpasik.v1.DeviceInfo
+	(*DeviceStatusUpdate)(nil),                   // 69: manpasik.v1.DeviceStatusUpdate
+	(*DeviceCommand)(nil),                        // 70: manpasik.v1.DeviceCommand
+	(*OtaRequest)(nil),                           // 71: manpasik.v1.OtaRequest
+	(*OtaResponse)(nil),                          // 72: manpasik.v1.OtaResponse
+	(*GetProfileRequest)(nil),                    // 73: manpasik.v1.GetProfileRequest
+	(*UpdateProfileRequest)(nil),                 // 74: manpasik.v1.UpdateProfileRequest
+	(*UserProfile)(nil),                          // 75: manpasik.v1.UserProfile
+	(*GetSubscriptionRequest)(nil),               // 76: manpasik.v1.GetSubscriptionRequest
+	(*SubscriptionInfo)(nil),                     // 77: manpasik.v1.SubscriptionInfo
+	(*CreateSubscriptionRequest)(nil),            // 78: manpasik.v1.CreateSubscriptionRequest
+	(*GetSubscriptionDetailRequest)(nil),         // 79: manpasik.v1.GetSubscriptionDetailRequest
+	(*UpdateSubscriptionRequest)(nil),            // 80: manpasik.v1.UpdateSubscriptionRequest
+	(*CancelSubscriptionRequest)(nil),            // 81: manpasik.v1.CancelSubscriptionRequest
+	(*CancelSubscriptionResponse)(nil),           // 82: manpasik.v1.CancelSubscriptionResponse
+	(*SubscriptionDetail)(nil),                   // 83: manpasik.v1.SubscriptionDetail
+	(*CheckFeatureAccessRequest)(nil),            // 84: manpasik.v1.CheckFeatureAccessRequest
+	(*CheckFeatureAccessResponse)(nil),           // 85: manpasik.v1.CheckFeatureAccessResponse
+	(*ListSubscriptionPlansRequest)(nil),         // 86: manpasik.v1.ListSubscriptionPlansRequest
+	(*ListSubscriptionPlansResponse)(nil),        // 87: manpasik.v1.ListSubscriptionPlansResponse
+	(*SubscriptionPlan)(nil),                     // 88: manpasik.v1.SubscriptionPlan
+	(*ListProductsRequest)(nil),                  // 89: manpasik.v1.ListProductsRequest
+	(*ListProductsResponse)(nil),                 // 90: manpasik.v1.ListProductsResponse
+	(*GetProductRequest)(nil),                    // 91: manpasik.v1.GetProductRequest
+	(*Product)(nil),                              // 92: manpasik.v1.Product
+	(*AddToCartRequest)(nil),                     // 93: manpasik.v1.AddToCartRequest
+	(*GetCartRequest)(nil),                       // 94: manpasik.v1.GetCartRequest
+	(*RemoveFromCartRequest)(nil),                // 95: manpasik.v1.RemoveFromCartRequest
+	(*Cart)(nil),                                 // 96: manpasik.v1.Cart
+	(*CartItem)(nil),                             // 97: manpasik.v1.CartItem
+	(*CreateOrderRequest)(nil),                   // 98: manpasik.v1.CreateOrderRequest
+	(*GetOrderRequest)(nil),                      // 99: manpasik.v1.GetOrderRequest
+	(*ListOrdersRequest)(nil),                    // 100: manpasik.v1.ListOrdersRequest
+	(*ListOrdersResponse)(nil),                   // 101: manpasik.v1.ListOrdersResponse
+	(*Order)(nil),                                // 102: manpasik.v1.Order
+	(*OrderItem)(nil),                            // 103: manpasik.v1.OrderItem
+	(*CreatePaymentRequest)(nil),                 // 104: manpasik.v1.CreatePaymentRequest
+	(*ConfirmPaymentRequest)(nil),                // 105: manpasik.v1.ConfirmPaymentRequest
+	(*GetPaymentRequest)(nil),                    // 106: manpasik.v1.GetPaymentRequest
+	(*ListPaymentsRequest)(nil),                  // 107: manpasik.v1.ListPaymentsRequest
+	(*ListPaymentsResponse)(nil),                 // 108: manpasik.v1.ListPaymentsResponse
+	(*PaymentDetail)(nil),                        // 109: manpasik.v1.PaymentDetail
+	(*RefundPaymentRequest)(nil),                 // 110: manpasik.v1.RefundPaymentRequest
+	(*RefundResponse)(nil),                       // 111: manpasik.v1.RefundResponse
+	(*AnalyzeMeasurementRequest)(nil),            // 112: manpasik.v1.AnalyzeMeasurementRequest
+	(*BiomarkerResult)(nil),                      // 113: manpasik.v1.BiomarkerResult
+	(*AnomalyFlag)(nil),                          // 114: manpasik.v1.AnomalyFlag
+	(*AnalysisResult)(nil),                       // 115: manpasik.v1.AnalysisResult
+	(*GetHealthScoreRequest)(nil),                // 116: manpasik.v1.GetHealthScoreRequest
+	(*HealthScoreResponse)(nil),                  // 117: manpasik.v1.HealthScoreResponse
+	(*PredictTrendRequest)(nil),                  // 118: manpasik.v1.PredictTrendRequest
+	(*TrendDataPoint)(nil),                       // 119: manpasik.v1.TrendDataPoint
+	(*TrendPrediction)(nil),                      // 120: manpasik.v1.TrendPrediction
+	(*GetModelInfoRequest)(nil),                  // 121: manpasik.v1.GetModelInfoRequest
+	(*ModelInfo)(nil),                            // 122: manpasik.v1.ModelInfo
+	(*ListModelsRequest)(nil),                    // 123: manpasik.v1.ListModelsRequest
+	(*ListModelsResponse)(nil),                   // 124: manpasik.v1.ListModelsResponse
+	(*ReadCartridgeRequest)(nil),                 // 125: manpasik.v1.ReadCartridgeRequest
+	(*CartridgeDetail)(nil),                      // 126: manpasik.v1.CartridgeDetail
+	(*RecordUsageRequest)(nil),                   // 127: manpasik.v1.RecordUsageRequest
+	(*RecordUsageResponse)(nil),                  // 128: manpasik.v1.RecordUsageResponse
+	(*GetUsageHistoryRequest)(nil),               // 129: manpasik.v1.GetUsageHistoryRequest
+	(*GetUsageHistoryResponse)(nil),              // 130: manpasik.v1.GetUsageHistoryResponse
+	(*CartridgeUsageRecord)(nil),                 // 131: manpasik.v1.CartridgeUsageRecord
+	(*GetCartridgeTypeRequest)(nil),              // 132: manpasik.v1.GetCartridgeTypeRequest
+	(*ListCategoriesRequest)(nil),                // 133: manpasik.v1.ListCategoriesRequest
+	(*ListCategoriesResponse)(nil),               // 134: manpasik.v1.ListCategoriesResponse
+	(*ListTypesByCategoryRequest)(nil),           // 135: manpasik.v1.ListTypesByCategoryRequest
+	(*ListTypesByCategoryResponse)(nil),          // 136: manpasik.v1.ListTypesByCategoryResponse
+	(*GetRemainingUsesRequest)(nil),              // 137: manpasik.v1.GetRemainingUsesRequest
+	(*GetRemainingUsesResponse)(nil),             // 138: manpasik.v1.GetRemainingUsesResponse
+	(*ValidateCartridgeRequest)(nil),             // 139: manpasik.v1.ValidateCartridgeRequest
+	(*ValidateCartridgeResponse)(nil),            // 140: manpasik.v1.ValidateCartridgeResponse
+	(*RegisterFactoryCalibrationRequest)(nil),    // 141: manpasik.v1.RegisterFactoryCalibrationRequest
+	(*PerformFieldCalibrationRequest)(nil),       // 142: manpasik.v1.PerformFieldCalibrationRequest
+	(*GetCalibrationRequest)(nil),                // 143: manpasik.v1.GetCalibrationRequest
+	(*CalibrationRecord)(nil),                    // 144: manpasik.v1.CalibrationRecord
+	(*ListCalibrationHistoryRequest)(nil),        // 145: manpasik.v1.ListCalibrationHistoryRequest
+	(*ListCalibrationHistoryResponse)(nil),       // 146: manpasik.v1.ListCalibrationHistoryResponse
+	(*CheckCalibrationStatusRequest)(nil),        // 147: manpasik.v1.CheckCalibrationStatusRequest
+	(*CalibrationStatusResponse)(nil),            // 148: manpasik.v1.CalibrationStatusResponse
+	(*ListCalibrationModelsRequest)(nil),         // 149: manpasik.v1.ListCalibrationModelsRequest
+	(*CalibrationModel)(nil),                     // 150: manpasik.v1.CalibrationModel
+	(*ListCalibrationModelsResponse)(nil),        // 151: manpasik.v1.ListCalibrationModelsResponse
+	(*SetHealthGoalRequest)(nil),                 // 152: manpasik.v1.SetHealthGoalRequest
+	(*HealthGoal)(nil),                           // 153: manpasik.v1.HealthGoal
+	(*GetHealthGoalsRequest)(nil),                // 154: manpasik.v1.GetHealthGoalsRequest
+	(*GetHealthGoalsResponse)(nil),               // 155: manpasik.v1.GetHealthGoalsResponse
+	(*GenerateCoachingRequest)(nil),              // 156: manpasik.v1.GenerateCoachingRequest
+	(*CoachingMessage)(nil),                      // 157: manpasik.v1.CoachingMessage
+	(*ListCoachingMessagesRequest)(nil),          // 158: manpasik.v1.ListCoachingMessagesRequest
+	(*ListCoachingMessagesResponse)(nil),         // 159: manpasik.v1.ListCoachingMessagesResponse
+	(*GenerateDailyReportRequest)(nil),           // 160: manpasik.v1.GenerateDailyReportRequest
+	(*DailyHealthReport)(nil),                    // 161: manpasik.v1.DailyHealthReport
+	(*GetWeeklyReportRequest)(nil),               // 162: manpasik.v1.GetWeeklyReportRequest
+	(*WeeklyHealthReport)(nil),                   // 163: manpasik.v1.WeeklyHealthReport
+	(*GetRecommendationsRequest)(nil),            // 164: manpasik.v1.GetRecommendationsRequest
+	(*Recommendation)(nil),                       // 165: manpasik.v1.Recommendation
+	(*GetRecommendationsResponse)(nil),           // 166: manpasik.v1.GetRecommendationsResponse
+	(*CartridgeCategoryInfo)(nil),                // 167: manpasik.v1.CartridgeCategoryInfo
+	(*CartridgeTypeInfo)(nil),                    // 168: manpasik.v1.CartridgeTypeInfo
+	(*CheckCartridgeAccessRequest)(nil),          // 169: manpasik.v1.CheckCartridgeAccessRequest
+	(*CheckCartridgeAccessResponse)(nil),         // 170: manpasik.v1.CheckCartridgeAccessResponse
+	(*ListAccessibleCartridgesRequest)(nil),      // 171: manpasik.v1.ListAccessibleCartridgesRequest
+	(*ListAccessibleCartridgesResponse)(nil),     // 172: manpasik.v1.ListAccessibleCartridgesResponse
+	(*CartridgeAccessEntry)(nil),                 // 173: manpasik.v1.CartridgeAccessEntry
+	(*SearchFacilitiesRequest)(nil),              // 174: manpasik.v1.SearchFacilitiesRequest
+	(*SearchFacilitiesResponse)(nil),             // 175: manpasik.v1.SearchFacilitiesResponse
+	(*GetFacilityRequest)(nil),                   // 176: manpasik.v1.GetFacilityRequest
+	(*Facility)(nil),                             // 177: manpasik.v1.Facility
+	(*GetAvailableSlotsRequest)(nil),             // 178: manpasik.v1.GetAvailableSlotsRequest
+	(*GetAvailableSlotsResponse)(nil),            // 179: manpasik.v1.GetAvailableSlotsResponse
+	(*TimeSlot)(nil),                             // 180: manpasik.v1.TimeSlot
+	(*CreateReservationRequest)(nil),             // 181: manpasik.v1.CreateReservationRequest
+	(*Reservation)(nil),                          // 182: manpasik.v1.Reservation
+	(*GetReservationRequest)(nil),                // 183: manpasik.v1.GetReservationRequest
+	(*ListReservationsRequest)(nil),              // 184: manpasik.v1.ListReservationsRequest
+	(*ListReservationsResponse)(nil),             // 185: manpasik.v1.ListReservationsResponse
+	(*CancelReservationRequest)(nil),             // 186: manpasik.v1.CancelReservationRequest
+	(*CancelReservationResponse)(nil),            // 187: manpasik.v1.CancelReservationResponse
+	(*CreateAdminRequest)(nil),                   // 188: manpasik.v1.CreateAdminRequest
+	(*GetAdminRequest)(nil),                      // 189: manpasik.v1.GetAdminRequest
+	(*ListAdminsRequest)(nil),                    // 190: manpasik.v1.ListAdminsRequest
+	(*ListAdminsResponse)(nil),                   // 191: manpasik.v1.ListAdminsResponse
+	(*UpdateAdminRoleRequest)(nil),               // 192: manpasik.v1.UpdateAdminRoleRequest
+	(*DeactivateAdminRequest)(nil),               // 193: manpasik.v1.DeactivateAdminRequest
+	(*AdminUser)(nil),                            // 194: manpasik.v1.AdminUser
+	(*AdminListUsersRequest)(nil),                // 195: manpasik.v1.AdminListUsersRequest
+	(*AdminListUsersResponse)(nil),               // 196: manpasik.v1.AdminListUsersResponse
+	(*AdminUserSummary)(nil),                     // 197: manpasik.v1.AdminUserSummary
+	(*GetSystemStatsRequest)(nil),                // 198: manpasik.v1.GetSystemStatsRequest
+	(*GetSystemStatsResponse)(nil),               // 199: manpasik.v1.GetSystemStatsResponse
+	(*GetAuditLogRequest)(nil),                   // 200: manpasik.v1.GetAuditLogRequest
+	(*GetAuditLogResponse)(nil),                  // 201: manpasik.v1.GetAuditLogResponse
+	(*AuditLogEntry)(nil),                        // 202: manpasik.v1.AuditLogEntry
+	(*SetSystemConfigRequest)(nil),               // 203: manpasik.v1.SetSystemConfigRequest
+	(*GetSystemConfigRequest)(nil),               // 204: manpasik.v1.GetSystemConfigRequest
+	(*SystemConfig)(nil),                         // 205: manpasik.v1.SystemConfig
+	(*CreateFamilyGroupRequest)(nil),             // 206: manpasik.v1.CreateFamilyGroupRequest
+	(*GetFamilyGroupRequest)(nil),                // 207: manpasik.v1.GetFamilyGroupRequest
+	(*FamilyGroup)(nil),                          // 208: manpasik.v1.FamilyGroup
+	(*FamilyMember)(nil),                         // 209: manpasik.v1.FamilyMember
+	(*InviteMemberRequest)(nil),                  // 210: manpasik.v1.InviteMemberRequest
+	(*FamilyInvitation)(nil),                     // 211: manpasik.v1.FamilyInvitation
+	(*RespondToInvitationRequest)(nil),           // 212: manpasik.v1.RespondToInvitationRequest
+	(*RespondToInvitationResponse)(nil),          // 213: manpasik.v1.RespondToInvitationResponse
+	(*RemoveMemberRequest)(nil),                  // 214: manpasik.v1.RemoveMemberRequest
+	(*RemoveMemberResponse)(nil),                 // 215: manpasik.v1.RemoveMemberResponse
+	(*UpdateMemberRoleRequest)(nil),              // 216: manpasik.v1.UpdateMemberRoleRequest
+	(*ListFamilyMembersRequest)(nil),             // 217: manpasik.v1.ListFamilyMembersRequest
+	(*ListFamilyMembersResponse)(nil),            // 218: manpasik.v1.ListFamilyMembersResponse
+	(*SetSharingPreferencesRequest)(nil),         // 219: manpasik.v1.SetSharingPreferencesRequest
+	(*SharingPreferences)(nil),                   // 220: manpasik.v1.SharingPreferences
+	(*GetSharedHealthDataRequest)(nil),           // 221: manpasik.v1.GetSharedHealthDataRequest
+	(*GetSharedHealthDataResponse)(nil),          // 222: manpasik.v1.GetSharedHealthDataResponse
+	(*CreateHealthRecordRequest)(nil),            // 223: manpasik.v1.CreateHealthRecordRequest
+	(*GetHealthRecordRequest)(nil),               // 224: manpasik.v1.GetHealthRecordRequest
+	(*ListHealthRecordsRequest)(nil),             // 225: manpasik.v1.ListHealthRecordsRequest
+	(*ListHealthRecordsResponse)(nil),            // 226: manpasik.v1.ListHealthRecordsResponse
+	(*UpdateHealthRecordRequest)(nil),            // 227: manpasik.v1.UpdateHealthRecordRequest
+	(*DeleteHealthRecordRequest)(nil),            // 228: manpasik.v1.DeleteHealthRecordRequest
+	(*DeleteHealthRecordResponse)(nil),           // 229: manpasik.v1.DeleteHealthRecordResponse
+	(*HealthRecord)(nil),                         // 230: manpasik.v1.HealthRecord
+	(*ExportToFHIRRequest)(nil),                  // 231: manpasik.v1.ExportToFHIRRequest
+	(*ExportToFHIRResponse)(nil),                 // 232: manpasik.v1.ExportToFHIRResponse
+	(*ImportFromFHIRRequest)(nil),                // 233: manpasik.v1.ImportFromFHIRRequest
+	(*ImportFromFHIRResponse)(nil),               // 234: manpasik.v1.ImportFromFHIRResponse
+	(*GetHealthSummaryRequest)(nil),              // 235: manpasik.v1.GetHealthSummaryRequest
+	(*GetHealthSummaryResponse)(nil),             // 236: manpasik.v1.GetHealthSummaryResponse
+	(*CreatePrescriptionRequest)(nil),            // 237: manpasik.v1.CreatePrescriptionRequest
+	(*GetPrescriptionRequest)(nil),               // 238: manpasik.v1.GetPrescriptionRequest
+	(*ListPrescriptionsRequest)(nil),             // 239: manpasik.v1.ListPrescriptionsRequest
+	(*ListPrescriptionsResponse)(nil),            // 240: manpasik.v1.ListPrescriptionsResponse
+	(*UpdatePrescriptionStatusRequest)(nil),      // 241: manpasik.v1.UpdatePrescriptionStatusRequest
+	(*AddMedicationRequest)(nil),                 // 242: manpasik.v1.AddMedicationRequest
+	(*RemoveMedicationRequest)(nil),              // 243: manpasik.v1.RemoveMedicationRequest
+	(*Prescription)(nil),                         // 244: manpasik.v1.Prescription
+	(*Medication)(nil),                           // 245: manpasik.v1.Medication
+	(*CheckDrugInteractionRequest)(nil),          // 246: manpasik.v1.CheckDrugInteractionRequest
+	(*CheckDrugInteractionResponse)(nil),         // 247: manpasik.v1.CheckDrugInteractionResponse
+	(*DrugInteraction)(nil),                      // 248: manpasik.v1.DrugInteraction
+	(*GetMedicationRemindersRequest)(nil),        // 249: manpasik.v1.GetMedicationRemindersRequest
+	(*GetMedicationRemindersResponse)(nil),       // 250: manpasik.v1.GetMedicationRemindersResponse
+	(*MedicationReminder)(nil),                   // 251: manpasik.v1.MedicationReminder
+	(*CreatePostRequest)(nil),                    // 252: manpasik.v1.CreatePostRequest
+	(*GetPostRequest)(nil),                       // 253: manpasik.v1.GetPostRequest
+	(*ListPostsRequest)(nil),                     // 254: manpasik.v1.ListPostsRequest
+	(*ListPostsResponse)(nil),                    // 255: manpasik.v1.ListPostsResponse
+	(*Post)(nil),                                 // 256: manpasik.v1.Post
+	(*LikePostRequest)(nil),                      // 257: manpasik.v1.LikePostRequest
+	(*LikePostResponse)(nil),                     // 258: manpasik.v1.LikePostResponse
+	(*CreateCommentRequest)(nil),                 // 259: manpasik.v1.CreateCommentRequest
+	(*ListCommentsRequest)(nil),                  // 260: manpasik.v1.ListCommentsRequest
+	(*ListCommentsResponse)(nil),                 // 261: manpasik.v1.ListCommentsResponse
+	(*Comment)(nil),                              // 262: manpasik.v1.Comment
+	(*CreateChallengeRequest)(nil),               // 263: manpasik.v1.CreateChallengeRequest
+	(*GetChallengeRequest)(nil),                  // 264: manpasik.v1.GetChallengeRequest
+	(*Challenge)(nil),                            // 265: manpasik.v1.Challenge
+	(*JoinChallengeRequest)(nil),                 // 266: manpasik.v1.JoinChallengeRequest
+	(*JoinChallengeResponse)(nil),                // 267: manpasik.v1.JoinChallengeResponse
+	(*ListChallengesRequest)(nil),                // 268: manpasik.v1.ListChallengesRequest
+	(*ListChallengesResponse)(nil),               // 269: manpasik.v1.ListChallengesResponse
+	(*CreateRoomRequest)(nil),                    // 270: manpasik.v1.CreateRoomRequest
+	(*GetRoomRequest)(nil),                       // 271: manpasik.v1.GetRoomRequest
+	(*Room)(nil),                                 // 272: manpasik.v1.Room
+	(*JoinRoomRequest)(nil),                      // 273: manpasik.v1.JoinRoomRequest
+	(*JoinRoomResponse)(nil),                     // 274: manpasik.v1.JoinRoomResponse
+	(*LeaveRoomRequest)(nil),                     // 275: manpasik.v1.LeaveRoomRequest
+	(*LeaveRoomResponse)(nil),                    // 276: manpasik.v1.LeaveRoomResponse
+	(*EndRoomRequest)(nil),                       // 277: manpasik.v1.EndRoomRequest
+	(*Participant)(nil),                          // 278: manpasik.v1.Participant
+	(*SendSignalRequest)(nil),                    // 279: manpasik.v1.SendSignalRequest
+	(*SendSignalResponse)(nil),                   // 280: manpasik.v1.SendSignalResponse
+	(*ListParticipantsRequest)(nil),              // 281: manpasik.v1.ListParticipantsRequest
+	(*ListParticipantsResponse)(nil),             // 282: manpasik.v1.ListParticipantsResponse
+	(*GetRoomStatsRequest)(nil),                  // 283: manpasik.v1.GetRoomStatsRequest
+	(*GetRoomStatsResponse)(nil),                 // 284: manpasik.v1.GetRoomStatsResponse
+	(*SendNotificationRequest)(nil),              // 285: manpasik.v1.SendNotificationRequest
+	(*Notification)(nil),                         // 286: manpasik.v1.Notification
+	(*ListNotificationsRequest)(nil),             // 287: manpasik.v1.ListNotificationsRequest
+	(*ListNotificationsResponse)(nil),            // 288: manpasik.v1.ListNotificationsResponse
+	(*MarkAsReadRequest)(nil),                    // 289: manpasik.v1.MarkAsReadRequest
+	(*MarkAsReadResponse)(nil),                   // 290: manpasik.v1.MarkAsReadResponse
+	(*MarkAllAsReadRequest)(nil),                 // 291: manpasik.v1.MarkAllAsReadRequest
+	(*MarkAllAsReadResponse)(nil),                // 292: manpasik.v1.MarkAllAsReadResponse
+	(*GetUnreadCountRequest)(nil),                // 293: manpasik.v1.GetUnreadCountRequest
+	(*GetUnreadCountResponse)(nil),               // 294: manpasik.v1.GetUnreadCountResponse
+	(*UpdateNotificationPreferencesRequest)(nil), // 295: manpasik.v1.UpdateNotificationPreferencesRequest
+	(*GetNotificationPreferencesRequest)(nil),    // 296: manpasik.v1.GetNotificationPreferencesRequest
+	(*NotificationPreferences)(nil),              // 297: manpasik.v1.NotificationPreferences
+	(*TranslateTextRequest)(nil),                 // 298: manpasik.v1.TranslateTextRequest
+	(*TranslateTextResponse)(nil),                // 299: manpasik.v1.TranslateTextResponse
+	(*DetectLanguageRequest)(nil),                // 300: manpasik.v1.DetectLanguageRequest
+	(*DetectLanguageResponse)(nil),               // 301: manpasik.v1.DetectLanguageResponse
+	(*DetectedLanguage)(nil),                     // 302: manpasik.v1.DetectedLanguage
+	(*ListSupportedLanguagesRequest)(nil),        // 303: manpasik.v1.ListSupportedLanguagesRequest
+	(*ListSupportedLanguagesResponse)(nil),       // 304: manpasik.v1.ListSupportedLanguagesResponse
+	(*SupportedLanguage)(nil),                    // 305: manpasik.v1.SupportedLanguage
+	(*TranslateBatchRequest)(nil),                // 306: manpasik.v1.TranslateBatchRequest
+	(*TranslateBatchResponse)(nil),               // 307: manpasik.v1.TranslateBatchResponse
+	(*GetTranslationHistoryRequest)(nil),         // 308: manpasik.v1.GetTranslationHistoryRequest
+	(*GetTranslationHistoryResponse)(nil),        // 309: manpasik.v1.GetTranslationHistoryResponse
+	(*TranslationRecord)(nil),                    // 310: manpasik.v1.TranslationRecord
+	(*GetTranslationUsageRequest)(nil),           // 311: manpasik.v1.GetTranslationUsageRequest
+	(*GetTranslationUsageResponse)(nil),          // 312: manpasik.v1.GetTranslationUsageResponse
+	(*ListDoctorsByFacilityRequest)(nil),         // 313: manpasik.v1.ListDoctorsByFacilityRequest
+	(*ListDoctorsByFacilityResponse)(nil),        // 314: manpasik.v1.ListDoctorsByFacilityResponse
+	(*Doctor)(nil),                               // 315: manpasik.v1.Doctor
+	(*GetDoctorAvailabilityRequest)(nil),         // 316: manpasik.v1.GetDoctorAvailabilityRequest
+	(*GetDoctorAvailabilityResponse)(nil),        // 317: manpasik.v1.GetDoctorAvailabilityResponse
+	(*TimeSlotDetail)(nil),                       // 318: manpasik.v1.TimeSlotDetail
+	(*SelectDoctorRequest)(nil),                  // 319: manpasik.v1.SelectDoctorRequest
+	(*SelectDoctorResponse)(nil),                 // 320: manpasik.v1.SelectDoctorResponse
+	(*SelectPharmacyRequest)(nil),                // 321: manpasik.v1.SelectPharmacyRequest
+	(*SelectPharmacyResponse)(nil),               // 322: manpasik.v1.SelectPharmacyResponse
+	(*SendToPharmacyRequest)(nil),                // 323: manpasik.v1.SendToPharmacyRequest
+	(*SendToPharmacyResponse)(nil),               // 324: manpasik.v1.SendToPharmacyResponse
+	(*GetByTokenRequest)(nil),                    // 325: manpasik.v1.GetByTokenRequest
+	(*UpdateDispensaryStatusRequest)(nil),        // 326: manpasik.v1.UpdateDispensaryStatusRequest
+	(*CreateConsentRequest)(nil),                 // 327: manpasik.v1.CreateConsentRequest
+	(*DataSharingConsent)(nil),                   // 328: manpasik.v1.DataSharingConsent
+	(*RevokeConsentRequest)(nil),                 // 329: manpasik.v1.RevokeConsentRequest
+	(*RevokeConsentResponse)(nil),                // 330: manpasik.v1.RevokeConsentResponse
+	(*ListConsentsRequest)(nil),                  // 331: manpasik.v1.ListConsentsRequest
+	(*ListConsentsResponse)(nil),                 // 332: manpasik.v1.ListConsentsResponse
+	(*ShareWithProviderRequest)(nil),             // 333: manpasik.v1.ShareWithProviderRequest
+	(*ShareWithProviderResponse)(nil),            // 334: manpasik.v1.ShareWithProviderResponse
+	(*GetDataAccessLogRequest)(nil),              // 335: manpasik.v1.GetDataAccessLogRequest
+	(*GetDataAccessLogResponse)(nil),             // 336: manpasik.v1.GetDataAccessLogResponse
+	(*DataAccessLogEntry)(nil),                   // 337: manpasik.v1.DataAccessLogEntry
+	(*ExportSingleMeasurementRequest)(nil),       // 338: manpasik.v1.ExportSingleMeasurementRequest
+	(*ExportToFHIRObservationsRequest)(nil),      // 339: manpasik.v1.ExportToFHIRObservationsRequest
+	(*ExportFHIRResponse)(nil),                   // 340: manpasik.v1.ExportFHIRResponse
+	(*UpdateDeviceStatusRequest)(nil),            // 341: manpasik.v1.UpdateDeviceStatusRequest
+	(*UpdateDeviceStatusResponse)(nil),           // 342: manpasik.v1.UpdateDeviceStatusResponse
+	(*ListAdminsByRegionRequest)(nil),            // 343: manpasik.v1.ListAdminsByRegionRequest
+	(*ListSystemConfigsRequest)(nil),             // 344: manpasik.v1.ListSystemConfigsRequest
+	(*ListSystemConfigsResponse)(nil),            // 345: manpasik.v1.ListSystemConfigsResponse
+	(*ConfigWithMeta)(nil),                       // 346: manpasik.v1.ConfigWithMeta
+	(*GetConfigWithMetaRequest)(nil),             // 347: manpasik.v1.GetConfigWithMetaRequest
+	(*ValidateConfigValueRequest)(nil),           // 348: manpasik.v1.ValidateConfigValueRequest
+	(*ValidateConfigValueResponse)(nil),          // 349: manpasik.v1.ValidateConfigValueResponse
+	(*BulkSetConfigsRequest)(nil),                // 350: manpasik.v1.BulkSetConfigsRequest
+	(*BulkSetConfigsResponse)(nil),               // 351: manpasik.v1.BulkSetConfigsResponse
+	(*ConfigChangeResult)(nil),                   // 352: manpasik.v1.ConfigChangeResult
+	(*Consultation)(nil),                         // 353: manpasik.v1.Consultation
+	(*CreateConsultationRequest)(nil),            // 354: manpasik.v1.CreateConsultationRequest
+	(*GetConsultationRequest)(nil),               // 355: manpasik.v1.GetConsultationRequest
+	(*ListConsultationsRequest)(nil),             // 356: manpasik.v1.ListConsultationsRequest
+	(*ListConsultationsResponse)(nil),            // 357: manpasik.v1.ListConsultationsResponse
+	(*MatchDoctorRequest)(nil),                   // 358: manpasik.v1.MatchDoctorRequest
+	(*MatchDoctorResponse)(nil),                  // 359: manpasik.v1.MatchDoctorResponse
+	(*DoctorProfile)(nil),                        // 360: manpasik.v1.DoctorProfile
+	(*StartVideoSessionRequest)(nil),             // 361: manpasik.v1.StartVideoSessionRequest
+	(*VideoSession)(nil),                         // 362: manpasik.v1.VideoSession
+	(*EndVideoSessionRequest)(nil),               // 363: manpasik.v1.EndVideoSessionRequest
+	(*RateConsultationRequest)(nil),              // 364: manpasik.v1.RateConsultationRequest
+	(*RateConsultationResponse)(nil),             // 365: manpasik.v1.RateConsultationResponse
+	(*SendFromTemplateRequest)(nil),              // 366: manpasik.v1.SendFromTemplateRequest
+	(*ValidateSharingAccessRequest)(nil),         // 367: manpasik.v1.ValidateSharingAccessRequest
+	(*ValidateSharingAccessResponse)(nil),        // 368: manpasik.v1.ValidateSharingAccessResponse
+	(*GetAuditLogDetailsRequest)(nil),            // 369: manpasik.v1.GetAuditLogDetailsRequest
+	(*GetAuditLogDetailsResponse)(nil),           // 370: manpasik.v1.GetAuditLogDetailsResponse
+	(*AuditLogDetail)(nil),                       // 371: manpasik.v1.AuditLogDetail
+	nil,                                          // 372: manpasik.v1.HealthScoreResponse.CategoryScoresEntry
+	nil,                                          // 373: manpasik.v1.GetSystemStatsResponse.UsersByTierEntry
+	nil,                                          // 374: manpasik.v1.GetSystemStatsResponse.MeasurementsByTypeEntry
+	nil,                                          // 375: manpasik.v1.CreateHealthRecordRequest.MetadataEntry
+	nil,                                          // 376: manpasik.v1.UpdateHealthRecordRequest.MetadataEntry
+	nil,                                          // 377: manpasik.v1.HealthRecord.MetadataEntry
+	nil,                                          // 378: manpasik.v1.GetHealthSummaryResponse.RecordsByTypeEntry
+	nil,                                          // 379: manpasik.v1.SendNotificationRequest.DataEntry
+	nil,                                          // 380: manpasik.v1.Notification.DataEntry
+	nil,                                          // 381: manpasik.v1.GetTranslationUsageResponse.ByLanguagePairEntry
+	nil,                                          // 382: manpasik.v1.ListSystemConfigsResponse.CategoryCountsEntry
+	nil,                                          // 383: manpasik.v1.SendFromTemplateRequest.DataEntry
+	(*timestamppb.Timestamp)(nil),                // 384: google.protobuf.Timestamp
 }
 var file_manpasik_proto_depIdxs = []int32{
-	372, // 0: manpasik.v1.StartSessionResponse.started_at:type_name -> google.protobuf.Timestamp
-	51,  // 1: manpasik.v1.MeasurementData.differential:type_name -> manpasik.v1.DifferentialCorrection
-	52,  // 2: manpasik.v1.MeasurementData.env_meta:type_name -> manpasik.v1.EnvironmentMeta
-	372, // 3: manpasik.v1.MeasurementData.timestamp:type_name -> google.protobuf.Timestamp
-	372, // 4: manpasik.v1.MeasurementResult.processed_at:type_name -> google.protobuf.Timestamp
-	372, // 5: manpasik.v1.EndSessionResponse.ended_at:type_name -> google.protobuf.Timestamp
-	372, // 6: manpasik.v1.GetHistoryRequest.start_time:type_name -> google.protobuf.Timestamp
-	372, // 7: manpasik.v1.GetHistoryRequest.end_time:type_name -> google.protobuf.Timestamp
-	58,  // 8: manpasik.v1.GetHistoryResponse.measurements:type_name -> manpasik.v1.MeasurementSummary
-	372, // 9: manpasik.v1.MeasurementSummary.measured_at:type_name -> google.protobuf.Timestamp
-	372, // 10: manpasik.v1.RegisterDeviceResponse.registered_at:type_name -> google.protobuf.Timestamp
-	63,  // 11: manpasik.v1.ListDevicesResponse.devices:type_name -> manpasik.v1.DeviceInfo
-	0,   // 12: manpasik.v1.DeviceInfo.status:type_name -> manpasik.v1.DeviceStatus
-	372, // 13: manpasik.v1.DeviceInfo.last_seen:type_name -> google.protobuf.Timestamp
-	0,   // 14: manpasik.v1.DeviceStatusUpdate.status:type_name -> manpasik.v1.DeviceStatus
-	372, // 15: manpasik.v1.DeviceStatusUpdate.timestamp:type_name -> google.protobuf.Timestamp
-	1,   // 16: manpasik.v1.DeviceCommand.command_type:type_name -> manpasik.v1.CommandType
-	2,   // 17: manpasik.v1.UserProfile.subscription_tier:type_name -> manpasik.v1.SubscriptionTier
-	372, // 18: manpasik.v1.UserProfile.created_at:type_name -> google.protobuf.Timestamp
-	2,   // 19: manpasik.v1.SubscriptionInfo.tier:type_name -> manpasik.v1.SubscriptionTier
-	372, // 20: manpasik.v1.SubscriptionInfo.started_at:type_name -> google.protobuf.Timestamp
-	372, // 21: manpasik.v1.SubscriptionInfo.expires_at:type_name -> google.protobuf.Timestamp
-	2,   // 22: manpasik.v1.CreateSubscriptionRequest.tier:type_name -> manpasik.v1.SubscriptionTier
-	2,   // 23: manpasik.v1.UpdateSubscriptionRequest.new_tier:type_name -> manpasik.v1.SubscriptionTier
-	372, // 24: manpasik.v1.CancelSubscriptionResponse.cancelled_at:type_name -> google.protobuf.Timestamp
-	372, // 25: manpasik.v1.CancelSubscriptionResponse.effective_until:type_name -> google.protobuf.Timestamp
-	2,   // 26: manpasik.v1.SubscriptionDetail.tier:type_name -> manpasik.v1.SubscriptionTier
-	3,   // 27: manpasik.v1.SubscriptionDetail.status:type_name -> manpasik.v1.SubscriptionStatus
-	372, // 28: manpasik.v1.SubscriptionDetail.started_at:type_name -> google.protobuf.Timestamp
-	372, // 29: manpasik.v1.SubscriptionDetail.expires_at:type_name -> google.protobuf.Timestamp
-	372, // 30: manpasik.v1.SubscriptionDetail.cancelled_at:type_name -> google.protobuf.Timestamp
-	2,   // 31: manpasik.v1.CheckFeatureAccessResponse.required_tier:type_name -> manpasik.v1.SubscriptionTier
-	2,   // 32: manpasik.v1.CheckFeatureAccessResponse.current_tier:type_name -> manpasik.v1.SubscriptionTier
-	83,  // 33: manpasik.v1.ListSubscriptionPlansResponse.plans:type_name -> manpasik.v1.SubscriptionPlan
-	2,   // 34: manpasik.v1.SubscriptionPlan.tier:type_name -> manpasik.v1.SubscriptionTier
-	4,   // 35: manpasik.v1.ListProductsRequest.category:type_name -> manpasik.v1.ProductCategory
-	87,  // 36: manpasik.v1.ListProductsResponse.products:type_name -> manpasik.v1.Product
-	4,   // 37: manpasik.v1.Product.category:type_name -> manpasik.v1.ProductCategory
-	372, // 38: manpasik.v1.Product.created_at:type_name -> google.protobuf.Timestamp
-	92,  // 39: manpasik.v1.Cart.items:type_name -> manpasik.v1.CartItem
-	97,  // 40: manpasik.v1.ListOrdersResponse.orders:type_name -> manpasik.v1.Order
-	98,  // 41: manpasik.v1.Order.items:type_name -> manpasik.v1.OrderItem
-	5,   // 42: manpasik.v1.Order.status:type_name -> manpasik.v1.OrderStatus
-	372, // 43: manpasik.v1.Order.created_at:type_name -> google.protobuf.Timestamp
-	372, // 44: manpasik.v1.Order.updated_at:type_name -> google.protobuf.Timestamp
-	6,   // 45: manpasik.v1.CreatePaymentRequest.payment_type:type_name -> manpasik.v1.PaymentType
-	104, // 46: manpasik.v1.ListPaymentsResponse.payments:type_name -> manpasik.v1.PaymentDetail
-	6,   // 47: manpasik.v1.PaymentDetail.payment_type:type_name -> manpasik.v1.PaymentType
-	7,   // 48: manpasik.v1.PaymentDetail.status:type_name -> manpasik.v1.PaymentStatus
-	372, // 49: manpasik.v1.PaymentDetail.created_at:type_name -> google.protobuf.Timestamp
-	372, // 50: manpasik.v1.PaymentDetail.completed_at:type_name -> google.protobuf.Timestamp
-	7,   // 51: manpasik.v1.RefundResponse.payment_status:type_name -> manpasik.v1.PaymentStatus
-	372, // 52: manpasik.v1.RefundResponse.refunded_at:type_name -> google.protobuf.Timestamp
-	8,   // 53: manpasik.v1.AnalyzeMeasurementRequest.models:type_name -> manpasik.v1.AiModelType
-	9,   // 54: manpasik.v1.BiomarkerResult.risk_level:type_name -> manpasik.v1.RiskLevel
-	108, // 55: manpasik.v1.AnalysisResult.biomarkers:type_name -> manpasik.v1.BiomarkerResult
-	109, // 56: manpasik.v1.AnalysisResult.anomalies:type_name -> manpasik.v1.AnomalyFlag
-	372, // 57: manpasik.v1.AnalysisResult.analyzed_at:type_name -> google.protobuf.Timestamp
-	361, // 58: manpasik.v1.HealthScoreResponse.category_scores:type_name -> manpasik.v1.HealthScoreResponse.CategoryScoresEntry
-	372, // 59: manpasik.v1.HealthScoreResponse.calculated_at:type_name -> google.protobuf.Timestamp
-	372, // 60: manpasik.v1.TrendDataPoint.timestamp:type_name -> google.protobuf.Timestamp
-	114, // 61: manpasik.v1.TrendPrediction.historical:type_name -> manpasik.v1.TrendDataPoint
-	114, // 62: manpasik.v1.TrendPrediction.predicted:type_name -> manpasik.v1.TrendDataPoint
-	8,   // 63: manpasik.v1.GetModelInfoRequest.model_type:type_name -> manpasik.v1.AiModelType
-	8,   // 64: manpasik.v1.ModelInfo.model_type:type_name -> manpasik.v1.AiModelType
-	372, // 65: manpasik.v1.ModelInfo.last_trained:type_name -> google.protobuf.Timestamp
-	117, // 66: manpasik.v1.ListModelsResponse.models:type_name -> manpasik.v1.ModelInfo
-	126, // 67: manpasik.v1.GetUsageHistoryResponse.records:type_name -> manpasik.v1.CartridgeUsageRecord
-	372, // 68: manpasik.v1.CartridgeUsageRecord.used_at:type_name -> google.protobuf.Timestamp
-	162, // 69: manpasik.v1.ListCategoriesResponse.categories:type_name -> manpasik.v1.CartridgeCategoryInfo
-	163, // 70: manpasik.v1.ListTypesByCategoryResponse.types:type_name -> manpasik.v1.CartridgeTypeInfo
-	16,  // 71: manpasik.v1.ValidateCartridgeResponse.access_level:type_name -> manpasik.v1.CartridgeAccessLevel
-	121, // 72: manpasik.v1.ValidateCartridgeResponse.detail:type_name -> manpasik.v1.CartridgeDetail
-	10,  // 73: manpasik.v1.CalibrationRecord.calibration_type:type_name -> manpasik.v1.CalibrationType
-	372, // 74: manpasik.v1.CalibrationRecord.calibrated_at:type_name -> google.protobuf.Timestamp
-	372, // 75: manpasik.v1.CalibrationRecord.expires_at:type_name -> google.protobuf.Timestamp
-	11,  // 76: manpasik.v1.CalibrationRecord.status:type_name -> manpasik.v1.CalibrationStatus
-	139, // 77: manpasik.v1.ListCalibrationHistoryResponse.records:type_name -> manpasik.v1.CalibrationRecord
-	11,  // 78: manpasik.v1.CalibrationStatusResponse.status:type_name -> manpasik.v1.CalibrationStatus
-	372, // 79: manpasik.v1.CalibrationStatusResponse.last_calibrated_at:type_name -> google.protobuf.Timestamp
-	372, // 80: manpasik.v1.CalibrationStatusResponse.expires_at:type_name -> google.protobuf.Timestamp
-	139, // 81: manpasik.v1.CalibrationStatusResponse.latest_record:type_name -> manpasik.v1.CalibrationRecord
-	372, // 82: manpasik.v1.CalibrationModel.created_at:type_name -> google.protobuf.Timestamp
-	145, // 83: manpasik.v1.ListCalibrationModelsResponse.models:type_name -> manpasik.v1.CalibrationModel
-	12,  // 84: manpasik.v1.SetHealthGoalRequest.category:type_name -> manpasik.v1.GoalCategory
-	372, // 85: manpasik.v1.SetHealthGoalRequest.target_date:type_name -> google.protobuf.Timestamp
-	12,  // 86: manpasik.v1.HealthGoal.category:type_name -> manpasik.v1.GoalCategory
-	13,  // 87: manpasik.v1.HealthGoal.status:type_name -> manpasik.v1.GoalStatus
-	372, // 88: manpasik.v1.HealthGoal.created_at:type_name -> google.protobuf.Timestamp
-	372, // 89: manpasik.v1.HealthGoal.target_date:type_name -> google.protobuf.Timestamp
-	372, // 90: manpasik.v1.HealthGoal.achieved_at:type_name -> google.protobuf.Timestamp
-	13,  // 91: manpasik.v1.GetHealthGoalsRequest.status_filter:type_name -> manpasik.v1.GoalStatus
-	148, // 92: manpasik.v1.GetHealthGoalsResponse.goals:type_name -> manpasik.v1.HealthGoal
-	14,  // 93: manpasik.v1.GenerateCoachingRequest.coaching_type:type_name -> manpasik.v1.CoachingType
-	14,  // 94: manpasik.v1.CoachingMessage.coaching_type:type_name -> manpasik.v1.CoachingType
-	9,   // 95: manpasik.v1.CoachingMessage.risk_level:type_name -> manpasik.v1.RiskLevel
-	372, // 96: manpasik.v1.CoachingMessage.created_at:type_name -> google.protobuf.Timestamp
-	14,  // 97: manpasik.v1.ListCoachingMessagesRequest.type_filter:type_name -> manpasik.v1.CoachingType
-	152, // 98: manpasik.v1.ListCoachingMessagesResponse.messages:type_name -> manpasik.v1.CoachingMessage
-	372, // 99: manpasik.v1.GenerateDailyReportRequest.date:type_name -> google.protobuf.Timestamp
-	372, // 100: manpasik.v1.DailyHealthReport.report_date:type_name -> google.protobuf.Timestamp
-	152, // 101: manpasik.v1.DailyHealthReport.highlights:type_name -> manpasik.v1.CoachingMessage
-	372, // 102: manpasik.v1.GetWeeklyReportRequest.week_start:type_name -> google.protobuf.Timestamp
-	372, // 103: manpasik.v1.WeeklyHealthReport.week_start:type_name -> google.protobuf.Timestamp
-	372, // 104: manpasik.v1.WeeklyHealthReport.week_end:type_name -> google.protobuf.Timestamp
-	156, // 105: manpasik.v1.WeeklyHealthReport.daily_reports:type_name -> manpasik.v1.DailyHealthReport
-	15,  // 106: manpasik.v1.GetRecommendationsRequest.type_filter:type_name -> manpasik.v1.RecommendationType
-	15,  // 107: manpasik.v1.Recommendation.type:type_name -> manpasik.v1.RecommendationType
-	9,   // 108: manpasik.v1.Recommendation.priority:type_name -> manpasik.v1.RiskLevel
-	372, // 109: manpasik.v1.Recommendation.created_at:type_name -> google.protobuf.Timestamp
-	160, // 110: manpasik.v1.GetRecommendationsResponse.recommendations:type_name -> manpasik.v1.Recommendation
-	16,  // 111: manpasik.v1.CheckCartridgeAccessResponse.access_level:type_name -> manpasik.v1.CartridgeAccessLevel
-	2,   // 112: manpasik.v1.CheckCartridgeAccessResponse.required_tier:type_name -> manpasik.v1.SubscriptionTier
-	2,   // 113: manpasik.v1.CheckCartridgeAccessResponse.current_tier:type_name -> manpasik.v1.SubscriptionTier
-	168, // 114: manpasik.v1.ListAccessibleCartridgesResponse.entries:type_name -> manpasik.v1.CartridgeAccessEntry
-	163, // 115: manpasik.v1.CartridgeAccessEntry.type_info:type_name -> manpasik.v1.CartridgeTypeInfo
-	16,  // 116: manpasik.v1.CartridgeAccessEntry.access_level:type_name -> manpasik.v1.CartridgeAccessLevel
-	17,  // 117: manpasik.v1.SearchFacilitiesRequest.type:type_name -> manpasik.v1.FacilityType
-	18,  // 118: manpasik.v1.SearchFacilitiesRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
-	172, // 119: manpasik.v1.SearchFacilitiesResponse.facilities:type_name -> manpasik.v1.Facility
-	17,  // 120: manpasik.v1.Facility.type:type_name -> manpasik.v1.FacilityType
-	18,  // 121: manpasik.v1.Facility.specialties:type_name -> manpasik.v1.DoctorSpecialty
-	18,  // 122: manpasik.v1.GetAvailableSlotsRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
-	175, // 123: manpasik.v1.GetAvailableSlotsResponse.slots:type_name -> manpasik.v1.TimeSlot
-	372, // 124: manpasik.v1.TimeSlot.start_time:type_name -> google.protobuf.Timestamp
-	372, // 125: manpasik.v1.TimeSlot.end_time:type_name -> google.protobuf.Timestamp
-	18,  // 126: manpasik.v1.TimeSlot.specialty:type_name -> manpasik.v1.DoctorSpecialty
-	18,  // 127: manpasik.v1.CreateReservationRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
-	18,  // 128: manpasik.v1.Reservation.specialty:type_name -> manpasik.v1.DoctorSpecialty
-	372, // 129: manpasik.v1.Reservation.appointment_time:type_name -> google.protobuf.Timestamp
-	19,  // 130: manpasik.v1.Reservation.status:type_name -> manpasik.v1.ReservationStatus
-	372, // 131: manpasik.v1.Reservation.created_at:type_name -> google.protobuf.Timestamp
-	372, // 132: manpasik.v1.Reservation.updated_at:type_name -> google.protobuf.Timestamp
-	19,  // 133: manpasik.v1.ListReservationsRequest.status:type_name -> manpasik.v1.ReservationStatus
-	177, // 134: manpasik.v1.ListReservationsResponse.reservations:type_name -> manpasik.v1.Reservation
-	20,  // 135: manpasik.v1.CreateAdminRequest.role:type_name -> manpasik.v1.AdminRole
-	20,  // 136: manpasik.v1.ListAdminsRequest.role_filter:type_name -> manpasik.v1.AdminRole
-	189, // 137: manpasik.v1.ListAdminsResponse.admins:type_name -> manpasik.v1.AdminUser
-	20,  // 138: manpasik.v1.UpdateAdminRoleRequest.new_role:type_name -> manpasik.v1.AdminRole
-	20,  // 139: manpasik.v1.AdminUser.role:type_name -> manpasik.v1.AdminRole
-	372, // 140: manpasik.v1.AdminUser.created_at:type_name -> google.protobuf.Timestamp
-	372, // 141: manpasik.v1.AdminUser.last_login_at:type_name -> google.protobuf.Timestamp
-	2,   // 142: manpasik.v1.AdminListUsersRequest.tier_filter:type_name -> manpasik.v1.SubscriptionTier
-	192, // 143: manpasik.v1.AdminListUsersResponse.users:type_name -> manpasik.v1.AdminUserSummary
-	2,   // 144: manpasik.v1.AdminUserSummary.tier:type_name -> manpasik.v1.SubscriptionTier
-	372, // 145: manpasik.v1.AdminUserSummary.created_at:type_name -> google.protobuf.Timestamp
-	372, // 146: manpasik.v1.AdminUserSummary.last_active_at:type_name -> google.protobuf.Timestamp
-	362, // 147: manpasik.v1.GetSystemStatsResponse.users_by_tier:type_name -> manpasik.v1.GetSystemStatsResponse.UsersByTierEntry
-	363, // 148: manpasik.v1.GetSystemStatsResponse.measurements_by_type:type_name -> manpasik.v1.GetSystemStatsResponse.MeasurementsByTypeEntry
-	372, // 149: manpasik.v1.GetSystemStatsResponse.generated_at:type_name -> google.protobuf.Timestamp
-	21,  // 150: manpasik.v1.GetAuditLogRequest.action_filter:type_name -> manpasik.v1.AuditAction
-	372, // 151: manpasik.v1.GetAuditLogRequest.start_time:type_name -> google.protobuf.Timestamp
-	372, // 152: manpasik.v1.GetAuditLogRequest.end_time:type_name -> google.protobuf.Timestamp
-	197, // 153: manpasik.v1.GetAuditLogResponse.entries:type_name -> manpasik.v1.AuditLogEntry
-	21,  // 154: manpasik.v1.AuditLogEntry.action:type_name -> manpasik.v1.AuditAction
-	372, // 155: manpasik.v1.AuditLogEntry.timestamp:type_name -> google.protobuf.Timestamp
-	372, // 156: manpasik.v1.SystemConfig.updated_at:type_name -> google.protobuf.Timestamp
-	204, // 157: manpasik.v1.FamilyGroup.members:type_name -> manpasik.v1.FamilyMember
-	372, // 158: manpasik.v1.FamilyGroup.created_at:type_name -> google.protobuf.Timestamp
-	22,  // 159: manpasik.v1.FamilyMember.role:type_name -> manpasik.v1.FamilyRole
-	372, // 160: manpasik.v1.FamilyMember.joined_at:type_name -> google.protobuf.Timestamp
-	22,  // 161: manpasik.v1.InviteMemberRequest.role:type_name -> manpasik.v1.FamilyRole
-	22,  // 162: manpasik.v1.FamilyInvitation.role:type_name -> manpasik.v1.FamilyRole
-	23,  // 163: manpasik.v1.FamilyInvitation.status:type_name -> manpasik.v1.InvitationStatus
-	372, // 164: manpasik.v1.FamilyInvitation.created_at:type_name -> google.protobuf.Timestamp
-	372, // 165: manpasik.v1.FamilyInvitation.expires_at:type_name -> google.protobuf.Timestamp
-	203, // 166: manpasik.v1.RespondToInvitationResponse.group:type_name -> manpasik.v1.FamilyGroup
-	22,  // 167: manpasik.v1.UpdateMemberRoleRequest.new_role:type_name -> manpasik.v1.FamilyRole
-	204, // 168: manpasik.v1.ListFamilyMembersResponse.members:type_name -> manpasik.v1.FamilyMember
-	372, // 169: manpasik.v1.SharingPreferences.updated_at:type_name -> google.protobuf.Timestamp
-	58,  // 170: manpasik.v1.GetSharedHealthDataResponse.recent_measurements:type_name -> manpasik.v1.MeasurementSummary
-	24,  // 171: manpasik.v1.CreateHealthRecordRequest.record_type:type_name -> manpasik.v1.HealthRecordType
-	364, // 172: manpasik.v1.CreateHealthRecordRequest.metadata:type_name -> manpasik.v1.CreateHealthRecordRequest.MetadataEntry
-	24,  // 173: manpasik.v1.ListHealthRecordsRequest.type_filter:type_name -> manpasik.v1.HealthRecordType
-	225, // 174: manpasik.v1.ListHealthRecordsResponse.records:type_name -> manpasik.v1.HealthRecord
-	365, // 175: manpasik.v1.UpdateHealthRecordRequest.metadata:type_name -> manpasik.v1.UpdateHealthRecordRequest.MetadataEntry
-	24,  // 176: manpasik.v1.HealthRecord.record_type:type_name -> manpasik.v1.HealthRecordType
-	366, // 177: manpasik.v1.HealthRecord.metadata:type_name -> manpasik.v1.HealthRecord.MetadataEntry
-	372, // 178: manpasik.v1.HealthRecord.created_at:type_name -> google.protobuf.Timestamp
-	372, // 179: manpasik.v1.HealthRecord.updated_at:type_name -> google.protobuf.Timestamp
-	25,  // 180: manpasik.v1.ExportToFHIRRequest.target_type:type_name -> manpasik.v1.FHIRResourceType
-	25,  // 181: manpasik.v1.ExportToFHIRResponse.resource_type:type_name -> manpasik.v1.FHIRResourceType
-	367, // 182: manpasik.v1.GetHealthSummaryResponse.records_by_type:type_name -> manpasik.v1.GetHealthSummaryResponse.RecordsByTypeEntry
-	225, // 183: manpasik.v1.GetHealthSummaryResponse.recent_records:type_name -> manpasik.v1.HealthRecord
-	372, // 184: manpasik.v1.GetHealthSummaryResponse.last_updated:type_name -> google.protobuf.Timestamp
-	240, // 185: manpasik.v1.CreatePrescriptionRequest.medications:type_name -> manpasik.v1.Medication
-	26,  // 186: manpasik.v1.ListPrescriptionsRequest.status_filter:type_name -> manpasik.v1.PrescriptionStatus
-	239, // 187: manpasik.v1.ListPrescriptionsResponse.prescriptions:type_name -> manpasik.v1.Prescription
-	26,  // 188: manpasik.v1.UpdatePrescriptionStatusRequest.new_status:type_name -> manpasik.v1.PrescriptionStatus
-	240, // 189: manpasik.v1.AddMedicationRequest.medication:type_name -> manpasik.v1.Medication
-	26,  // 190: manpasik.v1.Prescription.status:type_name -> manpasik.v1.PrescriptionStatus
-	240, // 191: manpasik.v1.Prescription.medications:type_name -> manpasik.v1.Medication
-	372, // 192: manpasik.v1.Prescription.prescribed_at:type_name -> google.protobuf.Timestamp
-	372, // 193: manpasik.v1.Prescription.expires_at:type_name -> google.protobuf.Timestamp
-	372, // 194: manpasik.v1.Prescription.updated_at:type_name -> google.protobuf.Timestamp
-	243, // 195: manpasik.v1.CheckDrugInteractionResponse.interactions:type_name -> manpasik.v1.DrugInteraction
-	27,  // 196: manpasik.v1.DrugInteraction.severity:type_name -> manpasik.v1.DrugInteractionSeverity
-	246, // 197: manpasik.v1.GetMedicationRemindersResponse.reminders:type_name -> manpasik.v1.MedicationReminder
-	28,  // 198: manpasik.v1.CreatePostRequest.category:type_name -> manpasik.v1.PostCategory
-	28,  // 199: manpasik.v1.ListPostsRequest.category:type_name -> manpasik.v1.PostCategory
-	251, // 200: manpasik.v1.ListPostsResponse.posts:type_name -> manpasik.v1.Post
-	28,  // 201: manpasik.v1.Post.category:type_name -> manpasik.v1.PostCategory
-	372, // 202: manpasik.v1.Post.created_at:type_name -> google.protobuf.Timestamp
-	372, // 203: manpasik.v1.Post.updated_at:type_name -> google.protobuf.Timestamp
-	257, // 204: manpasik.v1.ListCommentsResponse.comments:type_name -> manpasik.v1.Comment
-	372, // 205: manpasik.v1.Comment.created_at:type_name -> google.protobuf.Timestamp
-	30,  // 206: manpasik.v1.CreateChallengeRequest.challenge_type:type_name -> manpasik.v1.ChallengeType
-	372, // 207: manpasik.v1.CreateChallengeRequest.start_date:type_name -> google.protobuf.Timestamp
-	372, // 208: manpasik.v1.CreateChallengeRequest.end_date:type_name -> google.protobuf.Timestamp
-	30,  // 209: manpasik.v1.Challenge.challenge_type:type_name -> manpasik.v1.ChallengeType
-	29,  // 210: manpasik.v1.Challenge.status:type_name -> manpasik.v1.ChallengeStatus
-	372, // 211: manpasik.v1.Challenge.start_date:type_name -> google.protobuf.Timestamp
-	372, // 212: manpasik.v1.Challenge.end_date:type_name -> google.protobuf.Timestamp
-	372, // 213: manpasik.v1.Challenge.created_at:type_name -> google.protobuf.Timestamp
-	30,  // 214: manpasik.v1.ListChallengesRequest.type_filter:type_name -> manpasik.v1.ChallengeType
-	29,  // 215: manpasik.v1.ListChallengesRequest.status_filter:type_name -> manpasik.v1.ChallengeStatus
-	260, // 216: manpasik.v1.ListChallengesResponse.challenges:type_name -> manpasik.v1.Challenge
-	31,  // 217: manpasik.v1.CreateRoomRequest.room_type:type_name -> manpasik.v1.RoomType
-	31,  // 218: manpasik.v1.Room.room_type:type_name -> manpasik.v1.RoomType
-	32,  // 219: manpasik.v1.Room.status:type_name -> manpasik.v1.RoomStatus
-	372, // 220: manpasik.v1.Room.created_at:type_name -> google.protobuf.Timestamp
-	372, // 221: manpasik.v1.Room.started_at:type_name -> google.protobuf.Timestamp
-	372, // 222: manpasik.v1.Room.ended_at:type_name -> google.protobuf.Timestamp
-	267, // 223: manpasik.v1.JoinRoomResponse.room:type_name -> manpasik.v1.Room
-	273, // 224: manpasik.v1.JoinRoomResponse.participants:type_name -> manpasik.v1.Participant
-	372, // 225: manpasik.v1.Participant.joined_at:type_name -> google.protobuf.Timestamp
-	33,  // 226: manpasik.v1.SendSignalRequest.signal_type:type_name -> manpasik.v1.SignalType
-	273, // 227: manpasik.v1.ListParticipantsResponse.participants:type_name -> manpasik.v1.Participant
-	372, // 228: manpasik.v1.GetRoomStatsResponse.started_at:type_name -> google.protobuf.Timestamp
-	34,  // 229: manpasik.v1.SendNotificationRequest.type:type_name -> manpasik.v1.NotificationType
-	36,  // 230: manpasik.v1.SendNotificationRequest.priority:type_name -> manpasik.v1.NotificationPriority
-	35,  // 231: manpasik.v1.SendNotificationRequest.channel:type_name -> manpasik.v1.NotificationChannel
-	368, // 232: manpasik.v1.SendNotificationRequest.data:type_name -> manpasik.v1.SendNotificationRequest.DataEntry
-	34,  // 233: manpasik.v1.Notification.type:type_name -> manpasik.v1.NotificationType
-	36,  // 234: manpasik.v1.Notification.priority:type_name -> manpasik.v1.NotificationPriority
-	35,  // 235: manpasik.v1.Notification.channel:type_name -> manpasik.v1.NotificationChannel
-	369, // 236: manpasik.v1.Notification.data:type_name -> manpasik.v1.Notification.DataEntry
-	372, // 237: manpasik.v1.Notification.created_at:type_name -> google.protobuf.Timestamp
-	372, // 238: manpasik.v1.Notification.read_at:type_name -> google.protobuf.Timestamp
-	34,  // 239: manpasik.v1.ListNotificationsRequest.type_filter:type_name -> manpasik.v1.NotificationType
-	281, // 240: manpasik.v1.ListNotificationsResponse.notifications:type_name -> manpasik.v1.Notification
-	372, // 241: manpasik.v1.NotificationPreferences.updated_at:type_name -> google.protobuf.Timestamp
-	297, // 242: manpasik.v1.DetectLanguageResponse.languages:type_name -> manpasik.v1.DetectedLanguage
-	300, // 243: manpasik.v1.ListSupportedLanguagesResponse.languages:type_name -> manpasik.v1.SupportedLanguage
-	294, // 244: manpasik.v1.TranslateBatchResponse.translations:type_name -> manpasik.v1.TranslateTextResponse
-	305, // 245: manpasik.v1.GetTranslationHistoryResponse.records:type_name -> manpasik.v1.TranslationRecord
-	372, // 246: manpasik.v1.TranslationRecord.created_at:type_name -> google.protobuf.Timestamp
-	370, // 247: manpasik.v1.GetTranslationUsageResponse.by_language_pair:type_name -> manpasik.v1.GetTranslationUsageResponse.ByLanguagePairEntry
-	310, // 248: manpasik.v1.ListDoctorsByFacilityResponse.doctors:type_name -> manpasik.v1.Doctor
-	313, // 249: manpasik.v1.GetDoctorAvailabilityResponse.slots:type_name -> manpasik.v1.TimeSlotDetail
-	310, // 250: manpasik.v1.SelectDoctorResponse.doctor:type_name -> manpasik.v1.Doctor
-	323, // 251: manpasik.v1.ListConsentsResponse.consents:type_name -> manpasik.v1.DataSharingConsent
-	332, // 252: manpasik.v1.GetDataAccessLogResponse.entries:type_name -> manpasik.v1.DataAccessLogEntry
-	341, // 253: manpasik.v1.ListSystemConfigsResponse.configs:type_name -> manpasik.v1.ConfigWithMeta
-	371, // 254: manpasik.v1.ListSystemConfigsResponse.category_counts:type_name -> manpasik.v1.ListSystemConfigsResponse.CategoryCountsEntry
-	372, // 255: manpasik.v1.ConfigWithMeta.updated_at:type_name -> google.protobuf.Timestamp
-	198, // 256: manpasik.v1.BulkSetConfigsRequest.configs:type_name -> manpasik.v1.SetSystemConfigRequest
-	347, // 257: manpasik.v1.BulkSetConfigsResponse.results:type_name -> manpasik.v1.ConfigChangeResult
-	18,  // 258: manpasik.v1.Consultation.specialty:type_name -> manpasik.v1.DoctorSpecialty
-	37,  // 259: manpasik.v1.Consultation.status:type_name -> manpasik.v1.ConsultationStatus
-	372, // 260: manpasik.v1.Consultation.created_at:type_name -> google.protobuf.Timestamp
-	372, // 261: manpasik.v1.Consultation.scheduled_at:type_name -> google.protobuf.Timestamp
-	372, // 262: manpasik.v1.Consultation.started_at:type_name -> google.protobuf.Timestamp
-	372, // 263: manpasik.v1.Consultation.ended_at:type_name -> google.protobuf.Timestamp
-	18,  // 264: manpasik.v1.CreateConsultationRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
-	37,  // 265: manpasik.v1.ListConsultationsRequest.status_filter:type_name -> manpasik.v1.ConsultationStatus
-	348, // 266: manpasik.v1.ListConsultationsResponse.consultations:type_name -> manpasik.v1.Consultation
-	18,  // 267: manpasik.v1.MatchDoctorRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
-	355, // 268: manpasik.v1.MatchDoctorResponse.doctors:type_name -> manpasik.v1.DoctorProfile
-	18,  // 269: manpasik.v1.DoctorProfile.specialty:type_name -> manpasik.v1.DoctorSpecialty
-	38,  // 270: manpasik.v1.VideoSession.status:type_name -> manpasik.v1.VideoSessionStatus
-	372, // 271: manpasik.v1.VideoSession.started_at:type_name -> google.protobuf.Timestamp
-	372, // 272: manpasik.v1.VideoSession.ended_at:type_name -> google.protobuf.Timestamp
-	39,  // 273: manpasik.v1.AuthService.Register:input_type -> manpasik.v1.RegisterRequest
-	41,  // 274: manpasik.v1.AuthService.Login:input_type -> manpasik.v1.LoginRequest
-	43,  // 275: manpasik.v1.AuthService.RefreshToken:input_type -> manpasik.v1.RefreshTokenRequest
-	44,  // 276: manpasik.v1.AuthService.Logout:input_type -> manpasik.v1.LogoutRequest
-	46,  // 277: manpasik.v1.AuthService.ValidateToken:input_type -> manpasik.v1.ValidateTokenRequest
-	48,  // 278: manpasik.v1.MeasurementService.StartSession:input_type -> manpasik.v1.StartSessionRequest
-	50,  // 279: manpasik.v1.MeasurementService.StreamMeasurement:input_type -> manpasik.v1.MeasurementData
-	54,  // 280: manpasik.v1.MeasurementService.EndSession:input_type -> manpasik.v1.EndSessionRequest
-	56,  // 281: manpasik.v1.MeasurementService.GetMeasurementHistory:input_type -> manpasik.v1.GetHistoryRequest
-	333, // 282: manpasik.v1.MeasurementService.ExportSingleMeasurement:input_type -> manpasik.v1.ExportSingleMeasurementRequest
-	334, // 283: manpasik.v1.MeasurementService.ExportToFHIRObservations:input_type -> manpasik.v1.ExportToFHIRObservationsRequest
-	59,  // 284: manpasik.v1.DeviceService.RegisterDevice:input_type -> manpasik.v1.RegisterDeviceRequest
-	61,  // 285: manpasik.v1.DeviceService.ListDevices:input_type -> manpasik.v1.ListDevicesRequest
-	64,  // 286: manpasik.v1.DeviceService.StreamDeviceStatus:input_type -> manpasik.v1.DeviceStatusUpdate
-	66,  // 287: manpasik.v1.DeviceService.RequestOtaUpdate:input_type -> manpasik.v1.OtaRequest
-	336, // 288: manpasik.v1.DeviceService.UpdateDeviceStatus:input_type -> manpasik.v1.UpdateDeviceStatusRequest
-	68,  // 289: manpasik.v1.UserService.GetProfile:input_type -> manpasik.v1.GetProfileRequest
-	69,  // 290: manpasik.v1.UserService.UpdateProfile:input_type -> manpasik.v1.UpdateProfileRequest
-	71,  // 291: manpasik.v1.UserService.GetSubscription:input_type -> manpasik.v1.GetSubscriptionRequest
-	73,  // 292: manpasik.v1.SubscriptionService.CreateSubscription:input_type -> manpasik.v1.CreateSubscriptionRequest
-	74,  // 293: manpasik.v1.SubscriptionService.GetSubscription:input_type -> manpasik.v1.GetSubscriptionDetailRequest
-	75,  // 294: manpasik.v1.SubscriptionService.UpdateSubscription:input_type -> manpasik.v1.UpdateSubscriptionRequest
-	76,  // 295: manpasik.v1.SubscriptionService.CancelSubscription:input_type -> manpasik.v1.CancelSubscriptionRequest
-	79,  // 296: manpasik.v1.SubscriptionService.CheckFeatureAccess:input_type -> manpasik.v1.CheckFeatureAccessRequest
-	81,  // 297: manpasik.v1.SubscriptionService.ListSubscriptionPlans:input_type -> manpasik.v1.ListSubscriptionPlansRequest
-	164, // 298: manpasik.v1.SubscriptionService.CheckCartridgeAccess:input_type -> manpasik.v1.CheckCartridgeAccessRequest
-	166, // 299: manpasik.v1.SubscriptionService.ListAccessibleCartridges:input_type -> manpasik.v1.ListAccessibleCartridgesRequest
-	84,  // 300: manpasik.v1.ShopService.ListProducts:input_type -> manpasik.v1.ListProductsRequest
-	86,  // 301: manpasik.v1.ShopService.GetProduct:input_type -> manpasik.v1.GetProductRequest
-	88,  // 302: manpasik.v1.ShopService.AddToCart:input_type -> manpasik.v1.AddToCartRequest
-	89,  // 303: manpasik.v1.ShopService.GetCart:input_type -> manpasik.v1.GetCartRequest
-	90,  // 304: manpasik.v1.ShopService.RemoveFromCart:input_type -> manpasik.v1.RemoveFromCartRequest
-	93,  // 305: manpasik.v1.ShopService.CreateOrder:input_type -> manpasik.v1.CreateOrderRequest
-	94,  // 306: manpasik.v1.ShopService.GetOrder:input_type -> manpasik.v1.GetOrderRequest
-	95,  // 307: manpasik.v1.ShopService.ListOrders:input_type -> manpasik.v1.ListOrdersRequest
-	99,  // 308: manpasik.v1.PaymentService.CreatePayment:input_type -> manpasik.v1.CreatePaymentRequest
-	100, // 309: manpasik.v1.PaymentService.ConfirmPayment:input_type -> manpasik.v1.ConfirmPaymentRequest
-	101, // 310: manpasik.v1.PaymentService.GetPayment:input_type -> manpasik.v1.GetPaymentRequest
-	102, // 311: manpasik.v1.PaymentService.ListPayments:input_type -> manpasik.v1.ListPaymentsRequest
-	105, // 312: manpasik.v1.PaymentService.RefundPayment:input_type -> manpasik.v1.RefundPaymentRequest
-	107, // 313: manpasik.v1.AiInferenceService.AnalyzeMeasurement:input_type -> manpasik.v1.AnalyzeMeasurementRequest
-	111, // 314: manpasik.v1.AiInferenceService.GetHealthScore:input_type -> manpasik.v1.GetHealthScoreRequest
-	113, // 315: manpasik.v1.AiInferenceService.PredictTrend:input_type -> manpasik.v1.PredictTrendRequest
-	116, // 316: manpasik.v1.AiInferenceService.GetModelInfo:input_type -> manpasik.v1.GetModelInfoRequest
-	118, // 317: manpasik.v1.AiInferenceService.ListModels:input_type -> manpasik.v1.ListModelsRequest
-	120, // 318: manpasik.v1.CartridgeService.ReadCartridge:input_type -> manpasik.v1.ReadCartridgeRequest
-	122, // 319: manpasik.v1.CartridgeService.RecordUsage:input_type -> manpasik.v1.RecordUsageRequest
-	124, // 320: manpasik.v1.CartridgeService.GetUsageHistory:input_type -> manpasik.v1.GetUsageHistoryRequest
-	127, // 321: manpasik.v1.CartridgeService.GetCartridgeType:input_type -> manpasik.v1.GetCartridgeTypeRequest
-	128, // 322: manpasik.v1.CartridgeService.ListCategories:input_type -> manpasik.v1.ListCategoriesRequest
-	130, // 323: manpasik.v1.CartridgeService.ListTypesByCategory:input_type -> manpasik.v1.ListTypesByCategoryRequest
-	132, // 324: manpasik.v1.CartridgeService.GetRemainingUses:input_type -> manpasik.v1.GetRemainingUsesRequest
-	134, // 325: manpasik.v1.CartridgeService.ValidateCartridge:input_type -> manpasik.v1.ValidateCartridgeRequest
-	136, // 326: manpasik.v1.CalibrationService.RegisterFactoryCalibration:input_type -> manpasik.v1.RegisterFactoryCalibrationRequest
-	137, // 327: manpasik.v1.CalibrationService.PerformFieldCalibration:input_type -> manpasik.v1.PerformFieldCalibrationRequest
-	138, // 328: manpasik.v1.CalibrationService.GetCalibration:input_type -> manpasik.v1.GetCalibrationRequest
-	140, // 329: manpasik.v1.CalibrationService.ListCalibrationHistory:input_type -> manpasik.v1.ListCalibrationHistoryRequest
-	142, // 330: manpasik.v1.CalibrationService.CheckCalibrationStatus:input_type -> manpasik.v1.CheckCalibrationStatusRequest
-	144, // 331: manpasik.v1.CalibrationService.ListCalibrationModels:input_type -> manpasik.v1.ListCalibrationModelsRequest
-	147, // 332: manpasik.v1.CoachingService.SetHealthGoal:input_type -> manpasik.v1.SetHealthGoalRequest
-	149, // 333: manpasik.v1.CoachingService.GetHealthGoals:input_type -> manpasik.v1.GetHealthGoalsRequest
-	151, // 334: manpasik.v1.CoachingService.GenerateCoaching:input_type -> manpasik.v1.GenerateCoachingRequest
-	153, // 335: manpasik.v1.CoachingService.ListCoachingMessages:input_type -> manpasik.v1.ListCoachingMessagesRequest
-	155, // 336: manpasik.v1.CoachingService.GenerateDailyReport:input_type -> manpasik.v1.GenerateDailyReportRequest
-	157, // 337: manpasik.v1.CoachingService.GetWeeklyReport:input_type -> manpasik.v1.GetWeeklyReportRequest
-	159, // 338: manpasik.v1.CoachingService.GetRecommendations:input_type -> manpasik.v1.GetRecommendationsRequest
-	169, // 339: manpasik.v1.ReservationService.SearchFacilities:input_type -> manpasik.v1.SearchFacilitiesRequest
-	171, // 340: manpasik.v1.ReservationService.GetFacility:input_type -> manpasik.v1.GetFacilityRequest
-	173, // 341: manpasik.v1.ReservationService.GetAvailableSlots:input_type -> manpasik.v1.GetAvailableSlotsRequest
-	176, // 342: manpasik.v1.ReservationService.CreateReservation:input_type -> manpasik.v1.CreateReservationRequest
-	178, // 343: manpasik.v1.ReservationService.GetReservation:input_type -> manpasik.v1.GetReservationRequest
-	179, // 344: manpasik.v1.ReservationService.ListReservations:input_type -> manpasik.v1.ListReservationsRequest
-	181, // 345: manpasik.v1.ReservationService.CancelReservation:input_type -> manpasik.v1.CancelReservationRequest
-	308, // 346: manpasik.v1.ReservationService.ListDoctorsByFacility:input_type -> manpasik.v1.ListDoctorsByFacilityRequest
-	311, // 347: manpasik.v1.ReservationService.GetDoctorAvailability:input_type -> manpasik.v1.GetDoctorAvailabilityRequest
-	314, // 348: manpasik.v1.ReservationService.SelectDoctor:input_type -> manpasik.v1.SelectDoctorRequest
-	183, // 349: manpasik.v1.AdminService.CreateAdmin:input_type -> manpasik.v1.CreateAdminRequest
-	184, // 350: manpasik.v1.AdminService.GetAdmin:input_type -> manpasik.v1.GetAdminRequest
-	185, // 351: manpasik.v1.AdminService.ListAdmins:input_type -> manpasik.v1.ListAdminsRequest
-	187, // 352: manpasik.v1.AdminService.UpdateAdminRole:input_type -> manpasik.v1.UpdateAdminRoleRequest
-	188, // 353: manpasik.v1.AdminService.DeactivateAdmin:input_type -> manpasik.v1.DeactivateAdminRequest
-	190, // 354: manpasik.v1.AdminService.ListUsers:input_type -> manpasik.v1.AdminListUsersRequest
-	193, // 355: manpasik.v1.AdminService.GetSystemStats:input_type -> manpasik.v1.GetSystemStatsRequest
-	195, // 356: manpasik.v1.AdminService.GetAuditLog:input_type -> manpasik.v1.GetAuditLogRequest
-	198, // 357: manpasik.v1.AdminService.SetSystemConfig:input_type -> manpasik.v1.SetSystemConfigRequest
-	199, // 358: manpasik.v1.AdminService.GetSystemConfig:input_type -> manpasik.v1.GetSystemConfigRequest
-	338, // 359: manpasik.v1.AdminService.ListAdminsByRegion:input_type -> manpasik.v1.ListAdminsByRegionRequest
-	339, // 360: manpasik.v1.AdminService.ListSystemConfigs:input_type -> manpasik.v1.ListSystemConfigsRequest
-	342, // 361: manpasik.v1.AdminService.GetConfigWithMeta:input_type -> manpasik.v1.GetConfigWithMetaRequest
-	343, // 362: manpasik.v1.AdminService.ValidateConfigValue:input_type -> manpasik.v1.ValidateConfigValueRequest
-	345, // 363: manpasik.v1.AdminService.BulkSetConfigs:input_type -> manpasik.v1.BulkSetConfigsRequest
-	201, // 364: manpasik.v1.FamilyService.CreateFamilyGroup:input_type -> manpasik.v1.CreateFamilyGroupRequest
-	202, // 365: manpasik.v1.FamilyService.GetFamilyGroup:input_type -> manpasik.v1.GetFamilyGroupRequest
-	205, // 366: manpasik.v1.FamilyService.InviteMember:input_type -> manpasik.v1.InviteMemberRequest
-	207, // 367: manpasik.v1.FamilyService.RespondToInvitation:input_type -> manpasik.v1.RespondToInvitationRequest
-	209, // 368: manpasik.v1.FamilyService.RemoveMember:input_type -> manpasik.v1.RemoveMemberRequest
-	211, // 369: manpasik.v1.FamilyService.UpdateMemberRole:input_type -> manpasik.v1.UpdateMemberRoleRequest
-	212, // 370: manpasik.v1.FamilyService.ListFamilyMembers:input_type -> manpasik.v1.ListFamilyMembersRequest
-	214, // 371: manpasik.v1.FamilyService.SetSharingPreferences:input_type -> manpasik.v1.SetSharingPreferencesRequest
-	216, // 372: manpasik.v1.FamilyService.GetSharedHealthData:input_type -> manpasik.v1.GetSharedHealthDataRequest
-	218, // 373: manpasik.v1.HealthRecordService.CreateRecord:input_type -> manpasik.v1.CreateHealthRecordRequest
-	219, // 374: manpasik.v1.HealthRecordService.GetRecord:input_type -> manpasik.v1.GetHealthRecordRequest
-	220, // 375: manpasik.v1.HealthRecordService.ListRecords:input_type -> manpasik.v1.ListHealthRecordsRequest
-	222, // 376: manpasik.v1.HealthRecordService.UpdateRecord:input_type -> manpasik.v1.UpdateHealthRecordRequest
-	223, // 377: manpasik.v1.HealthRecordService.DeleteRecord:input_type -> manpasik.v1.DeleteHealthRecordRequest
-	226, // 378: manpasik.v1.HealthRecordService.ExportToFHIR:input_type -> manpasik.v1.ExportToFHIRRequest
-	228, // 379: manpasik.v1.HealthRecordService.ImportFromFHIR:input_type -> manpasik.v1.ImportFromFHIRRequest
-	230, // 380: manpasik.v1.HealthRecordService.GetHealthSummary:input_type -> manpasik.v1.GetHealthSummaryRequest
-	322, // 381: manpasik.v1.HealthRecordService.CreateDataSharingConsent:input_type -> manpasik.v1.CreateConsentRequest
-	324, // 382: manpasik.v1.HealthRecordService.RevokeDataSharingConsent:input_type -> manpasik.v1.RevokeConsentRequest
-	326, // 383: manpasik.v1.HealthRecordService.ListDataSharingConsents:input_type -> manpasik.v1.ListConsentsRequest
-	328, // 384: manpasik.v1.HealthRecordService.ShareWithProvider:input_type -> manpasik.v1.ShareWithProviderRequest
-	330, // 385: manpasik.v1.HealthRecordService.GetDataAccessLog:input_type -> manpasik.v1.GetDataAccessLogRequest
-	232, // 386: manpasik.v1.PrescriptionService.CreatePrescription:input_type -> manpasik.v1.CreatePrescriptionRequest
-	233, // 387: manpasik.v1.PrescriptionService.GetPrescription:input_type -> manpasik.v1.GetPrescriptionRequest
-	234, // 388: manpasik.v1.PrescriptionService.ListPrescriptions:input_type -> manpasik.v1.ListPrescriptionsRequest
-	236, // 389: manpasik.v1.PrescriptionService.UpdatePrescriptionStatus:input_type -> manpasik.v1.UpdatePrescriptionStatusRequest
-	237, // 390: manpasik.v1.PrescriptionService.AddMedication:input_type -> manpasik.v1.AddMedicationRequest
-	238, // 391: manpasik.v1.PrescriptionService.RemoveMedication:input_type -> manpasik.v1.RemoveMedicationRequest
-	241, // 392: manpasik.v1.PrescriptionService.CheckDrugInteraction:input_type -> manpasik.v1.CheckDrugInteractionRequest
-	244, // 393: manpasik.v1.PrescriptionService.GetMedicationReminders:input_type -> manpasik.v1.GetMedicationRemindersRequest
-	316, // 394: manpasik.v1.PrescriptionService.SelectPharmacyAndFulfillment:input_type -> manpasik.v1.SelectPharmacyRequest
-	318, // 395: manpasik.v1.PrescriptionService.SendPrescriptionToPharmacy:input_type -> manpasik.v1.SendToPharmacyRequest
-	320, // 396: manpasik.v1.PrescriptionService.GetPrescriptionByToken:input_type -> manpasik.v1.GetByTokenRequest
-	321, // 397: manpasik.v1.PrescriptionService.UpdateDispensaryStatus:input_type -> manpasik.v1.UpdateDispensaryStatusRequest
-	247, // 398: manpasik.v1.CommunityService.CreatePost:input_type -> manpasik.v1.CreatePostRequest
-	248, // 399: manpasik.v1.CommunityService.GetPost:input_type -> manpasik.v1.GetPostRequest
-	249, // 400: manpasik.v1.CommunityService.ListPosts:input_type -> manpasik.v1.ListPostsRequest
-	252, // 401: manpasik.v1.CommunityService.LikePost:input_type -> manpasik.v1.LikePostRequest
-	254, // 402: manpasik.v1.CommunityService.CreateComment:input_type -> manpasik.v1.CreateCommentRequest
-	255, // 403: manpasik.v1.CommunityService.ListComments:input_type -> manpasik.v1.ListCommentsRequest
-	258, // 404: manpasik.v1.CommunityService.CreateChallenge:input_type -> manpasik.v1.CreateChallengeRequest
-	259, // 405: manpasik.v1.CommunityService.GetChallenge:input_type -> manpasik.v1.GetChallengeRequest
-	261, // 406: manpasik.v1.CommunityService.JoinChallenge:input_type -> manpasik.v1.JoinChallengeRequest
-	263, // 407: manpasik.v1.CommunityService.ListChallenges:input_type -> manpasik.v1.ListChallengesRequest
-	265, // 408: manpasik.v1.VideoService.CreateRoom:input_type -> manpasik.v1.CreateRoomRequest
-	266, // 409: manpasik.v1.VideoService.GetRoom:input_type -> manpasik.v1.GetRoomRequest
-	268, // 410: manpasik.v1.VideoService.JoinRoom:input_type -> manpasik.v1.JoinRoomRequest
-	270, // 411: manpasik.v1.VideoService.LeaveRoom:input_type -> manpasik.v1.LeaveRoomRequest
-	272, // 412: manpasik.v1.VideoService.EndRoom:input_type -> manpasik.v1.EndRoomRequest
-	274, // 413: manpasik.v1.VideoService.SendSignal:input_type -> manpasik.v1.SendSignalRequest
-	276, // 414: manpasik.v1.VideoService.ListParticipants:input_type -> manpasik.v1.ListParticipantsRequest
-	278, // 415: manpasik.v1.VideoService.GetRoomStats:input_type -> manpasik.v1.GetRoomStatsRequest
-	280, // 416: manpasik.v1.NotificationService.SendNotification:input_type -> manpasik.v1.SendNotificationRequest
-	282, // 417: manpasik.v1.NotificationService.ListNotifications:input_type -> manpasik.v1.ListNotificationsRequest
-	284, // 418: manpasik.v1.NotificationService.MarkAsRead:input_type -> manpasik.v1.MarkAsReadRequest
-	286, // 419: manpasik.v1.NotificationService.MarkAllAsRead:input_type -> manpasik.v1.MarkAllAsReadRequest
-	288, // 420: manpasik.v1.NotificationService.GetUnreadCount:input_type -> manpasik.v1.GetUnreadCountRequest
-	290, // 421: manpasik.v1.NotificationService.UpdateNotificationPreferences:input_type -> manpasik.v1.UpdateNotificationPreferencesRequest
-	291, // 422: manpasik.v1.NotificationService.GetNotificationPreferences:input_type -> manpasik.v1.GetNotificationPreferencesRequest
-	293, // 423: manpasik.v1.TranslationService.TranslateText:input_type -> manpasik.v1.TranslateTextRequest
-	295, // 424: manpasik.v1.TranslationService.DetectLanguage:input_type -> manpasik.v1.DetectLanguageRequest
-	298, // 425: manpasik.v1.TranslationService.ListSupportedLanguages:input_type -> manpasik.v1.ListSupportedLanguagesRequest
-	301, // 426: manpasik.v1.TranslationService.TranslateBatch:input_type -> manpasik.v1.TranslateBatchRequest
-	303, // 427: manpasik.v1.TranslationService.GetTranslationHistory:input_type -> manpasik.v1.GetTranslationHistoryRequest
-	306, // 428: manpasik.v1.TranslationService.GetTranslationUsage:input_type -> manpasik.v1.GetTranslationUsageRequest
-	349, // 429: manpasik.v1.TelemedicineService.CreateConsultation:input_type -> manpasik.v1.CreateConsultationRequest
-	350, // 430: manpasik.v1.TelemedicineService.GetConsultation:input_type -> manpasik.v1.GetConsultationRequest
-	351, // 431: manpasik.v1.TelemedicineService.ListConsultations:input_type -> manpasik.v1.ListConsultationsRequest
-	353, // 432: manpasik.v1.TelemedicineService.MatchDoctor:input_type -> manpasik.v1.MatchDoctorRequest
-	356, // 433: manpasik.v1.TelemedicineService.StartVideoSession:input_type -> manpasik.v1.StartVideoSessionRequest
-	358, // 434: manpasik.v1.TelemedicineService.EndVideoSession:input_type -> manpasik.v1.EndVideoSessionRequest
-	359, // 435: manpasik.v1.TelemedicineService.RateConsultation:input_type -> manpasik.v1.RateConsultationRequest
-	40,  // 436: manpasik.v1.AuthService.Register:output_type -> manpasik.v1.RegisterResponse
-	42,  // 437: manpasik.v1.AuthService.Login:output_type -> manpasik.v1.LoginResponse
-	42,  // 438: manpasik.v1.AuthService.RefreshToken:output_type -> manpasik.v1.LoginResponse
-	45,  // 439: manpasik.v1.AuthService.Logout:output_type -> manpasik.v1.LogoutResponse
-	47,  // 440: manpasik.v1.AuthService.ValidateToken:output_type -> manpasik.v1.ValidateTokenResponse
-	49,  // 441: manpasik.v1.MeasurementService.StartSession:output_type -> manpasik.v1.StartSessionResponse
-	53,  // 442: manpasik.v1.MeasurementService.StreamMeasurement:output_type -> manpasik.v1.MeasurementResult
-	55,  // 443: manpasik.v1.MeasurementService.EndSession:output_type -> manpasik.v1.EndSessionResponse
-	57,  // 444: manpasik.v1.MeasurementService.GetMeasurementHistory:output_type -> manpasik.v1.GetHistoryResponse
-	335, // 445: manpasik.v1.MeasurementService.ExportSingleMeasurement:output_type -> manpasik.v1.ExportFHIRResponse
-	335, // 446: manpasik.v1.MeasurementService.ExportToFHIRObservations:output_type -> manpasik.v1.ExportFHIRResponse
-	60,  // 447: manpasik.v1.DeviceService.RegisterDevice:output_type -> manpasik.v1.RegisterDeviceResponse
-	62,  // 448: manpasik.v1.DeviceService.ListDevices:output_type -> manpasik.v1.ListDevicesResponse
-	65,  // 449: manpasik.v1.DeviceService.StreamDeviceStatus:output_type -> manpasik.v1.DeviceCommand
-	67,  // 450: manpasik.v1.DeviceService.RequestOtaUpdate:output_type -> manpasik.v1.OtaResponse
-	337, // 451: manpasik.v1.DeviceService.UpdateDeviceStatus:output_type -> manpasik.v1.UpdateDeviceStatusResponse
-	70,  // 452: manpasik.v1.UserService.GetProfile:output_type -> manpasik.v1.UserProfile
-	70,  // 453: manpasik.v1.UserService.UpdateProfile:output_type -> manpasik.v1.UserProfile
-	72,  // 454: manpasik.v1.UserService.GetSubscription:output_type -> manpasik.v1.SubscriptionInfo
-	78,  // 455: manpasik.v1.SubscriptionService.CreateSubscription:output_type -> manpasik.v1.SubscriptionDetail
-	78,  // 456: manpasik.v1.SubscriptionService.GetSubscription:output_type -> manpasik.v1.SubscriptionDetail
-	78,  // 457: manpasik.v1.SubscriptionService.UpdateSubscription:output_type -> manpasik.v1.SubscriptionDetail
-	77,  // 458: manpasik.v1.SubscriptionService.CancelSubscription:output_type -> manpasik.v1.CancelSubscriptionResponse
-	80,  // 459: manpasik.v1.SubscriptionService.CheckFeatureAccess:output_type -> manpasik.v1.CheckFeatureAccessResponse
-	82,  // 460: manpasik.v1.SubscriptionService.ListSubscriptionPlans:output_type -> manpasik.v1.ListSubscriptionPlansResponse
-	165, // 461: manpasik.v1.SubscriptionService.CheckCartridgeAccess:output_type -> manpasik.v1.CheckCartridgeAccessResponse
-	167, // 462: manpasik.v1.SubscriptionService.ListAccessibleCartridges:output_type -> manpasik.v1.ListAccessibleCartridgesResponse
-	85,  // 463: manpasik.v1.ShopService.ListProducts:output_type -> manpasik.v1.ListProductsResponse
-	87,  // 464: manpasik.v1.ShopService.GetProduct:output_type -> manpasik.v1.Product
-	91,  // 465: manpasik.v1.ShopService.AddToCart:output_type -> manpasik.v1.Cart
-	91,  // 466: manpasik.v1.ShopService.GetCart:output_type -> manpasik.v1.Cart
-	91,  // 467: manpasik.v1.ShopService.RemoveFromCart:output_type -> manpasik.v1.Cart
-	97,  // 468: manpasik.v1.ShopService.CreateOrder:output_type -> manpasik.v1.Order
-	97,  // 469: manpasik.v1.ShopService.GetOrder:output_type -> manpasik.v1.Order
-	96,  // 470: manpasik.v1.ShopService.ListOrders:output_type -> manpasik.v1.ListOrdersResponse
-	104, // 471: manpasik.v1.PaymentService.CreatePayment:output_type -> manpasik.v1.PaymentDetail
-	104, // 472: manpasik.v1.PaymentService.ConfirmPayment:output_type -> manpasik.v1.PaymentDetail
-	104, // 473: manpasik.v1.PaymentService.GetPayment:output_type -> manpasik.v1.PaymentDetail
-	103, // 474: manpasik.v1.PaymentService.ListPayments:output_type -> manpasik.v1.ListPaymentsResponse
-	106, // 475: manpasik.v1.PaymentService.RefundPayment:output_type -> manpasik.v1.RefundResponse
-	110, // 476: manpasik.v1.AiInferenceService.AnalyzeMeasurement:output_type -> manpasik.v1.AnalysisResult
-	112, // 477: manpasik.v1.AiInferenceService.GetHealthScore:output_type -> manpasik.v1.HealthScoreResponse
-	115, // 478: manpasik.v1.AiInferenceService.PredictTrend:output_type -> manpasik.v1.TrendPrediction
-	117, // 479: manpasik.v1.AiInferenceService.GetModelInfo:output_type -> manpasik.v1.ModelInfo
-	119, // 480: manpasik.v1.AiInferenceService.ListModels:output_type -> manpasik.v1.ListModelsResponse
-	121, // 481: manpasik.v1.CartridgeService.ReadCartridge:output_type -> manpasik.v1.CartridgeDetail
-	123, // 482: manpasik.v1.CartridgeService.RecordUsage:output_type -> manpasik.v1.RecordUsageResponse
-	125, // 483: manpasik.v1.CartridgeService.GetUsageHistory:output_type -> manpasik.v1.GetUsageHistoryResponse
-	163, // 484: manpasik.v1.CartridgeService.GetCartridgeType:output_type -> manpasik.v1.CartridgeTypeInfo
-	129, // 485: manpasik.v1.CartridgeService.ListCategories:output_type -> manpasik.v1.ListCategoriesResponse
-	131, // 486: manpasik.v1.CartridgeService.ListTypesByCategory:output_type -> manpasik.v1.ListTypesByCategoryResponse
-	133, // 487: manpasik.v1.CartridgeService.GetRemainingUses:output_type -> manpasik.v1.GetRemainingUsesResponse
-	135, // 488: manpasik.v1.CartridgeService.ValidateCartridge:output_type -> manpasik.v1.ValidateCartridgeResponse
-	139, // 489: manpasik.v1.CalibrationService.RegisterFactoryCalibration:output_type -> manpasik.v1.CalibrationRecord
-	139, // 490: manpasik.v1.CalibrationService.PerformFieldCalibration:output_type -> manpasik.v1.CalibrationRecord
-	139, // 491: manpasik.v1.CalibrationService.GetCalibration:output_type -> manpasik.v1.CalibrationRecord
-	141, // 492: manpasik.v1.CalibrationService.ListCalibrationHistory:output_type -> manpasik.v1.ListCalibrationHistoryResponse
-	143, // 493: manpasik.v1.CalibrationService.CheckCalibrationStatus:output_type -> manpasik.v1.CalibrationStatusResponse
-	146, // 494: manpasik.v1.CalibrationService.ListCalibrationModels:output_type -> manpasik.v1.ListCalibrationModelsResponse
-	148, // 495: manpasik.v1.CoachingService.SetHealthGoal:output_type -> manpasik.v1.HealthGoal
-	150, // 496: manpasik.v1.CoachingService.GetHealthGoals:output_type -> manpasik.v1.GetHealthGoalsResponse
-	152, // 497: manpasik.v1.CoachingService.GenerateCoaching:output_type -> manpasik.v1.CoachingMessage
-	154, // 498: manpasik.v1.CoachingService.ListCoachingMessages:output_type -> manpasik.v1.ListCoachingMessagesResponse
-	156, // 499: manpasik.v1.CoachingService.GenerateDailyReport:output_type -> manpasik.v1.DailyHealthReport
-	158, // 500: manpasik.v1.CoachingService.GetWeeklyReport:output_type -> manpasik.v1.WeeklyHealthReport
-	161, // 501: manpasik.v1.CoachingService.GetRecommendations:output_type -> manpasik.v1.GetRecommendationsResponse
-	170, // 502: manpasik.v1.ReservationService.SearchFacilities:output_type -> manpasik.v1.SearchFacilitiesResponse
-	172, // 503: manpasik.v1.ReservationService.GetFacility:output_type -> manpasik.v1.Facility
-	174, // 504: manpasik.v1.ReservationService.GetAvailableSlots:output_type -> manpasik.v1.GetAvailableSlotsResponse
-	177, // 505: manpasik.v1.ReservationService.CreateReservation:output_type -> manpasik.v1.Reservation
-	177, // 506: manpasik.v1.ReservationService.GetReservation:output_type -> manpasik.v1.Reservation
-	180, // 507: manpasik.v1.ReservationService.ListReservations:output_type -> manpasik.v1.ListReservationsResponse
-	182, // 508: manpasik.v1.ReservationService.CancelReservation:output_type -> manpasik.v1.CancelReservationResponse
-	309, // 509: manpasik.v1.ReservationService.ListDoctorsByFacility:output_type -> manpasik.v1.ListDoctorsByFacilityResponse
-	312, // 510: manpasik.v1.ReservationService.GetDoctorAvailability:output_type -> manpasik.v1.GetDoctorAvailabilityResponse
-	315, // 511: manpasik.v1.ReservationService.SelectDoctor:output_type -> manpasik.v1.SelectDoctorResponse
-	189, // 512: manpasik.v1.AdminService.CreateAdmin:output_type -> manpasik.v1.AdminUser
-	189, // 513: manpasik.v1.AdminService.GetAdmin:output_type -> manpasik.v1.AdminUser
-	186, // 514: manpasik.v1.AdminService.ListAdmins:output_type -> manpasik.v1.ListAdminsResponse
-	189, // 515: manpasik.v1.AdminService.UpdateAdminRole:output_type -> manpasik.v1.AdminUser
-	189, // 516: manpasik.v1.AdminService.DeactivateAdmin:output_type -> manpasik.v1.AdminUser
-	191, // 517: manpasik.v1.AdminService.ListUsers:output_type -> manpasik.v1.AdminListUsersResponse
-	194, // 518: manpasik.v1.AdminService.GetSystemStats:output_type -> manpasik.v1.GetSystemStatsResponse
-	196, // 519: manpasik.v1.AdminService.GetAuditLog:output_type -> manpasik.v1.GetAuditLogResponse
-	200, // 520: manpasik.v1.AdminService.SetSystemConfig:output_type -> manpasik.v1.SystemConfig
-	200, // 521: manpasik.v1.AdminService.GetSystemConfig:output_type -> manpasik.v1.SystemConfig
-	186, // 522: manpasik.v1.AdminService.ListAdminsByRegion:output_type -> manpasik.v1.ListAdminsResponse
-	340, // 523: manpasik.v1.AdminService.ListSystemConfigs:output_type -> manpasik.v1.ListSystemConfigsResponse
-	341, // 524: manpasik.v1.AdminService.GetConfigWithMeta:output_type -> manpasik.v1.ConfigWithMeta
-	344, // 525: manpasik.v1.AdminService.ValidateConfigValue:output_type -> manpasik.v1.ValidateConfigValueResponse
-	346, // 526: manpasik.v1.AdminService.BulkSetConfigs:output_type -> manpasik.v1.BulkSetConfigsResponse
-	203, // 527: manpasik.v1.FamilyService.CreateFamilyGroup:output_type -> manpasik.v1.FamilyGroup
-	203, // 528: manpasik.v1.FamilyService.GetFamilyGroup:output_type -> manpasik.v1.FamilyGroup
-	206, // 529: manpasik.v1.FamilyService.InviteMember:output_type -> manpasik.v1.FamilyInvitation
-	208, // 530: manpasik.v1.FamilyService.RespondToInvitation:output_type -> manpasik.v1.RespondToInvitationResponse
-	210, // 531: manpasik.v1.FamilyService.RemoveMember:output_type -> manpasik.v1.RemoveMemberResponse
-	204, // 532: manpasik.v1.FamilyService.UpdateMemberRole:output_type -> manpasik.v1.FamilyMember
-	213, // 533: manpasik.v1.FamilyService.ListFamilyMembers:output_type -> manpasik.v1.ListFamilyMembersResponse
-	215, // 534: manpasik.v1.FamilyService.SetSharingPreferences:output_type -> manpasik.v1.SharingPreferences
-	217, // 535: manpasik.v1.FamilyService.GetSharedHealthData:output_type -> manpasik.v1.GetSharedHealthDataResponse
-	225, // 536: manpasik.v1.HealthRecordService.CreateRecord:output_type -> manpasik.v1.HealthRecord
-	225, // 537: manpasik.v1.HealthRecordService.GetRecord:output_type -> manpasik.v1.HealthRecord
-	221, // 538: manpasik.v1.HealthRecordService.ListRecords:output_type -> manpasik.v1.ListHealthRecordsResponse
-	225, // 539: manpasik.v1.HealthRecordService.UpdateRecord:output_type -> manpasik.v1.HealthRecord
-	224, // 540: manpasik.v1.HealthRecordService.DeleteRecord:output_type -> manpasik.v1.DeleteHealthRecordResponse
-	227, // 541: manpasik.v1.HealthRecordService.ExportToFHIR:output_type -> manpasik.v1.ExportToFHIRResponse
-	229, // 542: manpasik.v1.HealthRecordService.ImportFromFHIR:output_type -> manpasik.v1.ImportFromFHIRResponse
-	231, // 543: manpasik.v1.HealthRecordService.GetHealthSummary:output_type -> manpasik.v1.GetHealthSummaryResponse
-	323, // 544: manpasik.v1.HealthRecordService.CreateDataSharingConsent:output_type -> manpasik.v1.DataSharingConsent
-	325, // 545: manpasik.v1.HealthRecordService.RevokeDataSharingConsent:output_type -> manpasik.v1.RevokeConsentResponse
-	327, // 546: manpasik.v1.HealthRecordService.ListDataSharingConsents:output_type -> manpasik.v1.ListConsentsResponse
-	329, // 547: manpasik.v1.HealthRecordService.ShareWithProvider:output_type -> manpasik.v1.ShareWithProviderResponse
-	331, // 548: manpasik.v1.HealthRecordService.GetDataAccessLog:output_type -> manpasik.v1.GetDataAccessLogResponse
-	239, // 549: manpasik.v1.PrescriptionService.CreatePrescription:output_type -> manpasik.v1.Prescription
-	239, // 550: manpasik.v1.PrescriptionService.GetPrescription:output_type -> manpasik.v1.Prescription
-	235, // 551: manpasik.v1.PrescriptionService.ListPrescriptions:output_type -> manpasik.v1.ListPrescriptionsResponse
-	239, // 552: manpasik.v1.PrescriptionService.UpdatePrescriptionStatus:output_type -> manpasik.v1.Prescription
-	239, // 553: manpasik.v1.PrescriptionService.AddMedication:output_type -> manpasik.v1.Prescription
-	239, // 554: manpasik.v1.PrescriptionService.RemoveMedication:output_type -> manpasik.v1.Prescription
-	242, // 555: manpasik.v1.PrescriptionService.CheckDrugInteraction:output_type -> manpasik.v1.CheckDrugInteractionResponse
-	245, // 556: manpasik.v1.PrescriptionService.GetMedicationReminders:output_type -> manpasik.v1.GetMedicationRemindersResponse
-	317, // 557: manpasik.v1.PrescriptionService.SelectPharmacyAndFulfillment:output_type -> manpasik.v1.SelectPharmacyResponse
-	319, // 558: manpasik.v1.PrescriptionService.SendPrescriptionToPharmacy:output_type -> manpasik.v1.SendToPharmacyResponse
-	239, // 559: manpasik.v1.PrescriptionService.GetPrescriptionByToken:output_type -> manpasik.v1.Prescription
-	239, // 560: manpasik.v1.PrescriptionService.UpdateDispensaryStatus:output_type -> manpasik.v1.Prescription
-	251, // 561: manpasik.v1.CommunityService.CreatePost:output_type -> manpasik.v1.Post
-	251, // 562: manpasik.v1.CommunityService.GetPost:output_type -> manpasik.v1.Post
-	250, // 563: manpasik.v1.CommunityService.ListPosts:output_type -> manpasik.v1.ListPostsResponse
-	253, // 564: manpasik.v1.CommunityService.LikePost:output_type -> manpasik.v1.LikePostResponse
-	257, // 565: manpasik.v1.CommunityService.CreateComment:output_type -> manpasik.v1.Comment
-	256, // 566: manpasik.v1.CommunityService.ListComments:output_type -> manpasik.v1.ListCommentsResponse
-	260, // 567: manpasik.v1.CommunityService.CreateChallenge:output_type -> manpasik.v1.Challenge
-	260, // 568: manpasik.v1.CommunityService.GetChallenge:output_type -> manpasik.v1.Challenge
-	262, // 569: manpasik.v1.CommunityService.JoinChallenge:output_type -> manpasik.v1.JoinChallengeResponse
-	264, // 570: manpasik.v1.CommunityService.ListChallenges:output_type -> manpasik.v1.ListChallengesResponse
-	267, // 571: manpasik.v1.VideoService.CreateRoom:output_type -> manpasik.v1.Room
-	267, // 572: manpasik.v1.VideoService.GetRoom:output_type -> manpasik.v1.Room
-	269, // 573: manpasik.v1.VideoService.JoinRoom:output_type -> manpasik.v1.JoinRoomResponse
-	271, // 574: manpasik.v1.VideoService.LeaveRoom:output_type -> manpasik.v1.LeaveRoomResponse
-	267, // 575: manpasik.v1.VideoService.EndRoom:output_type -> manpasik.v1.Room
-	275, // 576: manpasik.v1.VideoService.SendSignal:output_type -> manpasik.v1.SendSignalResponse
-	277, // 577: manpasik.v1.VideoService.ListParticipants:output_type -> manpasik.v1.ListParticipantsResponse
-	279, // 578: manpasik.v1.VideoService.GetRoomStats:output_type -> manpasik.v1.GetRoomStatsResponse
-	281, // 579: manpasik.v1.NotificationService.SendNotification:output_type -> manpasik.v1.Notification
-	283, // 580: manpasik.v1.NotificationService.ListNotifications:output_type -> manpasik.v1.ListNotificationsResponse
-	285, // 581: manpasik.v1.NotificationService.MarkAsRead:output_type -> manpasik.v1.MarkAsReadResponse
-	287, // 582: manpasik.v1.NotificationService.MarkAllAsRead:output_type -> manpasik.v1.MarkAllAsReadResponse
-	289, // 583: manpasik.v1.NotificationService.GetUnreadCount:output_type -> manpasik.v1.GetUnreadCountResponse
-	292, // 584: manpasik.v1.NotificationService.UpdateNotificationPreferences:output_type -> manpasik.v1.NotificationPreferences
-	292, // 585: manpasik.v1.NotificationService.GetNotificationPreferences:output_type -> manpasik.v1.NotificationPreferences
-	294, // 586: manpasik.v1.TranslationService.TranslateText:output_type -> manpasik.v1.TranslateTextResponse
-	296, // 587: manpasik.v1.TranslationService.DetectLanguage:output_type -> manpasik.v1.DetectLanguageResponse
-	299, // 588: manpasik.v1.TranslationService.ListSupportedLanguages:output_type -> manpasik.v1.ListSupportedLanguagesResponse
-	302, // 589: manpasik.v1.TranslationService.TranslateBatch:output_type -> manpasik.v1.TranslateBatchResponse
-	304, // 590: manpasik.v1.TranslationService.GetTranslationHistory:output_type -> manpasik.v1.GetTranslationHistoryResponse
-	307, // 591: manpasik.v1.TranslationService.GetTranslationUsage:output_type -> manpasik.v1.GetTranslationUsageResponse
-	348, // 592: manpasik.v1.TelemedicineService.CreateConsultation:output_type -> manpasik.v1.Consultation
-	348, // 593: manpasik.v1.TelemedicineService.GetConsultation:output_type -> manpasik.v1.Consultation
-	352, // 594: manpasik.v1.TelemedicineService.ListConsultations:output_type -> manpasik.v1.ListConsultationsResponse
-	354, // 595: manpasik.v1.TelemedicineService.MatchDoctor:output_type -> manpasik.v1.MatchDoctorResponse
-	357, // 596: manpasik.v1.TelemedicineService.StartVideoSession:output_type -> manpasik.v1.VideoSession
-	357, // 597: manpasik.v1.TelemedicineService.EndVideoSession:output_type -> manpasik.v1.VideoSession
-	360, // 598: manpasik.v1.TelemedicineService.RateConsultation:output_type -> manpasik.v1.RateConsultationResponse
-	436, // [436:599] is the sub-list for method output_type
-	273, // [273:436] is the sub-list for method input_type
-	273, // [273:273] is the sub-list for extension type_name
-	273, // [273:273] is the sub-list for extension extendee
-	0,   // [0:273] is the sub-list for field type_name
+	1,   // 0: manpasik.v1.RegisterRequest.gender:type_name -> manpasik.v1.Gender
+	0,   // 1: manpasik.v1.SocialLoginRequest.provider:type_name -> manpasik.v1.SocialProvider
+	384, // 2: manpasik.v1.StartSessionResponse.started_at:type_name -> google.protobuf.Timestamp
+	56,  // 3: manpasik.v1.MeasurementData.differential:type_name -> manpasik.v1.DifferentialCorrection
+	57,  // 4: manpasik.v1.MeasurementData.env_meta:type_name -> manpasik.v1.EnvironmentMeta
+	384, // 5: manpasik.v1.MeasurementData.timestamp:type_name -> google.protobuf.Timestamp
+	384, // 6: manpasik.v1.MeasurementResult.processed_at:type_name -> google.protobuf.Timestamp
+	384, // 7: manpasik.v1.EndSessionResponse.ended_at:type_name -> google.protobuf.Timestamp
+	384, // 8: manpasik.v1.GetHistoryRequest.start_time:type_name -> google.protobuf.Timestamp
+	384, // 9: manpasik.v1.GetHistoryRequest.end_time:type_name -> google.protobuf.Timestamp
+	63,  // 10: manpasik.v1.GetHistoryResponse.measurements:type_name -> manpasik.v1.MeasurementSummary
+	384, // 11: manpasik.v1.MeasurementSummary.measured_at:type_name -> google.protobuf.Timestamp
+	384, // 12: manpasik.v1.RegisterDeviceResponse.registered_at:type_name -> google.protobuf.Timestamp
+	68,  // 13: manpasik.v1.ListDevicesResponse.devices:type_name -> manpasik.v1.DeviceInfo
+	2,   // 14: manpasik.v1.DeviceInfo.status:type_name -> manpasik.v1.DeviceStatus
+	384, // 15: manpasik.v1.DeviceInfo.last_seen:type_name -> google.protobuf.Timestamp
+	2,   // 16: manpasik.v1.DeviceStatusUpdate.status:type_name -> manpasik.v1.DeviceStatus
+	384, // 17: manpasik.v1.DeviceStatusUpdate.timestamp:type_name -> google.protobuf.Timestamp
+	3,   // 18: manpasik.v1.DeviceCommand.command_type:type_name -> manpasik.v1.CommandType
+	1,   // 19: manpasik.v1.UpdateProfileRequest.gender:type_name -> manpasik.v1.Gender
+	4,   // 20: manpasik.v1.UserProfile.subscription_tier:type_name -> manpasik.v1.SubscriptionTier
+	384, // 21: manpasik.v1.UserProfile.created_at:type_name -> google.protobuf.Timestamp
+	1,   // 22: manpasik.v1.UserProfile.gender:type_name -> manpasik.v1.Gender
+	0,   // 23: manpasik.v1.UserProfile.social_provider:type_name -> manpasik.v1.SocialProvider
+	4,   // 24: manpasik.v1.SubscriptionInfo.tier:type_name -> manpasik.v1.SubscriptionTier
+	384, // 25: manpasik.v1.SubscriptionInfo.started_at:type_name -> google.protobuf.Timestamp
+	384, // 26: manpasik.v1.SubscriptionInfo.expires_at:type_name -> google.protobuf.Timestamp
+	4,   // 27: manpasik.v1.CreateSubscriptionRequest.tier:type_name -> manpasik.v1.SubscriptionTier
+	4,   // 28: manpasik.v1.UpdateSubscriptionRequest.new_tier:type_name -> manpasik.v1.SubscriptionTier
+	384, // 29: manpasik.v1.CancelSubscriptionResponse.cancelled_at:type_name -> google.protobuf.Timestamp
+	384, // 30: manpasik.v1.CancelSubscriptionResponse.effective_until:type_name -> google.protobuf.Timestamp
+	4,   // 31: manpasik.v1.SubscriptionDetail.tier:type_name -> manpasik.v1.SubscriptionTier
+	5,   // 32: manpasik.v1.SubscriptionDetail.status:type_name -> manpasik.v1.SubscriptionStatus
+	384, // 33: manpasik.v1.SubscriptionDetail.started_at:type_name -> google.protobuf.Timestamp
+	384, // 34: manpasik.v1.SubscriptionDetail.expires_at:type_name -> google.protobuf.Timestamp
+	384, // 35: manpasik.v1.SubscriptionDetail.cancelled_at:type_name -> google.protobuf.Timestamp
+	4,   // 36: manpasik.v1.CheckFeatureAccessResponse.required_tier:type_name -> manpasik.v1.SubscriptionTier
+	4,   // 37: manpasik.v1.CheckFeatureAccessResponse.current_tier:type_name -> manpasik.v1.SubscriptionTier
+	88,  // 38: manpasik.v1.ListSubscriptionPlansResponse.plans:type_name -> manpasik.v1.SubscriptionPlan
+	4,   // 39: manpasik.v1.SubscriptionPlan.tier:type_name -> manpasik.v1.SubscriptionTier
+	6,   // 40: manpasik.v1.ListProductsRequest.category:type_name -> manpasik.v1.ProductCategory
+	92,  // 41: manpasik.v1.ListProductsResponse.products:type_name -> manpasik.v1.Product
+	6,   // 42: manpasik.v1.Product.category:type_name -> manpasik.v1.ProductCategory
+	384, // 43: manpasik.v1.Product.created_at:type_name -> google.protobuf.Timestamp
+	97,  // 44: manpasik.v1.Cart.items:type_name -> manpasik.v1.CartItem
+	102, // 45: manpasik.v1.ListOrdersResponse.orders:type_name -> manpasik.v1.Order
+	103, // 46: manpasik.v1.Order.items:type_name -> manpasik.v1.OrderItem
+	7,   // 47: manpasik.v1.Order.status:type_name -> manpasik.v1.OrderStatus
+	384, // 48: manpasik.v1.Order.created_at:type_name -> google.protobuf.Timestamp
+	384, // 49: manpasik.v1.Order.updated_at:type_name -> google.protobuf.Timestamp
+	8,   // 50: manpasik.v1.CreatePaymentRequest.payment_type:type_name -> manpasik.v1.PaymentType
+	109, // 51: manpasik.v1.ListPaymentsResponse.payments:type_name -> manpasik.v1.PaymentDetail
+	8,   // 52: manpasik.v1.PaymentDetail.payment_type:type_name -> manpasik.v1.PaymentType
+	9,   // 53: manpasik.v1.PaymentDetail.status:type_name -> manpasik.v1.PaymentStatus
+	384, // 54: manpasik.v1.PaymentDetail.created_at:type_name -> google.protobuf.Timestamp
+	384, // 55: manpasik.v1.PaymentDetail.completed_at:type_name -> google.protobuf.Timestamp
+	9,   // 56: manpasik.v1.RefundResponse.payment_status:type_name -> manpasik.v1.PaymentStatus
+	384, // 57: manpasik.v1.RefundResponse.refunded_at:type_name -> google.protobuf.Timestamp
+	10,  // 58: manpasik.v1.AnalyzeMeasurementRequest.models:type_name -> manpasik.v1.AiModelType
+	11,  // 59: manpasik.v1.BiomarkerResult.risk_level:type_name -> manpasik.v1.RiskLevel
+	113, // 60: manpasik.v1.AnalysisResult.biomarkers:type_name -> manpasik.v1.BiomarkerResult
+	114, // 61: manpasik.v1.AnalysisResult.anomalies:type_name -> manpasik.v1.AnomalyFlag
+	384, // 62: manpasik.v1.AnalysisResult.analyzed_at:type_name -> google.protobuf.Timestamp
+	372, // 63: manpasik.v1.HealthScoreResponse.category_scores:type_name -> manpasik.v1.HealthScoreResponse.CategoryScoresEntry
+	384, // 64: manpasik.v1.HealthScoreResponse.calculated_at:type_name -> google.protobuf.Timestamp
+	384, // 65: manpasik.v1.TrendDataPoint.timestamp:type_name -> google.protobuf.Timestamp
+	119, // 66: manpasik.v1.TrendPrediction.historical:type_name -> manpasik.v1.TrendDataPoint
+	119, // 67: manpasik.v1.TrendPrediction.predicted:type_name -> manpasik.v1.TrendDataPoint
+	10,  // 68: manpasik.v1.GetModelInfoRequest.model_type:type_name -> manpasik.v1.AiModelType
+	10,  // 69: manpasik.v1.ModelInfo.model_type:type_name -> manpasik.v1.AiModelType
+	384, // 70: manpasik.v1.ModelInfo.last_trained:type_name -> google.protobuf.Timestamp
+	122, // 71: manpasik.v1.ListModelsResponse.models:type_name -> manpasik.v1.ModelInfo
+	131, // 72: manpasik.v1.GetUsageHistoryResponse.records:type_name -> manpasik.v1.CartridgeUsageRecord
+	384, // 73: manpasik.v1.CartridgeUsageRecord.used_at:type_name -> google.protobuf.Timestamp
+	167, // 74: manpasik.v1.ListCategoriesResponse.categories:type_name -> manpasik.v1.CartridgeCategoryInfo
+	168, // 75: manpasik.v1.ListTypesByCategoryResponse.types:type_name -> manpasik.v1.CartridgeTypeInfo
+	18,  // 76: manpasik.v1.ValidateCartridgeResponse.access_level:type_name -> manpasik.v1.CartridgeAccessLevel
+	126, // 77: manpasik.v1.ValidateCartridgeResponse.detail:type_name -> manpasik.v1.CartridgeDetail
+	12,  // 78: manpasik.v1.CalibrationRecord.calibration_type:type_name -> manpasik.v1.CalibrationType
+	384, // 79: manpasik.v1.CalibrationRecord.calibrated_at:type_name -> google.protobuf.Timestamp
+	384, // 80: manpasik.v1.CalibrationRecord.expires_at:type_name -> google.protobuf.Timestamp
+	13,  // 81: manpasik.v1.CalibrationRecord.status:type_name -> manpasik.v1.CalibrationStatus
+	144, // 82: manpasik.v1.ListCalibrationHistoryResponse.records:type_name -> manpasik.v1.CalibrationRecord
+	13,  // 83: manpasik.v1.CalibrationStatusResponse.status:type_name -> manpasik.v1.CalibrationStatus
+	384, // 84: manpasik.v1.CalibrationStatusResponse.last_calibrated_at:type_name -> google.protobuf.Timestamp
+	384, // 85: manpasik.v1.CalibrationStatusResponse.expires_at:type_name -> google.protobuf.Timestamp
+	144, // 86: manpasik.v1.CalibrationStatusResponse.latest_record:type_name -> manpasik.v1.CalibrationRecord
+	384, // 87: manpasik.v1.CalibrationModel.created_at:type_name -> google.protobuf.Timestamp
+	150, // 88: manpasik.v1.ListCalibrationModelsResponse.models:type_name -> manpasik.v1.CalibrationModel
+	14,  // 89: manpasik.v1.SetHealthGoalRequest.category:type_name -> manpasik.v1.GoalCategory
+	384, // 90: manpasik.v1.SetHealthGoalRequest.target_date:type_name -> google.protobuf.Timestamp
+	14,  // 91: manpasik.v1.HealthGoal.category:type_name -> manpasik.v1.GoalCategory
+	15,  // 92: manpasik.v1.HealthGoal.status:type_name -> manpasik.v1.GoalStatus
+	384, // 93: manpasik.v1.HealthGoal.created_at:type_name -> google.protobuf.Timestamp
+	384, // 94: manpasik.v1.HealthGoal.target_date:type_name -> google.protobuf.Timestamp
+	384, // 95: manpasik.v1.HealthGoal.achieved_at:type_name -> google.protobuf.Timestamp
+	15,  // 96: manpasik.v1.GetHealthGoalsRequest.status_filter:type_name -> manpasik.v1.GoalStatus
+	153, // 97: manpasik.v1.GetHealthGoalsResponse.goals:type_name -> manpasik.v1.HealthGoal
+	16,  // 98: manpasik.v1.GenerateCoachingRequest.coaching_type:type_name -> manpasik.v1.CoachingType
+	16,  // 99: manpasik.v1.CoachingMessage.coaching_type:type_name -> manpasik.v1.CoachingType
+	11,  // 100: manpasik.v1.CoachingMessage.risk_level:type_name -> manpasik.v1.RiskLevel
+	384, // 101: manpasik.v1.CoachingMessage.created_at:type_name -> google.protobuf.Timestamp
+	16,  // 102: manpasik.v1.ListCoachingMessagesRequest.type_filter:type_name -> manpasik.v1.CoachingType
+	157, // 103: manpasik.v1.ListCoachingMessagesResponse.messages:type_name -> manpasik.v1.CoachingMessage
+	384, // 104: manpasik.v1.GenerateDailyReportRequest.date:type_name -> google.protobuf.Timestamp
+	384, // 105: manpasik.v1.DailyHealthReport.report_date:type_name -> google.protobuf.Timestamp
+	157, // 106: manpasik.v1.DailyHealthReport.highlights:type_name -> manpasik.v1.CoachingMessage
+	384, // 107: manpasik.v1.GetWeeklyReportRequest.week_start:type_name -> google.protobuf.Timestamp
+	384, // 108: manpasik.v1.WeeklyHealthReport.week_start:type_name -> google.protobuf.Timestamp
+	384, // 109: manpasik.v1.WeeklyHealthReport.week_end:type_name -> google.protobuf.Timestamp
+	161, // 110: manpasik.v1.WeeklyHealthReport.daily_reports:type_name -> manpasik.v1.DailyHealthReport
+	17,  // 111: manpasik.v1.GetRecommendationsRequest.type_filter:type_name -> manpasik.v1.RecommendationType
+	17,  // 112: manpasik.v1.Recommendation.type:type_name -> manpasik.v1.RecommendationType
+	11,  // 113: manpasik.v1.Recommendation.priority:type_name -> manpasik.v1.RiskLevel
+	384, // 114: manpasik.v1.Recommendation.created_at:type_name -> google.protobuf.Timestamp
+	165, // 115: manpasik.v1.GetRecommendationsResponse.recommendations:type_name -> manpasik.v1.Recommendation
+	18,  // 116: manpasik.v1.CheckCartridgeAccessResponse.access_level:type_name -> manpasik.v1.CartridgeAccessLevel
+	4,   // 117: manpasik.v1.CheckCartridgeAccessResponse.required_tier:type_name -> manpasik.v1.SubscriptionTier
+	4,   // 118: manpasik.v1.CheckCartridgeAccessResponse.current_tier:type_name -> manpasik.v1.SubscriptionTier
+	173, // 119: manpasik.v1.ListAccessibleCartridgesResponse.entries:type_name -> manpasik.v1.CartridgeAccessEntry
+	168, // 120: manpasik.v1.CartridgeAccessEntry.type_info:type_name -> manpasik.v1.CartridgeTypeInfo
+	18,  // 121: manpasik.v1.CartridgeAccessEntry.access_level:type_name -> manpasik.v1.CartridgeAccessLevel
+	19,  // 122: manpasik.v1.SearchFacilitiesRequest.type:type_name -> manpasik.v1.FacilityType
+	20,  // 123: manpasik.v1.SearchFacilitiesRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
+	177, // 124: manpasik.v1.SearchFacilitiesResponse.facilities:type_name -> manpasik.v1.Facility
+	19,  // 125: manpasik.v1.Facility.type:type_name -> manpasik.v1.FacilityType
+	20,  // 126: manpasik.v1.Facility.specialties:type_name -> manpasik.v1.DoctorSpecialty
+	20,  // 127: manpasik.v1.GetAvailableSlotsRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
+	180, // 128: manpasik.v1.GetAvailableSlotsResponse.slots:type_name -> manpasik.v1.TimeSlot
+	384, // 129: manpasik.v1.TimeSlot.start_time:type_name -> google.protobuf.Timestamp
+	384, // 130: manpasik.v1.TimeSlot.end_time:type_name -> google.protobuf.Timestamp
+	20,  // 131: manpasik.v1.TimeSlot.specialty:type_name -> manpasik.v1.DoctorSpecialty
+	20,  // 132: manpasik.v1.CreateReservationRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
+	20,  // 133: manpasik.v1.Reservation.specialty:type_name -> manpasik.v1.DoctorSpecialty
+	384, // 134: manpasik.v1.Reservation.appointment_time:type_name -> google.protobuf.Timestamp
+	21,  // 135: manpasik.v1.Reservation.status:type_name -> manpasik.v1.ReservationStatus
+	384, // 136: manpasik.v1.Reservation.created_at:type_name -> google.protobuf.Timestamp
+	384, // 137: manpasik.v1.Reservation.updated_at:type_name -> google.protobuf.Timestamp
+	21,  // 138: manpasik.v1.ListReservationsRequest.status:type_name -> manpasik.v1.ReservationStatus
+	182, // 139: manpasik.v1.ListReservationsResponse.reservations:type_name -> manpasik.v1.Reservation
+	22,  // 140: manpasik.v1.CreateAdminRequest.role:type_name -> manpasik.v1.AdminRole
+	22,  // 141: manpasik.v1.ListAdminsRequest.role_filter:type_name -> manpasik.v1.AdminRole
+	194, // 142: manpasik.v1.ListAdminsResponse.admins:type_name -> manpasik.v1.AdminUser
+	22,  // 143: manpasik.v1.UpdateAdminRoleRequest.new_role:type_name -> manpasik.v1.AdminRole
+	22,  // 144: manpasik.v1.AdminUser.role:type_name -> manpasik.v1.AdminRole
+	384, // 145: manpasik.v1.AdminUser.created_at:type_name -> google.protobuf.Timestamp
+	384, // 146: manpasik.v1.AdminUser.last_login_at:type_name -> google.protobuf.Timestamp
+	4,   // 147: manpasik.v1.AdminListUsersRequest.tier_filter:type_name -> manpasik.v1.SubscriptionTier
+	197, // 148: manpasik.v1.AdminListUsersResponse.users:type_name -> manpasik.v1.AdminUserSummary
+	4,   // 149: manpasik.v1.AdminUserSummary.tier:type_name -> manpasik.v1.SubscriptionTier
+	384, // 150: manpasik.v1.AdminUserSummary.created_at:type_name -> google.protobuf.Timestamp
+	384, // 151: manpasik.v1.AdminUserSummary.last_active_at:type_name -> google.protobuf.Timestamp
+	373, // 152: manpasik.v1.GetSystemStatsResponse.users_by_tier:type_name -> manpasik.v1.GetSystemStatsResponse.UsersByTierEntry
+	374, // 153: manpasik.v1.GetSystemStatsResponse.measurements_by_type:type_name -> manpasik.v1.GetSystemStatsResponse.MeasurementsByTypeEntry
+	384, // 154: manpasik.v1.GetSystemStatsResponse.generated_at:type_name -> google.protobuf.Timestamp
+	23,  // 155: manpasik.v1.GetAuditLogRequest.action_filter:type_name -> manpasik.v1.AuditAction
+	384, // 156: manpasik.v1.GetAuditLogRequest.start_time:type_name -> google.protobuf.Timestamp
+	384, // 157: manpasik.v1.GetAuditLogRequest.end_time:type_name -> google.protobuf.Timestamp
+	202, // 158: manpasik.v1.GetAuditLogResponse.entries:type_name -> manpasik.v1.AuditLogEntry
+	23,  // 159: manpasik.v1.AuditLogEntry.action:type_name -> manpasik.v1.AuditAction
+	384, // 160: manpasik.v1.AuditLogEntry.timestamp:type_name -> google.protobuf.Timestamp
+	384, // 161: manpasik.v1.SystemConfig.updated_at:type_name -> google.protobuf.Timestamp
+	209, // 162: manpasik.v1.FamilyGroup.members:type_name -> manpasik.v1.FamilyMember
+	384, // 163: manpasik.v1.FamilyGroup.created_at:type_name -> google.protobuf.Timestamp
+	24,  // 164: manpasik.v1.FamilyMember.role:type_name -> manpasik.v1.FamilyRole
+	384, // 165: manpasik.v1.FamilyMember.joined_at:type_name -> google.protobuf.Timestamp
+	24,  // 166: manpasik.v1.InviteMemberRequest.role:type_name -> manpasik.v1.FamilyRole
+	24,  // 167: manpasik.v1.FamilyInvitation.role:type_name -> manpasik.v1.FamilyRole
+	25,  // 168: manpasik.v1.FamilyInvitation.status:type_name -> manpasik.v1.InvitationStatus
+	384, // 169: manpasik.v1.FamilyInvitation.created_at:type_name -> google.protobuf.Timestamp
+	384, // 170: manpasik.v1.FamilyInvitation.expires_at:type_name -> google.protobuf.Timestamp
+	208, // 171: manpasik.v1.RespondToInvitationResponse.group:type_name -> manpasik.v1.FamilyGroup
+	24,  // 172: manpasik.v1.UpdateMemberRoleRequest.new_role:type_name -> manpasik.v1.FamilyRole
+	209, // 173: manpasik.v1.ListFamilyMembersResponse.members:type_name -> manpasik.v1.FamilyMember
+	384, // 174: manpasik.v1.SharingPreferences.updated_at:type_name -> google.protobuf.Timestamp
+	63,  // 175: manpasik.v1.GetSharedHealthDataResponse.recent_measurements:type_name -> manpasik.v1.MeasurementSummary
+	26,  // 176: manpasik.v1.CreateHealthRecordRequest.record_type:type_name -> manpasik.v1.HealthRecordType
+	375, // 177: manpasik.v1.CreateHealthRecordRequest.metadata:type_name -> manpasik.v1.CreateHealthRecordRequest.MetadataEntry
+	26,  // 178: manpasik.v1.ListHealthRecordsRequest.type_filter:type_name -> manpasik.v1.HealthRecordType
+	230, // 179: manpasik.v1.ListHealthRecordsResponse.records:type_name -> manpasik.v1.HealthRecord
+	376, // 180: manpasik.v1.UpdateHealthRecordRequest.metadata:type_name -> manpasik.v1.UpdateHealthRecordRequest.MetadataEntry
+	26,  // 181: manpasik.v1.HealthRecord.record_type:type_name -> manpasik.v1.HealthRecordType
+	377, // 182: manpasik.v1.HealthRecord.metadata:type_name -> manpasik.v1.HealthRecord.MetadataEntry
+	384, // 183: manpasik.v1.HealthRecord.created_at:type_name -> google.protobuf.Timestamp
+	384, // 184: manpasik.v1.HealthRecord.updated_at:type_name -> google.protobuf.Timestamp
+	27,  // 185: manpasik.v1.ExportToFHIRRequest.target_type:type_name -> manpasik.v1.FHIRResourceType
+	27,  // 186: manpasik.v1.ExportToFHIRResponse.resource_type:type_name -> manpasik.v1.FHIRResourceType
+	378, // 187: manpasik.v1.GetHealthSummaryResponse.records_by_type:type_name -> manpasik.v1.GetHealthSummaryResponse.RecordsByTypeEntry
+	230, // 188: manpasik.v1.GetHealthSummaryResponse.recent_records:type_name -> manpasik.v1.HealthRecord
+	384, // 189: manpasik.v1.GetHealthSummaryResponse.last_updated:type_name -> google.protobuf.Timestamp
+	245, // 190: manpasik.v1.CreatePrescriptionRequest.medications:type_name -> manpasik.v1.Medication
+	28,  // 191: manpasik.v1.ListPrescriptionsRequest.status_filter:type_name -> manpasik.v1.PrescriptionStatus
+	244, // 192: manpasik.v1.ListPrescriptionsResponse.prescriptions:type_name -> manpasik.v1.Prescription
+	28,  // 193: manpasik.v1.UpdatePrescriptionStatusRequest.new_status:type_name -> manpasik.v1.PrescriptionStatus
+	245, // 194: manpasik.v1.AddMedicationRequest.medication:type_name -> manpasik.v1.Medication
+	28,  // 195: manpasik.v1.Prescription.status:type_name -> manpasik.v1.PrescriptionStatus
+	245, // 196: manpasik.v1.Prescription.medications:type_name -> manpasik.v1.Medication
+	384, // 197: manpasik.v1.Prescription.prescribed_at:type_name -> google.protobuf.Timestamp
+	384, // 198: manpasik.v1.Prescription.expires_at:type_name -> google.protobuf.Timestamp
+	384, // 199: manpasik.v1.Prescription.updated_at:type_name -> google.protobuf.Timestamp
+	248, // 200: manpasik.v1.CheckDrugInteractionResponse.interactions:type_name -> manpasik.v1.DrugInteraction
+	29,  // 201: manpasik.v1.DrugInteraction.severity:type_name -> manpasik.v1.DrugInteractionSeverity
+	251, // 202: manpasik.v1.GetMedicationRemindersResponse.reminders:type_name -> manpasik.v1.MedicationReminder
+	30,  // 203: manpasik.v1.CreatePostRequest.category:type_name -> manpasik.v1.PostCategory
+	30,  // 204: manpasik.v1.ListPostsRequest.category:type_name -> manpasik.v1.PostCategory
+	256, // 205: manpasik.v1.ListPostsResponse.posts:type_name -> manpasik.v1.Post
+	30,  // 206: manpasik.v1.Post.category:type_name -> manpasik.v1.PostCategory
+	384, // 207: manpasik.v1.Post.created_at:type_name -> google.protobuf.Timestamp
+	384, // 208: manpasik.v1.Post.updated_at:type_name -> google.protobuf.Timestamp
+	262, // 209: manpasik.v1.ListCommentsResponse.comments:type_name -> manpasik.v1.Comment
+	384, // 210: manpasik.v1.Comment.created_at:type_name -> google.protobuf.Timestamp
+	32,  // 211: manpasik.v1.CreateChallengeRequest.challenge_type:type_name -> manpasik.v1.ChallengeType
+	384, // 212: manpasik.v1.CreateChallengeRequest.start_date:type_name -> google.protobuf.Timestamp
+	384, // 213: manpasik.v1.CreateChallengeRequest.end_date:type_name -> google.protobuf.Timestamp
+	32,  // 214: manpasik.v1.Challenge.challenge_type:type_name -> manpasik.v1.ChallengeType
+	31,  // 215: manpasik.v1.Challenge.status:type_name -> manpasik.v1.ChallengeStatus
+	384, // 216: manpasik.v1.Challenge.start_date:type_name -> google.protobuf.Timestamp
+	384, // 217: manpasik.v1.Challenge.end_date:type_name -> google.protobuf.Timestamp
+	384, // 218: manpasik.v1.Challenge.created_at:type_name -> google.protobuf.Timestamp
+	32,  // 219: manpasik.v1.ListChallengesRequest.type_filter:type_name -> manpasik.v1.ChallengeType
+	31,  // 220: manpasik.v1.ListChallengesRequest.status_filter:type_name -> manpasik.v1.ChallengeStatus
+	265, // 221: manpasik.v1.ListChallengesResponse.challenges:type_name -> manpasik.v1.Challenge
+	33,  // 222: manpasik.v1.CreateRoomRequest.room_type:type_name -> manpasik.v1.RoomType
+	33,  // 223: manpasik.v1.Room.room_type:type_name -> manpasik.v1.RoomType
+	34,  // 224: manpasik.v1.Room.status:type_name -> manpasik.v1.RoomStatus
+	384, // 225: manpasik.v1.Room.created_at:type_name -> google.protobuf.Timestamp
+	384, // 226: manpasik.v1.Room.started_at:type_name -> google.protobuf.Timestamp
+	384, // 227: manpasik.v1.Room.ended_at:type_name -> google.protobuf.Timestamp
+	272, // 228: manpasik.v1.JoinRoomResponse.room:type_name -> manpasik.v1.Room
+	278, // 229: manpasik.v1.JoinRoomResponse.participants:type_name -> manpasik.v1.Participant
+	384, // 230: manpasik.v1.Participant.joined_at:type_name -> google.protobuf.Timestamp
+	35,  // 231: manpasik.v1.SendSignalRequest.signal_type:type_name -> manpasik.v1.SignalType
+	278, // 232: manpasik.v1.ListParticipantsResponse.participants:type_name -> manpasik.v1.Participant
+	384, // 233: manpasik.v1.GetRoomStatsResponse.started_at:type_name -> google.protobuf.Timestamp
+	36,  // 234: manpasik.v1.SendNotificationRequest.type:type_name -> manpasik.v1.NotificationType
+	38,  // 235: manpasik.v1.SendNotificationRequest.priority:type_name -> manpasik.v1.NotificationPriority
+	37,  // 236: manpasik.v1.SendNotificationRequest.channel:type_name -> manpasik.v1.NotificationChannel
+	379, // 237: manpasik.v1.SendNotificationRequest.data:type_name -> manpasik.v1.SendNotificationRequest.DataEntry
+	36,  // 238: manpasik.v1.Notification.type:type_name -> manpasik.v1.NotificationType
+	38,  // 239: manpasik.v1.Notification.priority:type_name -> manpasik.v1.NotificationPriority
+	37,  // 240: manpasik.v1.Notification.channel:type_name -> manpasik.v1.NotificationChannel
+	380, // 241: manpasik.v1.Notification.data:type_name -> manpasik.v1.Notification.DataEntry
+	384, // 242: manpasik.v1.Notification.created_at:type_name -> google.protobuf.Timestamp
+	384, // 243: manpasik.v1.Notification.read_at:type_name -> google.protobuf.Timestamp
+	36,  // 244: manpasik.v1.ListNotificationsRequest.type_filter:type_name -> manpasik.v1.NotificationType
+	286, // 245: manpasik.v1.ListNotificationsResponse.notifications:type_name -> manpasik.v1.Notification
+	384, // 246: manpasik.v1.NotificationPreferences.updated_at:type_name -> google.protobuf.Timestamp
+	302, // 247: manpasik.v1.DetectLanguageResponse.languages:type_name -> manpasik.v1.DetectedLanguage
+	305, // 248: manpasik.v1.ListSupportedLanguagesResponse.languages:type_name -> manpasik.v1.SupportedLanguage
+	299, // 249: manpasik.v1.TranslateBatchResponse.translations:type_name -> manpasik.v1.TranslateTextResponse
+	310, // 250: manpasik.v1.GetTranslationHistoryResponse.records:type_name -> manpasik.v1.TranslationRecord
+	384, // 251: manpasik.v1.TranslationRecord.created_at:type_name -> google.protobuf.Timestamp
+	381, // 252: manpasik.v1.GetTranslationUsageResponse.by_language_pair:type_name -> manpasik.v1.GetTranslationUsageResponse.ByLanguagePairEntry
+	315, // 253: manpasik.v1.ListDoctorsByFacilityResponse.doctors:type_name -> manpasik.v1.Doctor
+	318, // 254: manpasik.v1.GetDoctorAvailabilityResponse.slots:type_name -> manpasik.v1.TimeSlotDetail
+	315, // 255: manpasik.v1.SelectDoctorResponse.doctor:type_name -> manpasik.v1.Doctor
+	328, // 256: manpasik.v1.ListConsentsResponse.consents:type_name -> manpasik.v1.DataSharingConsent
+	337, // 257: manpasik.v1.GetDataAccessLogResponse.entries:type_name -> manpasik.v1.DataAccessLogEntry
+	346, // 258: manpasik.v1.ListSystemConfigsResponse.configs:type_name -> manpasik.v1.ConfigWithMeta
+	382, // 259: manpasik.v1.ListSystemConfigsResponse.category_counts:type_name -> manpasik.v1.ListSystemConfigsResponse.CategoryCountsEntry
+	384, // 260: manpasik.v1.ConfigWithMeta.updated_at:type_name -> google.protobuf.Timestamp
+	203, // 261: manpasik.v1.BulkSetConfigsRequest.configs:type_name -> manpasik.v1.SetSystemConfigRequest
+	352, // 262: manpasik.v1.BulkSetConfigsResponse.results:type_name -> manpasik.v1.ConfigChangeResult
+	20,  // 263: manpasik.v1.Consultation.specialty:type_name -> manpasik.v1.DoctorSpecialty
+	39,  // 264: manpasik.v1.Consultation.status:type_name -> manpasik.v1.ConsultationStatus
+	384, // 265: manpasik.v1.Consultation.created_at:type_name -> google.protobuf.Timestamp
+	384, // 266: manpasik.v1.Consultation.scheduled_at:type_name -> google.protobuf.Timestamp
+	384, // 267: manpasik.v1.Consultation.started_at:type_name -> google.protobuf.Timestamp
+	384, // 268: manpasik.v1.Consultation.ended_at:type_name -> google.protobuf.Timestamp
+	20,  // 269: manpasik.v1.CreateConsultationRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
+	39,  // 270: manpasik.v1.ListConsultationsRequest.status_filter:type_name -> manpasik.v1.ConsultationStatus
+	353, // 271: manpasik.v1.ListConsultationsResponse.consultations:type_name -> manpasik.v1.Consultation
+	20,  // 272: manpasik.v1.MatchDoctorRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
+	360, // 273: manpasik.v1.MatchDoctorResponse.doctors:type_name -> manpasik.v1.DoctorProfile
+	20,  // 274: manpasik.v1.DoctorProfile.specialty:type_name -> manpasik.v1.DoctorSpecialty
+	40,  // 275: manpasik.v1.VideoSession.status:type_name -> manpasik.v1.VideoSessionStatus
+	384, // 276: manpasik.v1.VideoSession.started_at:type_name -> google.protobuf.Timestamp
+	384, // 277: manpasik.v1.VideoSession.ended_at:type_name -> google.protobuf.Timestamp
+	383, // 278: manpasik.v1.SendFromTemplateRequest.data:type_name -> manpasik.v1.SendFromTemplateRequest.DataEntry
+	371, // 279: manpasik.v1.GetAuditLogDetailsResponse.details:type_name -> manpasik.v1.AuditLogDetail
+	384, // 280: manpasik.v1.AuditLogDetail.created_at:type_name -> google.protobuf.Timestamp
+	41,  // 281: manpasik.v1.AuthService.Register:input_type -> manpasik.v1.RegisterRequest
+	43,  // 282: manpasik.v1.AuthService.Login:input_type -> manpasik.v1.LoginRequest
+	50,  // 283: manpasik.v1.AuthService.SocialLogin:input_type -> manpasik.v1.SocialLoginRequest
+	45,  // 284: manpasik.v1.AuthService.RefreshToken:input_type -> manpasik.v1.RefreshTokenRequest
+	46,  // 285: manpasik.v1.AuthService.Logout:input_type -> manpasik.v1.LogoutRequest
+	48,  // 286: manpasik.v1.AuthService.ValidateToken:input_type -> manpasik.v1.ValidateTokenRequest
+	51,  // 287: manpasik.v1.AuthService.ResetPassword:input_type -> manpasik.v1.ResetPasswordRequest
+	53,  // 288: manpasik.v1.MeasurementService.StartSession:input_type -> manpasik.v1.StartSessionRequest
+	55,  // 289: manpasik.v1.MeasurementService.StreamMeasurement:input_type -> manpasik.v1.MeasurementData
+	59,  // 290: manpasik.v1.MeasurementService.EndSession:input_type -> manpasik.v1.EndSessionRequest
+	61,  // 291: manpasik.v1.MeasurementService.GetMeasurementHistory:input_type -> manpasik.v1.GetHistoryRequest
+	338, // 292: manpasik.v1.MeasurementService.ExportSingleMeasurement:input_type -> manpasik.v1.ExportSingleMeasurementRequest
+	339, // 293: manpasik.v1.MeasurementService.ExportToFHIRObservations:input_type -> manpasik.v1.ExportToFHIRObservationsRequest
+	64,  // 294: manpasik.v1.DeviceService.RegisterDevice:input_type -> manpasik.v1.RegisterDeviceRequest
+	66,  // 295: manpasik.v1.DeviceService.ListDevices:input_type -> manpasik.v1.ListDevicesRequest
+	69,  // 296: manpasik.v1.DeviceService.StreamDeviceStatus:input_type -> manpasik.v1.DeviceStatusUpdate
+	71,  // 297: manpasik.v1.DeviceService.RequestOtaUpdate:input_type -> manpasik.v1.OtaRequest
+	341, // 298: manpasik.v1.DeviceService.UpdateDeviceStatus:input_type -> manpasik.v1.UpdateDeviceStatusRequest
+	73,  // 299: manpasik.v1.UserService.GetProfile:input_type -> manpasik.v1.GetProfileRequest
+	74,  // 300: manpasik.v1.UserService.UpdateProfile:input_type -> manpasik.v1.UpdateProfileRequest
+	76,  // 301: manpasik.v1.UserService.GetSubscription:input_type -> manpasik.v1.GetSubscriptionRequest
+	78,  // 302: manpasik.v1.SubscriptionService.CreateSubscription:input_type -> manpasik.v1.CreateSubscriptionRequest
+	79,  // 303: manpasik.v1.SubscriptionService.GetSubscription:input_type -> manpasik.v1.GetSubscriptionDetailRequest
+	80,  // 304: manpasik.v1.SubscriptionService.UpdateSubscription:input_type -> manpasik.v1.UpdateSubscriptionRequest
+	81,  // 305: manpasik.v1.SubscriptionService.CancelSubscription:input_type -> manpasik.v1.CancelSubscriptionRequest
+	84,  // 306: manpasik.v1.SubscriptionService.CheckFeatureAccess:input_type -> manpasik.v1.CheckFeatureAccessRequest
+	86,  // 307: manpasik.v1.SubscriptionService.ListSubscriptionPlans:input_type -> manpasik.v1.ListSubscriptionPlansRequest
+	169, // 308: manpasik.v1.SubscriptionService.CheckCartridgeAccess:input_type -> manpasik.v1.CheckCartridgeAccessRequest
+	171, // 309: manpasik.v1.SubscriptionService.ListAccessibleCartridges:input_type -> manpasik.v1.ListAccessibleCartridgesRequest
+	89,  // 310: manpasik.v1.ShopService.ListProducts:input_type -> manpasik.v1.ListProductsRequest
+	91,  // 311: manpasik.v1.ShopService.GetProduct:input_type -> manpasik.v1.GetProductRequest
+	93,  // 312: manpasik.v1.ShopService.AddToCart:input_type -> manpasik.v1.AddToCartRequest
+	94,  // 313: manpasik.v1.ShopService.GetCart:input_type -> manpasik.v1.GetCartRequest
+	95,  // 314: manpasik.v1.ShopService.RemoveFromCart:input_type -> manpasik.v1.RemoveFromCartRequest
+	98,  // 315: manpasik.v1.ShopService.CreateOrder:input_type -> manpasik.v1.CreateOrderRequest
+	99,  // 316: manpasik.v1.ShopService.GetOrder:input_type -> manpasik.v1.GetOrderRequest
+	100, // 317: manpasik.v1.ShopService.ListOrders:input_type -> manpasik.v1.ListOrdersRequest
+	104, // 318: manpasik.v1.PaymentService.CreatePayment:input_type -> manpasik.v1.CreatePaymentRequest
+	105, // 319: manpasik.v1.PaymentService.ConfirmPayment:input_type -> manpasik.v1.ConfirmPaymentRequest
+	106, // 320: manpasik.v1.PaymentService.GetPayment:input_type -> manpasik.v1.GetPaymentRequest
+	107, // 321: manpasik.v1.PaymentService.ListPayments:input_type -> manpasik.v1.ListPaymentsRequest
+	110, // 322: manpasik.v1.PaymentService.RefundPayment:input_type -> manpasik.v1.RefundPaymentRequest
+	112, // 323: manpasik.v1.AiInferenceService.AnalyzeMeasurement:input_type -> manpasik.v1.AnalyzeMeasurementRequest
+	116, // 324: manpasik.v1.AiInferenceService.GetHealthScore:input_type -> manpasik.v1.GetHealthScoreRequest
+	118, // 325: manpasik.v1.AiInferenceService.PredictTrend:input_type -> manpasik.v1.PredictTrendRequest
+	121, // 326: manpasik.v1.AiInferenceService.GetModelInfo:input_type -> manpasik.v1.GetModelInfoRequest
+	123, // 327: manpasik.v1.AiInferenceService.ListModels:input_type -> manpasik.v1.ListModelsRequest
+	125, // 328: manpasik.v1.CartridgeService.ReadCartridge:input_type -> manpasik.v1.ReadCartridgeRequest
+	127, // 329: manpasik.v1.CartridgeService.RecordUsage:input_type -> manpasik.v1.RecordUsageRequest
+	129, // 330: manpasik.v1.CartridgeService.GetUsageHistory:input_type -> manpasik.v1.GetUsageHistoryRequest
+	132, // 331: manpasik.v1.CartridgeService.GetCartridgeType:input_type -> manpasik.v1.GetCartridgeTypeRequest
+	133, // 332: manpasik.v1.CartridgeService.ListCategories:input_type -> manpasik.v1.ListCategoriesRequest
+	135, // 333: manpasik.v1.CartridgeService.ListTypesByCategory:input_type -> manpasik.v1.ListTypesByCategoryRequest
+	137, // 334: manpasik.v1.CartridgeService.GetRemainingUses:input_type -> manpasik.v1.GetRemainingUsesRequest
+	139, // 335: manpasik.v1.CartridgeService.ValidateCartridge:input_type -> manpasik.v1.ValidateCartridgeRequest
+	141, // 336: manpasik.v1.CalibrationService.RegisterFactoryCalibration:input_type -> manpasik.v1.RegisterFactoryCalibrationRequest
+	142, // 337: manpasik.v1.CalibrationService.PerformFieldCalibration:input_type -> manpasik.v1.PerformFieldCalibrationRequest
+	143, // 338: manpasik.v1.CalibrationService.GetCalibration:input_type -> manpasik.v1.GetCalibrationRequest
+	145, // 339: manpasik.v1.CalibrationService.ListCalibrationHistory:input_type -> manpasik.v1.ListCalibrationHistoryRequest
+	147, // 340: manpasik.v1.CalibrationService.CheckCalibrationStatus:input_type -> manpasik.v1.CheckCalibrationStatusRequest
+	149, // 341: manpasik.v1.CalibrationService.ListCalibrationModels:input_type -> manpasik.v1.ListCalibrationModelsRequest
+	152, // 342: manpasik.v1.CoachingService.SetHealthGoal:input_type -> manpasik.v1.SetHealthGoalRequest
+	154, // 343: manpasik.v1.CoachingService.GetHealthGoals:input_type -> manpasik.v1.GetHealthGoalsRequest
+	156, // 344: manpasik.v1.CoachingService.GenerateCoaching:input_type -> manpasik.v1.GenerateCoachingRequest
+	158, // 345: manpasik.v1.CoachingService.ListCoachingMessages:input_type -> manpasik.v1.ListCoachingMessagesRequest
+	160, // 346: manpasik.v1.CoachingService.GenerateDailyReport:input_type -> manpasik.v1.GenerateDailyReportRequest
+	162, // 347: manpasik.v1.CoachingService.GetWeeklyReport:input_type -> manpasik.v1.GetWeeklyReportRequest
+	164, // 348: manpasik.v1.CoachingService.GetRecommendations:input_type -> manpasik.v1.GetRecommendationsRequest
+	174, // 349: manpasik.v1.ReservationService.SearchFacilities:input_type -> manpasik.v1.SearchFacilitiesRequest
+	176, // 350: manpasik.v1.ReservationService.GetFacility:input_type -> manpasik.v1.GetFacilityRequest
+	178, // 351: manpasik.v1.ReservationService.GetAvailableSlots:input_type -> manpasik.v1.GetAvailableSlotsRequest
+	181, // 352: manpasik.v1.ReservationService.CreateReservation:input_type -> manpasik.v1.CreateReservationRequest
+	183, // 353: manpasik.v1.ReservationService.GetReservation:input_type -> manpasik.v1.GetReservationRequest
+	184, // 354: manpasik.v1.ReservationService.ListReservations:input_type -> manpasik.v1.ListReservationsRequest
+	186, // 355: manpasik.v1.ReservationService.CancelReservation:input_type -> manpasik.v1.CancelReservationRequest
+	313, // 356: manpasik.v1.ReservationService.ListDoctorsByFacility:input_type -> manpasik.v1.ListDoctorsByFacilityRequest
+	316, // 357: manpasik.v1.ReservationService.GetDoctorAvailability:input_type -> manpasik.v1.GetDoctorAvailabilityRequest
+	319, // 358: manpasik.v1.ReservationService.SelectDoctor:input_type -> manpasik.v1.SelectDoctorRequest
+	188, // 359: manpasik.v1.AdminService.CreateAdmin:input_type -> manpasik.v1.CreateAdminRequest
+	189, // 360: manpasik.v1.AdminService.GetAdmin:input_type -> manpasik.v1.GetAdminRequest
+	190, // 361: manpasik.v1.AdminService.ListAdmins:input_type -> manpasik.v1.ListAdminsRequest
+	192, // 362: manpasik.v1.AdminService.UpdateAdminRole:input_type -> manpasik.v1.UpdateAdminRoleRequest
+	193, // 363: manpasik.v1.AdminService.DeactivateAdmin:input_type -> manpasik.v1.DeactivateAdminRequest
+	195, // 364: manpasik.v1.AdminService.ListUsers:input_type -> manpasik.v1.AdminListUsersRequest
+	198, // 365: manpasik.v1.AdminService.GetSystemStats:input_type -> manpasik.v1.GetSystemStatsRequest
+	200, // 366: manpasik.v1.AdminService.GetAuditLog:input_type -> manpasik.v1.GetAuditLogRequest
+	203, // 367: manpasik.v1.AdminService.SetSystemConfig:input_type -> manpasik.v1.SetSystemConfigRequest
+	204, // 368: manpasik.v1.AdminService.GetSystemConfig:input_type -> manpasik.v1.GetSystemConfigRequest
+	343, // 369: manpasik.v1.AdminService.ListAdminsByRegion:input_type -> manpasik.v1.ListAdminsByRegionRequest
+	344, // 370: manpasik.v1.AdminService.ListSystemConfigs:input_type -> manpasik.v1.ListSystemConfigsRequest
+	347, // 371: manpasik.v1.AdminService.GetConfigWithMeta:input_type -> manpasik.v1.GetConfigWithMetaRequest
+	348, // 372: manpasik.v1.AdminService.ValidateConfigValue:input_type -> manpasik.v1.ValidateConfigValueRequest
+	350, // 373: manpasik.v1.AdminService.BulkSetConfigs:input_type -> manpasik.v1.BulkSetConfigsRequest
+	369, // 374: manpasik.v1.AdminService.GetAuditLogDetails:input_type -> manpasik.v1.GetAuditLogDetailsRequest
+	206, // 375: manpasik.v1.FamilyService.CreateFamilyGroup:input_type -> manpasik.v1.CreateFamilyGroupRequest
+	207, // 376: manpasik.v1.FamilyService.GetFamilyGroup:input_type -> manpasik.v1.GetFamilyGroupRequest
+	210, // 377: manpasik.v1.FamilyService.InviteMember:input_type -> manpasik.v1.InviteMemberRequest
+	212, // 378: manpasik.v1.FamilyService.RespondToInvitation:input_type -> manpasik.v1.RespondToInvitationRequest
+	214, // 379: manpasik.v1.FamilyService.RemoveMember:input_type -> manpasik.v1.RemoveMemberRequest
+	216, // 380: manpasik.v1.FamilyService.UpdateMemberRole:input_type -> manpasik.v1.UpdateMemberRoleRequest
+	217, // 381: manpasik.v1.FamilyService.ListFamilyMembers:input_type -> manpasik.v1.ListFamilyMembersRequest
+	219, // 382: manpasik.v1.FamilyService.SetSharingPreferences:input_type -> manpasik.v1.SetSharingPreferencesRequest
+	221, // 383: manpasik.v1.FamilyService.GetSharedHealthData:input_type -> manpasik.v1.GetSharedHealthDataRequest
+	367, // 384: manpasik.v1.FamilyService.ValidateSharingAccess:input_type -> manpasik.v1.ValidateSharingAccessRequest
+	223, // 385: manpasik.v1.HealthRecordService.CreateRecord:input_type -> manpasik.v1.CreateHealthRecordRequest
+	224, // 386: manpasik.v1.HealthRecordService.GetRecord:input_type -> manpasik.v1.GetHealthRecordRequest
+	225, // 387: manpasik.v1.HealthRecordService.ListRecords:input_type -> manpasik.v1.ListHealthRecordsRequest
+	227, // 388: manpasik.v1.HealthRecordService.UpdateRecord:input_type -> manpasik.v1.UpdateHealthRecordRequest
+	228, // 389: manpasik.v1.HealthRecordService.DeleteRecord:input_type -> manpasik.v1.DeleteHealthRecordRequest
+	231, // 390: manpasik.v1.HealthRecordService.ExportToFHIR:input_type -> manpasik.v1.ExportToFHIRRequest
+	233, // 391: manpasik.v1.HealthRecordService.ImportFromFHIR:input_type -> manpasik.v1.ImportFromFHIRRequest
+	235, // 392: manpasik.v1.HealthRecordService.GetHealthSummary:input_type -> manpasik.v1.GetHealthSummaryRequest
+	327, // 393: manpasik.v1.HealthRecordService.CreateDataSharingConsent:input_type -> manpasik.v1.CreateConsentRequest
+	329, // 394: manpasik.v1.HealthRecordService.RevokeDataSharingConsent:input_type -> manpasik.v1.RevokeConsentRequest
+	331, // 395: manpasik.v1.HealthRecordService.ListDataSharingConsents:input_type -> manpasik.v1.ListConsentsRequest
+	333, // 396: manpasik.v1.HealthRecordService.ShareWithProvider:input_type -> manpasik.v1.ShareWithProviderRequest
+	335, // 397: manpasik.v1.HealthRecordService.GetDataAccessLog:input_type -> manpasik.v1.GetDataAccessLogRequest
+	237, // 398: manpasik.v1.PrescriptionService.CreatePrescription:input_type -> manpasik.v1.CreatePrescriptionRequest
+	238, // 399: manpasik.v1.PrescriptionService.GetPrescription:input_type -> manpasik.v1.GetPrescriptionRequest
+	239, // 400: manpasik.v1.PrescriptionService.ListPrescriptions:input_type -> manpasik.v1.ListPrescriptionsRequest
+	241, // 401: manpasik.v1.PrescriptionService.UpdatePrescriptionStatus:input_type -> manpasik.v1.UpdatePrescriptionStatusRequest
+	242, // 402: manpasik.v1.PrescriptionService.AddMedication:input_type -> manpasik.v1.AddMedicationRequest
+	243, // 403: manpasik.v1.PrescriptionService.RemoveMedication:input_type -> manpasik.v1.RemoveMedicationRequest
+	246, // 404: manpasik.v1.PrescriptionService.CheckDrugInteraction:input_type -> manpasik.v1.CheckDrugInteractionRequest
+	249, // 405: manpasik.v1.PrescriptionService.GetMedicationReminders:input_type -> manpasik.v1.GetMedicationRemindersRequest
+	321, // 406: manpasik.v1.PrescriptionService.SelectPharmacyAndFulfillment:input_type -> manpasik.v1.SelectPharmacyRequest
+	323, // 407: manpasik.v1.PrescriptionService.SendPrescriptionToPharmacy:input_type -> manpasik.v1.SendToPharmacyRequest
+	325, // 408: manpasik.v1.PrescriptionService.GetPrescriptionByToken:input_type -> manpasik.v1.GetByTokenRequest
+	326, // 409: manpasik.v1.PrescriptionService.UpdateDispensaryStatus:input_type -> manpasik.v1.UpdateDispensaryStatusRequest
+	252, // 410: manpasik.v1.CommunityService.CreatePost:input_type -> manpasik.v1.CreatePostRequest
+	253, // 411: manpasik.v1.CommunityService.GetPost:input_type -> manpasik.v1.GetPostRequest
+	254, // 412: manpasik.v1.CommunityService.ListPosts:input_type -> manpasik.v1.ListPostsRequest
+	257, // 413: manpasik.v1.CommunityService.LikePost:input_type -> manpasik.v1.LikePostRequest
+	259, // 414: manpasik.v1.CommunityService.CreateComment:input_type -> manpasik.v1.CreateCommentRequest
+	260, // 415: manpasik.v1.CommunityService.ListComments:input_type -> manpasik.v1.ListCommentsRequest
+	263, // 416: manpasik.v1.CommunityService.CreateChallenge:input_type -> manpasik.v1.CreateChallengeRequest
+	264, // 417: manpasik.v1.CommunityService.GetChallenge:input_type -> manpasik.v1.GetChallengeRequest
+	266, // 418: manpasik.v1.CommunityService.JoinChallenge:input_type -> manpasik.v1.JoinChallengeRequest
+	268, // 419: manpasik.v1.CommunityService.ListChallenges:input_type -> manpasik.v1.ListChallengesRequest
+	270, // 420: manpasik.v1.VideoService.CreateRoom:input_type -> manpasik.v1.CreateRoomRequest
+	271, // 421: manpasik.v1.VideoService.GetRoom:input_type -> manpasik.v1.GetRoomRequest
+	273, // 422: manpasik.v1.VideoService.JoinRoom:input_type -> manpasik.v1.JoinRoomRequest
+	275, // 423: manpasik.v1.VideoService.LeaveRoom:input_type -> manpasik.v1.LeaveRoomRequest
+	277, // 424: manpasik.v1.VideoService.EndRoom:input_type -> manpasik.v1.EndRoomRequest
+	279, // 425: manpasik.v1.VideoService.SendSignal:input_type -> manpasik.v1.SendSignalRequest
+	281, // 426: manpasik.v1.VideoService.ListParticipants:input_type -> manpasik.v1.ListParticipantsRequest
+	283, // 427: manpasik.v1.VideoService.GetRoomStats:input_type -> manpasik.v1.GetRoomStatsRequest
+	285, // 428: manpasik.v1.NotificationService.SendNotification:input_type -> manpasik.v1.SendNotificationRequest
+	287, // 429: manpasik.v1.NotificationService.ListNotifications:input_type -> manpasik.v1.ListNotificationsRequest
+	289, // 430: manpasik.v1.NotificationService.MarkAsRead:input_type -> manpasik.v1.MarkAsReadRequest
+	291, // 431: manpasik.v1.NotificationService.MarkAllAsRead:input_type -> manpasik.v1.MarkAllAsReadRequest
+	293, // 432: manpasik.v1.NotificationService.GetUnreadCount:input_type -> manpasik.v1.GetUnreadCountRequest
+	295, // 433: manpasik.v1.NotificationService.UpdateNotificationPreferences:input_type -> manpasik.v1.UpdateNotificationPreferencesRequest
+	296, // 434: manpasik.v1.NotificationService.GetNotificationPreferences:input_type -> manpasik.v1.GetNotificationPreferencesRequest
+	366, // 435: manpasik.v1.NotificationService.SendFromTemplate:input_type -> manpasik.v1.SendFromTemplateRequest
+	298, // 436: manpasik.v1.TranslationService.TranslateText:input_type -> manpasik.v1.TranslateTextRequest
+	300, // 437: manpasik.v1.TranslationService.DetectLanguage:input_type -> manpasik.v1.DetectLanguageRequest
+	303, // 438: manpasik.v1.TranslationService.ListSupportedLanguages:input_type -> manpasik.v1.ListSupportedLanguagesRequest
+	306, // 439: manpasik.v1.TranslationService.TranslateBatch:input_type -> manpasik.v1.TranslateBatchRequest
+	308, // 440: manpasik.v1.TranslationService.GetTranslationHistory:input_type -> manpasik.v1.GetTranslationHistoryRequest
+	311, // 441: manpasik.v1.TranslationService.GetTranslationUsage:input_type -> manpasik.v1.GetTranslationUsageRequest
+	354, // 442: manpasik.v1.TelemedicineService.CreateConsultation:input_type -> manpasik.v1.CreateConsultationRequest
+	355, // 443: manpasik.v1.TelemedicineService.GetConsultation:input_type -> manpasik.v1.GetConsultationRequest
+	356, // 444: manpasik.v1.TelemedicineService.ListConsultations:input_type -> manpasik.v1.ListConsultationsRequest
+	358, // 445: manpasik.v1.TelemedicineService.MatchDoctor:input_type -> manpasik.v1.MatchDoctorRequest
+	361, // 446: manpasik.v1.TelemedicineService.StartVideoSession:input_type -> manpasik.v1.StartVideoSessionRequest
+	363, // 447: manpasik.v1.TelemedicineService.EndVideoSession:input_type -> manpasik.v1.EndVideoSessionRequest
+	364, // 448: manpasik.v1.TelemedicineService.RateConsultation:input_type -> manpasik.v1.RateConsultationRequest
+	42,  // 449: manpasik.v1.AuthService.Register:output_type -> manpasik.v1.RegisterResponse
+	44,  // 450: manpasik.v1.AuthService.Login:output_type -> manpasik.v1.LoginResponse
+	44,  // 451: manpasik.v1.AuthService.SocialLogin:output_type -> manpasik.v1.LoginResponse
+	44,  // 452: manpasik.v1.AuthService.RefreshToken:output_type -> manpasik.v1.LoginResponse
+	47,  // 453: manpasik.v1.AuthService.Logout:output_type -> manpasik.v1.LogoutResponse
+	49,  // 454: manpasik.v1.AuthService.ValidateToken:output_type -> manpasik.v1.ValidateTokenResponse
+	52,  // 455: manpasik.v1.AuthService.ResetPassword:output_type -> manpasik.v1.ResetPasswordResponse
+	54,  // 456: manpasik.v1.MeasurementService.StartSession:output_type -> manpasik.v1.StartSessionResponse
+	58,  // 457: manpasik.v1.MeasurementService.StreamMeasurement:output_type -> manpasik.v1.MeasurementResult
+	60,  // 458: manpasik.v1.MeasurementService.EndSession:output_type -> manpasik.v1.EndSessionResponse
+	62,  // 459: manpasik.v1.MeasurementService.GetMeasurementHistory:output_type -> manpasik.v1.GetHistoryResponse
+	340, // 460: manpasik.v1.MeasurementService.ExportSingleMeasurement:output_type -> manpasik.v1.ExportFHIRResponse
+	340, // 461: manpasik.v1.MeasurementService.ExportToFHIRObservations:output_type -> manpasik.v1.ExportFHIRResponse
+	65,  // 462: manpasik.v1.DeviceService.RegisterDevice:output_type -> manpasik.v1.RegisterDeviceResponse
+	67,  // 463: manpasik.v1.DeviceService.ListDevices:output_type -> manpasik.v1.ListDevicesResponse
+	70,  // 464: manpasik.v1.DeviceService.StreamDeviceStatus:output_type -> manpasik.v1.DeviceCommand
+	72,  // 465: manpasik.v1.DeviceService.RequestOtaUpdate:output_type -> manpasik.v1.OtaResponse
+	342, // 466: manpasik.v1.DeviceService.UpdateDeviceStatus:output_type -> manpasik.v1.UpdateDeviceStatusResponse
+	75,  // 467: manpasik.v1.UserService.GetProfile:output_type -> manpasik.v1.UserProfile
+	75,  // 468: manpasik.v1.UserService.UpdateProfile:output_type -> manpasik.v1.UserProfile
+	77,  // 469: manpasik.v1.UserService.GetSubscription:output_type -> manpasik.v1.SubscriptionInfo
+	83,  // 470: manpasik.v1.SubscriptionService.CreateSubscription:output_type -> manpasik.v1.SubscriptionDetail
+	83,  // 471: manpasik.v1.SubscriptionService.GetSubscription:output_type -> manpasik.v1.SubscriptionDetail
+	83,  // 472: manpasik.v1.SubscriptionService.UpdateSubscription:output_type -> manpasik.v1.SubscriptionDetail
+	82,  // 473: manpasik.v1.SubscriptionService.CancelSubscription:output_type -> manpasik.v1.CancelSubscriptionResponse
+	85,  // 474: manpasik.v1.SubscriptionService.CheckFeatureAccess:output_type -> manpasik.v1.CheckFeatureAccessResponse
+	87,  // 475: manpasik.v1.SubscriptionService.ListSubscriptionPlans:output_type -> manpasik.v1.ListSubscriptionPlansResponse
+	170, // 476: manpasik.v1.SubscriptionService.CheckCartridgeAccess:output_type -> manpasik.v1.CheckCartridgeAccessResponse
+	172, // 477: manpasik.v1.SubscriptionService.ListAccessibleCartridges:output_type -> manpasik.v1.ListAccessibleCartridgesResponse
+	90,  // 478: manpasik.v1.ShopService.ListProducts:output_type -> manpasik.v1.ListProductsResponse
+	92,  // 479: manpasik.v1.ShopService.GetProduct:output_type -> manpasik.v1.Product
+	96,  // 480: manpasik.v1.ShopService.AddToCart:output_type -> manpasik.v1.Cart
+	96,  // 481: manpasik.v1.ShopService.GetCart:output_type -> manpasik.v1.Cart
+	96,  // 482: manpasik.v1.ShopService.RemoveFromCart:output_type -> manpasik.v1.Cart
+	102, // 483: manpasik.v1.ShopService.CreateOrder:output_type -> manpasik.v1.Order
+	102, // 484: manpasik.v1.ShopService.GetOrder:output_type -> manpasik.v1.Order
+	101, // 485: manpasik.v1.ShopService.ListOrders:output_type -> manpasik.v1.ListOrdersResponse
+	109, // 486: manpasik.v1.PaymentService.CreatePayment:output_type -> manpasik.v1.PaymentDetail
+	109, // 487: manpasik.v1.PaymentService.ConfirmPayment:output_type -> manpasik.v1.PaymentDetail
+	109, // 488: manpasik.v1.PaymentService.GetPayment:output_type -> manpasik.v1.PaymentDetail
+	108, // 489: manpasik.v1.PaymentService.ListPayments:output_type -> manpasik.v1.ListPaymentsResponse
+	111, // 490: manpasik.v1.PaymentService.RefundPayment:output_type -> manpasik.v1.RefundResponse
+	115, // 491: manpasik.v1.AiInferenceService.AnalyzeMeasurement:output_type -> manpasik.v1.AnalysisResult
+	117, // 492: manpasik.v1.AiInferenceService.GetHealthScore:output_type -> manpasik.v1.HealthScoreResponse
+	120, // 493: manpasik.v1.AiInferenceService.PredictTrend:output_type -> manpasik.v1.TrendPrediction
+	122, // 494: manpasik.v1.AiInferenceService.GetModelInfo:output_type -> manpasik.v1.ModelInfo
+	124, // 495: manpasik.v1.AiInferenceService.ListModels:output_type -> manpasik.v1.ListModelsResponse
+	126, // 496: manpasik.v1.CartridgeService.ReadCartridge:output_type -> manpasik.v1.CartridgeDetail
+	128, // 497: manpasik.v1.CartridgeService.RecordUsage:output_type -> manpasik.v1.RecordUsageResponse
+	130, // 498: manpasik.v1.CartridgeService.GetUsageHistory:output_type -> manpasik.v1.GetUsageHistoryResponse
+	168, // 499: manpasik.v1.CartridgeService.GetCartridgeType:output_type -> manpasik.v1.CartridgeTypeInfo
+	134, // 500: manpasik.v1.CartridgeService.ListCategories:output_type -> manpasik.v1.ListCategoriesResponse
+	136, // 501: manpasik.v1.CartridgeService.ListTypesByCategory:output_type -> manpasik.v1.ListTypesByCategoryResponse
+	138, // 502: manpasik.v1.CartridgeService.GetRemainingUses:output_type -> manpasik.v1.GetRemainingUsesResponse
+	140, // 503: manpasik.v1.CartridgeService.ValidateCartridge:output_type -> manpasik.v1.ValidateCartridgeResponse
+	144, // 504: manpasik.v1.CalibrationService.RegisterFactoryCalibration:output_type -> manpasik.v1.CalibrationRecord
+	144, // 505: manpasik.v1.CalibrationService.PerformFieldCalibration:output_type -> manpasik.v1.CalibrationRecord
+	144, // 506: manpasik.v1.CalibrationService.GetCalibration:output_type -> manpasik.v1.CalibrationRecord
+	146, // 507: manpasik.v1.CalibrationService.ListCalibrationHistory:output_type -> manpasik.v1.ListCalibrationHistoryResponse
+	148, // 508: manpasik.v1.CalibrationService.CheckCalibrationStatus:output_type -> manpasik.v1.CalibrationStatusResponse
+	151, // 509: manpasik.v1.CalibrationService.ListCalibrationModels:output_type -> manpasik.v1.ListCalibrationModelsResponse
+	153, // 510: manpasik.v1.CoachingService.SetHealthGoal:output_type -> manpasik.v1.HealthGoal
+	155, // 511: manpasik.v1.CoachingService.GetHealthGoals:output_type -> manpasik.v1.GetHealthGoalsResponse
+	157, // 512: manpasik.v1.CoachingService.GenerateCoaching:output_type -> manpasik.v1.CoachingMessage
+	159, // 513: manpasik.v1.CoachingService.ListCoachingMessages:output_type -> manpasik.v1.ListCoachingMessagesResponse
+	161, // 514: manpasik.v1.CoachingService.GenerateDailyReport:output_type -> manpasik.v1.DailyHealthReport
+	163, // 515: manpasik.v1.CoachingService.GetWeeklyReport:output_type -> manpasik.v1.WeeklyHealthReport
+	166, // 516: manpasik.v1.CoachingService.GetRecommendations:output_type -> manpasik.v1.GetRecommendationsResponse
+	175, // 517: manpasik.v1.ReservationService.SearchFacilities:output_type -> manpasik.v1.SearchFacilitiesResponse
+	177, // 518: manpasik.v1.ReservationService.GetFacility:output_type -> manpasik.v1.Facility
+	179, // 519: manpasik.v1.ReservationService.GetAvailableSlots:output_type -> manpasik.v1.GetAvailableSlotsResponse
+	182, // 520: manpasik.v1.ReservationService.CreateReservation:output_type -> manpasik.v1.Reservation
+	182, // 521: manpasik.v1.ReservationService.GetReservation:output_type -> manpasik.v1.Reservation
+	185, // 522: manpasik.v1.ReservationService.ListReservations:output_type -> manpasik.v1.ListReservationsResponse
+	187, // 523: manpasik.v1.ReservationService.CancelReservation:output_type -> manpasik.v1.CancelReservationResponse
+	314, // 524: manpasik.v1.ReservationService.ListDoctorsByFacility:output_type -> manpasik.v1.ListDoctorsByFacilityResponse
+	317, // 525: manpasik.v1.ReservationService.GetDoctorAvailability:output_type -> manpasik.v1.GetDoctorAvailabilityResponse
+	320, // 526: manpasik.v1.ReservationService.SelectDoctor:output_type -> manpasik.v1.SelectDoctorResponse
+	194, // 527: manpasik.v1.AdminService.CreateAdmin:output_type -> manpasik.v1.AdminUser
+	194, // 528: manpasik.v1.AdminService.GetAdmin:output_type -> manpasik.v1.AdminUser
+	191, // 529: manpasik.v1.AdminService.ListAdmins:output_type -> manpasik.v1.ListAdminsResponse
+	194, // 530: manpasik.v1.AdminService.UpdateAdminRole:output_type -> manpasik.v1.AdminUser
+	194, // 531: manpasik.v1.AdminService.DeactivateAdmin:output_type -> manpasik.v1.AdminUser
+	196, // 532: manpasik.v1.AdminService.ListUsers:output_type -> manpasik.v1.AdminListUsersResponse
+	199, // 533: manpasik.v1.AdminService.GetSystemStats:output_type -> manpasik.v1.GetSystemStatsResponse
+	201, // 534: manpasik.v1.AdminService.GetAuditLog:output_type -> manpasik.v1.GetAuditLogResponse
+	205, // 535: manpasik.v1.AdminService.SetSystemConfig:output_type -> manpasik.v1.SystemConfig
+	205, // 536: manpasik.v1.AdminService.GetSystemConfig:output_type -> manpasik.v1.SystemConfig
+	191, // 537: manpasik.v1.AdminService.ListAdminsByRegion:output_type -> manpasik.v1.ListAdminsResponse
+	345, // 538: manpasik.v1.AdminService.ListSystemConfigs:output_type -> manpasik.v1.ListSystemConfigsResponse
+	346, // 539: manpasik.v1.AdminService.GetConfigWithMeta:output_type -> manpasik.v1.ConfigWithMeta
+	349, // 540: manpasik.v1.AdminService.ValidateConfigValue:output_type -> manpasik.v1.ValidateConfigValueResponse
+	351, // 541: manpasik.v1.AdminService.BulkSetConfigs:output_type -> manpasik.v1.BulkSetConfigsResponse
+	370, // 542: manpasik.v1.AdminService.GetAuditLogDetails:output_type -> manpasik.v1.GetAuditLogDetailsResponse
+	208, // 543: manpasik.v1.FamilyService.CreateFamilyGroup:output_type -> manpasik.v1.FamilyGroup
+	208, // 544: manpasik.v1.FamilyService.GetFamilyGroup:output_type -> manpasik.v1.FamilyGroup
+	211, // 545: manpasik.v1.FamilyService.InviteMember:output_type -> manpasik.v1.FamilyInvitation
+	213, // 546: manpasik.v1.FamilyService.RespondToInvitation:output_type -> manpasik.v1.RespondToInvitationResponse
+	215, // 547: manpasik.v1.FamilyService.RemoveMember:output_type -> manpasik.v1.RemoveMemberResponse
+	209, // 548: manpasik.v1.FamilyService.UpdateMemberRole:output_type -> manpasik.v1.FamilyMember
+	218, // 549: manpasik.v1.FamilyService.ListFamilyMembers:output_type -> manpasik.v1.ListFamilyMembersResponse
+	220, // 550: manpasik.v1.FamilyService.SetSharingPreferences:output_type -> manpasik.v1.SharingPreferences
+	222, // 551: manpasik.v1.FamilyService.GetSharedHealthData:output_type -> manpasik.v1.GetSharedHealthDataResponse
+	368, // 552: manpasik.v1.FamilyService.ValidateSharingAccess:output_type -> manpasik.v1.ValidateSharingAccessResponse
+	230, // 553: manpasik.v1.HealthRecordService.CreateRecord:output_type -> manpasik.v1.HealthRecord
+	230, // 554: manpasik.v1.HealthRecordService.GetRecord:output_type -> manpasik.v1.HealthRecord
+	226, // 555: manpasik.v1.HealthRecordService.ListRecords:output_type -> manpasik.v1.ListHealthRecordsResponse
+	230, // 556: manpasik.v1.HealthRecordService.UpdateRecord:output_type -> manpasik.v1.HealthRecord
+	229, // 557: manpasik.v1.HealthRecordService.DeleteRecord:output_type -> manpasik.v1.DeleteHealthRecordResponse
+	232, // 558: manpasik.v1.HealthRecordService.ExportToFHIR:output_type -> manpasik.v1.ExportToFHIRResponse
+	234, // 559: manpasik.v1.HealthRecordService.ImportFromFHIR:output_type -> manpasik.v1.ImportFromFHIRResponse
+	236, // 560: manpasik.v1.HealthRecordService.GetHealthSummary:output_type -> manpasik.v1.GetHealthSummaryResponse
+	328, // 561: manpasik.v1.HealthRecordService.CreateDataSharingConsent:output_type -> manpasik.v1.DataSharingConsent
+	330, // 562: manpasik.v1.HealthRecordService.RevokeDataSharingConsent:output_type -> manpasik.v1.RevokeConsentResponse
+	332, // 563: manpasik.v1.HealthRecordService.ListDataSharingConsents:output_type -> manpasik.v1.ListConsentsResponse
+	334, // 564: manpasik.v1.HealthRecordService.ShareWithProvider:output_type -> manpasik.v1.ShareWithProviderResponse
+	336, // 565: manpasik.v1.HealthRecordService.GetDataAccessLog:output_type -> manpasik.v1.GetDataAccessLogResponse
+	244, // 566: manpasik.v1.PrescriptionService.CreatePrescription:output_type -> manpasik.v1.Prescription
+	244, // 567: manpasik.v1.PrescriptionService.GetPrescription:output_type -> manpasik.v1.Prescription
+	240, // 568: manpasik.v1.PrescriptionService.ListPrescriptions:output_type -> manpasik.v1.ListPrescriptionsResponse
+	244, // 569: manpasik.v1.PrescriptionService.UpdatePrescriptionStatus:output_type -> manpasik.v1.Prescription
+	244, // 570: manpasik.v1.PrescriptionService.AddMedication:output_type -> manpasik.v1.Prescription
+	244, // 571: manpasik.v1.PrescriptionService.RemoveMedication:output_type -> manpasik.v1.Prescription
+	247, // 572: manpasik.v1.PrescriptionService.CheckDrugInteraction:output_type -> manpasik.v1.CheckDrugInteractionResponse
+	250, // 573: manpasik.v1.PrescriptionService.GetMedicationReminders:output_type -> manpasik.v1.GetMedicationRemindersResponse
+	322, // 574: manpasik.v1.PrescriptionService.SelectPharmacyAndFulfillment:output_type -> manpasik.v1.SelectPharmacyResponse
+	324, // 575: manpasik.v1.PrescriptionService.SendPrescriptionToPharmacy:output_type -> manpasik.v1.SendToPharmacyResponse
+	244, // 576: manpasik.v1.PrescriptionService.GetPrescriptionByToken:output_type -> manpasik.v1.Prescription
+	244, // 577: manpasik.v1.PrescriptionService.UpdateDispensaryStatus:output_type -> manpasik.v1.Prescription
+	256, // 578: manpasik.v1.CommunityService.CreatePost:output_type -> manpasik.v1.Post
+	256, // 579: manpasik.v1.CommunityService.GetPost:output_type -> manpasik.v1.Post
+	255, // 580: manpasik.v1.CommunityService.ListPosts:output_type -> manpasik.v1.ListPostsResponse
+	258, // 581: manpasik.v1.CommunityService.LikePost:output_type -> manpasik.v1.LikePostResponse
+	262, // 582: manpasik.v1.CommunityService.CreateComment:output_type -> manpasik.v1.Comment
+	261, // 583: manpasik.v1.CommunityService.ListComments:output_type -> manpasik.v1.ListCommentsResponse
+	265, // 584: manpasik.v1.CommunityService.CreateChallenge:output_type -> manpasik.v1.Challenge
+	265, // 585: manpasik.v1.CommunityService.GetChallenge:output_type -> manpasik.v1.Challenge
+	267, // 586: manpasik.v1.CommunityService.JoinChallenge:output_type -> manpasik.v1.JoinChallengeResponse
+	269, // 587: manpasik.v1.CommunityService.ListChallenges:output_type -> manpasik.v1.ListChallengesResponse
+	272, // 588: manpasik.v1.VideoService.CreateRoom:output_type -> manpasik.v1.Room
+	272, // 589: manpasik.v1.VideoService.GetRoom:output_type -> manpasik.v1.Room
+	274, // 590: manpasik.v1.VideoService.JoinRoom:output_type -> manpasik.v1.JoinRoomResponse
+	276, // 591: manpasik.v1.VideoService.LeaveRoom:output_type -> manpasik.v1.LeaveRoomResponse
+	272, // 592: manpasik.v1.VideoService.EndRoom:output_type -> manpasik.v1.Room
+	280, // 593: manpasik.v1.VideoService.SendSignal:output_type -> manpasik.v1.SendSignalResponse
+	282, // 594: manpasik.v1.VideoService.ListParticipants:output_type -> manpasik.v1.ListParticipantsResponse
+	284, // 595: manpasik.v1.VideoService.GetRoomStats:output_type -> manpasik.v1.GetRoomStatsResponse
+	286, // 596: manpasik.v1.NotificationService.SendNotification:output_type -> manpasik.v1.Notification
+	288, // 597: manpasik.v1.NotificationService.ListNotifications:output_type -> manpasik.v1.ListNotificationsResponse
+	290, // 598: manpasik.v1.NotificationService.MarkAsRead:output_type -> manpasik.v1.MarkAsReadResponse
+	292, // 599: manpasik.v1.NotificationService.MarkAllAsRead:output_type -> manpasik.v1.MarkAllAsReadResponse
+	294, // 600: manpasik.v1.NotificationService.GetUnreadCount:output_type -> manpasik.v1.GetUnreadCountResponse
+	297, // 601: manpasik.v1.NotificationService.UpdateNotificationPreferences:output_type -> manpasik.v1.NotificationPreferences
+	297, // 602: manpasik.v1.NotificationService.GetNotificationPreferences:output_type -> manpasik.v1.NotificationPreferences
+	286, // 603: manpasik.v1.NotificationService.SendFromTemplate:output_type -> manpasik.v1.Notification
+	299, // 604: manpasik.v1.TranslationService.TranslateText:output_type -> manpasik.v1.TranslateTextResponse
+	301, // 605: manpasik.v1.TranslationService.DetectLanguage:output_type -> manpasik.v1.DetectLanguageResponse
+	304, // 606: manpasik.v1.TranslationService.ListSupportedLanguages:output_type -> manpasik.v1.ListSupportedLanguagesResponse
+	307, // 607: manpasik.v1.TranslationService.TranslateBatch:output_type -> manpasik.v1.TranslateBatchResponse
+	309, // 608: manpasik.v1.TranslationService.GetTranslationHistory:output_type -> manpasik.v1.GetTranslationHistoryResponse
+	312, // 609: manpasik.v1.TranslationService.GetTranslationUsage:output_type -> manpasik.v1.GetTranslationUsageResponse
+	353, // 610: manpasik.v1.TelemedicineService.CreateConsultation:output_type -> manpasik.v1.Consultation
+	353, // 611: manpasik.v1.TelemedicineService.GetConsultation:output_type -> manpasik.v1.Consultation
+	357, // 612: manpasik.v1.TelemedicineService.ListConsultations:output_type -> manpasik.v1.ListConsultationsResponse
+	359, // 613: manpasik.v1.TelemedicineService.MatchDoctor:output_type -> manpasik.v1.MatchDoctorResponse
+	362, // 614: manpasik.v1.TelemedicineService.StartVideoSession:output_type -> manpasik.v1.VideoSession
+	362, // 615: manpasik.v1.TelemedicineService.EndVideoSession:output_type -> manpasik.v1.VideoSession
+	365, // 616: manpasik.v1.TelemedicineService.RateConsultation:output_type -> manpasik.v1.RateConsultationResponse
+	449, // [449:617] is the sub-list for method output_type
+	281, // [281:449] is the sub-list for method input_type
+	281, // [281:281] is the sub-list for extension type_name
+	281, // [281:281] is the sub-list for extension extendee
+	0,   // [0:281] is the sub-list for field type_name
 }
 
 func init() { file_manpasik_proto_init() }
@@ -27629,8 +28838,8 @@ func file_manpasik_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_manpasik_proto_rawDesc), len(file_manpasik_proto_rawDesc)),
-			NumEnums:      39,
-			NumMessages:   333,
+			NumEnums:      41,
+			NumMessages:   343,
 			NumExtensions: 0,
 			NumServices:   21,
 		},

@@ -240,6 +240,183 @@ pub struct CartridgeInfoDto {
 }
 
 // ============================================================================
+// 측정 파이프라인 API (BLE → DSP → AI 통합)
+// ============================================================================
+
+/// 측정 파이프라인 결과 DTO
+#[frb(dart_metadata=("freezed"))]
+pub struct MeasurementPipelineDto {
+    pub primary_value: f64,
+    pub reference_value: f64,
+    pub differential_value: f64,
+    pub snr: f64,
+    pub confidence: f64,
+    pub biomarker: String,
+    pub unit: String,
+    pub risk_level: String,
+    pub health_score: f64,
+    pub recommendations: Vec<String>,
+    pub pipeline_duration_ms: f64,
+}
+
+/// AI 분석 결과 DTO
+#[frb(dart_metadata=("freezed"))]
+pub struct AiAnalysisResultDto {
+    pub risk_level: String,
+    pub health_score: f64,
+    pub summary: String,
+    pub recommendations: Vec<String>,
+    pub trend: String,
+}
+
+/// 차동 계측 수행 + AI 안전 검증 파이프라인
+#[frb]
+pub fn run_measurement_pipeline(
+    s_det: Vec<f64>,
+    s_ref: Vec<f64>,
+    alpha: f64,
+    biomarker: String,
+    unit: String,
+) -> Result<MeasurementPipelineDto, String> {
+    use manpasik_engine::ai::{InferenceEngine, ModelType, SafetyValidator};
+
+    let start = std::time::Instant::now();
+
+    // 1. 차동 계측
+    let params = CorrectionParams {
+        alpha,
+        channel_offsets: Vec::new(),
+        channel_gains: Vec::new(),
+        temp_coefficient: 0.0,
+    };
+    let engine = DifferentialEngine::new(params, s_det.len());
+    let corrected = engine.measure(&s_det, &s_ref).map_err(|e| e.to_string())?;
+
+    // 2. 주요 값 추출 (평균)
+    let primary_value = if corrected.is_empty() {
+        0.0
+    } else {
+        corrected.iter().sum::<f64>() / corrected.len() as f64
+    };
+    let reference_value = if s_ref.is_empty() {
+        0.0
+    } else {
+        s_ref.iter().sum::<f64>() / s_ref.len() as f64
+    };
+
+    // 3. AI 분석 (시뮬레이션 모드)
+    let ai_engine = InferenceEngine::new(ModelType::ValuePredictor);
+    let input: Vec<f32> = corrected.iter().take(88).map(|&v| v as f32).collect();
+    let padded_input = if input.len() < 88 {
+        let mut padded = input;
+        padded.resize(88, 0.0);
+        padded
+    } else {
+        input
+    };
+    let ai_result = ai_engine.predict(&padded_input).map_err(|e| e.to_string())?;
+
+    // 4. 안전 검증
+    let validator = SafetyValidator::new();
+    let safety = validator.validate(&ai_result, primary_value, &biomarker);
+    let risk_level = match safety.final_verdict {
+        manpasik_engine::ai::SafetyVerdict::Normal => "normal",
+        manpasik_engine::ai::SafetyVerdict::Caution => "caution",
+        manpasik_engine::ai::SafetyVerdict::Alert => "warning",
+        manpasik_engine::ai::SafetyVerdict::Uncertain => "uncertain",
+    };
+
+    let pipeline_duration_ms = start.elapsed().as_secs_f64() * 1000.0;
+
+    Ok(MeasurementPipelineDto {
+        primary_value,
+        reference_value,
+        differential_value: primary_value - reference_value,
+        snr: ai_result.confidence as f64 * 50.0,
+        confidence: ai_result.confidence as f64,
+        biomarker,
+        unit,
+        risk_level: risk_level.to_string(),
+        health_score: match risk_level {
+            "normal" => 90.0,
+            "caution" => 65.0,
+            "warning" => 40.0,
+            _ => 50.0,
+        },
+        recommendations: safety.warnings,
+        pipeline_duration_ms,
+    })
+}
+
+/// AI 분석만 수행 (측정값 → 위험도 판정)
+#[frb]
+pub fn analyze_measurement(
+    value: f64,
+    biomarker: String,
+) -> AiAnalysisResultDto {
+    use manpasik_engine::ai::{InferenceEngine, ModelType, SafetyValidator};
+
+    let ai_engine = InferenceEngine::new(ModelType::ValuePredictor);
+    let input = vec![value as f32; 88];
+    let ai_result = ai_engine.predict(&input).unwrap_or(manpasik_engine::ai::InferenceResult {
+        values: vec![0.0],
+        confidence: 0.5,
+        inference_time_ms: 0.0,
+        model_type: ModelType::ValuePredictor,
+    });
+
+    let validator = SafetyValidator::new();
+    let safety = validator.validate(&ai_result, value, &biomarker);
+
+    let risk_level = match safety.final_verdict {
+        manpasik_engine::ai::SafetyVerdict::Normal => "normal",
+        manpasik_engine::ai::SafetyVerdict::Caution => "caution",
+        manpasik_engine::ai::SafetyVerdict::Alert => "warning",
+        manpasik_engine::ai::SafetyVerdict::Uncertain => "uncertain",
+    };
+
+    AiAnalysisResultDto {
+        risk_level: risk_level.to_string(),
+        health_score: match risk_level {
+            "normal" => 90.0,
+            "caution" => 65.0,
+            "warning" => 40.0,
+            _ => 50.0,
+        },
+        summary: format!("{} {:.1} — {}", biomarker, value, risk_level),
+        recommendations: safety.warnings,
+        trend: "stable".to_string(),
+    }
+}
+
+// ============================================================================
+// BLE 배터리/품질 API
+// ============================================================================
+
+/// BLE 배터리 레벨 읽기
+#[frb]
+pub async fn ble_read_battery(device_id: String) -> Result<u8, String> {
+    let ble = BleManager::new();
+    ble.read_battery_level(&device_id)
+        .await
+        .map_err(|e| e.to_string())
+}
+
+/// BLE 연결 품질 조회
+#[frb(sync)]
+pub fn ble_connection_quality(rssi: i8) -> String {
+    use manpasik_engine::ble::{ConnectionQuality, RssiMonitor};
+    let mut monitor = RssiMonitor::new(5);
+    monitor.add_sample(rssi);
+    match monitor.quality() {
+        ConnectionQuality::Excellent => "excellent".to_string(),
+        ConnectionQuality::Good => "good".to_string(),
+        ConnectionQuality::Fair => "fair".to_string(),
+        ConnectionQuality::Poor => "poor".to_string(),
+    }
+}
+
+// ============================================================================
 // 유틸리티 API
 // ============================================================================
 
@@ -297,5 +474,38 @@ mod tests {
     fn test_engine_version() {
         let version = get_engine_version();
         assert!(!version.is_empty());
+    }
+
+    #[test]
+    fn test_measurement_pipeline() {
+        let s_det = vec![1.0f64; 88];
+        let s_ref = vec![0.01f64; 88];
+        let result = run_measurement_pipeline(
+            s_det,
+            s_ref,
+            0.95,
+            "glucose".to_string(),
+            "mg/dL".to_string(),
+        );
+        assert!(result.is_ok());
+        let r = result.unwrap();
+        assert!(r.confidence > 0.0);
+        assert!(r.pipeline_duration_ms >= 0.0);
+        assert!(!r.risk_level.is_empty());
+    }
+
+    #[test]
+    fn test_analyze_measurement() {
+        let result = analyze_measurement(85.0, "glucose".to_string());
+        assert_eq!(result.risk_level, "normal");
+        assert!(result.health_score > 0.0);
+    }
+
+    #[test]
+    fn test_ble_connection_quality() {
+        assert_eq!(ble_connection_quality(-45), "excellent");
+        assert_eq!(ble_connection_quality(-65), "good");
+        assert_eq!(ble_connection_quality(-80), "fair");
+        assert_eq!(ble_connection_quality(-95), "poor");
     }
 }

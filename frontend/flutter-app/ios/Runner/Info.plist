@@ -45,5 +45,41 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<!-- BLE 권한 -->
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>만파식 리더기와 BLE로 연결하여 건강 측정을 수행합니다.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>만파식 리더기와 BLE로 연결하여 건강 측정을 수행합니다.</string>
+	<!-- 카메라 권한 -->
+	<key>NSCameraUsageDescription</key>
+	<string>게시글 사진 촬영 및 음식 분석에 카메라를 사용합니다.</string>
+	<!-- 사진 라이브러리 권한 -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>게시글 이미지를 첨부하기 위해 사진 라이브러리에 접근합니다.</string>
+	<!-- NFC 권한 -->
+	<key>NFCReaderUsageDescription</key>
+	<string>카트리지 정보를 읽기 위해 NFC를 사용합니다.</string>
+	<!-- HealthKit 권한 -->
+	<key>NSHealthShareUsageDescription</key>
+	<string>건강 데이터를 데이터 허브에 통합하기 위해 HealthKit에 접근합니다.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>측정 결과를 HealthKit에 저장합니다.</string>
+	<!-- Deep Link 스킴 (manpasik://) -->
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>manpasik</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.manpasik.app</string>
+		</dict>
+	</array>
+	<!-- Universal Link (https://manpasik.com) -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:manpasik.com</string>
+	</array>
 </dict>
 </plist>

@@ -27,6 +27,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
 
+  // 약관 동의
+  bool _termsAgreed = false;
+  bool _privacyAgreed = false;
+  bool _healthDataAgreed = false;
+  bool _marketingAgreed = false;
+
+  bool get _requiredConsentsChecked =>
+      _termsAgreed && _privacyAgreed && _healthDataAgreed;
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -34,6 +43,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     _passwordController.dispose();
     _confirmPasswordController.dispose();
     super.dispose();
+  }
+
+  bool _socialLoading = false;
+
+  Future<void> _handleSocialRegister(String provider) async {
+    setState(() => _socialLoading = true);
+    final success = await ref.read(authProvider.notifier).socialLogin(
+      provider,
+      'pending-oauth-flow',
+    );
+    if (!mounted) return;
+    setState(() => _socialLoading = false);
+    if (success) {
+      context.go('/onboarding');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$provider 가입에 실패했습니다. 다시 시도해주세요.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Future<void> _handleRegister() async {
@@ -51,7 +82,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     setState(() => _isLoading = false);
 
     if (success) {
-      context.go('/home');
+      context.go('/onboarding');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -176,15 +207,189 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 24),
+
+                  // ── 약관 동의 섹션 ──
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surfaceContainerLow,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: !_requiredConsentsChecked && _isLoading
+                            ? theme.colorScheme.error
+                            : theme.colorScheme.outlineVariant,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '약관 동의',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // 전체 동의
+                        CheckboxListTile(
+                          value: _termsAgreed &&
+                              _privacyAgreed &&
+                              _healthDataAgreed &&
+                              _marketingAgreed,
+                          onChanged: (v) {
+                            setState(() {
+                              _termsAgreed = v ?? false;
+                              _privacyAgreed = v ?? false;
+                              _healthDataAgreed = v ?? false;
+                              _marketingAgreed = v ?? false;
+                            });
+                          },
+                          title: Text(
+                            '전체 동의',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                        const Divider(height: 1),
+
+                        // 서비스 이용약관 (필수)
+                        CheckboxListTile(
+                          value: _termsAgreed,
+                          onChanged: (v) =>
+                              setState(() => _termsAgreed = v ?? false),
+                          title: Text(
+                            '[필수] 서비스 이용약관',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+
+                        // 개인정보처리방침 (필수)
+                        CheckboxListTile(
+                          value: _privacyAgreed,
+                          onChanged: (v) =>
+                              setState(() => _privacyAgreed = v ?? false),
+                          title: Text(
+                            '[필수] 개인정보 처리방침',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+
+                        // 건강정보 수집 동의 (필수)
+                        CheckboxListTile(
+                          value: _healthDataAgreed,
+                          onChanged: (v) =>
+                              setState(() => _healthDataAgreed = v ?? false),
+                          title: Text(
+                            '[필수] 건강정보 수집 및 이용 동의',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+
+                        // 마케팅 동의 (선택)
+                        CheckboxListTile(
+                          value: _marketingAgreed,
+                          onChanged: (v) =>
+                              setState(() => _marketingAgreed = v ?? false),
+                          title: Text(
+                            '[선택] 마케팅 정보 수신 동의',
+                            style: theme.textTheme.bodySmall,
+                          ),
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
 
                   // 가입 버튼
                   PrimaryButton(
                     text: '가입하기',
                     isLoading: _isLoading,
-                    onPressed: _handleRegister,
+                    onPressed: _requiredConsentsChecked ? _handleRegister : null,
+                  ),
+                  if (!_requiredConsentsChecked)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        '필수 약관에 모두 동의해주세요.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.error,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+
+                  // 소셜 로그인 구분선
+                  Row(
+                    children: [
+                      Expanded(
+                          child: Divider(
+                              color: theme.colorScheme.outlineVariant)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          '또는',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                          child: Divider(
+                              color: theme.colorScheme.outlineVariant)),
+                    ],
                   ),
                   const SizedBox(height: 16),
+
+                  // Google 소셜 가입
+                  OutlinedButton.icon(
+                    onPressed: _socialLoading ? null : () => _handleSocialRegister('google'),
+                    icon: const Icon(Icons.g_mobiledata, size: 24),
+                    label: const Text('Google로 가입하기'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      side: BorderSide(
+                          color: theme.colorScheme.outlineVariant),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Apple 소셜 가입
+                  OutlinedButton.icon(
+                    onPressed: _socialLoading ? null : () => _handleSocialRegister('apple'),
+                    icon: const Icon(Icons.apple, size: 24),
+                    label: const Text('Apple로 가입하기'),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(double.infinity, 48),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      side: BorderSide(
+                          color: theme.colorScheme.outlineVariant),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
 
                   // 로그인 링크
                   Row(

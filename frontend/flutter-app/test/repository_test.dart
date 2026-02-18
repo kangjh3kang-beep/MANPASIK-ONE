@@ -3,7 +3,7 @@ import 'package:manpasik/features/auth/domain/auth_repository.dart';
 import 'package:manpasik/features/devices/domain/device_repository.dart';
 import 'package:manpasik/features/measurement/domain/measurement_repository.dart';
 import 'package:manpasik/features/user/domain/user_repository.dart';
-import 'package:manpasik/test/helpers/fake_repositories.dart';
+import 'helpers/fake_repositories.dart';
 
 void main() {
   group('FakeAuthRepository', () {

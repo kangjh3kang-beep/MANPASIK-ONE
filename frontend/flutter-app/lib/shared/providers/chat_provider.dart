@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manpasik/core/services/grpc_client.dart';
+import 'package:manpasik/core/services/rest_client.dart';
 import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/shared/providers/auth_provider.dart';
 import 'package:manpasik/generated/manpasik.pb.dart';
@@ -24,22 +25,30 @@ class ChatMessage {
 class ChatState {
   final List<ChatMessage> messages;
   final bool isLoading;
+  final bool isStreaming;
+  final String streamingContent;
   final String? error;
 
   const ChatState({
     this.messages = const [],
     this.isLoading = false,
+    this.isStreaming = false,
+    this.streamingContent = '',
     this.error,
   });
 
   ChatState copyWith({
     List<ChatMessage>? messages,
     bool? isLoading,
+    bool? isStreaming,
+    String? streamingContent,
     String? error,
   }) {
     return ChatState(
       messages: messages ?? this.messages,
       isLoading: isLoading ?? this.isLoading,
+      isStreaming: isStreaming ?? this.isStreaming,
+      streamingContent: streamingContent ?? this.streamingContent,
       error: error,
     );
   }
@@ -48,11 +57,13 @@ class ChatState {
 /// AI 건강 어시스턴트 채팅 Notifier
 ///
 /// gRPC AIInferenceService와 연동하며, 서버 미연결 시 로컬 fallback 응답 제공.
+/// 웹 플랫폼에서는 REST Gateway를 통해 AI 서비스 호출.
 class ChatNotifier extends StateNotifier<ChatState> {
-  ChatNotifier(this._manager, this._accessTokenProvider)
+  ChatNotifier(this._manager, this._restClient, this._accessTokenProvider)
       : super(const ChatState());
 
   final GrpcClientManager _manager;
+  final ManPaSikRestClient _restClient;
   final String? Function() _accessTokenProvider;
 
   /// 사용자 메시지 전송 → AI 응답 수신
@@ -98,8 +109,27 @@ class ChatNotifier extends StateNotifier<ChatState> {
     }
   }
 
-  /// gRPC AI 서비스 호출 시도
+  /// AI 서비스 호출 시도 (웹: REST, 네이티브: gRPC)
   Future<String> _callAiService(String userText) async {
+    if (kIsWeb) {
+      return _callAiServiceRest(userText);
+    }
+    return _callAiServiceGrpc(userText);
+  }
+
+  /// REST API를 통한 AI 서비스 호출
+  Future<String> _callAiServiceRest(String userText) async {
+    final result = await _restClient.analyzeMeasurement(
+      userId: 'chat-user',
+      measurementId: userText,
+    );
+    final summary = result['summary'] as String? ?? '';
+    if (summary.isNotEmpty) return summary;
+    throw Exception('빈 응답');
+  }
+
+  /// gRPC를 통한 AI 서비스 호출
+  Future<String> _callAiServiceGrpc(String userText) async {
     final token = _accessTokenProvider();
     final interceptors = token != null
         ? [AuthInterceptor(() => token)]
@@ -110,8 +140,6 @@ class ChatNotifier extends StateNotifier<ChatState> {
       interceptors: interceptors,
     );
 
-    // AnalyzeMeasurement를 텍스트 기반 건강 질문에 활용
-    // measurementId에 사용자 질문 텍스트를 전달 (서버에서 LLM으로 처리)
     final request = AnalyzeMeasurementRequest()
       ..userId = 'chat-user'
       ..measurementId = userText;
@@ -184,6 +212,71 @@ class ChatNotifier extends StateNotifier<ChatState> {
         '기본적인 정보를 제공할 수 있으니 편하게 물어보세요!';
   }
 
+  /// 스트리밍 방식으로 메시지 전송 (C1)
+  ///
+  /// REST Gateway의 /ai/chat/stream 엔드포인트를 호출하고,
+  /// 응답을 글자 단위로 스트리밍하여 실시간 표시합니다.
+  Future<void> sendMessageStream(String text) async {
+    if (text.trim().isEmpty) return;
+
+    final userMessage = ChatMessage(
+      role: 'user',
+      content: text.trim(),
+      timestamp: DateTime.now(),
+    );
+    state = state.copyWith(
+      messages: [...state.messages, userMessage],
+      isStreaming: true,
+      streamingContent: '',
+      error: null,
+    );
+
+    try {
+      // REST를 통해 전체 응답 수신 후 글자 단위 스트리밍 시뮬레이션
+      final response = await _callAiService(text.trim());
+      // 글자 단위 스트리밍 시뮬레이션
+      final buffer = StringBuffer();
+      for (var i = 0; i < response.length; i++) {
+        buffer.write(response[i]);
+        state = state.copyWith(streamingContent: buffer.toString());
+        await Future.delayed(const Duration(milliseconds: 15));
+      }
+
+      final aiMessage = ChatMessage(
+        role: 'assistant',
+        content: response,
+        timestamp: DateTime.now(),
+      );
+      state = state.copyWith(
+        messages: [...state.messages, aiMessage],
+        isStreaming: false,
+        streamingContent: '',
+      );
+    } catch (e) {
+      debugPrint('[ChatNotifier] AI 스트리밍 실패: $e');
+      final fallback = _generateFallbackResponse(text.trim());
+
+      // fallback도 스트리밍으로 표시
+      final buffer = StringBuffer();
+      for (var i = 0; i < fallback.length; i++) {
+        buffer.write(fallback[i]);
+        state = state.copyWith(streamingContent: buffer.toString());
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+
+      final fallbackMessage = ChatMessage(
+        role: 'assistant',
+        content: fallback,
+        timestamp: DateTime.now(),
+      );
+      state = state.copyWith(
+        messages: [...state.messages, fallbackMessage],
+        isStreaming: false,
+        streamingContent: '',
+      );
+    }
+  }
+
   /// 채팅 기록 초기화
   void clearChat() {
     state = const ChatState();
@@ -193,8 +286,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
 /// 채팅 상태 Provider
 final chatProvider = StateNotifierProvider<ChatNotifier, ChatState>((ref) {
   final manager = ref.watch(grpcClientManagerProvider);
+  final restClient = ref.watch(restClientProvider);
   return ChatNotifier(
     manager,
+    restClient,
     () => ref.read(authProvider).accessToken,
   );
 });

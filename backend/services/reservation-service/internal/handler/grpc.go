@@ -36,11 +36,11 @@ func (h *ReservationHandler) SearchFacilities(ctx context.Context, req *v1.Searc
 		ctx,
 		protoFacilityTypeToService(req.Type),
 		req.Query,
-		0,
+		protoSpecialtyToService(req.Specialty),
 		int(req.Limit),
-		0,
-		"", "", "", // countryCode, regionCode, districtCode
-		0, 0, // userLat, userLon
+		int(req.Offset),
+		"", "", "",
+		req.Latitude, req.Longitude,
 	)
 	if err != nil {
 		return nil, toGRPC(err)

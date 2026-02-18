@@ -34,7 +34,7 @@ class DeviceListScreen extends ConsumerWidget {
       body: devicesAsync.when(
         data: (devices) => devices.isEmpty
             ? _buildEmptyState(context, theme)
-            : _buildDeviceList(theme, devices),
+            : _buildDeviceListWrapper(theme, devices, ref),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (err, _) => Center(
           child: Padding(
@@ -104,6 +104,14 @@ class DeviceListScreen extends ConsumerWidget {
     );
   }
 
+  /// RefreshIndicator 감싸기
+  Widget _buildDeviceListWrapper(ThemeData theme, List<DeviceItem> devices, WidgetRef ref) {
+    return RefreshIndicator(
+      onRefresh: () async => ref.invalidate(deviceListProvider),
+      child: _buildDeviceList(theme, devices),
+    );
+  }
+
   /// 디바이스 목록
   Widget _buildDeviceList(ThemeData theme, List<DeviceItem> devices) {
     return ListView.builder(
@@ -119,6 +127,7 @@ class DeviceListScreen extends ConsumerWidget {
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.all(16),
+            onTap: () => context.push('/devices/${device.deviceId}'),
             leading: Container(
               width: 48,
               height: 48,
@@ -143,22 +152,67 @@ class DeviceListScreen extends ConsumerWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            subtitle: Text(
-              isConnected
-                  ? '연결됨'
-                  : (device.status == 'measuring'
-                      ? '측정 중'
-                      : device.status == 'offline'
-                          ? '연결 안됨'
-                          : device.status),
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: isConnected ? Colors.green : theme.colorScheme.onSurfaceVariant,
-              ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isConnected
+                      ? '연결됨'
+                      : (device.status == 'measuring'
+                          ? '측정 중'
+                          : device.status == 'offline'
+                              ? '연결 안됨'
+                              : device.status),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: isConnected ? Colors.green : theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                _UsageDropdown(deviceId: device.deviceId),
+              ],
             ),
             trailing: const Icon(Icons.chevron_right),
           ),
         );
       },
+    );
+  }
+}
+
+/// 기기 용도별 분류 드롭다운
+class _UsageDropdown extends StatefulWidget {
+  const _UsageDropdown({required this.deviceId});
+  final String deviceId;
+
+  @override
+  State<_UsageDropdown> createState() => _UsageDropdownState();
+}
+
+class _UsageDropdownState extends State<_UsageDropdown> {
+  String _usage = '개인';
+
+  static const _options = ['개인', '가정', '사무실'];
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.category_outlined, size: 14, color: Theme.of(context).colorScheme.outline),
+        const SizedBox(width: 4),
+        DropdownButton<String>(
+          value: _usage,
+          isDense: true,
+          underline: const SizedBox.shrink(),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+          items: _options.map((o) => DropdownMenuItem(value: o, child: Text(o))).toList(),
+          onChanged: (v) {
+            if (v != null) setState(() => _usage = v);
+          },
+        ),
+      ],
     );
   }
 }

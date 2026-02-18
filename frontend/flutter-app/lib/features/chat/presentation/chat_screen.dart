@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:manpasik/l10n/app_localizations.dart';
+import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/shared/providers/chat_provider.dart';
+import 'package:manpasik/shared/widgets/streaming_text_bubble.dart';
 import 'package:manpasik/core/theme/app_theme.dart';
 
 /// AI 건강 어시스턴트 채팅 화면
@@ -33,12 +34,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
     _controller.clear();
-    ref.read(chatProvider.notifier).sendMessage(text);
+    ref.read(chatProvider.notifier).sendMessageStream(text);
     _scrollToBottom();
   }
 
   void _sendExample(String text) {
-    ref.read(chatProvider.notifier).sendMessage(text);
+    ref.read(chatProvider.notifier).sendMessageStream(text);
     _scrollToBottom();
   }
 
@@ -55,21 +56,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   void _showClearDialog() {
-    final l10n = AppLocalizations.of(context);
     showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(l10n.chatClearHistory),
-        content: Text(l10n.chatClearConfirm),
+        title: const Text('대화 기록 삭제'),
+        content: const Text('모든 대화 기록이 삭제됩니다. 계속하시겠습니까?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text(l10n.cancel),
+            child: const Text('취소'),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
-              l10n.chatClearHistory,
+              '삭제',
               style: TextStyle(color: Theme.of(context).colorScheme.error),
             ),
           ),
@@ -85,7 +85,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final l10n = AppLocalizations.of(context);
     final chatState = ref.watch(chatProvider);
 
     // 새 메시지 도착 시 자동 스크롤
@@ -106,7 +105,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               size: 24,
             ),
             const SizedBox(width: 8),
-            Text(l10n.chatTitle),
+            const Text('AI 건강 코치'),
           ],
         ),
         centerTitle: true,
@@ -114,7 +113,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           if (chatState.messages.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_outline_rounded),
-              tooltip: l10n.chatClearHistory,
+              tooltip: '대화 기록 삭제',
               onPressed: _showClearDialog,
             ),
         ],
@@ -122,20 +121,21 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       body: Column(
         children: [
           // 면책 조항
-          _DisclaimerBanner(text: l10n.chatDisclaimer),
+          const _DisclaimerBanner(
+            text: 'AI 건강 코치의 응답은 참고용이며, 의료 전문가의 진단을 대체하지 않습니다.',
+          ),
 
           // 메시지 영역
           Expanded(
-            child: chatState.messages.isEmpty
-                ? _EmptyState(
-                    l10n: l10n,
-                    onExampleTap: _sendExample,
-                  )
+            child: chatState.messages.isEmpty && !chatState.isStreaming
+                ? _EmptyState(onExampleTap: _sendExample)
                 : _MessageList(
                     messages: chatState.messages,
                     isLoading: chatState.isLoading,
+                    isStreaming: chatState.isStreaming,
+                    streamingContent: chatState.streamingContent,
                     scrollController: _scrollController,
-                    typingText: l10n.chatTyping,
+                    typingText: 'AI가 응답 중...',
                   ),
           ),
 
@@ -143,9 +143,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           _ChatInputBar(
             controller: _controller,
             focusNode: _focusNode,
-            hintText: l10n.chatInputHint,
-            sendLabel: l10n.chatSend,
-            isLoading: chatState.isLoading,
+            hintText: '건강에 대해 물어보세요...',
+            sendLabel: '전송',
+            isLoading: chatState.isLoading || chatState.isStreaming,
             onSend: _sendMessage,
           ),
         ],
@@ -182,20 +182,19 @@ class _DisclaimerBanner extends StatelessWidget {
 // ─── 빈 상태: 환영 메시지 + 예시 질문 ───
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.l10n, required this.onExampleTap});
-  final AppLocalizations l10n;
+  const _EmptyState({required this.onExampleTap});
   final void Function(String) onExampleTap;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final examples = [
-      (Icons.bloodtype_rounded, l10n.chatExampleBloodSugar),
-      (Icons.favorite_rounded, l10n.chatExampleBloodPressure),
-      (Icons.fitness_center_rounded, l10n.chatExampleExercise),
-      (Icons.restaurant_rounded, l10n.chatExampleDiet),
-      (Icons.bedtime_rounded, l10n.chatExampleSleep),
+    const examples = [
+      (Icons.bloodtype_rounded, '혈당 수치가 높은데 어떻게 해야 하나요?'),
+      (Icons.favorite_rounded, '혈압 관리 방법을 알려주세요'),
+      (Icons.fitness_center_rounded, '당뇨 환자에게 좋은 운동은?'),
+      (Icons.restaurant_rounded, '건강한 식단 추천해주세요'),
+      (Icons.bedtime_rounded, '수면 질 개선 방법이 궁금해요'),
     ];
 
     return SingleChildScrollView(
@@ -237,7 +236,7 @@ class _EmptyState extends StatelessWidget {
 
           // 환영 메시지
           Text(
-            l10n.chatWelcome,
+            '안녕하세요! MANPASIK AI 건강 코치입니다.\n건강에 관한 질문을 해주세요.',
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyLarge?.copyWith(
               color: theme.colorScheme.onSurface,
@@ -285,19 +284,48 @@ class _MessageList extends StatelessWidget {
     required this.isLoading,
     required this.scrollController,
     required this.typingText,
+    this.isStreaming = false,
+    this.streamingContent = '',
   });
   final List<ChatMessage> messages;
   final bool isLoading;
+  final bool isStreaming;
+  final String streamingContent;
   final ScrollController scrollController;
   final String typingText;
 
   @override
   Widget build(BuildContext context) {
+    final extraItems = isStreaming ? 1 : (isLoading ? 1 : 0);
     return ListView.builder(
       controller: scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      itemCount: messages.length + (isLoading ? 1 : 0),
+      itemCount: messages.length + extraItems,
       itemBuilder: (context, index) {
+        // 스트리밍 버블
+        if (index == messages.length && isStreaming) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  child: const Icon(Icons.smart_toy_rounded,
+                      color: Colors.white, size: 18),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: StreamingTextBubble(
+                    text: streamingContent,
+                    isStreaming: true,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
         // 타이핑 인디케이터
         if (index == messages.length && isLoading) {
           return _TypingIndicator(text: typingText);
@@ -310,14 +338,46 @@ class _MessageList extends StatelessWidget {
 
 // ─── 메시지 버블 ───
 
-class _MessageBubble extends StatelessWidget {
+class _MessageBubble extends ConsumerStatefulWidget {
   const _MessageBubble({required this.message});
   final ChatMessage message;
 
   @override
+  ConsumerState<_MessageBubble> createState() => _MessageBubbleState();
+}
+
+class _MessageBubbleState extends ConsumerState<_MessageBubble> {
+  String? _translatedText;
+  bool _translating = false;
+
+  Future<void> _translateMessage() async {
+    if (_translatedText != null) {
+      setState(() => _translatedText = null);
+      return;
+    }
+    setState(() => _translating = true);
+    try {
+      final client = ref.read(restClientProvider);
+      final res = await client.translateText(
+        text: widget.message.content,
+        sourceLanguage: 'auto',
+        targetLanguage: 'en',
+      );
+      if (mounted) {
+        setState(() {
+          _translatedText = res['translated_text'] as String? ?? res['text'] as String? ?? '';
+          _translating = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _translating = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isUser = message.role == 'user';
+    final isUser = widget.message.role == 'user';
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -327,15 +387,10 @@ class _MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
-            // AI 아바타
             CircleAvatar(
               radius: 16,
               backgroundColor: theme.colorScheme.primary,
-              child: const Icon(
-                Icons.smart_toy_rounded,
-                color: Colors.white,
-                size: 18,
-              ),
+              child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 18),
             ),
             const SizedBox(width: 8),
           ],
@@ -345,10 +400,7 @@ class _MessageBubble extends StatelessWidget {
                   isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 12,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     color: isUser
                         ? theme.colorScheme.primary
@@ -361,47 +413,71 @@ class _MessageBubble extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: (isUser
-                                ? theme.colorScheme.primary
-                                : Colors.black)
-                            .withOpacity(0.08),
+                        color: (isUser ? theme.colorScheme.primary : Colors.black)
+                            .withValues(alpha: 0.08),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
                     ],
                   ),
-                  child: Text(
-                    message.content,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: isUser
-                          ? Colors.white
-                          : theme.colorScheme.onSurface,
-                      height: 1.5,
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.message.content,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: isUser ? Colors.white : theme.colorScheme.onSurface,
+                          height: 1.5,
+                        ),
+                      ),
+                      if (_translatedText != null) ...[
+                        const Divider(height: 12),
+                        Text(
+                          _translatedText!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isUser ? Colors.white70 : theme.colorScheme.onSurfaceVariant,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  _formatTime(message.timestamp),
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
-                    fontSize: 11,
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _formatTime(widget.message.timestamp),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                        fontSize: 11,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: _translating ? null : _translateMessage,
+                      child: _translating
+                          ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 1.5))
+                          : Icon(
+                              _translatedText != null ? Icons.translate : Icons.translate,
+                              size: 14,
+                              color: _translatedText != null
+                                  ? theme.colorScheme.primary
+                                  : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                            ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
           if (isUser) ...[
             const SizedBox(width: 8),
-            // 사용자 아바타
             CircleAvatar(
               radius: 16,
               backgroundColor: AppTheme.deepSeaBlue,
-              child: const Icon(
-                Icons.person_rounded,
-                color: Colors.white,
-                size: 18,
-              ),
+              child: const Icon(Icons.person_rounded, color: Colors.white, size: 18),
             ),
           ],
         ],

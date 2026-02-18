@@ -217,7 +217,7 @@ func (h *PrescriptionHandler) SelectPharmacyAndFulfillment(ctx context.Context, 
 	ft := service.FulfillmentType(req.FulfillmentType)
 	err := h.svc.SelectPharmacyAndFulfillment(ctx, req.PrescriptionId, req.PharmacyId, req.PharmacyName, ft, req.ShippingAddress)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "약국 선택 실패: %v", err)
+		return nil, toGRPC(err)
 	}
 	return &v1.SelectPharmacyResponse{Success: true, Message: "약국이 선택되었습니다"}, nil
 }
@@ -226,7 +226,7 @@ func (h *PrescriptionHandler) SelectPharmacyAndFulfillment(ctx context.Context, 
 func (h *PrescriptionHandler) SendPrescriptionToPharmacy(ctx context.Context, req *v1.SendToPharmacyRequest) (*v1.SendToPharmacyResponse, error) {
 	token, err := h.svc.SendPrescriptionToPharmacy(ctx, req.PrescriptionId)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "처방전 전송 실패: %v", err)
+		return nil, toGRPC(err)
 	}
 	return &v1.SendToPharmacyResponse{
 		FulfillmentToken: token.Token,
@@ -239,7 +239,7 @@ func (h *PrescriptionHandler) SendPrescriptionToPharmacy(ctx context.Context, re
 func (h *PrescriptionHandler) GetPrescriptionByToken(ctx context.Context, req *v1.GetByTokenRequest) (*v1.Prescription, error) {
 	p, err := h.svc.GetPrescriptionByToken(ctx, req.FulfillmentToken)
 	if err != nil {
-		return nil, status.Errorf(codes.NotFound, "토큰 조회 실패: %v", err)
+		return nil, toGRPC(err)
 	}
 	return prescriptionToProto(p), nil
 }
@@ -248,11 +248,11 @@ func (h *PrescriptionHandler) GetPrescriptionByToken(ctx context.Context, req *v
 func (h *PrescriptionHandler) UpdateDispensaryStatus(ctx context.Context, req *v1.UpdateDispensaryStatusRequest) (*v1.Prescription, error) {
 	err := h.svc.UpdateDispensaryStatus(ctx, req.PrescriptionId, service.DispensaryStatus(req.Status))
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "조제 상태 업데이트 실패: %v", err)
+		return nil, toGRPC(err)
 	}
 	p, err := h.svc.GetPrescription(ctx, req.PrescriptionId)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "처방전 조회 실패: %v", err)
+		return nil, toGRPC(err)
 	}
 	return prescriptionToProto(p), nil
 }

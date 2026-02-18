@@ -121,10 +121,12 @@
 
 ### 4.2 접근 제어
 
-- **인증**: Keycloak OIDC + JWT + MFA (Clinical 티어 필수)
+- **인증**: Keycloak OIDC + JWT (RS256) + MFA (Clinical 티어 필수)
 - **인가**: RBAC (5개 역할: 사용자, 가족관리자, 의료진, 관리자, 시스템)
 - **최소 권한 원칙**: 각 역할에 필요한 최소한의 접근 권한만 부여
 - **API 수준 제어**: Kong Gateway에서 엔드포인트별 역할 검증
+- **동시 세션 제한**: 사용자 3개 (앱 2+웹 1), 의료진 2개, 관리자 1개 (상세: `api-security-architecture.md §7`)
+- **세션 무효화**: 로그아웃 시 즉시 Refresh Token 폐기, 비밀번호 변경 시 전 세션 무효화, 30분 미활동 시 자동 만료
 
 ### 4.3 감사 추적 (Audit Trail)
 
@@ -335,6 +337,50 @@
 
 ---
 
-**Document Version**: 1.0.0
+---
+
+## 11. 구현 현황 및 검증 매핑
+
+### 11.1 보안 테스트 구현 현황
+
+| 정책 항목 | 검증 테스트 | 파일 위치 |
+|----------|-----------|---------|
+| DP01 암호화 | TestTLSEnforcement, TestMeasurementDataEncryptionAtRest | tests/security/data_security_test.go |
+| DP02 API 응답 PII | TestSensitiveDataInResponse, TestDataMinimization | tests/security/data_security_test.go |
+| DP03 로그 PII | TestServerInformationLeakage, TestErrorDetailExposure | tests/security/api_security_test.go |
+| DP04 동의 검증 | TestConsentRequired | tests/security/data_security_test.go |
+| DP05 삭제/익명화 | TestDataDeletionRight | tests/security/data_security_test.go |
+| DP06 감사 로그 | TestAuditTrailOnSensitiveActions | tests/security/api_security_test.go |
+| DP09 오프라인 암호화 | AES-256 SQLCipher (Rust crypto 모듈) | rust-core/manpasik-engine/src/crypto/ |
+| DP10 BLE/NFC 암호화 | AES-CCM + ECDH (Rust ble/nfc 모듈) | rust-core/manpasik-engine/src/ble/, src/nfc/ |
+
+### 11.2 접근 제어 검증
+
+| 역할 | 검증 시나리오 | 테스트 파일 |
+|------|------------|-----------|
+| 일반 사용자 | 관리자 API 차단 (TestAdminUserManagement) | tests/e2e/admin_test.go |
+| 타 사용자 | 수평적 권한 상승 차단 (TestHorizontalPrivilegeEscalation) | tests/security/auth_security_test.go |
+| 관리자 | 수직적 권한 상승 차단 (TestVerticalPrivilegeEscalation) | tests/security/auth_security_test.go |
+| 무인증 | 측정 API 차단 (TestMeasurementWithoutAuth) | tests/e2e/measurement_flow_test.go |
+| 가족 | 데이터 공유 권한 (TestFamilyMemberPermissions) | tests/e2e/community_family_test.go |
+
+### 11.3 OWASP Top 10 방어 검증
+
+| OWASP | 위협 | 방어 테스트 | 상태 |
+|-------|------|-----------|------|
+| A01 | 취약한 접근 제어 | TestHorizontal/VerticalPrivilegeEscalation | ✅ 구현 |
+| A02 | 암호화 실패 | TestTLSEnforcement, TestTokenInURL | ✅ 구현 |
+| A03 | 인젝션 | TestSQLInjection, TestXSSInjection, TestCommandInjection | ✅ 구현 |
+| A04 | 불안전한 설계 | TestRateLimiting | ✅ 구현 |
+| A05 | 보안 구성 오류 | TestSecurityHeaders, TestServerInformationLeakage | ✅ 구현 |
+| A06 | 취약 컴포넌트 | TestDirectoryTraversal, dependency_scan.sh | ✅ 구현 |
+| A07 | 인증 실패 | TestExpired/MalformedTokenRejection, TestBruteForceProtection | ✅ 구현 |
+| A08 | 무결성 실패 | TestJWTAlgorithmConfusion | ✅ 구현 |
+| A09 | 로깅 실패 | TestAuditTrailOnSensitiveActions | ✅ 구현 |
+| A10 | SSRF | TestSSRFPrevention | ✅ 구현 |
+
+---
+
+**Document Version**: 1.1.0
 **Next Review**: 2026-02-23 (2주 후)
 **Approval Required**: DPO, Legal, CISO

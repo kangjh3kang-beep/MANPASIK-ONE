@@ -149,9 +149,17 @@ func (h *FamilyHandler) SetSharingPreferences(ctx context.Context, req *v1.SetSh
 	}
 
 	pref := &service.SharingPreferences{
-		UserID:            req.UserId,
-		GroupID:           req.GroupId,
-		ShareMeasurements: req.ShareMeasurements,
+		UserID:               req.UserId,
+		GroupID:              req.GroupId,
+		ShareMeasurements:    req.ShareMeasurements,
+		ShareHealthScore:     req.ShareHealthScore,
+		ShareGoals:           req.ShareGoals,
+		ShareCoaching:        req.ShareCoaching,
+		ShareAlerts:          req.ShareAlerts,
+		AllowedViewerIDs:     req.SharedWithUserIds,
+		MeasurementDaysLimit: int(req.MeasurementDaysLimit),
+		AllowedBiomarkers:    req.AllowedBiomarkers,
+		RequireApproval:      req.RequireApproval,
 	}
 
 	result, err := h.svc.SetSharingPreferences(ctx, pref)
@@ -175,12 +183,32 @@ func (h *FamilyHandler) GetSharedHealthData(ctx context.Context, req *v1.GetShar
 
 	resp := &v1.GetSharedHealthDataResponse{}
 	if len(summaries) > 0 {
-		s := summaries[0]
-		resp.TargetUserId = s.UserID
-		resp.TargetDisplayName = s.DisplayName
+		resp.TargetUserId = summaries[0].UserID
+		resp.TargetDisplayName = summaries[0].DisplayName
+		resp.HealthScore = summaries[0].HealthScore
+		if summaries[0].LastMeasurementAt != nil {
+			resp.LastActive = summaries[0].LastMeasurementAt.Format("2006-01-02T15:04:05Z")
+		}
 	}
 
 	return resp, nil
+}
+
+// ValidateSharingAccess는 공유 접근 검증 RPC입니다.
+func (h *FamilyHandler) ValidateSharingAccess(ctx context.Context, req *v1.ValidateSharingAccessRequest) (*v1.ValidateSharingAccessResponse, error) {
+	if req == nil || req.GroupId == "" || req.RequesterUserId == "" || req.TargetUserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "group_id, requester_user_id, target_user_id는 필수입니다")
+	}
+
+	allowed, reason, err := h.svc.ValidateSharingAccess(ctx, req.GroupId, req.RequesterUserId, req.TargetUserId, req.Biomarker)
+	if err != nil {
+		return nil, toGRPC(err)
+	}
+
+	return &v1.ValidateSharingAccessResponse{
+		Allowed:    allowed,
+		DenyReason: reason,
+	}, nil
 }
 
 // ============================================================================
@@ -221,9 +249,17 @@ func memberToProto(m *service.FamilyMember) *v1.FamilyMember {
 
 func sharingToProto(p *service.SharingPreferences) *v1.SharingPreferences {
 	return &v1.SharingPreferences{
-		UserId:            p.UserID,
-		GroupId:           p.GroupID,
-		ShareMeasurements: p.ShareMeasurements,
+		UserId:               p.UserID,
+		GroupId:              p.GroupID,
+		ShareMeasurements:    p.ShareMeasurements,
+		ShareHealthScore:     p.ShareHealthScore,
+		ShareGoals:           p.ShareGoals,
+		ShareCoaching:        p.ShareCoaching,
+		ShareAlerts:          p.ShareAlerts,
+		SharedWithUserIds:    p.AllowedViewerIDs,
+		MeasurementDaysLimit: int32(p.MeasurementDaysLimit),
+		AllowedBiomarkers:    p.AllowedBiomarkers,
+		RequireApproval:      p.RequireApproval,
 	}
 }
 

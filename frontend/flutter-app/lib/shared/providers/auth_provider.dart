@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manpasik/features/auth/domain/auth_repository.dart';
 import 'package:manpasik/core/providers/grpc_provider.dart';
+import 'package:manpasik/core/services/rest_client.dart';
 
 /// 인증 상태 모델
 class AuthState {
@@ -10,6 +11,7 @@ class AuthState {
   final String? displayName;
   final String? accessToken;
   final String? refreshToken;
+  final String role;
 
   const AuthState({
     this.isAuthenticated = false,
@@ -18,7 +20,10 @@ class AuthState {
     this.displayName,
     this.accessToken,
     this.refreshToken,
+    this.role = 'user',
   });
+
+  bool get isAdmin => role == 'admin' || role == 'super_admin';
 
   AuthState copyWith({
     bool? isAuthenticated,
@@ -27,6 +32,7 @@ class AuthState {
     String? displayName,
     String? accessToken,
     String? refreshToken,
+    String? role,
   }) {
     return AuthState(
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
@@ -35,6 +41,7 @@ class AuthState {
       displayName: displayName ?? this.displayName,
       accessToken: accessToken ?? this.accessToken,
       refreshToken: refreshToken ?? this.refreshToken,
+      role: role ?? this.role,
     );
   }
 }
@@ -43,9 +50,10 @@ class AuthState {
 ///
 /// gRPC auth-service와 연동된 AuthRepository 사용.
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier(this._repository) : super(const AuthState());
+  AuthNotifier(this._repository, {this.restClient}) : super(const AuthState());
 
   final AuthRepository _repository;
+  final ManPaSikRestClient? restClient;
 
   /// 로그인 처리 (gRPC AuthService Login)
   Future<bool> login(String email, String password) async {
@@ -60,6 +68,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         displayName: result.displayName ?? email.split('@').first,
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
+        role: result.role ?? 'user',
       );
       return true;
     }
@@ -79,8 +88,34 @@ class AuthNotifier extends StateNotifier<AuthState> {
         displayName: result.displayName ?? displayName,
         accessToken: result.accessToken,
         refreshToken: result.refreshToken,
+        role: result.role ?? 'user',
       );
       return true;
+    }
+    return false;
+  }
+
+  /// 소셜 로그인 (Google/Apple OAuth)
+  Future<bool> socialLogin(String provider, String idToken) async {
+    if (restClient == null) return false;
+    try {
+      final res = await restClient!.socialLogin(provider: provider, idToken: idToken);
+      final accessToken = res['access_token'] as String?;
+      final refreshToken = res['refresh_token'] as String?;
+      if (accessToken != null && refreshToken != null) {
+        state = AuthState(
+          isAuthenticated: true,
+          userId: res['user_id'] as String? ?? '',
+          email: res['email'] as String?,
+          displayName: res['display_name'] as String?,
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+          role: res['role'] as String? ?? 'user',
+        );
+        return true;
+      }
+    } catch (_) {
+      // Social login failed
     }
     return false;
   }
@@ -114,5 +149,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
 /// 인증 상태 Provider
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final repository = ref.watch(authRepositoryProvider);
-  return AuthNotifier(repository);
+  final client = ref.watch(restClientProvider);
+  return AuthNotifier(repository, restClient: client);
 });

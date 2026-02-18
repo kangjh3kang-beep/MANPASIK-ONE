@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// 지원 언어 정의
 ///
@@ -39,15 +40,29 @@ class SupportedLocales {
 
 /// 로케일 Notifier
 ///
-/// 사용자 언어 설정 관리. SharedPreferences에 영속화 예정.
+/// 사용자 언어 설정 관리. SharedPreferences에 자동 저장.
 class LocaleNotifier extends StateNotifier<Locale> {
-  LocaleNotifier() : super(SupportedLocales.defaultLocale);
+  LocaleNotifier() : super(SupportedLocales.defaultLocale) {
+    _loadSavedLocale();
+  }
+
+  static const _prefKey = 'app_locale';
+
+  Future<void> _loadSavedLocale() async {
+    final prefs = await SharedPreferences.getInstance();
+    final code = prefs.getString(_prefKey);
+    if (code != null && SupportedLocales.languageNames.containsKey(code)) {
+      state = Locale(code);
+    }
+  }
 
   /// 로케일 변경
   void setLocale(Locale locale) {
     if (SupportedLocales.all.contains(locale)) {
       state = locale;
-      // TODO: SharedPreferences에 저장
+      SharedPreferences.getInstance().then((prefs) {
+        prefs.setString(_prefKey, locale.languageCode);
+      });
     }
   }
 

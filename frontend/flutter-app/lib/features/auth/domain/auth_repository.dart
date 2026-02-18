@@ -17,6 +17,7 @@ class AuthResult {
   final String? displayName;
   final String? accessToken;
   final String? refreshToken;
+  final String? role;
   final String? errorMessage;
 
   const AuthResult({
@@ -26,6 +27,7 @@ class AuthResult {
     this.displayName,
     this.accessToken,
     this.refreshToken,
+    this.role,
     this.errorMessage,
   });
 
@@ -35,6 +37,7 @@ class AuthResult {
     String? displayName,
     required String accessToken,
     required String refreshToken,
+    String? role,
   }) {
     return AuthResult(
       success: true,
@@ -43,6 +46,7 @@ class AuthResult {
       displayName: displayName,
       accessToken: accessToken,
       refreshToken: refreshToken,
+      role: role,
     );
   }
 

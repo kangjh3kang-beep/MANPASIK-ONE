@@ -517,6 +517,55 @@ func configWithMetaToProto(c *service.ConfigWithMeta) *v1.ConfigWithMeta {
 	return pb
 }
 
+// GetAuditLogDetails는 확장 감사 로그(OldValue/NewValue 포함)를 조회하는 RPC입니다.
+func (h *AdminHandler) GetAuditLogDetails(ctx context.Context, req *v1.GetAuditLogDetailsRequest) (*v1.GetAuditLogDetailsResponse, error) {
+	if req == nil {
+		return nil, status.Error(codes.InvalidArgument, "요청이 비어 있습니다")
+	}
+
+	limit := int(req.Limit)
+	offset := int(req.Offset)
+	if limit <= 0 {
+		limit = 20
+	}
+
+	var details []*service.AuditLogDetail
+	var total int
+	var err error
+
+	switch {
+	case req.AdminId != "":
+		details, err = h.svc.GetAuditLogDetailsByAdmin(ctx, req.AdminId, limit, offset)
+	case req.Action != "":
+		details, err = h.svc.GetAuditLogDetailsByAction(ctx, req.Action, limit, offset)
+	default:
+		details, total, err = h.svc.GetAuditLogDetails(ctx, limit, offset)
+	}
+	if err != nil {
+		return nil, toGRPC(err)
+	}
+
+	var pbDetails []*v1.AuditLogDetail
+	for _, d := range details {
+		pbDetails = append(pbDetails, &v1.AuditLogDetail{
+			Id:           d.ID,
+			AdminId:      d.AdminID,
+			Action:       d.Action,
+			ResourceType: d.Resource,
+			OldValue:     d.OldValue,
+			NewValue:     d.NewValue,
+			IpAddress:    d.IPAddress,
+			Description:  d.UserAgent,
+			CreatedAt:    timestamppb.New(d.CreatedAt),
+		})
+	}
+
+	return &v1.GetAuditLogDetailsResponse{
+		Details: pbDetails,
+		Total:   int32(total),
+	}, nil
+}
+
 // --- toGRPC 에러 변환 ---
 
 func toGRPC(err error) error {

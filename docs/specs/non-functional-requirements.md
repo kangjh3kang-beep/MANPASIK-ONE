@@ -147,7 +147,18 @@
 | 접근 로그 | 전 PHI 접근 기록 (최소 10년) | shared/observability |
 | 최소 권한 원칙 | RBAC + 데이터 필터링 | middleware/rbac.go |
 | 동의 기반 접근 | 데이터 공유 동의서 필수 | 23-data-sharing-consents.sql |
-| 익명화/가명화 | 연구용 데이터 k-anonymity ≥ 5 | TODO (Phase 3) |
+| 익명화/가명화 | 연구용 데이터 k-anonymity ≥ 5, l-diversity ≥ 3 | anonymization 모듈 |
+
+#### 익명화/가명화 상세 명세
+
+| 기법 | 적용 대상 | 구현 방식 | 품질 기준 |
+|------|---------|---------|---------|
+| **k-Anonymity** (k≥5) | 연구용 데이터셋 | Quasi-identifier 일반화 (나이→연령대, 지역→시/도) | 재식별 불가 |
+| **l-Diversity** (l≥3) | 민감 속성 (바이오마커) | 동질 그룹 내 최소 3종 분포 | 속성 추론 방지 |
+| **t-Closeness** (t≤0.15) | 통계 분석 데이터 | 그룹 분포와 전체 분포 거리 ≤ 0.15 | 분포 유사성 |
+| **Differential Privacy** (ε≤1.0) | 집계 통계 | Laplace 노이즈 주입 | 개별 기여 은닉 |
+| **가명화 (Pseudonymization)** | 내부 분석용 | user_id → SHA-256(user_id+salt), 매핑 테이블 분리 | 역변환 통제 |
+| **토큰화 (Tokenization)** | 외부 공유 | 랜덤 토큰 대체, 매핑 Vault 보관 | 원본 복원 불가 |
 
 ---
 

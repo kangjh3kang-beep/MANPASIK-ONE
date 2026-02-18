@@ -72,7 +72,58 @@
  └── system-verification-and-implementation-plan.md · 기획서 검증·구현 현황 (100/100)
 
 [L9] 규제 준수 보강
- └── compliance-gap-resolution.md ·················· FMEA·SOUP·SMP·SCM 통합
+ ├── compliance-gap-resolution.md ·················· FMEA·SOUP·SMP·SCM 통합
+ ├── iso14971-risk-management-plan.md ·············· ISO 14971 위험관리계획
+ ├── iso14971-fmea.md ····························· FMEA (38개 고장 모드, 8개 서브시스템)
+ ├── iso14971-pha.md ······························ 예비 위해 분석 (34개 위해, 7개 카테고리)
+ ├── regulatory-compliance-checklist.md ············ 5개국 규제 준수 체크리스트
+ ├── data-protection-policy.md ···················· 데이터 보호 정책 (HIPAA/GDPR/PIPA/PIPL/APPI)
+ └── vnv-master-plan.md ·························· V&V 마스터 플랜
+
+[L10] UX/디자인 산출물
+ ├── sitemap.md ··································· 앱 사이트맵 (라우트·Phase 매핑)
+ ├── BRAND_GUIDELINE.md ··························· 상감 디자인 시스템 브랜드 가이드라인
+ ├── STYLE_GUIDE_CODE.md ·························· 코드 스타일 가이드
+ ├── DESIGN_GENERATION_STRATEGY.md ················ 디자인 생성 전략
+ ├── storyboard-auth-onboarding.md ················ UX 스토리보드: 인증/온보딩
+ ├── storyboard-home-dashboard.md ················· UX 스토리보드: 홈 대시보드
+ ├── storyboard-first-measurement.md ·············· UX 스토리보드: 첫 측정 여정
+ ├── storyboard-device-management.md ·············· UX 스토리보드: 기기 관리
+ ├── storyboard-settings.md ······················· UX 스토리보드: 설정
+ ├── storyboard-offline-sync.md ··················· UX 스토리보드: 오프라인 동기화
+ ├── storyboard-food-calorie.md ··················· UX 스토리보드: 음식 칼로리
+ ├── storyboard-ai-assistant.md ··················· UX 스토리보드: AI 비서
+ ├── storyboard-data-hub.md ······················· UX 스토리보드: 데이터 허브
+ ├── storyboard-market-purchase.md ················ UX 스토리보드: 카트리지 구매
+ ├── storyboard-subscription-upgrade.md ··········· UX 스토리보드: 구독 전환
+ ├── storyboard-telemedicine.md ··················· UX 스토리보드: 비대면 진료
+ ├── storyboard-family-management.md ·············· UX 스토리보드: 가족 관리
+ ├── storyboard-community.md ····················· UX 스토리보드: 커뮤니티
+ ├── storyboard-emergency-response.md ············· UX 스토리보드: 긴급 대응
+ └── storyboard-admin-portal.md ··················· UX 스토리보드: 관리자 포탈
+
+[L11] 테스트 산출물
+ ├── tests/e2e/ (8개 파일) ························ E2E 테스트 (29개 시나리오)
+ │   ├── helpers_test.go ·························· 공용 테스트 유틸리티
+ │   ├── auth_flow_test.go ························ 인증 플로우 (5개)
+ │   ├── measurement_flow_test.go ················· 측정 파이프라인 (5개)
+ │   ├── device_management_test.go ················ 디바이스 관리 (4개)
+ │   ├── medical_service_test.go ·················· 의료 서비스 (5개)
+ │   ├── community_family_test.go ················· 커뮤니티/가족 (5개)
+ │   └── admin_test.go ···························· 관리자 (5개)
+ ├── tests/security/ (4개 파일) ··················· 보안 테스트 (OWASP Top 10)
+ │   ├── auth_security_test.go ···················· 인증/권한 보안 (8개)
+ │   ├── api_security_test.go ····················· API 보안 (9개)
+ │   ├── data_security_test.go ···················· 데이터 보안 (11개)
+ │   └── dependency_scan.sh ······················· 의존성 취약점 스캔
+ └── tests/load/ (7개 파일) ······················· 부하 테스트 (k6)
+     ├── config.js ································ 공용 설정
+     ├── auth_load_test.js ························ 인증 부하
+     ├── measurement_load_test.js ················· 측정 부하
+     ├── stress_test.js ··························· 스트레스 테스트
+     ├── spike_test.js ···························· 스파이크 테스트
+     ├── concurrent_users_test.js ················· 동시 사용자
+     └── api_gateway_load_test.js ················· API 게이트웨이 부하
 ```
 
 ---
@@ -105,5 +156,18 @@
 | L6 Phase·로드맵 | 8 |
 | L7 에이전트 운영 | 3 |
 | L8 검증 보고서 | 4 |
-| L9 규제 준수 보강 | 1 |
-| **합계** | **45** |
+| L9 규제 준수 보강 | 7 |
+| L10 UX/디자인 산출물 | 24 |
+| L11 테스트 산출물 | 19 |
+| **합계** | **94** |
+
+---
+
+## 4. 구현 산출물 (코드)
+
+| 영역 | 산출물 | 상태 |
+| --- | --- | --- |
+| Flutter 앱 (12개 Feature) | auth, home, measurement, devices, chat, settings, admin, ai_coach, data_hub, community, family, market, medical | ✅ screen + domain |
+| Rust 코어 엔진 (10개 모듈) | ble, nfc, dsp, ai, crypto, sync, storage, ffi, config, error | ✅ 10모듈 + 보강 (BLE 상태머신, AI 안전검증) |
+| Go 백엔드 (22개 서비스) | auth, user, measurement, device, cartridge, notification, family, health-record, telemedicine, reservation, community, admin, prescription, translation, video + gateway | ✅ gRPC 핸들러 + 서비스 + 리포지토리 |
+| 인프라 | Docker Compose, PostgreSQL 21개 스키마, Kafka, Redis | ✅ 구성 완료 |

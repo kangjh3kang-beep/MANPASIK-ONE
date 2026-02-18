@@ -1,16 +1,26 @@
-# REST API Gateway HTTP :8080
-# Build from backend root: docker build -f services/gateway/Dockerfile -t manpasik/gateway:dev .
+# gateway Dockerfile
+# 포트: HTTP 8080
+
 FROM golang:1.24-alpine AS builder
+
+RUN apk add --no-cache git
+
 WORKDIR /app
+
 COPY go.mod go.sum ./
 RUN go mod download
-COPY shared/ shared/
-COPY gateway/ gateway/
-RUN go mod tidy && CGO_ENABLED=0 go build -o /gateway ./gateway/cmd
 
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo     -o /gateway ./services/gateway/cmd/main.go
+
+# --- Runtime ---
 FROM alpine:3.19
-RUN apk --no-cache add ca-certificates
-WORKDIR /app
-COPY --from=builder /gateway .
+
+RUN apk add --no-cache ca-certificates tzdata
+
+COPY --from=builder /gateway /usr/local/bin/gateway
+
 EXPOSE 8080
-ENTRYPOINT ["./gateway"]
+
+CMD ["gateway"]

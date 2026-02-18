@@ -106,8 +106,27 @@
 
 ## VII. 스토리보드
 
-- **첫 측정**: [docs/ux/storyboard-first-measurement.md](../ux/storyboard-first-measurement.md).
-- **음식 촬영→칼로리**: [docs/ux/storyboard-food-calorie.md](../ux/storyboard-food-calorie.md).
+### Phase 1 (핵심 경험)
+- **인증/온보딩**: [storyboard-auth-onboarding.md](../ux/storyboard-auth-onboarding.md) — 인트로, 소셜로그인, 약관동의, 온보딩, 리더기 페어링
+- **홈 대시보드**: [storyboard-home-dashboard.md](../ux/storyboard-home-dashboard.md) — 건강 요약, AI 코칭 요약, 빠른 측정
+- **첫 측정**: [storyboard-first-measurement.md](../ux/storyboard-first-measurement.md) — 카트리지 인식→측정→결과→AI 분석
+- **기기 관리**: [storyboard-device-management.md](../ux/storyboard-device-management.md) — BLE 페어링, 펌웨어, 구독별 대수 제한
+- **설정**: [storyboard-settings.md](../ux/storyboard-settings.md) — 계정, 구독, 알림, 접근성, 긴급대응 설정
+- **오프라인 동기화**: [storyboard-offline-sync.md](../ux/storyboard-offline-sync.md) — 오프라인 측정, 데이터 큐, 자동 동기화
+
+### Phase 2 (AI/커머스)
+- **음식 촬영→칼로리**: [storyboard-food-calorie.md](../ux/storyboard-food-calorie.md) — 사진 분석, 영양소, 식단 기록
+- **AI 비서**: [storyboard-ai-assistant.md](../ux/storyboard-ai-assistant.md) — 대화형 AI 상담, 건강 코칭, 운동/식단 추천
+- **데이터 허브**: [storyboard-data-hub.md](../ux/storyboard-data-hub.md) — 타임라인, 트렌드 차트, FHIR 내보내기
+- **마켓 구매**: [storyboard-market-purchase.md](../ux/storyboard-market-purchase.md) — 카트리지 스토어, 장바구니, Toss PG 결제
+- **구독 전환**: [storyboard-subscription-upgrade.md](../ux/storyboard-subscription-upgrade.md) — 티어 비교, 업/다운그레이드, 해지
+
+### Phase 3 (의료/커뮤니티/가족)
+- **화상진료**: [storyboard-telemedicine.md](../ux/storyboard-telemedicine.md) — 예약, 대기실, WebRTC 진료, 처방전
+- **가족 관리**: [storyboard-family-management.md](../ux/storyboard-family-management.md) — 그룹 생성, 보호자 대시보드, 119 연동
+- **커뮤니티**: [storyboard-community.md](../ux/storyboard-community.md) — 건강 포럼, 챌린지, 전문가 Q&A, 번역 채팅
+- **긴급 대응**: [storyboard-emergency-response.md](../ux/storyboard-emergency-response.md) — 이상 감지, 에스컬레이션, 119 자동 신고
+- **관리자 포탈**: [storyboard-admin-portal.md](../ux/storyboard-admin-portal.md) — KPI 대시보드, 회원/재고/매출 관리
 
 ---
 
@@ -136,11 +155,11 @@
 
 ## XI. 개발 로드맵
 
-- **Phase 1 (1–4개월)**: 기본 UI, BLE/NFC, 차동측정, 88차원, 시각화, 클라우드 연동, 오프라인 기본. **현행**: Rust 코어·FFI 완료, Go 4서비스 구현 중, Flutter 대기.
-- **Phase 2 (5–8)**: AI 코칭, 음식 칼로리, 마켓·결제·구독, HealthKit 연동, 멀티 리더기(최대 3대).
-- **Phase 3 (9–12)**: 화상진료, 병원/약국 예약, 가족, 커뮤니티, 실시간 번역, 계층형 관리자, 멀티 리더기(최대 10대).
-- **Phase 4 (13–18)**: SDK, 서드파티 마켓, 896차원·전자코/전자혀, B2B, 글로벌 인증, 연합학습.
-- **Phase 5 (19–24)**: AI 에이전트 완전 자동화, 1792차원, 웨어러블, 긴급 대응(119), 스마트홈.
+- **Phase 1 (1–4개월)**: 기본 UI, BLE/NFC, 차동측정, 88차원, 시각화, 클라우드 연동, 오프라인 기본. 리더기 최대 1대(Free). **현행**: Rust 코어·FFI 완료, Go 4서비스 구현 중, Flutter 대기.
+- **Phase 2 (5–8)**: AI 코칭, 음식 칼로리, 마켓·결제·구독, HealthKit 연동, 데이터 허브. 리더기 최대: Free 1대, Basic 2대, Pro 5대.
+- **Phase 3 (9–12)**: 화상진료, 병원/약국 예약, 가족, 커뮤니티, 실시간 번역, 계층형 관리자, 긴급대응(119). 리더기 최대: Clinical 10대.
+- **Phase 4 (13–18)**: SDK, 서드파티 카트리지 마켓, 896차원·전자코/전자혀, B2B API, 글로벌 인증(FDA/CE-IVDR), 연합학습, FHIR R4 의료 데이터 교환.
+- **Phase 5 (19–24)**: AI 에이전트 완전 자동화, 1792차원, 음성 명령, 웨어러블 연동, 스마트홈 IoT.
 
 ---
 
@@ -214,8 +233,7 @@
 | **카트리지 무한확장 체계 명세** | [docs/specs/cartridge-system-spec.md](../specs/cartridge-system-spec.md) |
 | 데이터 패킷 (패밀리C) | [docs/specs/data-packet-family-c.md](../specs/data-packet-family-c.md) |
 | 사이트맵 | [docs/ux/sitemap.md](../ux/sitemap.md) |
-| 스토리보드 (첫 측정) | [docs/ux/storyboard-first-measurement.md](../ux/storyboard-first-measurement.md) |
-| 스토리보드 (음식 칼로리) | [docs/ux/storyboard-food-calorie.md](../ux/storyboard-food-calorie.md) |
+| 스토리보드 (16건) | [docs/ux/storyboard-*.md](../ux/) — 인증, 홈, 측정, 기기, 설정, 오프라인, 음식칼로리, AI비서, 데이터허브, 마켓, 구독, 화상진료, 가족, 커뮤니티, 긴급대응, 관리자 |
 | 오프라인 기능 매트릭스 | [docs/specs/offline-capability-matrix.md](../specs/offline-capability-matrix.md) |
 | MSA 확장 로드맵 | [docs/plan/msa-expansion-roadmap.md](msa-expansion-roadmap.md) |
 | 기획-구현 추적성 | [docs/plan/plan-traceability-matrix.md](plan-traceability-matrix.md) |
