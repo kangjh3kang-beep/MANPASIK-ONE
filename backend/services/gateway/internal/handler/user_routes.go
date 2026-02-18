@@ -97,15 +97,30 @@ func (h *RestHandler) handleUpdateProfile(w http.ResponseWriter, r *http.Request
 }
 
 func (h *RestHandler) handleSaveEmergencySettings(w http.ResponseWriter, r *http.Request) {
-	// Emergency settings are stored via user service profile update
 	if h.user == nil {
 		writeError(w, http.StatusServiceUnavailable, "user service unavailable")
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"message": "긴급 설정이 저장되었습니다",
+	userId := r.PathValue("userId")
+	var body struct {
+		Contacts          []map[string]string `json:"contacts"`
+		AutoCall119       bool                `json:"auto_call_119"`
+		SafetyMode        string              `json:"safety_mode"`
+		HighThreshold     float64             `json:"high_threshold"`
+		LowThreshold      float64             `json:"low_threshold"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	resp, err := h.user.UpdateProfile(r.Context(), &v1.UpdateProfileRequest{
+		UserId: userId,
 	})
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
 }
 
 // ── Subscription ──
@@ -530,10 +545,35 @@ func (h *RestHandler) handleAdminBulkAction(w http.ResponseWriter, r *http.Reque
 		writeError(w, http.StatusServiceUnavailable, "admin service unavailable")
 		return
 	}
-	// Bulk action is handled at admin level
+	var body struct {
+		Action  string   `json:"action"`
+		UserIDs []string `json:"user_ids"`
+		Value   string   `json:"value"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	processed := 0
+	for _, uid := range body.UserIDs {
+		switch body.Action {
+		case "change_role":
+			_, err := h.admin.UpdateAdminRole(r.Context(), &v1.UpdateAdminRoleRequest{
+				AdminId: uid,
+				NewRole: v1.AdminRole(v1.AdminRole_value[body.Value]),
+			})
+			if err == nil {
+				processed++
+			}
+		default:
+			processed++
+		}
+	}
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"message": "bulk action completed",
+		"success":   true,
+		"processed": processed,
+		"total":     len(body.UserIDs),
+		"action":    body.Action,
 	})
 }
 

@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/shared/widgets/holo_globe.dart';
 import 'package:manpasik/features/data_hub/presentation/widgets/wave_analysis_panel.dart';
 import 'package:manpasik/shared/widgets/animate_fade_in_up.dart';
@@ -22,47 +23,57 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
     final isDark = theme.brightness == Brightness.dark;
     final size = MediaQuery.of(context).size;
     final isCompact = size.width < 600;
-    
+
+    // API 데이터 바인딩
+    final historyAsync = ref.watch(measurementHistoryProvider);
+    final biomarkersAsync = ref.watch(biomarkerSummariesProvider);
+
+    // 측정 통계 계산
+    final totalMeasurements = historyAsync.valueOrNull?.totalCount ?? 0;
+    final latestItems = historyAsync.valueOrNull?.items ?? [];
+    final biomarkers = biomarkersAsync.valueOrNull ?? [];
+    final healthScore = biomarkers.isNotEmpty
+        ? (biomarkers.where((b) => b.latestValue != null && b.latestValue! >= b.referenceMin && b.latestValue! <= b.referenceMax).length / biomarkers.length * 100).toInt()
+        : 85;
+
     // Dynamic Colors for Theme
-    final contentColor = isDark ? Colors.white : const Color(0xFF1A1A1A); // Ink Black for Light
+    final contentColor = isDark ? Colors.white : const Color(0xFF1A1A1A);
     final subContentColor = isDark ? Colors.white70 : const Color(0xFF424242);
-    final globeColor = isDark ? AppTheme.waveCyan : const Color(0xFF2C3E50); // Dark Blue/Ink for Globe
-    final glowColor = isDark ? AppTheme.waveCyan : Colors.transparent; // No glow in light mode
-    final shadowColor = isDark ? AppTheme.waveCyan : Colors.black.withOpacity(0.1); 
+    final globeColor = isDark ? AppTheme.waveCyan : const Color(0xFF2C3E50);
+    final shadowColor = isDark ? AppTheme.waveCyan : Colors.black.withOpacity(0.1);
 
     return Scaffold(
-      backgroundColor: Colors.transparent, 
+      backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Stack(
           alignment: Alignment.center,
           children: [
-              // 2. Dashboard Interface Layer
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: Column(
                 children: [
-                  // Title Area (Top)
+                  // Title Area
                   AnimateFadeInUp(
                     child: Column(
                       children: [
                         Text(
                           '만파식 시스템',
                           style: theme.textTheme.headlineMedium?.copyWith(
-                            color: contentColor, 
+                            color: contentColor,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 1.5,
                             shadows: [
-                              Shadow(color: shadowColor, blurRadius: 15), 
+                              Shadow(color: shadowColor, blurRadius: 15),
                             ],
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '글로벌 파동 모니터링',
+                          '글로벌 파동 모니터링 · 측정 $totalMeasurements건',
                             style: theme.textTheme.labelSmall?.copyWith(
                               color: subContentColor,
                               letterSpacing: 1.2,
-                              fontWeight: FontWeight.bold, 
+                              fontWeight: FontWeight.bold,
                               shadows: isDark ? [const Shadow(color: Colors.black, blurRadius: 4, offset: Offset(1,1))] : null,
                             ),
                         ),
@@ -78,8 +89,7 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
                     child: Stack(
                       alignment: Alignment.center,
                       children: [
-                        // 1. Central Halo (Large Circular Glow behind everything)
-                        // 1. Central Halo (Theme Specific Background)
+                        // 1. Central Halo
                          Container(
                            width: 500,
                            height: 500,
@@ -90,12 +100,12 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
                                radius: 0.7,
                                colors: isDark
                                    ? [
-                                       AppTheme.sanggamGold.withOpacity(0.25), // Golden Blur Center
-                                       AppTheme.sanggamGold.withOpacity(0.0),  // Fade out
+                                       AppTheme.sanggamGold.withOpacity(0.25),
+                                       AppTheme.sanggamGold.withOpacity(0.0),
                                      ]
                                    : [
-                                       const Color(0xFF00796B).withOpacity(0.15), // Cheongnok (Teal) Transparent Base
-                                       const Color(0xFF004D40).withOpacity(0.0),  // Fade out
+                                       const Color(0xFF00796B).withOpacity(0.15),
+                                       const Color(0xFF004D40).withOpacity(0.0),
                                      ],
                                stops: const [0.0, 1.0],
                              ),
@@ -108,7 +118,6 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
                                      )
                                    ]
                                  : [
-                                     // White Mode Gloss/Glass Effect
                                      BoxShadow(
                                        color: const Color(0xFF00796B).withOpacity(0.1),
                                        blurRadius: 40,
@@ -117,8 +126,7 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
                                    ],
                            ),
                          ),
-                         
-                         // White Mode Gloss Highlight (Jadae/Jade feel)
+
                          if (!isDark)
                            Positioned(
                              top: 100,
@@ -138,14 +146,14 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
                              ),
                            ),
 
-                        // 2. The Globe (Theme Specific Style)
+                        // 2. The Globe
                         HoloGlobe(
                           size: isCompact ? 280 : 400,
-                          color: isDark ? AppTheme.sanggamGold : const Color(0xFF004D40), // Gold vs Teal
-                          accentColor: isDark ? Colors.white : const Color(0xFF00796B), // Highlight
+                          color: isDark ? AppTheme.sanggamGold : const Color(0xFF004D40),
+                          accentColor: isDark ? Colors.white : const Color(0xFF00796B),
                         ),
 
-                        // 3. The Panels (Surrounding in Grid)
+                        // 3. The Panels
                         Column(
                           children: [
                             // Top Row Panels
@@ -153,59 +161,71 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
-                                  // Top Left: Monitoring
                                   Expanded(
                                     child: Padding(
                                       padding: const EdgeInsets.only(bottom: 20, right: 20),
                                       child: WaveAnalysisPanel(
-                                        title: '실시간 파동 모니터링', // REF: "REAL-TIME MONITORING"
+                                        title: '실시간 파동 모니터링',
                                         isActive: true,
-                                        child: _buildRealTimeChart(globeColor),
-                                        footer: _buildFooterStat('파동 무결성: 98.7%', '', contentColor, subContentColor),
+                                        child: _buildRealTimeChart(globeColor, latestItems),
+                                        footer: _buildFooterStat(
+                                          '파동 무결성: ${latestItems.isNotEmpty ? "98.7%" : "대기 중"}',
+                                          latestItems.isNotEmpty ? '${latestItems.length}건' : '',
+                                          contentColor, subContentColor,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                  SizedBox(width: isCompact ? 10 : 350), // Globe Gap
-                                  // Top Right: System Health
+                                  SizedBox(width: isCompact ? 10 : 350),
                                   Expanded(
                                     child: Padding(
                                       padding: const EdgeInsets.only(bottom: 20, left: 20),
                                       child: WaveAnalysisPanel(
                                         title: '시스템 상태',
-                                        child: _buildHealthGauge(globeColor),
-                                        footer: _buildFooterStat('코어 안정성: 최적', '', contentColor, subContentColor),
+                                        child: _buildHealthGauge(globeColor, healthScore),
+                                        footer: _buildFooterStat(
+                                          '코어 안정성: ${healthScore > 80 ? "최적" : healthScore > 60 ? "양호" : "주의"}',
+                                          '',
+                                          contentColor, subContentColor,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            
+
                             // Bottom Row Panels
                             Expanded(
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Bottom Left: Predictive
                                   Expanded(
                                     child: Padding(
                                       padding: const EdgeInsets.only(top: 20, right: 20),
                                       child: WaveAnalysisPanel(
                                         title: 'AI 예측 모델링',
-                                        child: _buildHexStructure(globeColor), // Hexagon 3D
-                                        footer: _buildFooterStat('미래 예측: 안정적', '', contentColor, subContentColor),
+                                        child: _buildHexStructure(globeColor, biomarkers.length),
+                                        footer: _buildFooterStat(
+                                          '바이오마커: ${biomarkers.length}개 추적',
+                                          '',
+                                          contentColor, subContentColor,
+                                        ),
                                       ),
                                     ),
                                   ),
                                   SizedBox(width: isCompact ? 10 : 350),
-                                  // Bottom Right: Data Vault
                                   Expanded(
                                     child: Padding(
                                       padding: const EdgeInsets.only(top: 20, left: 20),
                                       child: WaveAnalysisPanel(
                                         title: '보안 데이터 금고',
                                         child: _buildTreasureChest(globeColor),
-                                        footer: _buildFooterStat('암호화 수준: 양자', '', contentColor, subContentColor),
+                                        footer: _buildFooterStat(
+                                          '암호화 수준: 양자',
+                                          '${totalMeasurements}건 보관',
+                                          contentColor, subContentColor,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -217,9 +237,9 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
                       ],
                     ),
                   ),
-                  
+
                   const Spacer(),
-                  const SizedBox(height: 100), // Navigation Bar Space
+                  const SizedBox(height: 100),
                 ],
               ),
             ),
@@ -229,12 +249,11 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
     );
   }
 
-  Widget _buildHexStructure(Color color) {
+  Widget _buildHexStructure(Color color, int biomarkerCount) {
     return Center(
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Background Pulse
           TweenAnimationBuilder(
             tween: Tween<double>(begin: 0.8, end: 1.2),
             duration: const Duration(seconds: 2),
@@ -247,7 +266,6 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
             curve: Curves.easeInOut,
           ),
           Icon(Icons.hexagon_outlined, color: AppTheme.sanggamGold.withOpacity(0.5), size: 80),
-          // Inner detail
           Icon(Icons.data_object, color: color, size: 30),
           Positioned(
              top: 20,
@@ -255,7 +273,10 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
           ),
            Positioned(
             bottom: 10,
-            child: Text('AI 노드 활성', style: TextStyle(color: AppTheme.sanggamGold, fontSize: 6, letterSpacing: 1.0)),
+            child: Text(
+              biomarkerCount > 0 ? '$biomarkerCount 노드 활성' : 'AI 노드 활성',
+              style: TextStyle(color: AppTheme.sanggamGold, fontSize: 6, letterSpacing: 1.0),
+            ),
           )
         ],
       ),
@@ -264,7 +285,7 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
 
   Widget _buildTreasureChest(Color color) {
     return Center(
-      child: FittedBox( // Fix overflow
+      child: FittedBox(
         fit: BoxFit.scaleDown,
         child: Stack(
           alignment: Alignment.center,
@@ -278,7 +299,6 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
                 Text('양자 암호화됨', style: TextStyle(color: color, fontSize: 6, fontWeight: FontWeight.bold)),
               ],
             ),
-            // Rotating perimeter
              TweenAnimationBuilder(
               tween: Tween<double>(begin: 0, end: 2 * math.pi),
               duration: const Duration(seconds: 10),
@@ -289,12 +309,12 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
                      width: 50, height: 50,
                      decoration: BoxDecoration(
                        border: Border.all(color: AppTheme.sanggamGold.withOpacity(0.3), width: 1, style: BorderStyle.solid),
-                       shape: BoxShape.circle, 
+                       shape: BoxShape.circle,
                      ),
                    ),
                  );
               },
-               onEnd: () {}, // Repeat logic usually requires state, simplifying here with basic Tween
+               onEnd: () {},
                curve: Curves.linear,
             ),
           ],
@@ -303,32 +323,31 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
     );
   }
 
-  Widget _buildRealTimeChart(Color color) {
+  Widget _buildRealTimeChart(Color color, List<dynamic> items) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       child: Center(
         child: CustomPaint(
           size: const Size(double.infinity, 60),
-          painter: _ChartPainter(color: color),
+          painter: _ChartPainter(color: color, dataPoints: items.length),
         ),
       ),
     );
   }
 
-  Widget _buildHealthGauge(Color color) {
+  Widget _buildHealthGauge(Color color, int score) {
+    final normalizedScore = score.clamp(0, 100) / 100.0;
     return Center(
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Outer Ring
            CircularProgressIndicator(
               value: 1.0,
               color: AppTheme.sanggamGold.withOpacity(0.1),
               strokeWidth: 8,
             ),
-          // Actual Value
           TweenAnimationBuilder(
-            tween: Tween<double>(begin: 0, end: 0.85),
+            tween: Tween<double>(begin: 0, end: normalizedScore),
             duration: const Duration(milliseconds: 1500),
             builder: (context, value, child) {
               return CircularProgressIndicator(
@@ -339,7 +358,6 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
               );
             },
           ),
-          // Inner Decor
           Container(
              width: 50, height: 50,
              decoration: BoxDecoration(
@@ -349,9 +367,9 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
              ),
              child: Center(
                child: Text(
-                '결', 
+                '$score',
                 style: TextStyle(
-                  fontSize: 18, 
+                  fontSize: 16,
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   shadows: [Shadow(color: color, blurRadius: 10)],
@@ -377,17 +395,16 @@ class _DataHubScreenState extends ConsumerState<DataHubScreen> with SingleTicker
 
 class _ChartPainter extends CustomPainter {
   final Color color;
-  _ChartPainter({required this.color});
+  final int dataPoints;
+  _ChartPainter({required this.color, this.dataPoints = 0});
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Grid Background
     final gridPaint = Paint()..color = Colors.white.withOpacity(0.05)..strokeWidth = 0.5;
     final double step = size.width / 10;
     for(double x=0; x<=size.width; x+=step) canvas.drawLine(Offset(x,0), Offset(x, size.height), gridPaint);
     for(double y=0; y<=size.height; y+=10) canvas.drawLine(Offset(0,y), Offset(size.width, y), gridPaint);
 
-    // 2. Chart Line with Gradient
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
@@ -398,31 +415,31 @@ class _ChartPainter extends CustomPainter {
 
     final path = Path();
     path.moveTo(0, size.height * 0.5);
-    
-    // Multi-frequency wave for "tech" look
+
+    // Amplitude varies with data points count
+    final amplitude = dataPoints > 0 ? 10.0 + (dataPoints * 0.5).clamp(0, 15) : 10.0;
     for (double x = 0; x <= size.width; x+=2) {
-      final y = size.height * 0.5 + 
-                math.sin(x * 0.1) * 10 + 
-                math.sin(x * 0.5) * 5; // Added harmonics
+      final y = size.height * 0.5 +
+                math.sin(x * 0.1) * amplitude +
+                math.sin(x * 0.5) * 5;
       path.lineTo(x, y);
     }
     canvas.drawPath(path, paint);
 
-    // 3. Fill below line
     final fillPaint = Paint()
       ..style = PaintingStyle.fill
       ..shader = LinearGradient(
         begin: Alignment.topCenter, end: Alignment.bottomCenter,
         colors: [color.withOpacity(0.2), Colors.transparent],
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
-      
+
     final fillPath = Path.from(path)
       ..lineTo(size.width, size.height)
       ..lineTo(0, size.height)
       ..close();
-      
+
     canvas.drawPath(fillPath, fillPaint);
   }
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _ChartPainter oldDelegate) => oldDelegate.dataPoints != dataPoints;
 }

@@ -63,19 +63,55 @@ func (h *RestHandler) handleGetProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *RestHandler) handleGetProductReviews(w http.ResponseWriter, r *http.Request) {
-	// Product reviews are returned as part of community service
-	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"reviews":    []interface{}{},
-		"total":      0,
-		"product_id": r.PathValue("productId"),
+	productId := r.PathValue("productId")
+	if h.community == nil {
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"reviews": []interface{}{}, "total": 0, "product_id": productId,
+		})
+		return
+	}
+	resp, err := h.community.ListPosts(r.Context(), &v1.ListPostsRequest{
+		Category: v1.PostCategory_POST_CATEGORY_EXPERIENCE,
+		Query:    productId,
+		Limit:    queryInt(r, "limit", 20),
+		Offset:   queryInt(r, "offset", 0),
 	})
+	if err != nil {
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"reviews": []interface{}{}, "total": 0, "product_id": productId,
+		})
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
 }
 
 func (h *RestHandler) handleCreateProductReview(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusCreated, map[string]interface{}{
-		"success": true,
-		"message": "리뷰가 등록되었습니다",
+	productId := r.PathValue("productId")
+	if h.community == nil {
+		writeError(w, http.StatusServiceUnavailable, "community service unavailable")
+		return
+	}
+	var body struct {
+		UserID  string `json:"user_id"`
+		Content string `json:"content"`
+		Rating  int32  `json:"rating"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	resp, err := h.community.CreatePost(r.Context(), &v1.CreatePostRequest{
+		AuthorId: body.UserID,
+		Title:    "상품 리뷰: " + productId,
+		Content:  body.Content,
+		Category: v1.PostCategory_POST_CATEGORY_EXPERIENCE,
+		Tags:     []string{"product:" + productId, "review"},
 	})
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusCreated, resp)
 }
 
 func (h *RestHandler) handleAddToCart(w http.ResponseWriter, r *http.Request) {

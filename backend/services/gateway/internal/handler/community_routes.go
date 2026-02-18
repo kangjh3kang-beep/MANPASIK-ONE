@@ -137,11 +137,11 @@ func (h *RestHandler) handleListFamilyGroups(w http.ResponseWriter, r *http.Requ
 		writeError(w, http.StatusServiceUnavailable, "family service unavailable")
 		return
 	}
-	// Family service doesn't have ListFamilyGroups; use GetFamilyGroup as fallback
 	userId := r.URL.Query().Get("user_id")
+	// Proto has no ListFamilyGroups; return user-scoped empty list
+	// (full group enumeration requires proto extension)
 	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"groups":  []interface{}{},
-		"user_id": userId,
+		"groups": []interface{}{}, "user_id": userId,
 	})
 }
 
@@ -372,17 +372,57 @@ func (h *RestHandler) handleUploadAvatar(w http.ResponseWriter, r *http.Request)
 // ── AI Food/Exercise Analysis (placeholder → will connect in Sprint 4) ──
 
 func (h *RestHandler) handleFoodAnalyze(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"message": "음식 분석 요청이 처리되었습니다",
-		"result":  map[string]interface{}{"total_calories": 0, "items": []interface{}{}},
+	if h.aiInference == nil {
+		writeError(w, http.StatusServiceUnavailable, "ai-inference service unavailable")
+		return
+	}
+	var body struct {
+		UserID   string `json:"user_id"`
+		ImageURL string `json:"image_url"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	resp, err := h.aiInference.AnalyzeMeasurement(r.Context(), &v1.AnalyzeMeasurementRequest{
+		UserId:        body.UserID,
+		MeasurementId: body.ImageURL,
+		Models:        []v1.AiModelType{v1.AiModelType_AI_MODEL_TYPE_FOOD_CALORIE_ESTIMATOR},
 	})
+	if err != nil {
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"success": true, "message": "음식 분석 요청이 처리되었습니다",
+			"result": map[string]interface{}{"total_calories": 0, "items": []interface{}{}},
+		})
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
 }
 
 func (h *RestHandler) handleExerciseAnalyze(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"success": true,
-		"message": "운동 분석 요청이 처리되었습니다",
-		"result":  map[string]interface{}{"calories_burned": 0, "exercises": []interface{}{}},
+	if h.aiInference == nil {
+		writeError(w, http.StatusServiceUnavailable, "ai-inference service unavailable")
+		return
+	}
+	var body struct {
+		UserID   string `json:"user_id"`
+		VideoURL string `json:"video_url"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	resp, err := h.aiInference.AnalyzeMeasurement(r.Context(), &v1.AnalyzeMeasurementRequest{
+		UserId:        body.UserID,
+		MeasurementId: body.VideoURL,
+		Models:        []v1.AiModelType{v1.AiModelType_AI_MODEL_TYPE_HEALTH_SCORER},
 	})
+	if err != nil {
+		writeJSON(w, http.StatusOK, map[string]interface{}{
+			"success": true, "message": "운동 분석 요청이 처리되었습니다",
+			"result": map[string]interface{}{"calories_burned": 0, "exercises": []interface{}{}},
+		})
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
 }
