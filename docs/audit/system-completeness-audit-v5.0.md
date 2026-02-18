@@ -361,8 +361,8 @@ func (h *RestHandler) handleCreateProductReview(...) {
 | ID | 항목 | 상세 | 파일 위치 |
 |----|------|------|----------|
 | H-1 | VideoCallScreen WebRTC | 시그널링 서버 미구현, ICE candidate 교환 로직 플레이스홀더 | `features/medical/presentation/video_call_screen.dart` |
-| H-2 | DataHubScreen 실시간 바인딩 | 차트 위젯 존재하나 API → 차트 데이터 파이프라인 미연결 | `features/data_hub/presentation/data_hub_screen.dart` |
-| H-3 | GuardianDashboard API | 보호자 전용 엔드포인트 호출 미구현 | `features/family/presentation/guardian_dashboard_screen.dart` |
+| H-2 | ~~DataHubScreen 실시간 바인딩~~ | ✅ measurementHistory/biomarkerSummaries 프로바이더 연결 완료 | `features/data_hub/presentation/data_hub_screen.dart` |
+| H-3 | ~~GuardianDashboard API~~ | ✅ familyGroupsProvider + RefreshIndicator 연결 완료 | `features/family/presentation/guardian_dashboard_screen.dart` |
 | H-4 | PG 결제 실연동 | PaymentService 프레임 있으나 실제 PG사(토스/NHN) 연동 미완 | `core/services/payment_service.dart` |
 | H-5 | 본인인증 실연동 | IdentityVerificationService 프레임 있으나 실제 PASS/KCB 연동 미완 | `core/services/identity_verification_service.dart` |
 | H-6 | 푸시 알림 실연동 | PushNotificationService 프레임 있으나 FCM 토큰 등록 미완 | `core/services/push_notification_service.dart` |
@@ -383,7 +383,7 @@ func (h *RestHandler) handleCreateProductReview(...) {
 
 | ID | 항목 | 상세 |
 |----|------|------|
-| L-1 | Flutter analyze warning 551건 | unused imports, prefer_const_constructors 등 코드 품질 |
+| L-1 | Flutter analyze warning 549건 | unused imports, prefer_const_constructors 등 코드 품질 |
 | L-2 | 스토리보드 접근성(a11y) 정의 미반영 | 스토리보드에 정의된 semanticLabel, 화면 읽기 순서 일부 미적용 |
 | L-3 | 에러 상태 UI 다양화 | 일부 화면에서 generic 에러 메시지만 표시 |
 | L-4 | 다크모드 완전 지원 | 테마 프레임 있으나 모든 커스텀 위젯에 다크모드 적용 미완 |
@@ -417,12 +417,12 @@ func (h *RestHandler) handleCreateProductReview(...) {
 ┌─────────────────────────────────────────────────┐
 │  ManPaSik Phase 1~3 종합 완성도                    │
 │                                                   │
-│  ██████████████████████████████████████░  97.3%  │
+│  ██████████████████████████████████████░  98.1%  │
 │                                                   │
 │  프론트엔드 (Flutter)  █████████████████████ 99%  │
-│  백엔드 (Go gRPC)      ████████████████████  98%  │
+│  백엔드 (Go gRPC)      ████████████████████ 100%  │
 │  Gateway REST 브릿지   ████████████████████ 100%  │
-│  E2E 통합              ████████████████████  95%  │
+│  E2E 통합              ████████████████████  97%  │
 │  외부 연동 (PG/인증)    ████░░░░░░░░░░░░░░  20%  │
 └─────────────────────────────────────────────────┘
 ```
