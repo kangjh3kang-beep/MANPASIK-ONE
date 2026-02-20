@@ -112,6 +112,42 @@ func (h *AuthHandler) ValidateToken(ctx context.Context, req *v1.ValidateTokenRe
 	}, nil
 }
 
+// SocialLogin은 소셜 로그인 RPC입니다.
+func (h *AuthHandler) SocialLogin(ctx context.Context, req *v1.SocialLoginRequest) (*v1.LoginResponse, error) {
+	if req == nil || req.IdToken == "" {
+		return nil, status.Error(codes.InvalidArgument, "id_token은 필수입니다")
+	}
+
+	tokens, err := h.auth.SocialLogin(ctx, req.Provider.String(), req.IdToken, req.AccessToken)
+	if err != nil {
+		return nil, toGRPC(err)
+	}
+
+	return &v1.LoginResponse{
+		AccessToken:  tokens.AccessToken,
+		RefreshToken: tokens.RefreshToken,
+		ExpiresIn:    tokens.ExpiresIn,
+		TokenType:    tokens.TokenType,
+	}, nil
+}
+
+// ResetPassword는 비밀번호 재설정 RPC입니다.
+func (h *AuthHandler) ResetPassword(ctx context.Context, req *v1.ResetPasswordRequest) (*v1.ResetPasswordResponse, error) {
+	if req == nil || req.Email == "" {
+		return nil, status.Error(codes.InvalidArgument, "email은 필수입니다")
+	}
+
+	success, msg, err := h.auth.ResetPassword(ctx, req.Email)
+	if err != nil {
+		return nil, toGRPC(err)
+	}
+
+	return &v1.ResetPasswordResponse{
+		Success: success,
+		Message: msg,
+	}, nil
+}
+
 // toGRPC는 AppError를 gRPC status로 변환합니다.
 func toGRPC(err error) error {
 	if err == nil {

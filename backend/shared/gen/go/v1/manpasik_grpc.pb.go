@@ -2126,6 +2126,7 @@ const (
 	AiInferenceService_PredictTrend_FullMethodName       = "/manpasik.v1.AiInferenceService/PredictTrend"
 	AiInferenceService_GetModelInfo_FullMethodName       = "/manpasik.v1.AiInferenceService/GetModelInfo"
 	AiInferenceService_ListModels_FullMethodName         = "/manpasik.v1.AiInferenceService/ListModels"
+	AiInferenceService_StreamChat_FullMethodName         = "/manpasik.v1.AiInferenceService/StreamChat"
 )
 
 // AiInferenceServiceClient is the client API for AiInferenceService service.
@@ -2137,6 +2138,8 @@ type AiInferenceServiceClient interface {
 	PredictTrend(ctx context.Context, in *PredictTrendRequest, opts ...grpc.CallOption) (*TrendPrediction, error)
 	GetModelInfo(ctx context.Context, in *GetModelInfoRequest, opts ...grpc.CallOption) (*ModelInfo, error)
 	ListModels(ctx context.Context, in *ListModelsRequest, opts ...grpc.CallOption) (*ListModelsResponse, error)
+	// Phase 9: AI 스트리밍 채팅 (C1)
+	StreamChat(ctx context.Context, in *StreamChatRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamChatResponse], error)
 }
 
 type aiInferenceServiceClient struct {
@@ -2197,6 +2200,25 @@ func (c *aiInferenceServiceClient) ListModels(ctx context.Context, in *ListModel
 	return out, nil
 }
 
+func (c *aiInferenceServiceClient) StreamChat(ctx context.Context, in *StreamChatRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamChatResponse], error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	stream, err := c.cc.NewStream(ctx, &AiInferenceService_ServiceDesc.Streams[0], AiInferenceService_StreamChat_FullMethodName, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &grpc.GenericClientStream[StreamChatRequest, StreamChatResponse]{ClientStream: stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AiInferenceService_StreamChatClient = grpc.ServerStreamingClient[StreamChatResponse]
+
 // AiInferenceServiceServer is the server API for AiInferenceService service.
 // All implementations must embed UnimplementedAiInferenceServiceServer
 // for forward compatibility.
@@ -2206,6 +2228,8 @@ type AiInferenceServiceServer interface {
 	PredictTrend(context.Context, *PredictTrendRequest) (*TrendPrediction, error)
 	GetModelInfo(context.Context, *GetModelInfoRequest) (*ModelInfo, error)
 	ListModels(context.Context, *ListModelsRequest) (*ListModelsResponse, error)
+	// Phase 9: AI 스트리밍 채팅 (C1)
+	StreamChat(*StreamChatRequest, grpc.ServerStreamingServer[StreamChatResponse]) error
 	mustEmbedUnimplementedAiInferenceServiceServer()
 }
 
@@ -2230,6 +2254,9 @@ func (UnimplementedAiInferenceServiceServer) GetModelInfo(context.Context, *GetM
 }
 func (UnimplementedAiInferenceServiceServer) ListModels(context.Context, *ListModelsRequest) (*ListModelsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListModels not implemented")
+}
+func (UnimplementedAiInferenceServiceServer) StreamChat(*StreamChatRequest, grpc.ServerStreamingServer[StreamChatResponse]) error {
+	return status.Error(codes.Unimplemented, "method StreamChat not implemented")
 }
 func (UnimplementedAiInferenceServiceServer) mustEmbedUnimplementedAiInferenceServiceServer() {}
 func (UnimplementedAiInferenceServiceServer) testEmbeddedByValue()                            {}
@@ -2342,6 +2369,17 @@ func _AiInferenceService_ListModels_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AiInferenceService_StreamChat_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(StreamChatRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(AiInferenceServiceServer).StreamChat(m, &grpc.GenericServerStream[StreamChatRequest, StreamChatResponse]{ServerStream: stream})
+}
+
+// This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
+type AiInferenceService_StreamChatServer = grpc.ServerStreamingServer[StreamChatResponse]
+
 // AiInferenceService_ServiceDesc is the grpc.ServiceDesc for AiInferenceService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2370,7 +2408,13 @@ var AiInferenceService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AiInferenceService_ListModels_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "StreamChat",
+			Handler:       _AiInferenceService_StreamChat_Handler,
+			ServerStreams: true,
+		},
+	},
 	Metadata: "manpasik.proto",
 }
 
@@ -3869,6 +3913,8 @@ const (
 	AdminService_ValidateConfigValue_FullMethodName = "/manpasik.v1.AdminService/ValidateConfigValue"
 	AdminService_BulkSetConfigs_FullMethodName      = "/manpasik.v1.AdminService/BulkSetConfigs"
 	AdminService_GetAuditLogDetails_FullMethodName  = "/manpasik.v1.AdminService/GetAuditLogDetails"
+	AdminService_GetRevenueStats_FullMethodName     = "/manpasik.v1.AdminService/GetRevenueStats"
+	AdminService_GetInventoryStats_FullMethodName   = "/manpasik.v1.AdminService/GetInventoryStats"
 )
 
 // AdminServiceClient is the client API for AdminService service.
@@ -3894,6 +3940,9 @@ type AdminServiceClient interface {
 	BulkSetConfigs(ctx context.Context, in *BulkSetConfigsRequest, opts ...grpc.CallOption) (*BulkSetConfigsResponse, error)
 	// Phase 6: 감사 로그 상세 조회
 	GetAuditLogDetails(ctx context.Context, in *GetAuditLogDetailsRequest, opts ...grpc.CallOption) (*GetAuditLogDetailsResponse, error)
+	// Phase 9: 매출/재고 통계 (C12)
+	GetRevenueStats(ctx context.Context, in *GetRevenueStatsRequest, opts ...grpc.CallOption) (*GetRevenueStatsResponse, error)
+	GetInventoryStats(ctx context.Context, in *GetInventoryStatsRequest, opts ...grpc.CallOption) (*GetInventoryStatsResponse, error)
 }
 
 type adminServiceClient struct {
@@ -4064,6 +4113,26 @@ func (c *adminServiceClient) GetAuditLogDetails(ctx context.Context, in *GetAudi
 	return out, nil
 }
 
+func (c *adminServiceClient) GetRevenueStats(ctx context.Context, in *GetRevenueStatsRequest, opts ...grpc.CallOption) (*GetRevenueStatsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetRevenueStatsResponse)
+	err := c.cc.Invoke(ctx, AdminService_GetRevenueStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *adminServiceClient) GetInventoryStats(ctx context.Context, in *GetInventoryStatsRequest, opts ...grpc.CallOption) (*GetInventoryStatsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetInventoryStatsResponse)
+	err := c.cc.Invoke(ctx, AdminService_GetInventoryStats_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AdminServiceServer is the server API for AdminService service.
 // All implementations must embed UnimplementedAdminServiceServer
 // for forward compatibility.
@@ -4087,6 +4156,9 @@ type AdminServiceServer interface {
 	BulkSetConfigs(context.Context, *BulkSetConfigsRequest) (*BulkSetConfigsResponse, error)
 	// Phase 6: 감사 로그 상세 조회
 	GetAuditLogDetails(context.Context, *GetAuditLogDetailsRequest) (*GetAuditLogDetailsResponse, error)
+	// Phase 9: 매출/재고 통계 (C12)
+	GetRevenueStats(context.Context, *GetRevenueStatsRequest) (*GetRevenueStatsResponse, error)
+	GetInventoryStats(context.Context, *GetInventoryStatsRequest) (*GetInventoryStatsResponse, error)
 	mustEmbedUnimplementedAdminServiceServer()
 }
 
@@ -4144,6 +4216,12 @@ func (UnimplementedAdminServiceServer) BulkSetConfigs(context.Context, *BulkSetC
 }
 func (UnimplementedAdminServiceServer) GetAuditLogDetails(context.Context, *GetAuditLogDetailsRequest) (*GetAuditLogDetailsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetAuditLogDetails not implemented")
+}
+func (UnimplementedAdminServiceServer) GetRevenueStats(context.Context, *GetRevenueStatsRequest) (*GetRevenueStatsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetRevenueStats not implemented")
+}
+func (UnimplementedAdminServiceServer) GetInventoryStats(context.Context, *GetInventoryStatsRequest) (*GetInventoryStatsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetInventoryStats not implemented")
 }
 func (UnimplementedAdminServiceServer) mustEmbedUnimplementedAdminServiceServer() {}
 func (UnimplementedAdminServiceServer) testEmbeddedByValue()                      {}
@@ -4454,6 +4532,42 @@ func _AdminService_GetAuditLogDetails_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AdminService_GetRevenueStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRevenueStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).GetRevenueStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_GetRevenueStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).GetRevenueStats(ctx, req.(*GetRevenueStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AdminService_GetInventoryStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInventoryStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AdminServiceServer).GetInventoryStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AdminService_GetInventoryStats_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AdminServiceServer).GetInventoryStats(ctx, req.(*GetInventoryStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AdminService_ServiceDesc is the grpc.ServiceDesc for AdminService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -4524,6 +4638,14 @@ var AdminService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetAuditLogDetails",
 			Handler:    _AdminService_GetAuditLogDetails_Handler,
+		},
+		{
+			MethodName: "GetRevenueStats",
+			Handler:    _AdminService_GetRevenueStats_Handler,
+		},
+		{
+			MethodName: "GetInventoryStats",
+			Handler:    _AdminService_GetInventoryStats_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -6059,16 +6181,18 @@ var PrescriptionService_ServiceDesc = grpc.ServiceDesc{
 }
 
 const (
-	CommunityService_CreatePost_FullMethodName      = "/manpasik.v1.CommunityService/CreatePost"
-	CommunityService_GetPost_FullMethodName         = "/manpasik.v1.CommunityService/GetPost"
-	CommunityService_ListPosts_FullMethodName       = "/manpasik.v1.CommunityService/ListPosts"
-	CommunityService_LikePost_FullMethodName        = "/manpasik.v1.CommunityService/LikePost"
-	CommunityService_CreateComment_FullMethodName   = "/manpasik.v1.CommunityService/CreateComment"
-	CommunityService_ListComments_FullMethodName    = "/manpasik.v1.CommunityService/ListComments"
-	CommunityService_CreateChallenge_FullMethodName = "/manpasik.v1.CommunityService/CreateChallenge"
-	CommunityService_GetChallenge_FullMethodName    = "/manpasik.v1.CommunityService/GetChallenge"
-	CommunityService_JoinChallenge_FullMethodName   = "/manpasik.v1.CommunityService/JoinChallenge"
-	CommunityService_ListChallenges_FullMethodName  = "/manpasik.v1.CommunityService/ListChallenges"
+	CommunityService_CreatePost_FullMethodName              = "/manpasik.v1.CommunityService/CreatePost"
+	CommunityService_GetPost_FullMethodName                 = "/manpasik.v1.CommunityService/GetPost"
+	CommunityService_ListPosts_FullMethodName               = "/manpasik.v1.CommunityService/ListPosts"
+	CommunityService_LikePost_FullMethodName                = "/manpasik.v1.CommunityService/LikePost"
+	CommunityService_CreateComment_FullMethodName           = "/manpasik.v1.CommunityService/CreateComment"
+	CommunityService_ListComments_FullMethodName            = "/manpasik.v1.CommunityService/ListComments"
+	CommunityService_CreateChallenge_FullMethodName         = "/manpasik.v1.CommunityService/CreateChallenge"
+	CommunityService_GetChallenge_FullMethodName            = "/manpasik.v1.CommunityService/GetChallenge"
+	CommunityService_JoinChallenge_FullMethodName           = "/manpasik.v1.CommunityService/JoinChallenge"
+	CommunityService_ListChallenges_FullMethodName          = "/manpasik.v1.CommunityService/ListChallenges"
+	CommunityService_GetChallengeLeaderboard_FullMethodName = "/manpasik.v1.CommunityService/GetChallengeLeaderboard"
+	CommunityService_UpdateChallengeProgress_FullMethodName = "/manpasik.v1.CommunityService/UpdateChallengeProgress"
 )
 
 // CommunityServiceClient is the client API for CommunityService service.
@@ -6085,6 +6209,9 @@ type CommunityServiceClient interface {
 	GetChallenge(ctx context.Context, in *GetChallengeRequest, opts ...grpc.CallOption) (*Challenge, error)
 	JoinChallenge(ctx context.Context, in *JoinChallengeRequest, opts ...grpc.CallOption) (*JoinChallengeResponse, error)
 	ListChallenges(ctx context.Context, in *ListChallengesRequest, opts ...grpc.CallOption) (*ListChallengesResponse, error)
+	// Phase 9: 챌린지 리더보드 (C8)
+	GetChallengeLeaderboard(ctx context.Context, in *GetChallengeLeaderboardRequest, opts ...grpc.CallOption) (*GetChallengeLeaderboardResponse, error)
+	UpdateChallengeProgress(ctx context.Context, in *UpdateChallengeProgressRequest, opts ...grpc.CallOption) (*UpdateChallengeProgressResponse, error)
 }
 
 type communityServiceClient struct {
@@ -6195,6 +6322,26 @@ func (c *communityServiceClient) ListChallenges(ctx context.Context, in *ListCha
 	return out, nil
 }
 
+func (c *communityServiceClient) GetChallengeLeaderboard(ctx context.Context, in *GetChallengeLeaderboardRequest, opts ...grpc.CallOption) (*GetChallengeLeaderboardResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetChallengeLeaderboardResponse)
+	err := c.cc.Invoke(ctx, CommunityService_GetChallengeLeaderboard_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *communityServiceClient) UpdateChallengeProgress(ctx context.Context, in *UpdateChallengeProgressRequest, opts ...grpc.CallOption) (*UpdateChallengeProgressResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateChallengeProgressResponse)
+	err := c.cc.Invoke(ctx, CommunityService_UpdateChallengeProgress_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CommunityServiceServer is the server API for CommunityService service.
 // All implementations must embed UnimplementedCommunityServiceServer
 // for forward compatibility.
@@ -6209,6 +6356,9 @@ type CommunityServiceServer interface {
 	GetChallenge(context.Context, *GetChallengeRequest) (*Challenge, error)
 	JoinChallenge(context.Context, *JoinChallengeRequest) (*JoinChallengeResponse, error)
 	ListChallenges(context.Context, *ListChallengesRequest) (*ListChallengesResponse, error)
+	// Phase 9: 챌린지 리더보드 (C8)
+	GetChallengeLeaderboard(context.Context, *GetChallengeLeaderboardRequest) (*GetChallengeLeaderboardResponse, error)
+	UpdateChallengeProgress(context.Context, *UpdateChallengeProgressRequest) (*UpdateChallengeProgressResponse, error)
 	mustEmbedUnimplementedCommunityServiceServer()
 }
 
@@ -6248,6 +6398,12 @@ func (UnimplementedCommunityServiceServer) JoinChallenge(context.Context, *JoinC
 }
 func (UnimplementedCommunityServiceServer) ListChallenges(context.Context, *ListChallengesRequest) (*ListChallengesResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListChallenges not implemented")
+}
+func (UnimplementedCommunityServiceServer) GetChallengeLeaderboard(context.Context, *GetChallengeLeaderboardRequest) (*GetChallengeLeaderboardResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetChallengeLeaderboard not implemented")
+}
+func (UnimplementedCommunityServiceServer) UpdateChallengeProgress(context.Context, *UpdateChallengeProgressRequest) (*UpdateChallengeProgressResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method UpdateChallengeProgress not implemented")
 }
 func (UnimplementedCommunityServiceServer) mustEmbedUnimplementedCommunityServiceServer() {}
 func (UnimplementedCommunityServiceServer) testEmbeddedByValue()                          {}
@@ -6450,6 +6606,42 @@ func _CommunityService_ListChallenges_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CommunityService_GetChallengeLeaderboard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetChallengeLeaderboardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommunityServiceServer).GetChallengeLeaderboard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CommunityService_GetChallengeLeaderboard_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommunityServiceServer).GetChallengeLeaderboard(ctx, req.(*GetChallengeLeaderboardRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CommunityService_UpdateChallengeProgress_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateChallengeProgressRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CommunityServiceServer).UpdateChallengeProgress(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CommunityService_UpdateChallengeProgress_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CommunityServiceServer).UpdateChallengeProgress(ctx, req.(*UpdateChallengeProgressRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CommunityService_ServiceDesc is the grpc.ServiceDesc for CommunityService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -6496,6 +6688,14 @@ var CommunityService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListChallenges",
 			Handler:    _CommunityService_ListChallenges_Handler,
+		},
+		{
+			MethodName: "GetChallengeLeaderboard",
+			Handler:    _CommunityService_GetChallengeLeaderboard_Handler,
+		},
+		{
+			MethodName: "UpdateChallengeProgress",
+			Handler:    _CommunityService_UpdateChallengeProgress_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -7247,6 +7447,7 @@ const (
 	TranslationService_TranslateBatch_FullMethodName         = "/manpasik.v1.TranslationService/TranslateBatch"
 	TranslationService_GetTranslationHistory_FullMethodName  = "/manpasik.v1.TranslationService/GetTranslationHistory"
 	TranslationService_GetTranslationUsage_FullMethodName    = "/manpasik.v1.TranslationService/GetTranslationUsage"
+	TranslationService_TranslateRealtime_FullMethodName      = "/manpasik.v1.TranslationService/TranslateRealtime"
 )
 
 // TranslationServiceClient is the client API for TranslationService service.
@@ -7259,6 +7460,8 @@ type TranslationServiceClient interface {
 	TranslateBatch(ctx context.Context, in *TranslateBatchRequest, opts ...grpc.CallOption) (*TranslateBatchResponse, error)
 	GetTranslationHistory(ctx context.Context, in *GetTranslationHistoryRequest, opts ...grpc.CallOption) (*GetTranslationHistoryResponse, error)
 	GetTranslationUsage(ctx context.Context, in *GetTranslationUsageRequest, opts ...grpc.CallOption) (*GetTranslationUsageResponse, error)
+	// Phase 9: 실시간 번역 (C6)
+	TranslateRealtime(ctx context.Context, in *TranslateRealtimeRequest, opts ...grpc.CallOption) (*TranslateRealtimeResponse, error)
 }
 
 type translationServiceClient struct {
@@ -7329,6 +7532,16 @@ func (c *translationServiceClient) GetTranslationUsage(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *translationServiceClient) TranslateRealtime(ctx context.Context, in *TranslateRealtimeRequest, opts ...grpc.CallOption) (*TranslateRealtimeResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(TranslateRealtimeResponse)
+	err := c.cc.Invoke(ctx, TranslationService_TranslateRealtime_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TranslationServiceServer is the server API for TranslationService service.
 // All implementations must embed UnimplementedTranslationServiceServer
 // for forward compatibility.
@@ -7339,6 +7552,8 @@ type TranslationServiceServer interface {
 	TranslateBatch(context.Context, *TranslateBatchRequest) (*TranslateBatchResponse, error)
 	GetTranslationHistory(context.Context, *GetTranslationHistoryRequest) (*GetTranslationHistoryResponse, error)
 	GetTranslationUsage(context.Context, *GetTranslationUsageRequest) (*GetTranslationUsageResponse, error)
+	// Phase 9: 실시간 번역 (C6)
+	TranslateRealtime(context.Context, *TranslateRealtimeRequest) (*TranslateRealtimeResponse, error)
 	mustEmbedUnimplementedTranslationServiceServer()
 }
 
@@ -7366,6 +7581,9 @@ func (UnimplementedTranslationServiceServer) GetTranslationHistory(context.Conte
 }
 func (UnimplementedTranslationServiceServer) GetTranslationUsage(context.Context, *GetTranslationUsageRequest) (*GetTranslationUsageResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetTranslationUsage not implemented")
+}
+func (UnimplementedTranslationServiceServer) TranslateRealtime(context.Context, *TranslateRealtimeRequest) (*TranslateRealtimeResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method TranslateRealtime not implemented")
 }
 func (UnimplementedTranslationServiceServer) mustEmbedUnimplementedTranslationServiceServer() {}
 func (UnimplementedTranslationServiceServer) testEmbeddedByValue()                            {}
@@ -7496,6 +7714,24 @@ func _TranslationService_GetTranslationUsage_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TranslationService_TranslateRealtime_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TranslateRealtimeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TranslationServiceServer).TranslateRealtime(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TranslationService_TranslateRealtime_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TranslationServiceServer).TranslateRealtime(ctx, req.(*TranslateRealtimeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TranslationService_ServiceDesc is the grpc.ServiceDesc for TranslationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -7526,6 +7762,10 @@ var TranslationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTranslationUsage",
 			Handler:    _TranslationService_GetTranslationUsage_Handler,
+		},
+		{
+			MethodName: "TranslateRealtime",
+			Handler:    _TranslationService_TranslateRealtime_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

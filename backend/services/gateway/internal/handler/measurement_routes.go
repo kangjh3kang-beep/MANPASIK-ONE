@@ -33,9 +33,27 @@ func (h *RestHandler) registerMeasurementRoutes(mux *http.ServeMux) {
 	// Health Record
 	mux.HandleFunc("POST /api/v1/health-records", h.handleCreateHealthRecord)
 	mux.HandleFunc("GET /api/v1/health-records", h.handleListHealthRecords)
+	mux.HandleFunc("GET /api/v1/health-records/summary", h.handleGetHealthSummary)
 	mux.HandleFunc("GET /api/v1/health-records/{recordId}", h.handleGetHealthRecord)
+	mux.HandleFunc("PUT /api/v1/health-records/{recordId}", h.handleUpdateHealthRecord)
+	mux.HandleFunc("DELETE /api/v1/health-records/{recordId}", h.handleDeleteHealthRecord)
 	mux.HandleFunc("POST /api/v1/health-records/export/fhir", h.handleExportToFHIR)
 	mux.HandleFunc("POST /api/v1/health-records/import", h.handleImportHealthData)
+
+	// Health Record – Data sharing consent
+	mux.HandleFunc("POST /api/v1/health-records/consents", h.handleCreateConsent)
+	mux.HandleFunc("GET /api/v1/health-records/consents", h.handleListConsents)
+	mux.HandleFunc("DELETE /api/v1/health-records/consents/{consentId}", h.handleRevokeConsent)
+	mux.HandleFunc("POST /api/v1/health-records/share", h.handleShareWithProvider)
+	mux.HandleFunc("GET /api/v1/health-records/access-log", h.handleGetDataAccessLog)
+
+	// Measurement FHIR export
+	mux.HandleFunc("POST /api/v1/measurements/{sessionId}/export", h.handleExportSingleMeasurement)
+	mux.HandleFunc("POST /api/v1/measurements/export/fhir", h.handleExportToFHIRObservations)
+
+	// Device – OTA & status
+	mux.HandleFunc("POST /api/v1/devices/{deviceId}/ota", h.handleRequestOtaUpdate)
+	mux.HandleFunc("PUT /api/v1/devices/{deviceId}/status", h.handleUpdateDeviceStatus)
 }
 
 // ── Measurement ──
@@ -482,6 +500,271 @@ func (h *RestHandler) handleImportHealthData(w http.ResponseWriter, r *http.Requ
 	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (h *RestHandler) handleUpdateHealthRecord(w http.ResponseWriter, r *http.Request) {
+	if h.healthRecord == nil {
+		writeError(w, http.StatusServiceUnavailable, "health-record service unavailable")
+		return
+	}
+	recordId := r.PathValue("recordId")
+	var body struct {
+		Title       string            `json:"title"`
+		Description string            `json:"description"`
+		Metadata    map[string]string `json:"metadata"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	resp, err := h.healthRecord.UpdateRecord(r.Context(), &v1.UpdateHealthRecordRequest{
+		RecordId:    recordId,
+		Title:       body.Title,
+		Description: body.Description,
+		Metadata:    body.Metadata,
+	})
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (h *RestHandler) handleDeleteHealthRecord(w http.ResponseWriter, r *http.Request) {
+	if h.healthRecord == nil {
+		writeError(w, http.StatusServiceUnavailable, "health-record service unavailable")
+		return
+	}
+	recordId := r.PathValue("recordId")
+	resp, err := h.healthRecord.DeleteRecord(r.Context(), &v1.DeleteHealthRecordRequest{
+		RecordId: recordId,
+	})
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (h *RestHandler) handleGetHealthSummary(w http.ResponseWriter, r *http.Request) {
+	if h.healthRecord == nil {
+		writeError(w, http.StatusServiceUnavailable, "health-record service unavailable")
+		return
+	}
+	resp, err := h.healthRecord.GetHealthSummary(r.Context(), &v1.GetHealthSummaryRequest{
+		UserId: r.URL.Query().Get("user_id"),
+	})
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+// ── Health Record – Data Sharing Consent ──
+
+func (h *RestHandler) handleCreateConsent(w http.ResponseWriter, r *http.Request) {
+	if h.healthRecord == nil {
+		writeError(w, http.StatusServiceUnavailable, "health-record service unavailable")
+		return
+	}
+	var body struct {
+		UserID       string   `json:"user_id"`
+		ProviderID   string   `json:"provider_id"`
+		ProviderName string   `json:"provider_name"`
+		ConsentType  string   `json:"consent_type"`
+		Scope        []string `json:"scope"`
+		Purpose      string   `json:"purpose"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	resp, err := h.healthRecord.CreateDataSharingConsent(r.Context(), &v1.CreateConsentRequest{
+		UserId:       body.UserID,
+		ProviderId:   body.ProviderID,
+		ProviderName: body.ProviderName,
+		ConsentType:  body.ConsentType,
+		Scope:        body.Scope,
+		Purpose:      body.Purpose,
+	})
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusCreated, resp)
+}
+
+func (h *RestHandler) handleRevokeConsent(w http.ResponseWriter, r *http.Request) {
+	if h.healthRecord == nil {
+		writeError(w, http.StatusServiceUnavailable, "health-record service unavailable")
+		return
+	}
+	consentId := r.PathValue("consentId")
+	var body struct {
+		Reason string `json:"reason"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	resp, err := h.healthRecord.RevokeDataSharingConsent(r.Context(), &v1.RevokeConsentRequest{
+		ConsentId: consentId,
+		Reason:    body.Reason,
+	})
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (h *RestHandler) handleListConsents(w http.ResponseWriter, r *http.Request) {
+	if h.healthRecord == nil {
+		writeError(w, http.StatusServiceUnavailable, "health-record service unavailable")
+		return
+	}
+	resp, err := h.healthRecord.ListDataSharingConsents(r.Context(), &v1.ListConsentsRequest{
+		UserId: r.URL.Query().Get("user_id"),
+	})
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (h *RestHandler) handleShareWithProvider(w http.ResponseWriter, r *http.Request) {
+	if h.healthRecord == nil {
+		writeError(w, http.StatusServiceUnavailable, "health-record service unavailable")
+		return
+	}
+	var body struct {
+		ConsentID string `json:"consent_id"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	resp, err := h.healthRecord.ShareWithProvider(r.Context(), &v1.ShareWithProviderRequest{
+		ConsentId: body.ConsentID,
+	})
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (h *RestHandler) handleGetDataAccessLog(w http.ResponseWriter, r *http.Request) {
+	if h.healthRecord == nil {
+		writeError(w, http.StatusServiceUnavailable, "health-record service unavailable")
+		return
+	}
+	resp, err := h.healthRecord.GetDataAccessLog(r.Context(), &v1.GetDataAccessLogRequest{
+		UserId: r.URL.Query().Get("user_id"),
+		Limit:  queryInt(r, "limit", 50),
+		Offset: queryInt(r, "offset", 0),
+	})
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+// ── Measurement – FHIR Export ──
+
+func (h *RestHandler) handleExportSingleMeasurement(w http.ResponseWriter, r *http.Request) {
+	if h.measurement == nil {
+		writeError(w, http.StatusServiceUnavailable, "measurement service unavailable")
+		return
+	}
+	sessionId := r.PathValue("sessionId")
+	resp, err := h.measurement.ExportSingleMeasurement(r.Context(), &v1.ExportSingleMeasurementRequest{
+		SessionId: sessionId,
+	})
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (h *RestHandler) handleExportToFHIRObservations(w http.ResponseWriter, r *http.Request) {
+	if h.measurement == nil {
+		writeError(w, http.StatusServiceUnavailable, "measurement service unavailable")
+		return
+	}
+	var body struct {
+		UserID   string `json:"user_id"`
+		FromDate string `json:"from_date"`
+		ToDate   string `json:"to_date"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	resp, err := h.measurement.ExportToFHIRObservations(r.Context(), &v1.ExportToFHIRObservationsRequest{
+		UserId:   body.UserID,
+		FromDate: body.FromDate,
+		ToDate:   body.ToDate,
+	})
+	if err != nil {
+		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+// ── Device – OTA & Status ──
+
+func (h *RestHandler) handleRequestOtaUpdate(w http.ResponseWriter, r *http.Request) {
+	if h.device == nil {
+		writeError(w, http.StatusServiceUnavailable, "device service unavailable")
+		return
+	}
+	deviceId := r.PathValue("deviceId")
+	var body struct {
+		TargetVersion string `json:"target_version"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	resp, err := h.device.RequestOtaUpdate(r.Context(), &v1.OtaRequest{
+		DeviceId:      deviceId,
+		TargetVersion: body.TargetVersion,
+	})
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (h *RestHandler) handleUpdateDeviceStatus(w http.ResponseWriter, r *http.Request) {
+	if h.device == nil {
+		writeError(w, http.StatusServiceUnavailable, "device service unavailable")
+		return
+	}
+	deviceId := r.PathValue("deviceId")
+	var body struct {
+		Status string `json:"status"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	resp, err := h.device.UpdateDeviceStatus(r.Context(), &v1.UpdateDeviceStatusRequest{
+		DeviceId: deviceId,
+		Status:   body.Status,
+	})
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	writeProtoJSON(w, http.StatusOK, resp)

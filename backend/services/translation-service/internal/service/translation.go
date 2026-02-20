@@ -205,6 +205,17 @@ func (s *TranslationService) GetTranslationUsage(ctx context.Context, userID str
 	return s.usageRepo.GetUsage(ctx, userID)
 }
 
+// TranslateRealtime은 실시간 번역을 수행합니다.
+func (s *TranslationService) TranslateRealtime(ctx context.Context, text, sourceLang, targetLang, contextHint, sessionID string, isMedical bool) (string, string, float32, int64, error) {
+	start := time.Now()
+	translated, detectedSource, confidence, _, err := s.TranslateText(ctx, text, sourceLang, targetLang, contextHint, "")
+	if err != nil {
+		return "", "", 0, 0, err
+	}
+	latencyMs := time.Since(start).Milliseconds()
+	return translated, detectedSource, confidence, latencyMs, nil
+}
+
 // translateWithMedicalTerms는 의료 용어 사전으로 번역합니다.
 func (s *TranslationService) translateWithMedicalTerms(text, sourceLang, targetLang string) string {
 	key := sourceLang + "->" + targetLang

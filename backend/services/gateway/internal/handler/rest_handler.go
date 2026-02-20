@@ -94,6 +94,11 @@ func (h *RestHandler) SetupRoutes() *http.ServeMux {
 	h.registerMeasurementRoutes(mux)
 	h.registerMarketRoutes(mux)
 	h.registerCommunityRoutes(mux)
+	h.registerNotificationRoutes(mux)
+	h.registerTranslationRoutes(mux)
+	h.registerSubscriptionRoutes(mux)
+	h.registerCoachingRoutes(mux)
+	h.registerAdminRoutes(mux)
 
 	return mux
 }
@@ -130,9 +135,10 @@ func writeError(w http.ResponseWriter, status int, message string) {
 	writeJSON(w, status, map[string]string{"error": message})
 }
 
-// readJSON은 요청 본문을 JSON으로 파싱합니다.
+// readJSON은 요청 본문을 JSON으로 파싱합니다. 바디 크기를 10MB로 제한합니다.
 func readJSON(r *http.Request, v interface{}) error {
-	body, err := io.ReadAll(r.Body)
+	reader := io.LimitReader(r.Body, 10<<20)
+	body, err := io.ReadAll(reader)
 	if err != nil {
 		return err
 	}

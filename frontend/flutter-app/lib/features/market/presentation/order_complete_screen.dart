@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:lottie/lottie.dart';
 
 /// 주문 완료 & 배송 추적 화면
 class OrderCompleteScreen extends StatelessWidget {
@@ -22,16 +23,20 @@ class OrderCompleteScreen extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
-            // 주문 완료 아이콘
+            // 주문 완료 아이콘 (Lottie)
             const SizedBox(height: 24),
-            Container(
-              width: 96,
-              height: 96,
-              decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
-                shape: BoxShape.circle,
+            SizedBox(
+              width: 120,
+              height: 120,
+              child: Lottie.asset(
+                'assets/lottie/check_success.json',
+                repeat: false,
+                errorBuilder: (_, __, ___) => Container(
+                  width: 96, height: 96,
+                  decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), shape: BoxShape.circle),
+                  child: const Icon(Icons.check_circle, size: 64, color: Colors.green),
+                ),
               ),
-              child: const Icon(Icons.check_circle, size: 64, color: Colors.green),
             ),
             const SizedBox(height: 24),
             Text('주문이 완료되었습니다!', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),

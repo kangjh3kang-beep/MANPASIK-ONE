@@ -37,7 +37,7 @@ class SettingsScreen extends ConsumerWidget {
         centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 120), // Bottom padding for Glass Dock
         physics: const BouncingScrollPhysics(),
         children: [
           // ── 프로필 섹션 ──
@@ -78,7 +78,7 @@ class SettingsScreen extends ConsumerWidget {
           _buildSectionHeader(theme, '서비스'),
           _buildGlassSection([
             _buildGlassTile(Icons.notifications_outlined, '알림 설정', 
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('준비 중입니다.')))),
+              onTap: () => context.push('/settings/notifications')),
             _buildGlassTile(Icons.shield_outlined, '보안', subtitle: '비밀번호, 생체인증',
               onTap: () => context.push('/settings/security')),
             _buildGlassTile(Icons.accessibility_new_outlined, '접근성', subtitle: '화면 읽기, 글꼴',
@@ -93,14 +93,16 @@ class SettingsScreen extends ConsumerWidget {
 
           // ── 일반 설정 ──
           _buildSectionHeader(theme, '일반'),
-          _buildGlassSection([
-            _buildGlassTile(Icons.brightness_6_outlined, '테마', 
-              subtitle: _getThemeModeLabel(currentThemeMode),
-              onTap: () => _showThemeDialog(context, ref, currentThemeMode)),
-            _buildGlassTile(Icons.language_outlined, '언어', 
-              subtitle: SupportedLocales.getLanguageName(currentLocale.languageCode),
-              onTap: () => _showLanguageDialog(context, ref, currentLocale)),
-          ]),
+            // 테마 선택 섹션 (Horizontal Cards)
+            _buildThemeSelector(context, ref, currentThemeMode),
+            const SizedBox(height: 12),
+            
+            // 언어 설정
+            _buildGlassSection([
+              _buildGlassTile(Icons.language_outlined, '언어', 
+                subtitle: SupportedLocales.getLanguageName(currentLocale.languageCode),
+                onTap: () => _showLanguageDialog(context, ref, currentLocale)),
+            ]),
 
           const SizedBox(height: 24),
 
@@ -116,6 +118,8 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => context.push('/settings/terms')),
             _buildGlassTile(Icons.privacy_tip_outlined, '개인정보처리방침',
               onTap: () => context.push('/settings/privacy')),
+            _buildGlassTile(Icons.history, '약관 변경 이력',
+              onTap: () => _showTermsChangeHistory(context)),
           ]),
 
           const SizedBox(height: 24),
@@ -259,6 +263,62 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   /// 로그아웃 확인 다이얼로그
+  void _showTermsChangeHistory(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      builder: (ctx) {
+        final theme = Theme.of(ctx);
+        final history = [
+          {'date': '2026-02-01', 'title': '개인정보처리방침 개정', 'summary': '건강 데이터 제3자 제공 조항 추가'},
+          {'date': '2026-01-15', 'title': '이용약관 개정', 'summary': '원격 진료 서비스 이용 조건 신설'},
+          {'date': '2025-12-01', 'title': '이용약관 제정', 'summary': '만파식 서비스 최초 약관 제정'},
+        ];
+        return DraggableScrollableSheet(
+          initialChildSize: 0.5,
+          maxChildSize: 0.85,
+          expand: false,
+          builder: (_, scrollCtrl) => Column(
+            children: [
+              Container(
+                margin: const EdgeInsets.only(top: 8),
+                width: 40, height: 4,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.outline.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text('약관 변경 이력', style: theme.textTheme.titleMedium),
+              ),
+              Expanded(
+                child: ListView.separated(
+                  controller: scrollCtrl,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: history.length,
+                  separatorBuilder: (_, __) => const Divider(height: 1),
+                  itemBuilder: (_, i) {
+                    final h = history[i];
+                    return ListTile(
+                      leading: Icon(Icons.article_outlined, color: theme.colorScheme.primary),
+                      title: Text(h['title']!),
+                      subtitle: Text(h['summary']!),
+                      trailing: Text(h['date']!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                              color: theme.colorScheme.outline)),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
@@ -280,6 +340,71 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+  Widget _buildThemeSelector(BuildContext context, WidgetRef ref, ThemeMode current) {
+    final options = [
+      (mode: ThemeMode.system, label: 'System', icon: Icons.settings_suggest_rounded),
+      (mode: ThemeMode.light, label: 'Baekja', icon: Icons.wb_sunny_rounded),
+      (mode: ThemeMode.dark, label: 'Cosmic', icon: Icons.nightlight_round),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+          child: Text('테마 설정', style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12)),
+        ),
+        Row(
+          children: options.map((opt) {
+            final isSelected = current == opt.mode;
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => ref.read(themeModeProvider.notifier).setThemeMode(opt.mode),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: isSelected 
+                        ? AppTheme.sanggamGold.withOpacity(0.2) 
+                        : Colors.white.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected ? AppTheme.sanggamGold : Colors.white10,
+                      width: isSelected ? 1.5 : 0.5,
+                    ),
+                    boxShadow: isSelected ? [
+                      BoxShadow(
+                        color: AppTheme.sanggamGold.withOpacity(0.3),
+                        blurRadius: 12,
+                        spreadRadius: -2,
+                      )
+                    ] : null,
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(opt.icon, 
+                        color: isSelected ? AppTheme.sanggamGold : Colors.white70,
+                        size: 28,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        opt.label,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.white60,
+                          fontSize: 12,
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 }

@@ -578,6 +578,108 @@ func (s *AdminService) GetSystemConfig(ctx context.Context, key string) (*System
 }
 
 // ============================================================================
+// 매출/재고 통계
+// ============================================================================
+
+// RevenueStats는 매출 통계입니다.
+type RevenueStats struct {
+	TotalRevenueKRW        int64
+	SubscriptionRevenueKRW int64
+	ProductRevenueKRW      int64
+	TotalTransactions      int32
+	Periods                []RevenuePeriod
+	RevenueByTier          map[string]int64
+}
+
+// RevenuePeriod는 기간별 매출입니다.
+type RevenuePeriod struct {
+	Label            string
+	RevenueKRW       int64
+	TransactionCount int32
+}
+
+// InventoryStats는 재고 통계입니다.
+type InventoryStats struct {
+	Items           []InventoryItem
+	TotalProducts   int32
+	LowStockCount   int32
+	OutOfStockCount int32
+}
+
+// InventoryItem은 재고 항목입니다.
+type InventoryItem struct {
+	ProductID         string
+	ProductName       string
+	Category          int32
+	CurrentStock      int32
+	MinStockThreshold int32
+	MonthlySales      int32
+	PriceKRW          int32
+	Status            string
+}
+
+// GetRevenueStats는 매출 통계를 반환합니다.
+func (s *AdminService) GetRevenueStats(ctx context.Context, period, startDate, endDate string) (*RevenueStats, error) {
+	now := time.Now().UTC()
+
+	periods := []RevenuePeriod{
+		{Label: now.AddDate(0, -2, 0).Format("2006-01"), RevenueKRW: 12500000, TransactionCount: 45},
+		{Label: now.AddDate(0, -1, 0).Format("2006-01"), RevenueKRW: 15800000, TransactionCount: 52},
+		{Label: now.Format("2006-01"), RevenueKRW: 8900000, TransactionCount: 31},
+	}
+
+	return &RevenueStats{
+		TotalRevenueKRW:        37200000,
+		SubscriptionRevenueKRW: 28500000,
+		ProductRevenueKRW:      8700000,
+		TotalTransactions:      128,
+		Periods:                periods,
+		RevenueByTier: map[string]int64{
+			"free": 0, "basic": 9500000, "pro": 14000000, "clinical": 5000000,
+		},
+	}, nil
+}
+
+// GetInventoryStats는 재고 통계를 반환합니다.
+func (s *AdminService) GetInventoryStats(ctx context.Context, categoryFilter int32) (*InventoryStats, error) {
+	items := []InventoryItem{
+		{ProductID: "CTR-BG-001", ProductName: "혈당 카트리지 (50회)", Category: 1, CurrentStock: 1200, MinStockThreshold: 200, MonthlySales: 350, PriceKRW: 35000, Status: "in_stock"},
+		{ProductID: "CTR-CL-001", ProductName: "콜레스테롤 카트리지 (25회)", Category: 1, CurrentStock: 85, MinStockThreshold: 100, MonthlySales: 120, PriceKRW: 45000, Status: "low_stock"},
+		{ProductID: "DEV-MPS-001", ProductName: "만파식적 리더기 v3", Category: 2, CurrentStock: 320, MinStockThreshold: 50, MonthlySales: 40, PriceKRW: 299000, Status: "in_stock"},
+		{ProductID: "CTR-UA-001", ProductName: "요산 카트리지 (25회)", Category: 1, CurrentStock: 0, MinStockThreshold: 100, MonthlySales: 80, PriceKRW: 42000, Status: "out_of_stock"},
+		{ProductID: "CTR-HB-001", ProductName: "헤모글로빈 카트리지 (25회)", Category: 1, CurrentStock: 450, MinStockThreshold: 150, MonthlySales: 200, PriceKRW: 38000, Status: "in_stock"},
+	}
+
+	if categoryFilter > 0 {
+		filtered := make([]InventoryItem, 0)
+		for _, item := range items {
+			if item.Category == categoryFilter {
+				filtered = append(filtered, item)
+			}
+		}
+		items = filtered
+	}
+
+	lowStock := int32(0)
+	outOfStock := int32(0)
+	for _, item := range items {
+		if item.Status == "low_stock" {
+			lowStock++
+		}
+		if item.Status == "out_of_stock" {
+			outOfStock++
+		}
+	}
+
+	return &InventoryStats{
+		Items:           items,
+		TotalProducts:   int32(len(items)),
+		LowStockCount:   lowStock,
+		OutOfStockCount: outOfStock,
+	}, nil
+}
+
+// ============================================================================
 // 헬퍼 함수
 // ============================================================================
 

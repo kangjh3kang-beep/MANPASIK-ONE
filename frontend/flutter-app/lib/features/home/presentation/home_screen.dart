@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async'; // For Timer
+import 'dart:math' as math; // For Random
 
 import 'package:manpasik/shared/providers/auth_provider.dart';
 import 'package:manpasik/core/providers/grpc_provider.dart';
@@ -13,330 +15,379 @@ import 'package:manpasik/shared/widgets/animate_fade_in_up.dart';
 import 'package:manpasik/shared/widgets/breathing_glow.dart';
 import 'package:manpasik/shared/widgets/scale_button.dart';
 import 'package:manpasik/shared/widgets/sanggam_decoration.dart';
+import 'package:manpasik/shared/widgets/mini_line_chart.dart';
 
 
+import 'package:manpasik/shared/widgets/holo_globe.dart';
+import 'package:manpasik/shared/widgets/royal_cloud_background.dart';
+import 'package:manpasik/shared/widgets/jarvis_connector.dart';
 import 'package:manpasik/features/data_hub/presentation/widgets/ornate_gold_frame.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> with TickerProviderStateMixin {
+  // Animation Controllers for Entrance
+  late AnimationController _entranceCtrl;
+
+  // Demo Mode Dynamic Data
+  Timer? _demoTimer;
+  String _coreStatus = '안정';
+  String _networkStatus = '연결됨';
+  String _syncRate = '99.8%';
+  String _aiAnomaly = '0.00%';
+  List<double> _chartData = [10, 15, 8, 20, 12, 18, 14];
+  final math.Random _random = math.Random();
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  void initState() {
+    super.initState();
+    _entranceCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..forward();
+
+    // Start Mock Data Timer if Demo Mode
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (ref.read(authProvider).isDemo) {
+        _startDemoTimer();
+      }
+    });
+  }
+
+  void _startDemoTimer() {
+    _demoTimer = Timer.periodic(const Duration(milliseconds: 2000), (timer) {
+      if (!mounted) return;
+      setState(() {
+        // Core Status (Rarely busy)
+        _coreStatus = _random.nextDouble() > 0.9 ? '처리중' : '안정';
+        
+        // Network Status
+        _networkStatus = _random.nextDouble() > 0.95 ? '암호화' : '연결됨';
+        
+        // Sync Rate (98.0 - 99.9)
+        _syncRate = '${(98.0 + _random.nextDouble() * 1.9).toStringAsFixed(1)}%';
+        
+        // AI Anomaly (0.00 - 0.05)
+        _aiAnomaly = '${(_random.nextDouble() * 0.05).toStringAsFixed(2)}%';
+
+        // Chart Data Shift
+        _chartData.removeAt(0);
+        _chartData.add(5.0 + _random.nextInt(25).toDouble()); // Random 5-30
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _entranceCtrl.dispose();
+    _demoTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Theme & Data
+    final authState = ref.watch(authProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : AppTheme.inkBlack;
-    final subTextColor = isDark ? Colors.white70 : AppTheme.inkBlack.withOpacity(0.7);
 
-    final authState = ref.watch(authProvider);
-    final historyAsync = ref.watch(measurementHistoryProvider);
-
+    // Fixed HUD Layout
     return Scaffold(
-      backgroundColor: Colors.transparent, // Background handled by AppShell
-      body: SafeArea(
-        child: CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // Apple-Style Collapsing Header (Transparent Glass)
-            SliverAppBar(
-              expandedHeight: 100.0,
-              floating: false,
-              pinned: true,
-              backgroundColor: Colors.transparent, // Glass effect below handles this
-              surfaceTintColor: Colors.transparent,
-              elevation: 0,
-              flexibleSpace: FlexibleSpaceBar(
-                titlePadding: const EdgeInsets.only(left: 24, bottom: 16),
-                centerTitle: false,
-                title: Text(
-                  authState.displayName ?? 'Guest',
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                    shadows: isDark ? [
-                      Shadow(color: AppTheme.sanggamGold, blurRadius: 10),
-                    ] : null,
+      backgroundColor: Colors.transparent, 
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // 1. Background handled by AppRouter (RoyalCloudBackground)
+          
+          // 2. Central HoloGlobe (The Core)
+          // Positioned slightly upwards to leave room for the dock
+          Positioned.fill(
+             bottom: 100, // Leave room for bottom sheet/dock
+             top: 0,
+             child: Center(
+               child: Transform.scale(
+                 scale: 1.1, // Grand Scale
+                 child: const SizedBox(
+                   width: 350,
+                   height: 350,
+                   child: HoloGlobe(),
+                 ),
+               ),
+             ),
+          ),
+
+          // 3. HUD Modules (Floating panels connected to Center)
+          // We use LayoutBuilder to position relative to screen size
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final center = Offset(constraints.maxWidth / 2, constraints.maxHeight / 2 - 50);
+              
+              // Responsive HUD Logic
+              // Responsive HUD Logic (Dynamic Positioning)
+              final isCompact = constraints.maxWidth < 800 || constraints.maxHeight < 600;
+              final isUltraWide = constraints.maxWidth > 1600;
+              
+              // Dynamic Spacing based on screen size
+              final spreadX = constraints.maxWidth * (isCompact ? 0.35 : 0.25);
+              
+              // Prevent spreading too far vertically on short screens
+              final spreadY = (constraints.maxHeight * 0.25).clamp(80.0, 150.0);
+              
+              final panelWidth = isCompact ? 140.0 : 180.0;
+              // Remove fixed height constraint for flexibility, or use a constrained range
+              final panelHeight = 110.0; // Standardized height
+
+              // Define Module Positions relative to Center
+              final leftTopPos = Offset(center.dx - spreadX, center.dy - spreadY);
+              final rightTopPos = Offset(center.dx + spreadX - panelWidth, center.dy - spreadY);
+              
+              // Bottom panels position - Ensure they don't overlap with Bottom Dock (approx 100px height + padding)
+              double bottomY = center.dy + spreadY;
+              final double dockSafeLimit = constraints.maxHeight - 160; // 160px from bottom safety margin
+              
+              if (bottomY + panelHeight > dockSafeLimit) {
+                 bottomY = dockSafeLimit - panelHeight; 
+                 // If that pushes it above center, we have a very small screen problem.
+                 // In that case, the center needs to move up.
+              }
+
+              final leftBotPos = Offset(center.dx - spreadX, bottomY);
+              final rightBotPos = Offset(center.dx + spreadX - panelWidth, bottomY);
+
+              return Stack(
+                children: [
+                   // Connectors (Animated Lines)
+                   JarvisConnector(startOffset: center, endOffset: leftTopPos + const Offset(140, 60)),
+                   JarvisConnector(startOffset: center, endOffset: rightTopPos + const Offset(0, 60)),
+                   JarvisConnector(startOffset: center, endOffset: leftBotPos + const Offset(140, 0)),
+                   JarvisConnector(startOffset: center, endOffset: rightBotPos + const Offset(0, 0)),
+
+                   // Top Left: System Status (Health)
+                   Positioned(
+                     left: leftTopPos.dx, top: leftTopPos.dy,
+                     child: _buildHudPanel(
+                       width: panelWidth, height: panelHeight,
+                       title: '시스템 상태',
+                       icon: Icons.monitor_heart_outlined, 
+                       // Icon opacity handled in _buildHudPanel or manually here if needed, 
+                       // but _buildHudPanel uses the iconData. 
+                       // I will update _buildHudPanel to apply 60% opacity to the icon.
+                       content: Column(
+                         crossAxisAlignment: CrossAxisAlignment.start,
+                         children: [
+                           _buildStatusRow('코어', _coreStatus, _coreStatus == '안정' ? Colors.greenAccent : Colors.amberAccent),
+                           _buildStatusRow('네트워크', _networkStatus, AppTheme.waveCyan),
+                           _buildStatusRow('동기화', _syncRate, AppTheme.sanggamGold),
+                         ],
+                       ),
+                       onTap: () => context.push('/measure'),
+                     ),
+                   ),
+
+                   // Top Right: Environmental / AI Analysis
+                   Positioned(
+                     left: rightTopPos.dx, top: rightTopPos.dy, // Use calculated pos
+                     child: _buildHudPanel(
+                       width: panelWidth, height: panelHeight,
+                       title: 'AI 분석',
+                       icon: Icons.psychology_outlined,
+                       content: Text(
+                         '실시간 파동 패턴 인식 활성.\n이상 징후: $_aiAnomaly',
+                         style: const TextStyle(color: Colors.white70, fontSize: 10),
+                       ),
+                       onTap: () => context.push('/coach'),
+                     ),
+                   ),
+
+                   // Bottom Left: Recent Data
+                   Positioned(
+                     left: leftBotPos.dx, top: leftBotPos.dy,
+                     child: _buildHudPanel(
+                       width: panelWidth, height: panelHeight,
+                       title: '데이터 스트림',
+                       icon: Icons.data_usage,
+                       content: _buildMiniChart(),
+                       onTap: () => context.go('/data'),
+                     ),
+                   ),
+
+                   // Bottom Right: Security / Device
+                   Positioned(
+                     left: rightBotPos.dx, top: rightBotPos.dy,
+                     child: _buildHudPanel(
+                       width: panelWidth, height: panelHeight,
+                       title: '보안 금고',
+                       icon: Icons.lock_outline,
+                       content: Center(
+                         child: Icon(Icons.fingerprint, size: 40, color: AppTheme.sanggamGold.withOpacity(0.6)), // 60% Icon
+                       ),
+                       onTap: () => context.push('/settings/security'),
+                     ),
+                   ),
+                   
+                   // Top Center Header (User Ranking/Identity)
+                   Positioned(
+                     top: 60, left: 0, right: 0,
+                     child: Semantics(
+                       header: true,
+                       label: '만파식 시스템 대시보드',
+                       child: Center(
+                       child: Column(
+                         children: [
+                           Text(
+                             '만파식 시스템',
+                             style: TextStyle(
+                               fontFamily: 'Orbitron', // Assuming font exists or fallback
+                               color: AppTheme.sanggamGold,
+                               fontWeight: FontWeight.bold,
+                               fontSize: 16,
+                               letterSpacing: 2.0,
+                               shadows: [Shadow(color: AppTheme.sanggamGold, blurRadius: 10)]
+                             ),
+                           ),
+                           const SizedBox(height: 4),
+                           Text(
+                             'CMD: ${authState.displayName ?? "GUEST"}',
+                             style: const TextStyle(
+                               color: Colors.white54,
+                               fontSize: 10,
+                               letterSpacing: 1.5,
+                             ),
+                           ),
+                         ],
+                       ),
+                     ),
+                     ),
+                   ),
+                ],
+              );
+            },
+          ),
+          
+          // 4. Large Action Button (Bottom Center Overlap)
+          Positioned(
+            bottom: 110,
+            left: 0, right: 0,
+            child: Semantics(
+              button: true,
+              label: '건강 분석 시작 버튼',
+              child: Center(
+              child: ScaleButton(
+                onPressed: () => context.push('/measure'),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.sanggamGold.withOpacity(0.2),
+                    border: Border.all(color: AppTheme.sanggamGold),
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(color: AppTheme.sanggamGold.withOpacity(0.3), blurRadius: 15, spreadRadius: 1)
+                    ],
                   ),
-                ),
-                background: Padding(
-                  padding: const EdgeInsets.only(left: 24, top: 20),
-                  child: Align(
-                    alignment: Alignment.topLeft,
-                    child: Text(
-                      AppLocalizations.of(context)!.greeting,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: subTextColor,
-                      ),
+                  child: const Text(
+                    '분석 시작',
+                    style: TextStyle(
+                       color: AppTheme.sanggamGold, 
+                       fontWeight: FontWeight.bold,
+                       letterSpacing: 1.5
                     ),
                   ),
                 ),
               ),
-              actions: [
-                _NotificationBell(color: subTextColor),
-                IconButton(
-                  icon: Icon(Icons.settings_rounded, color: subTextColor),
-                  tooltip: AppLocalizations.of(context)!.settings,
-                  onPressed: () => context.push('/settings'),
-                ),
-                const SizedBox(width: 16),
+            ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatusRow(String label, String value, Color valueColor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: Colors.white54, fontSize: 10)),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: Text(
+              value, 
+              key: ValueKey(value),
+              style: TextStyle(color: valueColor, fontSize: 10, fontWeight: FontWeight.bold)
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMiniChart() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final chartWidth = constraints.maxWidth.isFinite ? constraints.maxWidth : 120.0;
+        return SizedBox(
+          height: 40,
+          width: chartWidth,
+          child: MiniLineChart(
+            data: _chartData,
+            width: chartWidth,
+            height: 40,
+            lineColor: AppTheme.waveCyan,
+            fillColor: AppTheme.waveCyan.withOpacity(0.15),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildHudPanel({
+    required double width,
+    required double height,
+    required String title,
+    required IconData icon,
+    required Widget content,
+    VoidCallback? onTap,
+  }) {
+    return ScaleButton(
+      onPressed: onTap ?? () {},
+      child: Container(
+        width: width, height: height,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0A1020).withOpacity(0.6), // Dark Glass
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.sanggamGold.withOpacity(0.3), width: 1),
+          boxShadow: [
+             BoxShadow(color: Colors.black.withOpacity(0.5), blurRadius: 10),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 14, color: AppTheme.sanggamGold.withOpacity(0.6)), // 60% Icon
+                const SizedBox(width: 8),
+                Expanded(child: Text(title, overflow: TextOverflow.ellipsis, style: const TextStyle(color: AppTheme.sanggamGold, fontSize: 10, fontWeight: FontWeight.bold, letterSpacing: 1.0))),
               ],
             ),
-
-            // Main Content Body
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 16),
-                    
-                    // 1. Hero Section (Holographic Glass + Breathing Glow)
-                    AnimateFadeInUp(
-                      duration: const Duration(milliseconds: 700),
-                      child: OrnateGoldFrame( // Upgraded to OrnateGoldFrame
-                        width: double.infinity,
-                        isActive: true,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.query_stats_rounded,
-                                  color: isDark ? AppTheme.waveCyan : AppTheme.celadonTeal, 
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  AppLocalizations.of(context)!.newMeasurement,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    color: isDark ? AppTheme.waveCyan : AppTheme.celadonTeal,
-                                    fontWeight: FontWeight.bold,
-                                    shadows: [
-                                       Shadow(color: isDark ? AppTheme.waveCyan : Colors.transparent, blurRadius: 8),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              AppLocalizations.of(context)!.checkHealth,
-                              style: theme.textTheme.headlineSmall?.copyWith(
-                                color: textColor,
-                                fontWeight: FontWeight.bold,
-                                height: 1.2,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            
-                            // Premium Gradient Button
-                            ScaleButton(
-                              onPressed: () => context.push('/measure'),
-                              child: Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(12),
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFE6C15D), Color(0xFFB38B24)], // Polished Gold
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: AppTheme.sanggamGold.withOpacity(0.5),
-                                      blurRadius: 16,
-                                      spreadRadius: -2,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.auto_awesome_rounded, color: Color(0xFF050B14)),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      AppLocalizations.of(context)!.startMeasurementAction,
-                                      style: theme.textTheme.titleMedium?.copyWith(
-                                        color: const Color(0xFF050B14),
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // 2. Quick Actions (Holo Glass Tiles)
-                    AnimateFadeInUp(
-                      delay: const Duration(milliseconds: 100),
-                      child: Row(
-                        children: [
-                          _HoloQuickAction(
-                            icon: Icons.bar_chart_rounded,
-                            label: '데이터',
-                            textColor: subTextColor,
-                            onTap: () => context.go('/data'),
-                          ),
-                          const SizedBox(width: 12),
-                          _HoloQuickAction(
-                            icon: Icons.smart_toy_rounded,
-                            label: 'AI 코치',
-                            textColor: subTextColor,
-                            onTap: () => context.push('/coach'),
-                          ),
-                          const SizedBox(width: 12),
-                          _HoloQuickAction(
-                            icon: Icons.family_restroom_rounded,
-                            label: '가족',
-                            textColor: subTextColor,
-                            onTap: () => context.push('/family'),
-                          ),
-                          const SizedBox(width: 12),
-                          _HoloQuickAction(
-                            icon: Icons.local_hospital_rounded,
-                            label: '의료',
-                            textColor: subTextColor,
-                            onTap: () => context.push('/medical'),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Device Quick Access Banner
-                    AnimateFadeInUp(
-                      delay: const Duration(milliseconds: 150),
-                      child: GestureDetector(
-                        onTap: () => context.push('/devices'),
-                        child: HoloGlassCard(
-                          child: Row(
-                            children: [
-                              Icon(Icons.bluetooth_connected, color: isDark ? AppTheme.waveCyan : AppTheme.celadonTeal, size: 20),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  '기기 관리',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: textColor,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                '연결 상태 확인',
-                                style: TextStyle(color: subTextColor.withOpacity(0.5), fontSize: 12),
-                              ),
-                              const SizedBox(width: 4),
-                              Icon(Icons.chevron_right, color: subTextColor.withOpacity(0.5), size: 16),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Recent History Header
-                    AnimateFadeInUp(
-                      delay: const Duration(milliseconds: 200),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            AppLocalizations.of(context)!.recentHistory,
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: textColor,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () => context.go('/data'),
-                            child: Text(
-                              AppLocalizations.of(context)!.viewAll,
-                              style: TextStyle(color: subTextColor.withOpacity(0.6)),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                  ],
+            const Divider(color: Colors.white10, height: 12),
+            Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.topLeft,
+                child: ConstrainedBox(
+                   constraints: BoxConstraints(minWidth: width - 24), // Ensure width fill
+                   child: content
                 ),
               ),
             ),
-
-            // 3. History List (Updated Card Style needed later, keeping logic for now)
-            historyAsync.when(
-              data: (result) {
-                if (result.items.isEmpty) {
-                  return SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: AnimateFadeInUp(
-                        delay: const Duration(milliseconds: 300),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.analytics_outlined, size: 48, color: Colors.white24),
-                            const SizedBox(height: 12),
-                            Text(
-                              '아직 측정 기록이 없습니다.\n첫 측정을 시작해보세요!',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white54),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }
-                return SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final item = result.items[index];
-                        final date = item.measuredAt ?? DateTime.now();
-                        final type = item.primaryValue <= 100
-                            ? 'normal'
-                            : (item.primaryValue <= 125 ? 'warning' : 'high');
-                        
-                        return AnimateFadeInUp(
-                          delay: Duration(milliseconds: 300 + (index * 50)),
-                          offset: 20,
-                          child: Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: MeasurementCard( // Needs upgrade to Holo style later
-                              date: date,
-                              value: item.primaryValue,
-                              unit: item.unit.isNotEmpty ? item.unit : 'mg/dL',
-                              resultType: type,
-                              onTap: () => context.push('/measure/result'),
-                            ),
-                          ),
-                        );
-                      },
-                      childCount: result.items.length,
-                    ),
-                  ),
-                );
-              },
-              loading: () => const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator(color: AppTheme.sanggamGold)),
-              ),
-              error: (err, _) => SliverFillRemaining(
-                child: Center(child: Text('Error', style: TextStyle(color: Colors.white))),
-              ),
-            ),
-            
-            const SliverToBoxAdapter(child: SizedBox(height: 100)), // Space for Glass Dock
           ],
         ),
       ),

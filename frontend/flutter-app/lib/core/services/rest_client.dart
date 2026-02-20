@@ -192,6 +192,7 @@ class ManPaSikRestClient {
   /// Search facilities by location and query.
   Future<Map<String, dynamic>> searchFacilities({
     String? query,
+    String? type,
     double? latitude,
     double? longitude,
     double? radiusKm,
@@ -200,6 +201,7 @@ class ManPaSikRestClient {
   }) async {
     final resp = await _dio.get('/facilities', queryParameters: {
       if (query != null) 'query': query,
+      if (type != null) 'type': type,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
       if (radiusKm != null) 'radius_km': radiusKm,
@@ -617,6 +619,19 @@ class ManPaSikRestClient {
   /// Get payment details.
   Future<Map<String, dynamic>> getPayment(String paymentId) async {
     final resp = await _dio.get('/payments/$paymentId');
+    return _asMap(resp);
+  }
+
+  /// Refund a payment.
+  Future<Map<String, dynamic>> refundPayment(
+    String paymentId, {
+    String? reason,
+    int? refundAmountKrw,
+  }) async {
+    final resp = await _dio.post('/payments/$paymentId/refund', data: {
+      if (reason != null) 'reason': reason,
+      if (refundAmountKrw != null) 'refund_amount_krw': refundAmountKrw,
+    });
     return _asMap(resp);
   }
 
@@ -1420,6 +1435,866 @@ class ManPaSikRestClient {
       'include_medical_terms': includeMedicalTerms,
     });
     return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Health Record Extended (Sprint 12)
+  // ==========================================================================
+
+  /// Update a health record.
+  Future<Map<String, dynamic>> updateHealthRecord(
+    String recordId, {
+    String? title,
+    String? description,
+    Map<String, String>? metadata,
+  }) async {
+    final resp = await _dio.put('/health-records/$recordId', data: {
+      if (title != null) 'title': title,
+      if (description != null) 'description': description,
+      if (metadata != null) 'metadata': metadata,
+    });
+    return _asMap(resp);
+  }
+
+  /// Delete a health record.
+  Future<void> deleteHealthRecord(String recordId) async {
+    await _dio.delete('/health-records/$recordId');
+  }
+
+  /// Get health summary for a user.
+  Future<Map<String, dynamic>> getHealthSummary(String userId) async {
+    final resp = await _dio.get('/health-records/summary', queryParameters: {
+      'user_id': userId,
+    });
+    return _asMap(resp);
+  }
+
+  /// Create a data sharing consent.
+  Future<Map<String, dynamic>> createDataSharingConsent({
+    required String userId,
+    required String providerId,
+    required List<String> dataTypes,
+  }) async {
+    final resp = await _dio.post('/health-records/consents', data: {
+      'user_id': userId,
+      'provider_id': providerId,
+      'data_types': dataTypes,
+    });
+    return _asMap(resp);
+  }
+
+  /// Revoke a data sharing consent.
+  Future<void> revokeDataSharingConsent(String consentId) async {
+    await _dio.delete('/health-records/consents/$consentId');
+  }
+
+  /// List data sharing consents for a user.
+  Future<Map<String, dynamic>> listDataSharingConsents(String userId) async {
+    final resp =
+        await _dio.get('/health-records/consents', queryParameters: {
+      'user_id': userId,
+    });
+    return _asMap(resp);
+  }
+
+  /// Share a health record with a provider.
+  Future<Map<String, dynamic>> shareWithProvider({
+    required String recordId,
+    required String providerId,
+  }) async {
+    final resp = await _dio.post('/health-records/share-provider', data: {
+      'record_id': recordId,
+      'provider_id': providerId,
+    });
+    return _asMap(resp);
+  }
+
+  /// Get data access log for a record.
+  Future<Map<String, dynamic>> getDataAccessLog(String recordId) async {
+    final resp = await _dio.get('/health-records/access-log', queryParameters: {
+      'record_id': recordId,
+    });
+    return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Prescription Extended (Sprint 12)
+  // ==========================================================================
+
+  /// Create a prescription.
+  Future<Map<String, dynamic>> createPrescription({
+    required String consultationId,
+    required List<Map<String, dynamic>> medications,
+  }) async {
+    final resp = await _dio.post('/prescriptions', data: {
+      'consultation_id': consultationId,
+      'medications': medications,
+    });
+    return _asMap(resp);
+  }
+
+  /// Get a prescription by ID.
+  Future<Map<String, dynamic>> getPrescription(String prescriptionId) async {
+    final resp = await _dio.get('/prescriptions/$prescriptionId');
+    return _asMap(resp);
+  }
+
+  /// List prescriptions for a user.
+  Future<Map<String, dynamic>> listPrescriptions({
+    String? userId,
+    String? status,
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final resp = await _dio.get('/prescriptions', queryParameters: {
+      if (userId != null) 'user_id': userId,
+      if (status != null) 'status': status,
+      'limit': limit,
+      'offset': offset,
+    });
+    return _asMap(resp);
+  }
+
+  /// Update prescription status.
+  Future<Map<String, dynamic>> updatePrescriptionStatus(
+    String prescriptionId,
+    String status,
+  ) async {
+    final resp =
+        await _dio.patch('/prescriptions/$prescriptionId/status', data: {
+      'status': status,
+    });
+    return _asMap(resp);
+  }
+
+  /// Add a medication to a prescription.
+  Future<Map<String, dynamic>> addMedication(
+    String prescriptionId,
+    Map<String, dynamic> medication,
+  ) async {
+    final resp = await _dio
+        .post('/prescriptions/$prescriptionId/medications', data: medication);
+    return _asMap(resp);
+  }
+
+  /// Remove a medication from a prescription.
+  Future<void> removeMedication(
+      String prescriptionId, String medicationId) async {
+    await _dio
+        .delete('/prescriptions/$prescriptionId/medications/$medicationId');
+  }
+
+  /// Check drug interactions between medications.
+  Future<Map<String, dynamic>> checkDrugInteraction(
+      List<String> medicationIds) async {
+    final resp =
+        await _dio.post('/prescriptions/check-drug-interaction', data: {
+      'medication_ids': medicationIds,
+    });
+    return _asMap(resp);
+  }
+
+  /// Get medication reminders for a user.
+  Future<Map<String, dynamic>> getMedicationReminders(
+    String userId, {
+    String? date,
+  }) async {
+    final resp = await _dio.get('/prescriptions/reminders', queryParameters: {
+      'user_id': userId,
+      if (date != null) 'date': date,
+    });
+    return _asMap(resp);
+  }
+
+  /// Update dispensary status of a prescription.
+  Future<Map<String, dynamic>> updateDispensaryStatus(
+    String prescriptionId,
+    String status,
+  ) async {
+    final resp = await _dio
+        .patch('/prescriptions/$prescriptionId/dispensary-status', data: {
+      'status': status,
+    });
+    return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Community Extended – Comments & Challenges (Sprint 12)
+  // ==========================================================================
+
+  /// Create a comment on a post.
+  Future<Map<String, dynamic>> createComment({
+    required String postId,
+    required String authorId,
+    required String content,
+  }) async {
+    final resp = await _dio.post('/posts/$postId/comments', data: {
+      'author_id': authorId,
+      'content': content,
+    });
+    return _asMap(resp);
+  }
+
+  /// List comments on a post.
+  Future<Map<String, dynamic>> listComments(
+    String postId, {
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final resp = await _dio
+        .get('/posts/$postId/comments', queryParameters: {
+      'limit': limit,
+      'offset': offset,
+    });
+    return _asMap(resp);
+  }
+
+  /// Delete a post.
+  Future<void> deletePost(String postId) async {
+    await _dio.delete('/posts/$postId');
+  }
+
+  /// Create a health challenge.
+  Future<Map<String, dynamic>> createChallenge({
+    required String title,
+    required String description,
+    required String startDate,
+    required String endDate,
+  }) async {
+    final resp = await _dio.post('/challenges', data: {
+      'title': title,
+      'description': description,
+      'start_date': startDate,
+      'end_date': endDate,
+    });
+    return _asMap(resp);
+  }
+
+  /// Get a challenge by ID.
+  Future<Map<String, dynamic>> getChallenge(String challengeId) async {
+    final resp = await _dio.get('/challenges/$challengeId');
+    return _asMap(resp);
+  }
+
+  /// List all challenges.
+  Future<Map<String, dynamic>> listChallenges({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final resp = await _dio.get('/challenges', queryParameters: {
+      'limit': limit,
+      'offset': offset,
+    });
+    return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Family Extended (Sprint 12)
+  // ==========================================================================
+
+  /// Get a family group by ID.
+  Future<Map<String, dynamic>> getFamilyGroup(String groupId) async {
+    final resp = await _dio.get('/family/groups/$groupId');
+    return _asMap(resp);
+  }
+
+  /// Invite a member to a family group.
+  Future<Map<String, dynamic>> inviteFamilyMember({
+    required String groupId,
+    required String inviteePhone,
+    String? role,
+  }) async {
+    final resp = await _dio.post('/family/groups/$groupId/invite', data: {
+      'invitee_phone': inviteePhone,
+      if (role != null) 'role': role,
+    });
+    return _asMap(resp);
+  }
+
+  /// Respond to a family invitation.
+  Future<Map<String, dynamic>> respondToInvitation({
+    required String invitationId,
+    required bool accept,
+  }) async {
+    final resp = await _dio
+        .post('/family/invitations/$invitationId/respond', data: {
+      'accept': accept,
+    });
+    return _asMap(resp);
+  }
+
+  /// Remove a member from a family group.
+  Future<void> removeFamilyMember(String groupId, String userId) async {
+    await _dio.delete('/family/groups/$groupId/members/$userId');
+  }
+
+  /// Update a member's role in a family group.
+  Future<Map<String, dynamic>> updateMemberRole({
+    required String groupId,
+    required String userId,
+    required String role,
+  }) async {
+    final resp =
+        await _dio.put('/family/groups/$groupId/members/$userId/role', data: {
+      'role': role,
+    });
+    return _asMap(resp);
+  }
+
+  /// List members of a family group.
+  Future<Map<String, dynamic>> listFamilyMembers(String groupId) async {
+    final resp = await _dio.get('/family/groups/$groupId/members');
+    return _asMap(resp);
+  }
+
+  /// Set sharing preferences for a family group.
+  Future<void> setSharingPreferences(
+    String groupId,
+    Map<String, dynamic> preferences,
+  ) async {
+    await _dio.put('/family/groups/$groupId/sharing-prefs',
+        data: preferences);
+  }
+
+  /// Validate sharing access for a user in a family group.
+  Future<Map<String, dynamic>> validateSharingAccess({
+    required String groupId,
+    required String userId,
+  }) async {
+    final resp = await _dio
+        .get('/family/groups/$groupId/sharing-access', queryParameters: {
+      'user_id': userId,
+    });
+    return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Video/WebRTC Extended (Sprint 12)
+  // ==========================================================================
+
+  /// Create a video room.
+  Future<Map<String, dynamic>> createVideoRoom(
+      String consultationId) async {
+    final resp = await _dio.post('/video/rooms', data: {
+      'consultation_id': consultationId,
+    });
+    return _asMap(resp);
+  }
+
+  /// Get a video room.
+  Future<Map<String, dynamic>> getVideoRoom(String roomId) async {
+    final resp = await _dio.get('/video/rooms/$roomId');
+    return _asMap(resp);
+  }
+
+  /// End a video room.
+  Future<Map<String, dynamic>> endVideoRoom(String roomId) async {
+    final resp = await _dio.post('/video/rooms/$roomId/end');
+    return _asMap(resp);
+  }
+
+  /// Send a WebRTC signal.
+  Future<void> sendVideoSignal({
+    required String roomId,
+    required String signalType,
+    required String payload,
+  }) async {
+    await _dio.post('/video/rooms/$roomId/signal', data: {
+      'signal_type': signalType,
+      'payload': payload,
+    });
+  }
+
+  /// Get pending video signals for a user in a room.
+  Future<Map<String, dynamic>> getVideoSignals({
+    required String roomId,
+    required String userId,
+  }) async {
+    final resp = await _dio.get('/video/rooms/$roomId/signals', queryParameters: {
+      'user_id': userId,
+    });
+    return _asMap(resp);
+  }
+
+  /// List participants in a video room.
+  Future<Map<String, dynamic>> listVideoParticipants(String roomId) async {
+    final resp = await _dio.get('/video/rooms/$roomId/participants');
+    return _asMap(resp);
+  }
+
+  /// Get video room statistics.
+  Future<Map<String, dynamic>> getVideoRoomStats(String roomId) async {
+    final resp = await _dio.get('/video/rooms/$roomId/stats');
+    return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Notification Extended (Sprint 12)
+  // ==========================================================================
+
+  /// Send a notification to a user.
+  Future<Map<String, dynamic>> sendNotification({
+    required String userId,
+    required String title,
+    required String body,
+    String? type,
+  }) async {
+    final resp = await _dio.post('/notifications', data: {
+      'user_id': userId,
+      'title': title,
+      'body': body,
+      if (type != null) 'type': type,
+    });
+    return _asMap(resp);
+  }
+
+  /// Mark all notifications as read for a user.
+  Future<void> markAllNotificationsAsRead(String userId) async {
+    await _dio.post('/notifications/mark-all-read', data: {
+      'user_id': userId,
+    });
+  }
+
+  /// Update notification preferences.
+  Future<void> updateNotificationPreferences(
+    String userId,
+    Map<String, dynamic> preferences,
+  ) async {
+    await _dio.put('/notifications/preferences', data: {
+      'user_id': userId,
+      ...preferences,
+    });
+  }
+
+  /// Get notification preferences.
+  Future<Map<String, dynamic>> getNotificationPreferences(
+      String userId) async {
+    final resp = await _dio
+        .get('/notifications/preferences', queryParameters: {
+      'user_id': userId,
+    });
+    return _asMap(resp);
+  }
+
+  /// Register a push notification token (FCM/APNs).
+  Future<Map<String, dynamic>> registerPushToken({
+    required String userId,
+    required String token,
+    String platform = 'fcm',
+  }) async {
+    final resp = await _dio.post('/notifications/push-token', data: {
+      'user_id': userId,
+      'token': token,
+      'platform': platform,
+    });
+    return _asMap(resp);
+  }
+
+  /// Send a notification from a template.
+  Future<Map<String, dynamic>> sendNotificationFromTemplate({
+    required String templateId,
+    required String userId,
+    Map<String, String>? params,
+  }) async {
+    final resp = await _dio.post('/notifications/send-template', data: {
+      'template_id': templateId,
+      'user_id': userId,
+      if (params != null) 'params': params,
+    });
+    return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Translation Extended (Sprint 12)
+  // ==========================================================================
+
+  /// Detect the language of a text.
+  Future<Map<String, dynamic>> detectLanguage(String text) async {
+    final resp = await _dio.post('/translations/detect-language', data: {
+      'text': text,
+    });
+    return _asMap(resp);
+  }
+
+  /// List supported languages.
+  Future<Map<String, dynamic>> listSupportedLanguages() async {
+    final resp = await _dio.get('/translations/languages');
+    return _asMap(resp);
+  }
+
+  /// Translate a batch of texts.
+  Future<Map<String, dynamic>> translateBatch({
+    required List<String> texts,
+    required String targetLanguage,
+    String? sourceLanguage,
+  }) async {
+    final resp = await _dio.post('/translations/batch', data: {
+      'texts': texts,
+      'target_language': targetLanguage,
+      if (sourceLanguage != null) 'source_language': sourceLanguage,
+    });
+    return _asMap(resp);
+  }
+
+  /// Get translation history for a user.
+  Future<Map<String, dynamic>> getTranslationHistory(
+    String userId, {
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final resp =
+        await _dio.get('/translations/history', queryParameters: {
+      'user_id': userId,
+      'limit': limit,
+      'offset': offset,
+    });
+    return _asMap(resp);
+  }
+
+  /// Get translation usage statistics.
+  Future<Map<String, dynamic>> getTranslationUsage(String userId) async {
+    final resp =
+        await _dio.get('/translations/usage', queryParameters: {
+      'user_id': userId,
+    });
+    return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Telemedicine Extended (Sprint 12)
+  // ==========================================================================
+
+  /// Get a consultation by ID.
+  Future<Map<String, dynamic>> getConsultation(
+      String consultationId) async {
+    final resp =
+        await _dio.get('/telemedicine/consultations/$consultationId');
+    return _asMap(resp);
+  }
+
+  /// List consultations.
+  Future<Map<String, dynamic>> listConsultations({
+    String? userId,
+    String? status,
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final resp = await _dio
+        .get('/telemedicine/consultations', queryParameters: {
+      if (userId != null) 'user_id': userId,
+      if (status != null) 'status': status,
+      'limit': limit,
+      'offset': offset,
+    });
+    return _asMap(resp);
+  }
+
+  /// Start a video session for a consultation.
+  Future<Map<String, dynamic>> startVideoSession(
+      String consultationId) async {
+    final resp = await _dio
+        .post('/telemedicine/consultations/$consultationId/start-video');
+    return _asMap(resp);
+  }
+
+  /// End a video session for a consultation.
+  Future<Map<String, dynamic>> endVideoSession(
+      String consultationId) async {
+    final resp = await _dio
+        .post('/telemedicine/consultations/$consultationId/end-video');
+    return _asMap(resp);
+  }
+
+  /// Rate a consultation.
+  Future<void> rateConsultation({
+    required String consultationId,
+    required int rating,
+    String? comment,
+  }) async {
+    await _dio
+        .post('/telemedicine/consultations/$consultationId/rate', data: {
+      'rating': rating,
+      if (comment != null) 'comment': comment,
+    });
+  }
+
+  // ==========================================================================
+  // Subscription Extended (Sprint 12)
+  // ==========================================================================
+
+  /// Check if a user has access to a feature.
+  Future<Map<String, dynamic>> checkFeatureAccess({
+    required String userId,
+    required String feature,
+  }) async {
+    final resp = await _dio
+        .get('/subscriptions/$userId/feature-access', queryParameters: {
+      'feature': feature,
+    });
+    return _asMap(resp);
+  }
+
+  /// Check if a user has access to a cartridge type.
+  Future<Map<String, dynamic>> checkCartridgeAccess({
+    required String userId,
+    required String cartridgeType,
+  }) async {
+    final resp = await _dio
+        .get('/subscriptions/$userId/cartridge-access', queryParameters: {
+      'cartridge_type': cartridgeType,
+    });
+    return _asMap(resp);
+  }
+
+  /// List cartridges accessible to a user's subscription.
+  Future<Map<String, dynamic>> listAccessibleCartridges(
+      String userId) async {
+    final resp =
+        await _dio.get('/subscriptions/$userId/accessible-cartridges');
+    return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Coaching Extended (Sprint 12)
+  // ==========================================================================
+
+  /// List coaching messages.
+  Future<Map<String, dynamic>> listCoachingMessages(
+    String userId, {
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final resp = await _dio.get('/coaching/messages', queryParameters: {
+      'user_id': userId,
+      'limit': limit,
+      'offset': offset,
+    });
+    return _asMap(resp);
+  }
+
+  /// Get weekly health report.
+  Future<Map<String, dynamic>> getWeeklyReport(String userId) async {
+    final resp = await _dio.get('/coaching/weekly-report/$userId');
+    return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Admin Extended (Sprint 12)
+  // ==========================================================================
+
+  /// Create an admin.
+  Future<Map<String, dynamic>> createAdmin({
+    required String email,
+    required String password,
+    required String displayName,
+    int? role,
+    String? region,
+    String? branch,
+  }) async {
+    final resp = await _dio.post('/admin/admins', data: {
+      'email': email,
+      'password': password,
+      'display_name': displayName,
+      if (role != null) 'role': role,
+      if (region != null) 'region': region,
+      if (branch != null) 'branch': branch,
+    });
+    return _asMap(resp);
+  }
+
+  /// List admins.
+  Future<Map<String, dynamic>> listAdmins({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    final resp = await _dio.get('/admin/admins', queryParameters: {
+      'limit': limit,
+      'offset': offset,
+    });
+    return _asMap(resp);
+  }
+
+  /// Get admin by ID.
+  Future<Map<String, dynamic>> getAdmin(String adminId) async {
+    final resp = await _dio.get('/admin/admins/$adminId');
+    return _asMap(resp);
+  }
+
+  /// Update admin role.
+  Future<Map<String, dynamic>> updateAdminRole(
+    String adminId,
+    int newRole,
+  ) async {
+    final resp = await _dio.put('/admin/admins/$adminId/role', data: {
+      'new_role': newRole,
+    });
+    return _asMap(resp);
+  }
+
+  /// Deactivate an admin.
+  Future<Map<String, dynamic>> deactivateAdmin(String adminId) async {
+    final resp = await _dio.post('/admin/admins/$adminId/deactivate');
+    return _asMap(resp);
+  }
+
+  /// List admins by region.
+  Future<Map<String, dynamic>> listAdminsByRegion({
+    String? countryCode,
+    String? regionCode,
+  }) async {
+    final resp =
+        await _dio.get('/admin/admins/by-region', queryParameters: {
+      if (countryCode != null) 'country_code': countryCode,
+      if (regionCode != null) 'region_code': regionCode,
+    });
+    return _asMap(resp);
+  }
+
+  /// Get detailed audit log.
+  Future<Map<String, dynamic>> getAuditLogDetails({
+    String? adminId,
+    String? action,
+    int limit = 50,
+    int offset = 0,
+  }) async {
+    final resp =
+        await _dio.get('/admin/audit-log/details', queryParameters: {
+      if (adminId != null) 'admin_id': adminId,
+      if (action != null) 'action': action,
+      'limit': limit,
+      'offset': offset,
+    });
+    return _asMap(resp);
+  }
+
+  /// Set a system config value.
+  Future<Map<String, dynamic>> setSystemConfig({
+    required String key,
+    required String value,
+    String? description,
+  }) async {
+    final resp = await _dio.put('/admin/config', data: {
+      'key': key,
+      'value': value,
+      if (description != null) 'description': description,
+    });
+    return _asMap(resp);
+  }
+
+  /// Get a system config value.
+  Future<Map<String, dynamic>> getSystemConfig(String key) async {
+    final resp = await _dio.get('/admin/config', queryParameters: {
+      'key': key,
+    });
+    return _asMap(resp);
+  }
+
+  /// List system configs.
+  Future<Map<String, dynamic>> listSystemConfigs({
+    String? language,
+    String? category,
+    bool? includeSecrets,
+  }) async {
+    final resp = await _dio.get('/admin/configs', queryParameters: {
+      if (language != null) 'language': language,
+      if (category != null) 'category': category,
+      if (includeSecrets != null) 'include_secrets': includeSecrets,
+    });
+    return _asMap(resp);
+  }
+
+  /// Get a config with metadata.
+  Future<Map<String, dynamic>> getConfigWithMeta(
+    String key, {
+    String? language,
+  }) async {
+    final resp = await _dio.get('/admin/configs/$key', queryParameters: {
+      if (language != null) 'language': language,
+    });
+    return _asMap(resp);
+  }
+
+  /// Validate a config value.
+  Future<Map<String, dynamic>> validateConfigValue({
+    required String key,
+    required String value,
+  }) async {
+    final resp = await _dio.post('/admin/configs/validate', data: {
+      'key': key,
+      'value': value,
+    });
+    return _asMap(resp);
+  }
+
+  /// Bulk set config values.
+  Future<Map<String, dynamic>> bulkSetConfigs({
+    required List<Map<String, String>> configs,
+    String? reason,
+  }) async {
+    final resp = await _dio.post('/admin/configs/bulk', data: {
+      'configs': configs,
+      if (reason != null) 'reason': reason,
+    });
+    return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Measurement Extended (Sprint 12)
+  // ==========================================================================
+
+  /// Export a single measurement in FHIR format.
+  Future<Map<String, dynamic>> exportSingleMeasurement(
+      String measurementId) async {
+    final resp = await _dio.get('/measurements/$measurementId/export');
+    return _asMap(resp);
+  }
+
+  /// Export measurements to FHIR Observations bundle.
+  Future<Map<String, dynamic>> exportToFhirObservations({
+    required String userId,
+    List<String>? measurementIds,
+  }) async {
+    final resp =
+        await _dio.post('/measurements/export/fhir-observations', data: {
+      'user_id': userId,
+      if (measurementIds != null) 'measurement_ids': measurementIds,
+    });
+    return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Device Extended (Sprint 12)
+  // ==========================================================================
+
+  /// Request an OTA firmware update for a device.
+  Future<Map<String, dynamic>> requestOtaUpdate(
+    String deviceId, {
+    String? targetVersion,
+  }) async {
+    final resp = await _dio.post('/devices/$deviceId/ota', data: {
+      if (targetVersion != null) 'target_version': targetVersion,
+    });
+    return _asMap(resp);
+  }
+
+  /// Update device status.
+  Future<Map<String, dynamic>> updateDeviceStatus(
+    String deviceId,
+    String status,
+  ) async {
+    final resp = await _dio.put('/devices/$deviceId/status', data: {
+      'status': status,
+    });
+    return _asMap(resp);
+  }
+
+  // ==========================================================================
+  // Reservation Extended (Sprint 12)
+  // ==========================================================================
+
+  /// Cancel a reservation.
+  Future<void> cancelReservation(String reservationId) async {
+    await _dio.delete('/reservations/$reservationId');
   }
 
   // ==========================================================================

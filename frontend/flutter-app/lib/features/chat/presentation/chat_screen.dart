@@ -5,6 +5,8 @@ import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/shared/providers/chat_provider.dart';
 import 'package:manpasik/shared/widgets/streaming_text_bubble.dart';
 import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/shared/widgets/cosmic_background.dart';
+import 'package:manpasik/shared/widgets/jagae_pattern.dart';
 
 /// AI 건강 어시스턴트 채팅 화면
 ///
@@ -95,20 +97,35 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     });
 
     return Scaffold(
+
+      backgroundColor: Colors.transparent, // Make scaffold transparent for CosmicBackground
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.smart_toy_rounded,
-              color: theme.colorScheme.primary,
+              Icons.auto_awesome_rounded, // Changed to Oracle icon
+              color: AppTheme.sanggamGold,
               size: 24,
             ),
             const SizedBox(width: 8),
-            const Text('AI 건강 코치'),
+            Text(
+              '만파식 AI 코치',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                shadows: [
+                  Shadow(color: AppTheme.sanggamGold, blurRadius: 10),
+                ],
+              ),
+            ),
           ],
         ),
         centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white70),
         actions: [
           if (chatState.messages.isNotEmpty)
             IconButton(
@@ -118,37 +135,41 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             ),
         ],
       ),
-      body: Column(
-        children: [
-          // 면책 조항
-          const _DisclaimerBanner(
-            text: 'AI 건강 코치의 응답은 참고용이며, 의료 전문가의 진단을 대체하지 않습니다.',
-          ),
+      body: CosmicBackground(
+        child: SafeArea( // Need SafeArea inside CosmicBackground
+          child: Column(
+            children: [
+              // 면책 조항 (Glass Style)
+              const _DisclaimerBanner(
+                text: 'AI 건강 코치의 응답은 참고용이며, 의료 전문가의 진단을 대체하지 않습니다.',
+              ),
 
-          // 메시지 영역
-          Expanded(
-            child: chatState.messages.isEmpty && !chatState.isStreaming
-                ? _EmptyState(onExampleTap: _sendExample)
-                : _MessageList(
-                    messages: chatState.messages,
-                    isLoading: chatState.isLoading,
-                    isStreaming: chatState.isStreaming,
-                    streamingContent: chatState.streamingContent,
-                    scrollController: _scrollController,
-                    typingText: 'AI가 응답 중...',
-                  ),
-          ),
+              // 메시지 영역
+              Expanded(
+                child: chatState.messages.isEmpty && !chatState.isStreaming
+                    ? _EmptyState(onExampleTap: _sendExample)
+                    : _MessageList(
+                        messages: chatState.messages,
+                        isLoading: chatState.isLoading,
+                        isStreaming: chatState.isStreaming,
+                        streamingContent: chatState.streamingContent,
+                        scrollController: _scrollController,
+                        typingText: 'AI가 분석 중...',
+                      ),
+              ),
 
-          // 입력 영역
-          _ChatInputBar(
-            controller: _controller,
-            focusNode: _focusNode,
-            hintText: '건강에 대해 물어보세요...',
-            sendLabel: '전송',
-            isLoading: chatState.isLoading || chatState.isStreaming,
-            onSend: _sendMessage,
+              // 입력 영역
+              _ChatInputBar(
+                controller: _controller,
+                focusNode: _focusNode,
+                hintText: '건강에 대해 물어보세요...',
+                sendLabel: '전송',
+                isLoading: chatState.isLoading || chatState.isStreaming,
+                onSend: _sendMessage,
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -399,48 +420,51 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
               crossAxisAlignment:
                   isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: isUser
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.only(
+                KoreanEdgeBorder(
+                  borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(16),
                       topRight: const Radius.circular(16),
                       bottomLeft: Radius.circular(isUser ? 16 : 4),
                       bottomRight: Radius.circular(isUser ? 4 : 16),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: (isUser ? theme.colorScheme.primary : Colors.black)
-                            .withValues(alpha: 0.08),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        widget.message.content,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: isUser ? Colors.white : theme.colorScheme.onSurface,
-                          height: 1.5,
-                        ),
+                  borderWidth: isUser ? 0 : 1.0, // Only border for AI
+                  borderColor: AppTheme.sanggamGold.withOpacity(0.5),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: isUser
+                          ? AppTheme.celadonTeal.withOpacity(0.8) // User: Teal Glass
+                          : const Color(0xFF1A1A1A).withOpacity(0.8), // AI: Dark Glass
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(16),
+                        topRight: const Radius.circular(16),
+                        bottomLeft: Radius.circular(isUser ? 16 : 4),
+                        bottomRight: Radius.circular(isUser ? 4 : 16),
                       ),
-                      if (_translatedText != null) ...[
-                        const Divider(height: 12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                         Text(
-                          _translatedText!,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: isUser ? Colors.white70 : theme.colorScheme.onSurfaceVariant,
-                            fontStyle: FontStyle.italic,
+                          widget.message.content,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.white, // Always white text on glass
+                            height: 1.5,
+                            fontFamily: isUser ? null : 'Noto Sans KR', // Serif-like for AI? Or clean?
                           ),
                         ),
+                        if (_translatedText != null) ...[
+                          const Divider(height: 12, color: Colors.white24),
+                          Text(
+                            _translatedText!,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: Colors.white70,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 4),

@@ -182,7 +182,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Widget _buildLoginForm(BuildContext context, ThemeData theme) {
-    return Form(
+    return FocusTraversalGroup(
+      child: Form(
 
                   key: _formKey,
                   child: Column(
@@ -190,10 +191,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       // 로고 영역
-                      Icon(
-                        Icons.biotech_rounded,
-                        size: 64,
-                        color: theme.colorScheme.primary,
+                      Semantics(
+                        label: '만파식 AI 헬스케어 로고',
+                        child: Icon(
+                          Icons.biotech_rounded,
+                          size: 64,
+                          color: theme.colorScheme.primary,
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Text(
@@ -348,22 +352,48 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
 
+                      // 가상 체험 버튼 (Demo Mode)
+                      Semantics(
+                        button: true,
+                        label: '가상 데이터 체험 시작 버튼',
+                        child: TextButton.icon(
+                          onPressed: () {
+                            ref.read(authProvider.notifier).loginAsDemo();
+                            context.go('/home');
+                          },
+                          icon: Icon(Icons.science_outlined, color: theme.colorScheme.secondary),
+                          label: Text(
+                            '가상 데이터 체험 시작',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: theme.colorScheme.secondary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+
                       // 둘러보기 버튼
-                      TextButton(
-                        onPressed: () {
-                          ref.read(authProvider.notifier).loginAsGuest();
-                          context.go('/home');
-                        },
-                        child: Text(
-                          '비회원 둘러보기',
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color: theme.colorScheme.secondary,
-                            decoration: TextDecoration.underline,
+                      Semantics(
+                        button: true,
+                        label: '비회원 둘러보기 버튼',
+                        child: TextButton(
+                          onPressed: () {
+                            ref.read(authProvider.notifier).loginAsGuest();
+                            context.go('/home');
+                          },
+                          child: Text(
+                            '비회원 둘러보기',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
                         ),
                       ),
                     ],
                   ),
+      ),
       );
   }
 } // End of LoginScreen

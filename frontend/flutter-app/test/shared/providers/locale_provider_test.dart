@@ -4,12 +4,14 @@
 import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:manpasik/shared/providers/locale_provider.dart';
 
 void main() {
   late LocaleNotifier notifier;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     notifier = LocaleNotifier();
   });
 

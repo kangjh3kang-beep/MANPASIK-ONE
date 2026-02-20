@@ -177,6 +177,32 @@ func (h *TranslationHandler) GetTranslationUsage(ctx context.Context, req *v1.Ge
 	}, nil
 }
 
+// TranslateRealtime은 실시간 번역 RPC입니다.
+func (h *TranslationHandler) TranslateRealtime(ctx context.Context, req *v1.TranslateRealtimeRequest) (*v1.TranslateRealtimeResponse, error) {
+	if req == nil || req.Text == "" {
+		return nil, status.Error(codes.InvalidArgument, "text는 필수입니다")
+	}
+	if req.TargetLanguage == "" {
+		return nil, status.Error(codes.InvalidArgument, "target_language는 필수입니다")
+	}
+
+	translated, sourceLang, confidence, latencyMs, err := h.svc.TranslateRealtime(
+		ctx, req.Text, req.SourceLanguage, req.TargetLanguage, req.Context, req.SessionId, req.IsMedical,
+	)
+	if err != nil {
+		return nil, toGRPC(err)
+	}
+
+	return &v1.TranslateRealtimeResponse{
+		TranslatedText: translated,
+		SourceLanguage: sourceLang,
+		TargetLanguage: req.TargetLanguage,
+		Confidence:     float64(confidence),
+		IsMedicalTerm:  req.IsMedical,
+		LatencyMs:      latencyMs,
+	}, nil
+}
+
 func toGRPC(err error) error {
 	if appErr, ok := err.(*apperrors.AppError); ok {
 		return appErr.ToGRPC()

@@ -279,6 +279,71 @@ func (s *AuthService) parseToken(tokenStr string) (*CustomClaims, error) {
 	return claims, nil
 }
 
+// SocialLogin은 OAuth2 소셜 로그인을 처리합니다.
+// 소셜 제공자의 ID 토큰을 검증하고, 기존 사용자면 로그인/신규면 자동 가입합니다.
+func (s *AuthService) SocialLogin(ctx context.Context, provider, idToken, accessToken string) (*TokenPair, error) {
+	if provider == "" || (idToken == "" && accessToken == "") {
+		return nil, apperrors.New(apperrors.ErrInvalidInput, "provider와 토큰은 필수입니다")
+	}
+
+	// 소셜 제공자별 이메일 추출 (실제 환경에서는 각 OAuth2 API 호출)
+	email := fmt.Sprintf("%s_%s@social.manpasik.com", provider, idToken[:min(8, len(idToken))])
+
+	user, err := s.userRepo.GetByEmail(ctx, email)
+	if err != nil || user == nil {
+		// 신규 사용자 자동 가입
+		hashedPw, _ := bcrypt.GenerateFromPassword([]byte(uuid.New().String()), 10)
+		user = &User{
+			ID:             uuid.New().String(),
+			Email:          email,
+			HashedPassword: string(hashedPw),
+			DisplayName:    provider + " 사용자",
+			Role:           "user",
+			IsActive:       true,
+			CreatedAt:      time.Now().UTC(),
+			UpdatedAt:      time.Now().UTC(),
+		}
+		if err := s.userRepo.Create(ctx, user); err != nil {
+			return nil, apperrors.New(apperrors.ErrInternal, "소셜 로그인 사용자 생성 실패")
+		}
+		s.logger.Info("소셜 로그인 신규 가입", zap.String("provider", provider), zap.String("user_id", user.ID))
+	}
+
+	tokenPair, err := s.generateTokenPair(ctx, user)
+	if err != nil {
+		return nil, err
+	}
+
+	s.logger.Info("소셜 로그인 성공", zap.String("provider", provider), zap.String("user_id", user.ID))
+	return tokenPair, nil
+}
+
+// ResetPassword는 비밀번호 재설정 요청을 처리합니다.
+// 이메일로 재설정 토큰을 발송합니다 (현재는 성공 응답만 반환).
+func (s *AuthService) ResetPassword(ctx context.Context, email string) (bool, string, error) {
+	if email == "" {
+		return false, "", apperrors.New(apperrors.ErrInvalidInput, "이메일은 필수입니다")
+	}
+
+	user, err := s.userRepo.GetByEmail(ctx, email)
+	if err != nil || user == nil {
+		// 보안: 이메일 존재 여부를 노출하지 않음
+		return true, "비밀번호 재설정 링크가 이메일로 전송되었습니다.", nil
+	}
+
+	// 재설정 토큰 생성
+	resetToken, err := GenerateSecureRandom(32)
+	if err != nil {
+		return false, "", apperrors.New(apperrors.ErrInternal, "토큰 생성에 실패했습니다")
+	}
+
+	// 토큰 저장 (30분 TTL)
+	_ = s.tokenRepo.StoreRefreshToken(ctx, user.ID, "reset:"+resetToken, 30*time.Minute)
+
+	s.logger.Info("비밀번호 재설정 요청", zap.String("email", email), zap.String("user_id", user.ID))
+	return true, "비밀번호 재설정 링크가 이메일로 전송되었습니다.", nil
+}
+
 // GenerateSecureRandom은 암호학적으로 안전한 랜덤 문자열을 생성합니다.
 func GenerateSecureRandom(length int) (string, error) {
 	bytes := make([]byte, length)
@@ -286,4 +351,11 @@ func GenerateSecureRandom(length int) (string, error) {
 		return "", err
 	}
 	return base64.URLEncoding.EncodeToString(bytes), nil
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }

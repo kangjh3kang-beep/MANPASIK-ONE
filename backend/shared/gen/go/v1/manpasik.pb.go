@@ -25264,6 +25264,1158 @@ func (x *AuditLogDetail) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+type StreamChatRequest struct {
+	state                 protoimpl.MessageState `protogen:"open.v1"`
+	UserId                string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Message               string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
+	SessionId             string                 `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	ContextMeasurementIds []string               `protobuf:"bytes,4,rep,name=context_measurement_ids,json=contextMeasurementIds,proto3" json:"context_measurement_ids,omitempty"`
+	unknownFields         protoimpl.UnknownFields
+	sizeCache             protoimpl.SizeCache
+}
+
+func (x *StreamChatRequest) Reset() {
+	*x = StreamChatRequest{}
+	mi := &file_manpasik_proto_msgTypes[331]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StreamChatRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StreamChatRequest) ProtoMessage() {}
+
+func (x *StreamChatRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[331]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StreamChatRequest.ProtoReflect.Descriptor instead.
+func (*StreamChatRequest) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{331}
+}
+
+func (x *StreamChatRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *StreamChatRequest) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *StreamChatRequest) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *StreamChatRequest) GetContextMeasurementIds() []string {
+	if x != nil {
+		return x.ContextMeasurementIds
+	}
+	return nil
+}
+
+type StreamChatResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Chunk         string                 `protobuf:"bytes,1,opt,name=chunk,proto3" json:"chunk,omitempty"`
+	IsFinal       bool                   `protobuf:"varint,2,opt,name=is_final,json=isFinal,proto3" json:"is_final,omitempty"`
+	SessionId     string                 `protobuf:"bytes,3,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	FullResponse  string                 `protobuf:"bytes,4,opt,name=full_response,json=fullResponse,proto3" json:"full_response,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *StreamChatResponse) Reset() {
+	*x = StreamChatResponse{}
+	mi := &file_manpasik_proto_msgTypes[332]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *StreamChatResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*StreamChatResponse) ProtoMessage() {}
+
+func (x *StreamChatResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[332]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use StreamChatResponse.ProtoReflect.Descriptor instead.
+func (*StreamChatResponse) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{332}
+}
+
+func (x *StreamChatResponse) GetChunk() string {
+	if x != nil {
+		return x.Chunk
+	}
+	return ""
+}
+
+func (x *StreamChatResponse) GetIsFinal() bool {
+	if x != nil {
+		return x.IsFinal
+	}
+	return false
+}
+
+func (x *StreamChatResponse) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+func (x *StreamChatResponse) GetFullResponse() string {
+	if x != nil {
+		return x.FullResponse
+	}
+	return ""
+}
+
+type GetChallengeLeaderboardRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ChallengeId   string                 `protobuf:"bytes,1,opt,name=challenge_id,json=challengeId,proto3" json:"challenge_id,omitempty"`
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	Offset        int32                  `protobuf:"varint,3,opt,name=offset,proto3" json:"offset,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetChallengeLeaderboardRequest) Reset() {
+	*x = GetChallengeLeaderboardRequest{}
+	mi := &file_manpasik_proto_msgTypes[333]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetChallengeLeaderboardRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetChallengeLeaderboardRequest) ProtoMessage() {}
+
+func (x *GetChallengeLeaderboardRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[333]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetChallengeLeaderboardRequest.ProtoReflect.Descriptor instead.
+func (*GetChallengeLeaderboardRequest) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{333}
+}
+
+func (x *GetChallengeLeaderboardRequest) GetChallengeId() string {
+	if x != nil {
+		return x.ChallengeId
+	}
+	return ""
+}
+
+func (x *GetChallengeLeaderboardRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+func (x *GetChallengeLeaderboardRequest) GetOffset() int32 {
+	if x != nil {
+		return x.Offset
+	}
+	return 0
+}
+
+type GetChallengeLeaderboardResponse struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	Entries           []*LeaderboardEntry    `protobuf:"bytes,1,rep,name=entries,proto3" json:"entries,omitempty"`
+	TotalParticipants int32                  `protobuf:"varint,2,opt,name=total_participants,json=totalParticipants,proto3" json:"total_participants,omitempty"`
+	MyEntry           *LeaderboardEntry      `protobuf:"bytes,3,opt,name=my_entry,json=myEntry,proto3" json:"my_entry,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *GetChallengeLeaderboardResponse) Reset() {
+	*x = GetChallengeLeaderboardResponse{}
+	mi := &file_manpasik_proto_msgTypes[334]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetChallengeLeaderboardResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetChallengeLeaderboardResponse) ProtoMessage() {}
+
+func (x *GetChallengeLeaderboardResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[334]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetChallengeLeaderboardResponse.ProtoReflect.Descriptor instead.
+func (*GetChallengeLeaderboardResponse) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{334}
+}
+
+func (x *GetChallengeLeaderboardResponse) GetEntries() []*LeaderboardEntry {
+	if x != nil {
+		return x.Entries
+	}
+	return nil
+}
+
+func (x *GetChallengeLeaderboardResponse) GetTotalParticipants() int32 {
+	if x != nil {
+		return x.TotalParticipants
+	}
+	return 0
+}
+
+func (x *GetChallengeLeaderboardResponse) GetMyEntry() *LeaderboardEntry {
+	if x != nil {
+		return x.MyEntry
+	}
+	return nil
+}
+
+type LeaderboardEntry struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Rank          int32                  `protobuf:"varint,1,opt,name=rank,proto3" json:"rank,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	DisplayName   string                 `protobuf:"bytes,3,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
+	AvatarUrl     string                 `protobuf:"bytes,4,opt,name=avatar_url,json=avatarUrl,proto3" json:"avatar_url,omitempty"`
+	ProgressValue float64                `protobuf:"fixed64,5,opt,name=progress_value,json=progressValue,proto3" json:"progress_value,omitempty"`
+	TargetValue   float64                `protobuf:"fixed64,6,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
+	ProgressPct   float64                `protobuf:"fixed64,7,opt,name=progress_pct,json=progressPct,proto3" json:"progress_pct,omitempty"`
+	StreakDays    int32                  `protobuf:"varint,8,opt,name=streak_days,json=streakDays,proto3" json:"streak_days,omitempty"`
+	LastUpdated   *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=last_updated,json=lastUpdated,proto3" json:"last_updated,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *LeaderboardEntry) Reset() {
+	*x = LeaderboardEntry{}
+	mi := &file_manpasik_proto_msgTypes[335]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *LeaderboardEntry) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*LeaderboardEntry) ProtoMessage() {}
+
+func (x *LeaderboardEntry) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[335]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use LeaderboardEntry.ProtoReflect.Descriptor instead.
+func (*LeaderboardEntry) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{335}
+}
+
+func (x *LeaderboardEntry) GetRank() int32 {
+	if x != nil {
+		return x.Rank
+	}
+	return 0
+}
+
+func (x *LeaderboardEntry) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *LeaderboardEntry) GetDisplayName() string {
+	if x != nil {
+		return x.DisplayName
+	}
+	return ""
+}
+
+func (x *LeaderboardEntry) GetAvatarUrl() string {
+	if x != nil {
+		return x.AvatarUrl
+	}
+	return ""
+}
+
+func (x *LeaderboardEntry) GetProgressValue() float64 {
+	if x != nil {
+		return x.ProgressValue
+	}
+	return 0
+}
+
+func (x *LeaderboardEntry) GetTargetValue() float64 {
+	if x != nil {
+		return x.TargetValue
+	}
+	return 0
+}
+
+func (x *LeaderboardEntry) GetProgressPct() float64 {
+	if x != nil {
+		return x.ProgressPct
+	}
+	return 0
+}
+
+func (x *LeaderboardEntry) GetStreakDays() int32 {
+	if x != nil {
+		return x.StreakDays
+	}
+	return 0
+}
+
+func (x *LeaderboardEntry) GetLastUpdated() *timestamppb.Timestamp {
+	if x != nil {
+		return x.LastUpdated
+	}
+	return nil
+}
+
+type UpdateChallengeProgressRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ChallengeId   string                 `protobuf:"bytes,1,opt,name=challenge_id,json=challengeId,proto3" json:"challenge_id,omitempty"`
+	UserId        string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Value         float64                `protobuf:"fixed64,3,opt,name=value,proto3" json:"value,omitempty"`
+	MeasurementId string                 `protobuf:"bytes,4,opt,name=measurement_id,json=measurementId,proto3" json:"measurement_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateChallengeProgressRequest) Reset() {
+	*x = UpdateChallengeProgressRequest{}
+	mi := &file_manpasik_proto_msgTypes[336]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateChallengeProgressRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateChallengeProgressRequest) ProtoMessage() {}
+
+func (x *UpdateChallengeProgressRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[336]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateChallengeProgressRequest.ProtoReflect.Descriptor instead.
+func (*UpdateChallengeProgressRequest) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{336}
+}
+
+func (x *UpdateChallengeProgressRequest) GetChallengeId() string {
+	if x != nil {
+		return x.ChallengeId
+	}
+	return ""
+}
+
+func (x *UpdateChallengeProgressRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *UpdateChallengeProgressRequest) GetValue() float64 {
+	if x != nil {
+		return x.Value
+	}
+	return 0
+}
+
+func (x *UpdateChallengeProgressRequest) GetMeasurementId() string {
+	if x != nil {
+		return x.MeasurementId
+	}
+	return ""
+}
+
+type UpdateChallengeProgressResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	NewProgress   float64                `protobuf:"fixed64,2,opt,name=new_progress,json=newProgress,proto3" json:"new_progress,omitempty"`
+	TargetValue   float64                `protobuf:"fixed64,3,opt,name=target_value,json=targetValue,proto3" json:"target_value,omitempty"`
+	NewRank       int32                  `protobuf:"varint,4,opt,name=new_rank,json=newRank,proto3" json:"new_rank,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateChallengeProgressResponse) Reset() {
+	*x = UpdateChallengeProgressResponse{}
+	mi := &file_manpasik_proto_msgTypes[337]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateChallengeProgressResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateChallengeProgressResponse) ProtoMessage() {}
+
+func (x *UpdateChallengeProgressResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[337]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateChallengeProgressResponse.ProtoReflect.Descriptor instead.
+func (*UpdateChallengeProgressResponse) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{337}
+}
+
+func (x *UpdateChallengeProgressResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
+func (x *UpdateChallengeProgressResponse) GetNewProgress() float64 {
+	if x != nil {
+		return x.NewProgress
+	}
+	return 0
+}
+
+func (x *UpdateChallengeProgressResponse) GetTargetValue() float64 {
+	if x != nil {
+		return x.TargetValue
+	}
+	return 0
+}
+
+func (x *UpdateChallengeProgressResponse) GetNewRank() int32 {
+	if x != nil {
+		return x.NewRank
+	}
+	return 0
+}
+
+type GetRevenueStatsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Period        string                 `protobuf:"bytes,1,opt,name=period,proto3" json:"period,omitempty"`
+	StartDate     string                 `protobuf:"bytes,2,opt,name=start_date,json=startDate,proto3" json:"start_date,omitempty"`
+	EndDate       string                 `protobuf:"bytes,3,opt,name=end_date,json=endDate,proto3" json:"end_date,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetRevenueStatsRequest) Reset() {
+	*x = GetRevenueStatsRequest{}
+	mi := &file_manpasik_proto_msgTypes[338]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRevenueStatsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRevenueStatsRequest) ProtoMessage() {}
+
+func (x *GetRevenueStatsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[338]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRevenueStatsRequest.ProtoReflect.Descriptor instead.
+func (*GetRevenueStatsRequest) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{338}
+}
+
+func (x *GetRevenueStatsRequest) GetPeriod() string {
+	if x != nil {
+		return x.Period
+	}
+	return ""
+}
+
+func (x *GetRevenueStatsRequest) GetStartDate() string {
+	if x != nil {
+		return x.StartDate
+	}
+	return ""
+}
+
+func (x *GetRevenueStatsRequest) GetEndDate() string {
+	if x != nil {
+		return x.EndDate
+	}
+	return ""
+}
+
+type GetRevenueStatsResponse struct {
+	state                  protoimpl.MessageState `protogen:"open.v1"`
+	TotalRevenueKrw        int64                  `protobuf:"varint,1,opt,name=total_revenue_krw,json=totalRevenueKrw,proto3" json:"total_revenue_krw,omitempty"`
+	SubscriptionRevenueKrw int64                  `protobuf:"varint,2,opt,name=subscription_revenue_krw,json=subscriptionRevenueKrw,proto3" json:"subscription_revenue_krw,omitempty"`
+	ProductRevenueKrw      int64                  `protobuf:"varint,3,opt,name=product_revenue_krw,json=productRevenueKrw,proto3" json:"product_revenue_krw,omitempty"`
+	TotalTransactions      int32                  `protobuf:"varint,4,opt,name=total_transactions,json=totalTransactions,proto3" json:"total_transactions,omitempty"`
+	Periods                []*RevenuePeriod       `protobuf:"bytes,5,rep,name=periods,proto3" json:"periods,omitempty"`
+	RevenueByTier          map[string]int64       `protobuf:"bytes,6,rep,name=revenue_by_tier,json=revenueByTier,proto3" json:"revenue_by_tier,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"varint,2,opt,name=value"`
+	unknownFields          protoimpl.UnknownFields
+	sizeCache              protoimpl.SizeCache
+}
+
+func (x *GetRevenueStatsResponse) Reset() {
+	*x = GetRevenueStatsResponse{}
+	mi := &file_manpasik_proto_msgTypes[339]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetRevenueStatsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetRevenueStatsResponse) ProtoMessage() {}
+
+func (x *GetRevenueStatsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[339]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetRevenueStatsResponse.ProtoReflect.Descriptor instead.
+func (*GetRevenueStatsResponse) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{339}
+}
+
+func (x *GetRevenueStatsResponse) GetTotalRevenueKrw() int64 {
+	if x != nil {
+		return x.TotalRevenueKrw
+	}
+	return 0
+}
+
+func (x *GetRevenueStatsResponse) GetSubscriptionRevenueKrw() int64 {
+	if x != nil {
+		return x.SubscriptionRevenueKrw
+	}
+	return 0
+}
+
+func (x *GetRevenueStatsResponse) GetProductRevenueKrw() int64 {
+	if x != nil {
+		return x.ProductRevenueKrw
+	}
+	return 0
+}
+
+func (x *GetRevenueStatsResponse) GetTotalTransactions() int32 {
+	if x != nil {
+		return x.TotalTransactions
+	}
+	return 0
+}
+
+func (x *GetRevenueStatsResponse) GetPeriods() []*RevenuePeriod {
+	if x != nil {
+		return x.Periods
+	}
+	return nil
+}
+
+func (x *GetRevenueStatsResponse) GetRevenueByTier() map[string]int64 {
+	if x != nil {
+		return x.RevenueByTier
+	}
+	return nil
+}
+
+type RevenuePeriod struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	Label            string                 `protobuf:"bytes,1,opt,name=label,proto3" json:"label,omitempty"`
+	RevenueKrw       int64                  `protobuf:"varint,2,opt,name=revenue_krw,json=revenueKrw,proto3" json:"revenue_krw,omitempty"`
+	TransactionCount int32                  `protobuf:"varint,3,opt,name=transaction_count,json=transactionCount,proto3" json:"transaction_count,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *RevenuePeriod) Reset() {
+	*x = RevenuePeriod{}
+	mi := &file_manpasik_proto_msgTypes[340]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RevenuePeriod) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RevenuePeriod) ProtoMessage() {}
+
+func (x *RevenuePeriod) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[340]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RevenuePeriod.ProtoReflect.Descriptor instead.
+func (*RevenuePeriod) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{340}
+}
+
+func (x *RevenuePeriod) GetLabel() string {
+	if x != nil {
+		return x.Label
+	}
+	return ""
+}
+
+func (x *RevenuePeriod) GetRevenueKrw() int64 {
+	if x != nil {
+		return x.RevenueKrw
+	}
+	return 0
+}
+
+func (x *RevenuePeriod) GetTransactionCount() int32 {
+	if x != nil {
+		return x.TransactionCount
+	}
+	return 0
+}
+
+type GetInventoryStatsRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	CategoryFilter int32                  `protobuf:"varint,1,opt,name=category_filter,json=categoryFilter,proto3" json:"category_filter,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetInventoryStatsRequest) Reset() {
+	*x = GetInventoryStatsRequest{}
+	mi := &file_manpasik_proto_msgTypes[341]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetInventoryStatsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetInventoryStatsRequest) ProtoMessage() {}
+
+func (x *GetInventoryStatsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[341]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetInventoryStatsRequest.ProtoReflect.Descriptor instead.
+func (*GetInventoryStatsRequest) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{341}
+}
+
+func (x *GetInventoryStatsRequest) GetCategoryFilter() int32 {
+	if x != nil {
+		return x.CategoryFilter
+	}
+	return 0
+}
+
+type GetInventoryStatsResponse struct {
+	state           protoimpl.MessageState `protogen:"open.v1"`
+	Items           []*InventoryItem       `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	TotalProducts   int32                  `protobuf:"varint,2,opt,name=total_products,json=totalProducts,proto3" json:"total_products,omitempty"`
+	LowStockCount   int32                  `protobuf:"varint,3,opt,name=low_stock_count,json=lowStockCount,proto3" json:"low_stock_count,omitempty"`
+	OutOfStockCount int32                  `protobuf:"varint,4,opt,name=out_of_stock_count,json=outOfStockCount,proto3" json:"out_of_stock_count,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
+}
+
+func (x *GetInventoryStatsResponse) Reset() {
+	*x = GetInventoryStatsResponse{}
+	mi := &file_manpasik_proto_msgTypes[342]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetInventoryStatsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetInventoryStatsResponse) ProtoMessage() {}
+
+func (x *GetInventoryStatsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[342]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetInventoryStatsResponse.ProtoReflect.Descriptor instead.
+func (*GetInventoryStatsResponse) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{342}
+}
+
+func (x *GetInventoryStatsResponse) GetItems() []*InventoryItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
+func (x *GetInventoryStatsResponse) GetTotalProducts() int32 {
+	if x != nil {
+		return x.TotalProducts
+	}
+	return 0
+}
+
+func (x *GetInventoryStatsResponse) GetLowStockCount() int32 {
+	if x != nil {
+		return x.LowStockCount
+	}
+	return 0
+}
+
+func (x *GetInventoryStatsResponse) GetOutOfStockCount() int32 {
+	if x != nil {
+		return x.OutOfStockCount
+	}
+	return 0
+}
+
+type InventoryItem struct {
+	state             protoimpl.MessageState `protogen:"open.v1"`
+	ProductId         string                 `protobuf:"bytes,1,opt,name=product_id,json=productId,proto3" json:"product_id,omitempty"`
+	ProductName       string                 `protobuf:"bytes,2,opt,name=product_name,json=productName,proto3" json:"product_name,omitempty"`
+	Category          int32                  `protobuf:"varint,3,opt,name=category,proto3" json:"category,omitempty"`
+	CurrentStock      int32                  `protobuf:"varint,4,opt,name=current_stock,json=currentStock,proto3" json:"current_stock,omitempty"`
+	MinStockThreshold int32                  `protobuf:"varint,5,opt,name=min_stock_threshold,json=minStockThreshold,proto3" json:"min_stock_threshold,omitempty"`
+	MonthlySales      int32                  `protobuf:"varint,6,opt,name=monthly_sales,json=monthlySales,proto3" json:"monthly_sales,omitempty"`
+	PriceKrw          int32                  `protobuf:"varint,7,opt,name=price_krw,json=priceKrw,proto3" json:"price_krw,omitempty"`
+	Status            string                 `protobuf:"bytes,8,opt,name=status,proto3" json:"status,omitempty"`
+	unknownFields     protoimpl.UnknownFields
+	sizeCache         protoimpl.SizeCache
+}
+
+func (x *InventoryItem) Reset() {
+	*x = InventoryItem{}
+	mi := &file_manpasik_proto_msgTypes[343]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *InventoryItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*InventoryItem) ProtoMessage() {}
+
+func (x *InventoryItem) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[343]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use InventoryItem.ProtoReflect.Descriptor instead.
+func (*InventoryItem) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{343}
+}
+
+func (x *InventoryItem) GetProductId() string {
+	if x != nil {
+		return x.ProductId
+	}
+	return ""
+}
+
+func (x *InventoryItem) GetProductName() string {
+	if x != nil {
+		return x.ProductName
+	}
+	return ""
+}
+
+func (x *InventoryItem) GetCategory() int32 {
+	if x != nil {
+		return x.Category
+	}
+	return 0
+}
+
+func (x *InventoryItem) GetCurrentStock() int32 {
+	if x != nil {
+		return x.CurrentStock
+	}
+	return 0
+}
+
+func (x *InventoryItem) GetMinStockThreshold() int32 {
+	if x != nil {
+		return x.MinStockThreshold
+	}
+	return 0
+}
+
+func (x *InventoryItem) GetMonthlySales() int32 {
+	if x != nil {
+		return x.MonthlySales
+	}
+	return 0
+}
+
+func (x *InventoryItem) GetPriceKrw() int32 {
+	if x != nil {
+		return x.PriceKrw
+	}
+	return 0
+}
+
+func (x *InventoryItem) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+type TranslateRealtimeRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Text           string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	SourceLanguage string                 `protobuf:"bytes,2,opt,name=source_language,json=sourceLanguage,proto3" json:"source_language,omitempty"`
+	TargetLanguage string                 `protobuf:"bytes,3,opt,name=target_language,json=targetLanguage,proto3" json:"target_language,omitempty"`
+	IsMedical      bool                   `protobuf:"varint,4,opt,name=is_medical,json=isMedical,proto3" json:"is_medical,omitempty"`
+	Context        string                 `protobuf:"bytes,5,opt,name=context,proto3" json:"context,omitempty"`
+	SessionId      string                 `protobuf:"bytes,6,opt,name=session_id,json=sessionId,proto3" json:"session_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *TranslateRealtimeRequest) Reset() {
+	*x = TranslateRealtimeRequest{}
+	mi := &file_manpasik_proto_msgTypes[344]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TranslateRealtimeRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TranslateRealtimeRequest) ProtoMessage() {}
+
+func (x *TranslateRealtimeRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[344]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TranslateRealtimeRequest.ProtoReflect.Descriptor instead.
+func (*TranslateRealtimeRequest) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{344}
+}
+
+func (x *TranslateRealtimeRequest) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+func (x *TranslateRealtimeRequest) GetSourceLanguage() string {
+	if x != nil {
+		return x.SourceLanguage
+	}
+	return ""
+}
+
+func (x *TranslateRealtimeRequest) GetTargetLanguage() string {
+	if x != nil {
+		return x.TargetLanguage
+	}
+	return ""
+}
+
+func (x *TranslateRealtimeRequest) GetIsMedical() bool {
+	if x != nil {
+		return x.IsMedical
+	}
+	return false
+}
+
+func (x *TranslateRealtimeRequest) GetContext() string {
+	if x != nil {
+		return x.Context
+	}
+	return ""
+}
+
+func (x *TranslateRealtimeRequest) GetSessionId() string {
+	if x != nil {
+		return x.SessionId
+	}
+	return ""
+}
+
+type TranslateRealtimeResponse struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	TranslatedText string                 `protobuf:"bytes,1,opt,name=translated_text,json=translatedText,proto3" json:"translated_text,omitempty"`
+	SourceLanguage string                 `protobuf:"bytes,2,opt,name=source_language,json=sourceLanguage,proto3" json:"source_language,omitempty"`
+	TargetLanguage string                 `protobuf:"bytes,3,opt,name=target_language,json=targetLanguage,proto3" json:"target_language,omitempty"`
+	Confidence     float64                `protobuf:"fixed64,4,opt,name=confidence,proto3" json:"confidence,omitempty"`
+	IsMedicalTerm  bool                   `protobuf:"varint,5,opt,name=is_medical_term,json=isMedicalTerm,proto3" json:"is_medical_term,omitempty"`
+	LatencyMs      int64                  `protobuf:"varint,6,opt,name=latency_ms,json=latencyMs,proto3" json:"latency_ms,omitempty"`
+	MedicalTerms   []*MedicalTermMapping  `protobuf:"bytes,7,rep,name=medical_terms,json=medicalTerms,proto3" json:"medical_terms,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *TranslateRealtimeResponse) Reset() {
+	*x = TranslateRealtimeResponse{}
+	mi := &file_manpasik_proto_msgTypes[345]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TranslateRealtimeResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TranslateRealtimeResponse) ProtoMessage() {}
+
+func (x *TranslateRealtimeResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[345]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TranslateRealtimeResponse.ProtoReflect.Descriptor instead.
+func (*TranslateRealtimeResponse) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{345}
+}
+
+func (x *TranslateRealtimeResponse) GetTranslatedText() string {
+	if x != nil {
+		return x.TranslatedText
+	}
+	return ""
+}
+
+func (x *TranslateRealtimeResponse) GetSourceLanguage() string {
+	if x != nil {
+		return x.SourceLanguage
+	}
+	return ""
+}
+
+func (x *TranslateRealtimeResponse) GetTargetLanguage() string {
+	if x != nil {
+		return x.TargetLanguage
+	}
+	return ""
+}
+
+func (x *TranslateRealtimeResponse) GetConfidence() float64 {
+	if x != nil {
+		return x.Confidence
+	}
+	return 0
+}
+
+func (x *TranslateRealtimeResponse) GetIsMedicalTerm() bool {
+	if x != nil {
+		return x.IsMedicalTerm
+	}
+	return false
+}
+
+func (x *TranslateRealtimeResponse) GetLatencyMs() int64 {
+	if x != nil {
+		return x.LatencyMs
+	}
+	return 0
+}
+
+func (x *TranslateRealtimeResponse) GetMedicalTerms() []*MedicalTermMapping {
+	if x != nil {
+		return x.MedicalTerms
+	}
+	return nil
+}
+
+type MedicalTermMapping struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Original      string                 `protobuf:"bytes,1,opt,name=original,proto3" json:"original,omitempty"`
+	Translated    string                 `protobuf:"bytes,2,opt,name=translated,proto3" json:"translated,omitempty"`
+	Category      string                 `protobuf:"bytes,3,opt,name=category,proto3" json:"category,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *MedicalTermMapping) Reset() {
+	*x = MedicalTermMapping{}
+	mi := &file_manpasik_proto_msgTypes[346]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MedicalTermMapping) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MedicalTermMapping) ProtoMessage() {}
+
+func (x *MedicalTermMapping) ProtoReflect() protoreflect.Message {
+	mi := &file_manpasik_proto_msgTypes[346]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MedicalTermMapping.ProtoReflect.Descriptor instead.
+func (*MedicalTermMapping) Descriptor() ([]byte, []int) {
+	return file_manpasik_proto_rawDescGZIP(), []int{346}
+}
+
+func (x *MedicalTermMapping) GetOriginal() string {
+	if x != nil {
+		return x.Original
+	}
+	return ""
+}
+
+func (x *MedicalTermMapping) GetTranslated() string {
+	if x != nil {
+		return x.Translated
+	}
+	return ""
+}
+
+func (x *MedicalTermMapping) GetCategory() string {
+	if x != nil {
+		return x.Category
+	}
+	return ""
+}
+
 var File_manpasik_proto protoreflect.FileDescriptor
 
 const file_manpasik_proto_rawDesc = "" +
@@ -27302,7 +28454,112 @@ const file_manpasik_proto_rawDesc = "" +
 	"ip_address\x18\t \x01(\tR\tipAddress\x129\n" +
 	"\n" +
 	"created_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt*\x9e\x01\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x9d\x01\n" +
+	"\x11StreamChatRequest\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x18\n" +
+	"\amessage\x18\x02 \x01(\tR\amessage\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x03 \x01(\tR\tsessionId\x126\n" +
+	"\x17context_measurement_ids\x18\x04 \x03(\tR\x15contextMeasurementIds\"\x89\x01\n" +
+	"\x12StreamChatResponse\x12\x14\n" +
+	"\x05chunk\x18\x01 \x01(\tR\x05chunk\x12\x19\n" +
+	"\bis_final\x18\x02 \x01(\bR\aisFinal\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x03 \x01(\tR\tsessionId\x12#\n" +
+	"\rfull_response\x18\x04 \x01(\tR\ffullResponse\"q\n" +
+	"\x1eGetChallengeLeaderboardRequest\x12!\n" +
+	"\fchallenge_id\x18\x01 \x01(\tR\vchallengeId\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\x12\x16\n" +
+	"\x06offset\x18\x03 \x01(\x05R\x06offset\"\xc3\x01\n" +
+	"\x1fGetChallengeLeaderboardResponse\x127\n" +
+	"\aentries\x18\x01 \x03(\v2\x1d.manpasik.v1.LeaderboardEntryR\aentries\x12-\n" +
+	"\x12total_participants\x18\x02 \x01(\x05R\x11totalParticipants\x128\n" +
+	"\bmy_entry\x18\x03 \x01(\v2\x1d.manpasik.v1.LeaderboardEntryR\amyEntry\"\xce\x02\n" +
+	"\x10LeaderboardEntry\x12\x12\n" +
+	"\x04rank\x18\x01 \x01(\x05R\x04rank\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12!\n" +
+	"\fdisplay_name\x18\x03 \x01(\tR\vdisplayName\x12\x1d\n" +
+	"\n" +
+	"avatar_url\x18\x04 \x01(\tR\tavatarUrl\x12%\n" +
+	"\x0eprogress_value\x18\x05 \x01(\x01R\rprogressValue\x12!\n" +
+	"\ftarget_value\x18\x06 \x01(\x01R\vtargetValue\x12!\n" +
+	"\fprogress_pct\x18\a \x01(\x01R\vprogressPct\x12\x1f\n" +
+	"\vstreak_days\x18\b \x01(\x05R\n" +
+	"streakDays\x12=\n" +
+	"\flast_updated\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\vlastUpdated\"\x99\x01\n" +
+	"\x1eUpdateChallengeProgressRequest\x12!\n" +
+	"\fchallenge_id\x18\x01 \x01(\tR\vchallengeId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x14\n" +
+	"\x05value\x18\x03 \x01(\x01R\x05value\x12%\n" +
+	"\x0emeasurement_id\x18\x04 \x01(\tR\rmeasurementId\"\x9c\x01\n" +
+	"\x1fUpdateChallengeProgressResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\x12!\n" +
+	"\fnew_progress\x18\x02 \x01(\x01R\vnewProgress\x12!\n" +
+	"\ftarget_value\x18\x03 \x01(\x01R\vtargetValue\x12\x19\n" +
+	"\bnew_rank\x18\x04 \x01(\x05R\anewRank\"j\n" +
+	"\x16GetRevenueStatsRequest\x12\x16\n" +
+	"\x06period\x18\x01 \x01(\tR\x06period\x12\x1d\n" +
+	"\n" +
+	"start_date\x18\x02 \x01(\tR\tstartDate\x12\x19\n" +
+	"\bend_date\x18\x03 \x01(\tR\aendDate\"\xb7\x03\n" +
+	"\x17GetRevenueStatsResponse\x12*\n" +
+	"\x11total_revenue_krw\x18\x01 \x01(\x03R\x0ftotalRevenueKrw\x128\n" +
+	"\x18subscription_revenue_krw\x18\x02 \x01(\x03R\x16subscriptionRevenueKrw\x12.\n" +
+	"\x13product_revenue_krw\x18\x03 \x01(\x03R\x11productRevenueKrw\x12-\n" +
+	"\x12total_transactions\x18\x04 \x01(\x05R\x11totalTransactions\x124\n" +
+	"\aperiods\x18\x05 \x03(\v2\x1a.manpasik.v1.RevenuePeriodR\aperiods\x12_\n" +
+	"\x0frevenue_by_tier\x18\x06 \x03(\v27.manpasik.v1.GetRevenueStatsResponse.RevenueByTierEntryR\rrevenueByTier\x1a@\n" +
+	"\x12RevenueByTierEntry\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\x03R\x05value:\x028\x01\"s\n" +
+	"\rRevenuePeriod\x12\x14\n" +
+	"\x05label\x18\x01 \x01(\tR\x05label\x12\x1f\n" +
+	"\vrevenue_krw\x18\x02 \x01(\x03R\n" +
+	"revenueKrw\x12+\n" +
+	"\x11transaction_count\x18\x03 \x01(\x05R\x10transactionCount\"C\n" +
+	"\x18GetInventoryStatsRequest\x12'\n" +
+	"\x0fcategory_filter\x18\x01 \x01(\x05R\x0ecategoryFilter\"\xc9\x01\n" +
+	"\x19GetInventoryStatsResponse\x120\n" +
+	"\x05items\x18\x01 \x03(\v2\x1a.manpasik.v1.InventoryItemR\x05items\x12%\n" +
+	"\x0etotal_products\x18\x02 \x01(\x05R\rtotalProducts\x12&\n" +
+	"\x0flow_stock_count\x18\x03 \x01(\x05R\rlowStockCount\x12+\n" +
+	"\x12out_of_stock_count\x18\x04 \x01(\x05R\x0foutOfStockCount\"\x9c\x02\n" +
+	"\rInventoryItem\x12\x1d\n" +
+	"\n" +
+	"product_id\x18\x01 \x01(\tR\tproductId\x12!\n" +
+	"\fproduct_name\x18\x02 \x01(\tR\vproductName\x12\x1a\n" +
+	"\bcategory\x18\x03 \x01(\x05R\bcategory\x12#\n" +
+	"\rcurrent_stock\x18\x04 \x01(\x05R\fcurrentStock\x12.\n" +
+	"\x13min_stock_threshold\x18\x05 \x01(\x05R\x11minStockThreshold\x12#\n" +
+	"\rmonthly_sales\x18\x06 \x01(\x05R\fmonthlySales\x12\x1b\n" +
+	"\tprice_krw\x18\a \x01(\x05R\bpriceKrw\x12\x16\n" +
+	"\x06status\x18\b \x01(\tR\x06status\"\xd8\x01\n" +
+	"\x18TranslateRealtimeRequest\x12\x12\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\x12'\n" +
+	"\x0fsource_language\x18\x02 \x01(\tR\x0esourceLanguage\x12'\n" +
+	"\x0ftarget_language\x18\x03 \x01(\tR\x0etargetLanguage\x12\x1d\n" +
+	"\n" +
+	"is_medical\x18\x04 \x01(\bR\tisMedical\x12\x18\n" +
+	"\acontext\x18\x05 \x01(\tR\acontext\x12\x1d\n" +
+	"\n" +
+	"session_id\x18\x06 \x01(\tR\tsessionId\"\xc3\x02\n" +
+	"\x19TranslateRealtimeResponse\x12'\n" +
+	"\x0ftranslated_text\x18\x01 \x01(\tR\x0etranslatedText\x12'\n" +
+	"\x0fsource_language\x18\x02 \x01(\tR\x0esourceLanguage\x12'\n" +
+	"\x0ftarget_language\x18\x03 \x01(\tR\x0etargetLanguage\x12\x1e\n" +
+	"\n" +
+	"confidence\x18\x04 \x01(\x01R\n" +
+	"confidence\x12&\n" +
+	"\x0fis_medical_term\x18\x05 \x01(\bR\risMedicalTerm\x12\x1d\n" +
+	"\n" +
+	"latency_ms\x18\x06 \x01(\x03R\tlatencyMs\x12D\n" +
+	"\rmedical_terms\x18\a \x03(\v2\x1f.manpasik.v1.MedicalTermMappingR\fmedicalTerms\"l\n" +
+	"\x12MedicalTermMapping\x12\x1a\n" +
+	"\boriginal\x18\x01 \x01(\tR\boriginal\x12\x1e\n" +
+	"\n" +
+	"translated\x18\x02 \x01(\tR\n" +
+	"translated\x12\x1a\n" +
+	"\bcategory\x18\x03 \x01(\tR\bcategory*\x9e\x01\n" +
 	"\x0eSocialProvider\x12\x1f\n" +
 	"\x1bSOCIAL_PROVIDER_UNSPECIFIED\x10\x00\x12\x1a\n" +
 	"\x16SOCIAL_PROVIDER_GOOGLE\x10\x01\x12\x19\n" +
@@ -27653,14 +28910,16 @@ const file_manpasik_proto_rawDesc = "" +
 	"\n" +
 	"GetPayment\x12\x1e.manpasik.v1.GetPaymentRequest\x1a\x1a.manpasik.v1.PaymentDetail\x12S\n" +
 	"\fListPayments\x12 .manpasik.v1.ListPaymentsRequest\x1a!.manpasik.v1.ListPaymentsResponse\x12O\n" +
-	"\rRefundPayment\x12!.manpasik.v1.RefundPaymentRequest\x1a\x1b.manpasik.v1.RefundResponse2\xb0\x03\n" +
+	"\rRefundPayment\x12!.manpasik.v1.RefundPaymentRequest\x1a\x1b.manpasik.v1.RefundResponse2\x81\x04\n" +
 	"\x12AiInferenceService\x12Y\n" +
 	"\x12AnalyzeMeasurement\x12&.manpasik.v1.AnalyzeMeasurementRequest\x1a\x1b.manpasik.v1.AnalysisResult\x12V\n" +
 	"\x0eGetHealthScore\x12\".manpasik.v1.GetHealthScoreRequest\x1a .manpasik.v1.HealthScoreResponse\x12N\n" +
 	"\fPredictTrend\x12 .manpasik.v1.PredictTrendRequest\x1a\x1c.manpasik.v1.TrendPrediction\x12H\n" +
 	"\fGetModelInfo\x12 .manpasik.v1.GetModelInfoRequest\x1a\x16.manpasik.v1.ModelInfo\x12M\n" +
 	"\n" +
-	"ListModels\x12\x1e.manpasik.v1.ListModelsRequest\x1a\x1f.manpasik.v1.ListModelsResponse2\xf8\x05\n" +
+	"ListModels\x12\x1e.manpasik.v1.ListModelsRequest\x1a\x1f.manpasik.v1.ListModelsResponse\x12O\n" +
+	"\n" +
+	"StreamChat\x12\x1e.manpasik.v1.StreamChatRequest\x1a\x1f.manpasik.v1.StreamChatResponse0\x012\xf8\x05\n" +
 	"\x10CartridgeService\x12P\n" +
 	"\rReadCartridge\x12!.manpasik.v1.ReadCartridgeRequest\x1a\x1c.manpasik.v1.CartridgeDetail\x12P\n" +
 	"\vRecordUsage\x12\x1f.manpasik.v1.RecordUsageRequest\x1a .manpasik.v1.RecordUsageResponse\x12\\\n" +
@@ -27695,8 +28954,7 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x11CancelReservation\x12%.manpasik.v1.CancelReservationRequest\x1a&.manpasik.v1.CancelReservationResponse\x12n\n" +
 	"\x15ListDoctorsByFacility\x12).manpasik.v1.ListDoctorsByFacilityRequest\x1a*.manpasik.v1.ListDoctorsByFacilityResponse\x12n\n" +
 	"\x15GetDoctorAvailability\x12).manpasik.v1.GetDoctorAvailabilityRequest\x1a*.manpasik.v1.GetDoctorAvailabilityResponse\x12S\n" +
-	"\fSelectDoctor\x12 .manpasik.v1.SelectDoctorRequest\x1a!.manpasik.v1.SelectDoctorResponse2\xf8\n" +
-	"\n" +
+	"\fSelectDoctor\x12 .manpasik.v1.SelectDoctorRequest\x1a!.manpasik.v1.SelectDoctorResponse2\xba\f\n" +
 	"\fAdminService\x12F\n" +
 	"\vCreateAdmin\x12\x1f.manpasik.v1.CreateAdminRequest\x1a\x16.manpasik.v1.AdminUser\x12@\n" +
 	"\bGetAdmin\x12\x1c.manpasik.v1.GetAdminRequest\x1a\x16.manpasik.v1.AdminUser\x12M\n" +
@@ -27714,7 +28972,9 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x11GetConfigWithMeta\x12%.manpasik.v1.GetConfigWithMetaRequest\x1a\x1b.manpasik.v1.ConfigWithMeta\x12h\n" +
 	"\x13ValidateConfigValue\x12'.manpasik.v1.ValidateConfigValueRequest\x1a(.manpasik.v1.ValidateConfigValueResponse\x12Y\n" +
 	"\x0eBulkSetConfigs\x12\".manpasik.v1.BulkSetConfigsRequest\x1a#.manpasik.v1.BulkSetConfigsResponse\x12e\n" +
-	"\x12GetAuditLogDetails\x12&.manpasik.v1.GetAuditLogDetailsRequest\x1a'.manpasik.v1.GetAuditLogDetailsResponse2\xbd\a\n" +
+	"\x12GetAuditLogDetails\x12&.manpasik.v1.GetAuditLogDetailsRequest\x1a'.manpasik.v1.GetAuditLogDetailsResponse\x12\\\n" +
+	"\x0fGetRevenueStats\x12#.manpasik.v1.GetRevenueStatsRequest\x1a$.manpasik.v1.GetRevenueStatsResponse\x12b\n" +
+	"\x11GetInventoryStats\x12%.manpasik.v1.GetInventoryStatsRequest\x1a&.manpasik.v1.GetInventoryStatsResponse2\xbd\a\n" +
 	"\rFamilyService\x12T\n" +
 	"\x11CreateFamilyGroup\x12%.manpasik.v1.CreateFamilyGroupRequest\x1a\x18.manpasik.v1.FamilyGroup\x12N\n" +
 	"\x0eGetFamilyGroup\x12\".manpasik.v1.GetFamilyGroupRequest\x1a\x18.manpasik.v1.FamilyGroup\x12O\n" +
@@ -27752,7 +29012,7 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x1cSelectPharmacyAndFulfillment\x12\".manpasik.v1.SelectPharmacyRequest\x1a#.manpasik.v1.SelectPharmacyResponse\x12e\n" +
 	"\x1aSendPrescriptionToPharmacy\x12\".manpasik.v1.SendToPharmacyRequest\x1a#.manpasik.v1.SendToPharmacyResponse\x12S\n" +
 	"\x16GetPrescriptionByToken\x12\x1e.manpasik.v1.GetByTokenRequest\x1a\x19.manpasik.v1.Prescription\x12_\n" +
-	"\x16UpdateDispensaryStatus\x12*.manpasik.v1.UpdateDispensaryStatusRequest\x1a\x19.manpasik.v1.Prescription2\x8f\x06\n" +
+	"\x16UpdateDispensaryStatus\x12*.manpasik.v1.UpdateDispensaryStatusRequest\x1a\x19.manpasik.v1.Prescription2\xfb\a\n" +
 	"\x10CommunityService\x12?\n" +
 	"\n" +
 	"CreatePost\x12\x1e.manpasik.v1.CreatePostRequest\x1a\x11.manpasik.v1.Post\x129\n" +
@@ -27764,7 +29024,9 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x0fCreateChallenge\x12#.manpasik.v1.CreateChallengeRequest\x1a\x16.manpasik.v1.Challenge\x12H\n" +
 	"\fGetChallenge\x12 .manpasik.v1.GetChallengeRequest\x1a\x16.manpasik.v1.Challenge\x12V\n" +
 	"\rJoinChallenge\x12!.manpasik.v1.JoinChallengeRequest\x1a\".manpasik.v1.JoinChallengeResponse\x12Y\n" +
-	"\x0eListChallenges\x12\".manpasik.v1.ListChallengesRequest\x1a#.manpasik.v1.ListChallengesResponse2\xdf\x04\n" +
+	"\x0eListChallenges\x12\".manpasik.v1.ListChallengesRequest\x1a#.manpasik.v1.ListChallengesResponse\x12t\n" +
+	"\x17GetChallengeLeaderboard\x12+.manpasik.v1.GetChallengeLeaderboardRequest\x1a,.manpasik.v1.GetChallengeLeaderboardResponse\x12t\n" +
+	"\x17UpdateChallengeProgress\x12+.manpasik.v1.UpdateChallengeProgressRequest\x1a,.manpasik.v1.UpdateChallengeProgressResponse2\xdf\x04\n" +
 	"\fVideoService\x12?\n" +
 	"\n" +
 	"CreateRoom\x12\x1e.manpasik.v1.CreateRoomRequest\x1a\x11.manpasik.v1.Room\x129\n" +
@@ -27785,14 +29047,15 @@ const file_manpasik_proto_rawDesc = "" +
 	"\x0eGetUnreadCount\x12\".manpasik.v1.GetUnreadCountRequest\x1a#.manpasik.v1.GetUnreadCountResponse\x12x\n" +
 	"\x1dUpdateNotificationPreferences\x121.manpasik.v1.UpdateNotificationPreferencesRequest\x1a$.manpasik.v1.NotificationPreferences\x12r\n" +
 	"\x1aGetNotificationPreferences\x12..manpasik.v1.GetNotificationPreferencesRequest\x1a$.manpasik.v1.NotificationPreferences\x12S\n" +
-	"\x10SendFromTemplate\x12$.manpasik.v1.SendFromTemplateRequest\x1a\x19.manpasik.v1.Notification2\xef\x04\n" +
+	"\x10SendFromTemplate\x12$.manpasik.v1.SendFromTemplateRequest\x1a\x19.manpasik.v1.Notification2\xd3\x05\n" +
 	"\x12TranslationService\x12V\n" +
 	"\rTranslateText\x12!.manpasik.v1.TranslateTextRequest\x1a\".manpasik.v1.TranslateTextResponse\x12Y\n" +
 	"\x0eDetectLanguage\x12\".manpasik.v1.DetectLanguageRequest\x1a#.manpasik.v1.DetectLanguageResponse\x12q\n" +
 	"\x16ListSupportedLanguages\x12*.manpasik.v1.ListSupportedLanguagesRequest\x1a+.manpasik.v1.ListSupportedLanguagesResponse\x12Y\n" +
 	"\x0eTranslateBatch\x12\".manpasik.v1.TranslateBatchRequest\x1a#.manpasik.v1.TranslateBatchResponse\x12n\n" +
 	"\x15GetTranslationHistory\x12).manpasik.v1.GetTranslationHistoryRequest\x1a*.manpasik.v1.GetTranslationHistoryResponse\x12h\n" +
-	"\x13GetTranslationUsage\x12'.manpasik.v1.GetTranslationUsageRequest\x1a(.manpasik.v1.GetTranslationUsageResponse2\x82\x05\n" +
+	"\x13GetTranslationUsage\x12'.manpasik.v1.GetTranslationUsageRequest\x1a(.manpasik.v1.GetTranslationUsageResponse\x12b\n" +
+	"\x11TranslateRealtime\x12%.manpasik.v1.TranslateRealtimeRequest\x1a&.manpasik.v1.TranslateRealtimeResponse2\x82\x05\n" +
 	"\x13TelemedicineService\x12W\n" +
 	"\x12CreateConsultation\x12&.manpasik.v1.CreateConsultationRequest\x1a\x19.manpasik.v1.Consultation\x12Q\n" +
 	"\x0fGetConsultation\x12#.manpasik.v1.GetConsultationRequest\x1a\x19.manpasik.v1.Consultation\x12b\n" +
@@ -27815,7 +29078,7 @@ func file_manpasik_proto_rawDescGZIP() []byte {
 }
 
 var file_manpasik_proto_enumTypes = make([]protoimpl.EnumInfo, 41)
-var file_manpasik_proto_msgTypes = make([]protoimpl.MessageInfo, 343)
+var file_manpasik_proto_msgTypes = make([]protoimpl.MessageInfo, 360)
 var file_manpasik_proto_goTypes = []any{
 	(SocialProvider)(0),                          // 0: manpasik.v1.SocialProvider
 	(Gender)(0),                                  // 1: manpasik.v1.Gender
@@ -28189,57 +29452,74 @@ var file_manpasik_proto_goTypes = []any{
 	(*GetAuditLogDetailsRequest)(nil),            // 369: manpasik.v1.GetAuditLogDetailsRequest
 	(*GetAuditLogDetailsResponse)(nil),           // 370: manpasik.v1.GetAuditLogDetailsResponse
 	(*AuditLogDetail)(nil),                       // 371: manpasik.v1.AuditLogDetail
-	nil,                                          // 372: manpasik.v1.HealthScoreResponse.CategoryScoresEntry
-	nil,                                          // 373: manpasik.v1.GetSystemStatsResponse.UsersByTierEntry
-	nil,                                          // 374: manpasik.v1.GetSystemStatsResponse.MeasurementsByTypeEntry
-	nil,                                          // 375: manpasik.v1.CreateHealthRecordRequest.MetadataEntry
-	nil,                                          // 376: manpasik.v1.UpdateHealthRecordRequest.MetadataEntry
-	nil,                                          // 377: manpasik.v1.HealthRecord.MetadataEntry
-	nil,                                          // 378: manpasik.v1.GetHealthSummaryResponse.RecordsByTypeEntry
-	nil,                                          // 379: manpasik.v1.SendNotificationRequest.DataEntry
-	nil,                                          // 380: manpasik.v1.Notification.DataEntry
-	nil,                                          // 381: manpasik.v1.GetTranslationUsageResponse.ByLanguagePairEntry
-	nil,                                          // 382: manpasik.v1.ListSystemConfigsResponse.CategoryCountsEntry
-	nil,                                          // 383: manpasik.v1.SendFromTemplateRequest.DataEntry
-	(*timestamppb.Timestamp)(nil),                // 384: google.protobuf.Timestamp
+	(*StreamChatRequest)(nil),                    // 372: manpasik.v1.StreamChatRequest
+	(*StreamChatResponse)(nil),                   // 373: manpasik.v1.StreamChatResponse
+	(*GetChallengeLeaderboardRequest)(nil),       // 374: manpasik.v1.GetChallengeLeaderboardRequest
+	(*GetChallengeLeaderboardResponse)(nil),      // 375: manpasik.v1.GetChallengeLeaderboardResponse
+	(*LeaderboardEntry)(nil),                     // 376: manpasik.v1.LeaderboardEntry
+	(*UpdateChallengeProgressRequest)(nil),       // 377: manpasik.v1.UpdateChallengeProgressRequest
+	(*UpdateChallengeProgressResponse)(nil),      // 378: manpasik.v1.UpdateChallengeProgressResponse
+	(*GetRevenueStatsRequest)(nil),               // 379: manpasik.v1.GetRevenueStatsRequest
+	(*GetRevenueStatsResponse)(nil),              // 380: manpasik.v1.GetRevenueStatsResponse
+	(*RevenuePeriod)(nil),                        // 381: manpasik.v1.RevenuePeriod
+	(*GetInventoryStatsRequest)(nil),             // 382: manpasik.v1.GetInventoryStatsRequest
+	(*GetInventoryStatsResponse)(nil),            // 383: manpasik.v1.GetInventoryStatsResponse
+	(*InventoryItem)(nil),                        // 384: manpasik.v1.InventoryItem
+	(*TranslateRealtimeRequest)(nil),             // 385: manpasik.v1.TranslateRealtimeRequest
+	(*TranslateRealtimeResponse)(nil),            // 386: manpasik.v1.TranslateRealtimeResponse
+	(*MedicalTermMapping)(nil),                   // 387: manpasik.v1.MedicalTermMapping
+	nil,                                          // 388: manpasik.v1.HealthScoreResponse.CategoryScoresEntry
+	nil,                                          // 389: manpasik.v1.GetSystemStatsResponse.UsersByTierEntry
+	nil,                                          // 390: manpasik.v1.GetSystemStatsResponse.MeasurementsByTypeEntry
+	nil,                                          // 391: manpasik.v1.CreateHealthRecordRequest.MetadataEntry
+	nil,                                          // 392: manpasik.v1.UpdateHealthRecordRequest.MetadataEntry
+	nil,                                          // 393: manpasik.v1.HealthRecord.MetadataEntry
+	nil,                                          // 394: manpasik.v1.GetHealthSummaryResponse.RecordsByTypeEntry
+	nil,                                          // 395: manpasik.v1.SendNotificationRequest.DataEntry
+	nil,                                          // 396: manpasik.v1.Notification.DataEntry
+	nil,                                          // 397: manpasik.v1.GetTranslationUsageResponse.ByLanguagePairEntry
+	nil,                                          // 398: manpasik.v1.ListSystemConfigsResponse.CategoryCountsEntry
+	nil,                                          // 399: manpasik.v1.SendFromTemplateRequest.DataEntry
+	nil,                                          // 400: manpasik.v1.GetRevenueStatsResponse.RevenueByTierEntry
+	(*timestamppb.Timestamp)(nil),                // 401: google.protobuf.Timestamp
 }
 var file_manpasik_proto_depIdxs = []int32{
 	1,   // 0: manpasik.v1.RegisterRequest.gender:type_name -> manpasik.v1.Gender
 	0,   // 1: manpasik.v1.SocialLoginRequest.provider:type_name -> manpasik.v1.SocialProvider
-	384, // 2: manpasik.v1.StartSessionResponse.started_at:type_name -> google.protobuf.Timestamp
+	401, // 2: manpasik.v1.StartSessionResponse.started_at:type_name -> google.protobuf.Timestamp
 	56,  // 3: manpasik.v1.MeasurementData.differential:type_name -> manpasik.v1.DifferentialCorrection
 	57,  // 4: manpasik.v1.MeasurementData.env_meta:type_name -> manpasik.v1.EnvironmentMeta
-	384, // 5: manpasik.v1.MeasurementData.timestamp:type_name -> google.protobuf.Timestamp
-	384, // 6: manpasik.v1.MeasurementResult.processed_at:type_name -> google.protobuf.Timestamp
-	384, // 7: manpasik.v1.EndSessionResponse.ended_at:type_name -> google.protobuf.Timestamp
-	384, // 8: manpasik.v1.GetHistoryRequest.start_time:type_name -> google.protobuf.Timestamp
-	384, // 9: manpasik.v1.GetHistoryRequest.end_time:type_name -> google.protobuf.Timestamp
+	401, // 5: manpasik.v1.MeasurementData.timestamp:type_name -> google.protobuf.Timestamp
+	401, // 6: manpasik.v1.MeasurementResult.processed_at:type_name -> google.protobuf.Timestamp
+	401, // 7: manpasik.v1.EndSessionResponse.ended_at:type_name -> google.protobuf.Timestamp
+	401, // 8: manpasik.v1.GetHistoryRequest.start_time:type_name -> google.protobuf.Timestamp
+	401, // 9: manpasik.v1.GetHistoryRequest.end_time:type_name -> google.protobuf.Timestamp
 	63,  // 10: manpasik.v1.GetHistoryResponse.measurements:type_name -> manpasik.v1.MeasurementSummary
-	384, // 11: manpasik.v1.MeasurementSummary.measured_at:type_name -> google.protobuf.Timestamp
-	384, // 12: manpasik.v1.RegisterDeviceResponse.registered_at:type_name -> google.protobuf.Timestamp
+	401, // 11: manpasik.v1.MeasurementSummary.measured_at:type_name -> google.protobuf.Timestamp
+	401, // 12: manpasik.v1.RegisterDeviceResponse.registered_at:type_name -> google.protobuf.Timestamp
 	68,  // 13: manpasik.v1.ListDevicesResponse.devices:type_name -> manpasik.v1.DeviceInfo
 	2,   // 14: manpasik.v1.DeviceInfo.status:type_name -> manpasik.v1.DeviceStatus
-	384, // 15: manpasik.v1.DeviceInfo.last_seen:type_name -> google.protobuf.Timestamp
+	401, // 15: manpasik.v1.DeviceInfo.last_seen:type_name -> google.protobuf.Timestamp
 	2,   // 16: manpasik.v1.DeviceStatusUpdate.status:type_name -> manpasik.v1.DeviceStatus
-	384, // 17: manpasik.v1.DeviceStatusUpdate.timestamp:type_name -> google.protobuf.Timestamp
+	401, // 17: manpasik.v1.DeviceStatusUpdate.timestamp:type_name -> google.protobuf.Timestamp
 	3,   // 18: manpasik.v1.DeviceCommand.command_type:type_name -> manpasik.v1.CommandType
 	1,   // 19: manpasik.v1.UpdateProfileRequest.gender:type_name -> manpasik.v1.Gender
 	4,   // 20: manpasik.v1.UserProfile.subscription_tier:type_name -> manpasik.v1.SubscriptionTier
-	384, // 21: manpasik.v1.UserProfile.created_at:type_name -> google.protobuf.Timestamp
+	401, // 21: manpasik.v1.UserProfile.created_at:type_name -> google.protobuf.Timestamp
 	1,   // 22: manpasik.v1.UserProfile.gender:type_name -> manpasik.v1.Gender
 	0,   // 23: manpasik.v1.UserProfile.social_provider:type_name -> manpasik.v1.SocialProvider
 	4,   // 24: manpasik.v1.SubscriptionInfo.tier:type_name -> manpasik.v1.SubscriptionTier
-	384, // 25: manpasik.v1.SubscriptionInfo.started_at:type_name -> google.protobuf.Timestamp
-	384, // 26: manpasik.v1.SubscriptionInfo.expires_at:type_name -> google.protobuf.Timestamp
+	401, // 25: manpasik.v1.SubscriptionInfo.started_at:type_name -> google.protobuf.Timestamp
+	401, // 26: manpasik.v1.SubscriptionInfo.expires_at:type_name -> google.protobuf.Timestamp
 	4,   // 27: manpasik.v1.CreateSubscriptionRequest.tier:type_name -> manpasik.v1.SubscriptionTier
 	4,   // 28: manpasik.v1.UpdateSubscriptionRequest.new_tier:type_name -> manpasik.v1.SubscriptionTier
-	384, // 29: manpasik.v1.CancelSubscriptionResponse.cancelled_at:type_name -> google.protobuf.Timestamp
-	384, // 30: manpasik.v1.CancelSubscriptionResponse.effective_until:type_name -> google.protobuf.Timestamp
+	401, // 29: manpasik.v1.CancelSubscriptionResponse.cancelled_at:type_name -> google.protobuf.Timestamp
+	401, // 30: manpasik.v1.CancelSubscriptionResponse.effective_until:type_name -> google.protobuf.Timestamp
 	4,   // 31: manpasik.v1.SubscriptionDetail.tier:type_name -> manpasik.v1.SubscriptionTier
 	5,   // 32: manpasik.v1.SubscriptionDetail.status:type_name -> manpasik.v1.SubscriptionStatus
-	384, // 33: manpasik.v1.SubscriptionDetail.started_at:type_name -> google.protobuf.Timestamp
-	384, // 34: manpasik.v1.SubscriptionDetail.expires_at:type_name -> google.protobuf.Timestamp
-	384, // 35: manpasik.v1.SubscriptionDetail.cancelled_at:type_name -> google.protobuf.Timestamp
+	401, // 33: manpasik.v1.SubscriptionDetail.started_at:type_name -> google.protobuf.Timestamp
+	401, // 34: manpasik.v1.SubscriptionDetail.expires_at:type_name -> google.protobuf.Timestamp
+	401, // 35: manpasik.v1.SubscriptionDetail.cancelled_at:type_name -> google.protobuf.Timestamp
 	4,   // 36: manpasik.v1.CheckFeatureAccessResponse.required_tier:type_name -> manpasik.v1.SubscriptionTier
 	4,   // 37: manpasik.v1.CheckFeatureAccessResponse.current_tier:type_name -> manpasik.v1.SubscriptionTier
 	88,  // 38: manpasik.v1.ListSubscriptionPlansResponse.plans:type_name -> manpasik.v1.SubscriptionPlan
@@ -28247,78 +29527,78 @@ var file_manpasik_proto_depIdxs = []int32{
 	6,   // 40: manpasik.v1.ListProductsRequest.category:type_name -> manpasik.v1.ProductCategory
 	92,  // 41: manpasik.v1.ListProductsResponse.products:type_name -> manpasik.v1.Product
 	6,   // 42: manpasik.v1.Product.category:type_name -> manpasik.v1.ProductCategory
-	384, // 43: manpasik.v1.Product.created_at:type_name -> google.protobuf.Timestamp
+	401, // 43: manpasik.v1.Product.created_at:type_name -> google.protobuf.Timestamp
 	97,  // 44: manpasik.v1.Cart.items:type_name -> manpasik.v1.CartItem
 	102, // 45: manpasik.v1.ListOrdersResponse.orders:type_name -> manpasik.v1.Order
 	103, // 46: manpasik.v1.Order.items:type_name -> manpasik.v1.OrderItem
 	7,   // 47: manpasik.v1.Order.status:type_name -> manpasik.v1.OrderStatus
-	384, // 48: manpasik.v1.Order.created_at:type_name -> google.protobuf.Timestamp
-	384, // 49: manpasik.v1.Order.updated_at:type_name -> google.protobuf.Timestamp
+	401, // 48: manpasik.v1.Order.created_at:type_name -> google.protobuf.Timestamp
+	401, // 49: manpasik.v1.Order.updated_at:type_name -> google.protobuf.Timestamp
 	8,   // 50: manpasik.v1.CreatePaymentRequest.payment_type:type_name -> manpasik.v1.PaymentType
 	109, // 51: manpasik.v1.ListPaymentsResponse.payments:type_name -> manpasik.v1.PaymentDetail
 	8,   // 52: manpasik.v1.PaymentDetail.payment_type:type_name -> manpasik.v1.PaymentType
 	9,   // 53: manpasik.v1.PaymentDetail.status:type_name -> manpasik.v1.PaymentStatus
-	384, // 54: manpasik.v1.PaymentDetail.created_at:type_name -> google.protobuf.Timestamp
-	384, // 55: manpasik.v1.PaymentDetail.completed_at:type_name -> google.protobuf.Timestamp
+	401, // 54: manpasik.v1.PaymentDetail.created_at:type_name -> google.protobuf.Timestamp
+	401, // 55: manpasik.v1.PaymentDetail.completed_at:type_name -> google.protobuf.Timestamp
 	9,   // 56: manpasik.v1.RefundResponse.payment_status:type_name -> manpasik.v1.PaymentStatus
-	384, // 57: manpasik.v1.RefundResponse.refunded_at:type_name -> google.protobuf.Timestamp
+	401, // 57: manpasik.v1.RefundResponse.refunded_at:type_name -> google.protobuf.Timestamp
 	10,  // 58: manpasik.v1.AnalyzeMeasurementRequest.models:type_name -> manpasik.v1.AiModelType
 	11,  // 59: manpasik.v1.BiomarkerResult.risk_level:type_name -> manpasik.v1.RiskLevel
 	113, // 60: manpasik.v1.AnalysisResult.biomarkers:type_name -> manpasik.v1.BiomarkerResult
 	114, // 61: manpasik.v1.AnalysisResult.anomalies:type_name -> manpasik.v1.AnomalyFlag
-	384, // 62: manpasik.v1.AnalysisResult.analyzed_at:type_name -> google.protobuf.Timestamp
-	372, // 63: manpasik.v1.HealthScoreResponse.category_scores:type_name -> manpasik.v1.HealthScoreResponse.CategoryScoresEntry
-	384, // 64: manpasik.v1.HealthScoreResponse.calculated_at:type_name -> google.protobuf.Timestamp
-	384, // 65: manpasik.v1.TrendDataPoint.timestamp:type_name -> google.protobuf.Timestamp
+	401, // 62: manpasik.v1.AnalysisResult.analyzed_at:type_name -> google.protobuf.Timestamp
+	388, // 63: manpasik.v1.HealthScoreResponse.category_scores:type_name -> manpasik.v1.HealthScoreResponse.CategoryScoresEntry
+	401, // 64: manpasik.v1.HealthScoreResponse.calculated_at:type_name -> google.protobuf.Timestamp
+	401, // 65: manpasik.v1.TrendDataPoint.timestamp:type_name -> google.protobuf.Timestamp
 	119, // 66: manpasik.v1.TrendPrediction.historical:type_name -> manpasik.v1.TrendDataPoint
 	119, // 67: manpasik.v1.TrendPrediction.predicted:type_name -> manpasik.v1.TrendDataPoint
 	10,  // 68: manpasik.v1.GetModelInfoRequest.model_type:type_name -> manpasik.v1.AiModelType
 	10,  // 69: manpasik.v1.ModelInfo.model_type:type_name -> manpasik.v1.AiModelType
-	384, // 70: manpasik.v1.ModelInfo.last_trained:type_name -> google.protobuf.Timestamp
+	401, // 70: manpasik.v1.ModelInfo.last_trained:type_name -> google.protobuf.Timestamp
 	122, // 71: manpasik.v1.ListModelsResponse.models:type_name -> manpasik.v1.ModelInfo
 	131, // 72: manpasik.v1.GetUsageHistoryResponse.records:type_name -> manpasik.v1.CartridgeUsageRecord
-	384, // 73: manpasik.v1.CartridgeUsageRecord.used_at:type_name -> google.protobuf.Timestamp
+	401, // 73: manpasik.v1.CartridgeUsageRecord.used_at:type_name -> google.protobuf.Timestamp
 	167, // 74: manpasik.v1.ListCategoriesResponse.categories:type_name -> manpasik.v1.CartridgeCategoryInfo
 	168, // 75: manpasik.v1.ListTypesByCategoryResponse.types:type_name -> manpasik.v1.CartridgeTypeInfo
 	18,  // 76: manpasik.v1.ValidateCartridgeResponse.access_level:type_name -> manpasik.v1.CartridgeAccessLevel
 	126, // 77: manpasik.v1.ValidateCartridgeResponse.detail:type_name -> manpasik.v1.CartridgeDetail
 	12,  // 78: manpasik.v1.CalibrationRecord.calibration_type:type_name -> manpasik.v1.CalibrationType
-	384, // 79: manpasik.v1.CalibrationRecord.calibrated_at:type_name -> google.protobuf.Timestamp
-	384, // 80: manpasik.v1.CalibrationRecord.expires_at:type_name -> google.protobuf.Timestamp
+	401, // 79: manpasik.v1.CalibrationRecord.calibrated_at:type_name -> google.protobuf.Timestamp
+	401, // 80: manpasik.v1.CalibrationRecord.expires_at:type_name -> google.protobuf.Timestamp
 	13,  // 81: manpasik.v1.CalibrationRecord.status:type_name -> manpasik.v1.CalibrationStatus
 	144, // 82: manpasik.v1.ListCalibrationHistoryResponse.records:type_name -> manpasik.v1.CalibrationRecord
 	13,  // 83: manpasik.v1.CalibrationStatusResponse.status:type_name -> manpasik.v1.CalibrationStatus
-	384, // 84: manpasik.v1.CalibrationStatusResponse.last_calibrated_at:type_name -> google.protobuf.Timestamp
-	384, // 85: manpasik.v1.CalibrationStatusResponse.expires_at:type_name -> google.protobuf.Timestamp
+	401, // 84: manpasik.v1.CalibrationStatusResponse.last_calibrated_at:type_name -> google.protobuf.Timestamp
+	401, // 85: manpasik.v1.CalibrationStatusResponse.expires_at:type_name -> google.protobuf.Timestamp
 	144, // 86: manpasik.v1.CalibrationStatusResponse.latest_record:type_name -> manpasik.v1.CalibrationRecord
-	384, // 87: manpasik.v1.CalibrationModel.created_at:type_name -> google.protobuf.Timestamp
+	401, // 87: manpasik.v1.CalibrationModel.created_at:type_name -> google.protobuf.Timestamp
 	150, // 88: manpasik.v1.ListCalibrationModelsResponse.models:type_name -> manpasik.v1.CalibrationModel
 	14,  // 89: manpasik.v1.SetHealthGoalRequest.category:type_name -> manpasik.v1.GoalCategory
-	384, // 90: manpasik.v1.SetHealthGoalRequest.target_date:type_name -> google.protobuf.Timestamp
+	401, // 90: manpasik.v1.SetHealthGoalRequest.target_date:type_name -> google.protobuf.Timestamp
 	14,  // 91: manpasik.v1.HealthGoal.category:type_name -> manpasik.v1.GoalCategory
 	15,  // 92: manpasik.v1.HealthGoal.status:type_name -> manpasik.v1.GoalStatus
-	384, // 93: manpasik.v1.HealthGoal.created_at:type_name -> google.protobuf.Timestamp
-	384, // 94: manpasik.v1.HealthGoal.target_date:type_name -> google.protobuf.Timestamp
-	384, // 95: manpasik.v1.HealthGoal.achieved_at:type_name -> google.protobuf.Timestamp
+	401, // 93: manpasik.v1.HealthGoal.created_at:type_name -> google.protobuf.Timestamp
+	401, // 94: manpasik.v1.HealthGoal.target_date:type_name -> google.protobuf.Timestamp
+	401, // 95: manpasik.v1.HealthGoal.achieved_at:type_name -> google.protobuf.Timestamp
 	15,  // 96: manpasik.v1.GetHealthGoalsRequest.status_filter:type_name -> manpasik.v1.GoalStatus
 	153, // 97: manpasik.v1.GetHealthGoalsResponse.goals:type_name -> manpasik.v1.HealthGoal
 	16,  // 98: manpasik.v1.GenerateCoachingRequest.coaching_type:type_name -> manpasik.v1.CoachingType
 	16,  // 99: manpasik.v1.CoachingMessage.coaching_type:type_name -> manpasik.v1.CoachingType
 	11,  // 100: manpasik.v1.CoachingMessage.risk_level:type_name -> manpasik.v1.RiskLevel
-	384, // 101: manpasik.v1.CoachingMessage.created_at:type_name -> google.protobuf.Timestamp
+	401, // 101: manpasik.v1.CoachingMessage.created_at:type_name -> google.protobuf.Timestamp
 	16,  // 102: manpasik.v1.ListCoachingMessagesRequest.type_filter:type_name -> manpasik.v1.CoachingType
 	157, // 103: manpasik.v1.ListCoachingMessagesResponse.messages:type_name -> manpasik.v1.CoachingMessage
-	384, // 104: manpasik.v1.GenerateDailyReportRequest.date:type_name -> google.protobuf.Timestamp
-	384, // 105: manpasik.v1.DailyHealthReport.report_date:type_name -> google.protobuf.Timestamp
+	401, // 104: manpasik.v1.GenerateDailyReportRequest.date:type_name -> google.protobuf.Timestamp
+	401, // 105: manpasik.v1.DailyHealthReport.report_date:type_name -> google.protobuf.Timestamp
 	157, // 106: manpasik.v1.DailyHealthReport.highlights:type_name -> manpasik.v1.CoachingMessage
-	384, // 107: manpasik.v1.GetWeeklyReportRequest.week_start:type_name -> google.protobuf.Timestamp
-	384, // 108: manpasik.v1.WeeklyHealthReport.week_start:type_name -> google.protobuf.Timestamp
-	384, // 109: manpasik.v1.WeeklyHealthReport.week_end:type_name -> google.protobuf.Timestamp
+	401, // 107: manpasik.v1.GetWeeklyReportRequest.week_start:type_name -> google.protobuf.Timestamp
+	401, // 108: manpasik.v1.WeeklyHealthReport.week_start:type_name -> google.protobuf.Timestamp
+	401, // 109: manpasik.v1.WeeklyHealthReport.week_end:type_name -> google.protobuf.Timestamp
 	161, // 110: manpasik.v1.WeeklyHealthReport.daily_reports:type_name -> manpasik.v1.DailyHealthReport
 	17,  // 111: manpasik.v1.GetRecommendationsRequest.type_filter:type_name -> manpasik.v1.RecommendationType
 	17,  // 112: manpasik.v1.Recommendation.type:type_name -> manpasik.v1.RecommendationType
 	11,  // 113: manpasik.v1.Recommendation.priority:type_name -> manpasik.v1.RiskLevel
-	384, // 114: manpasik.v1.Recommendation.created_at:type_name -> google.protobuf.Timestamp
+	401, // 114: manpasik.v1.Recommendation.created_at:type_name -> google.protobuf.Timestamp
 	165, // 115: manpasik.v1.GetRecommendationsResponse.recommendations:type_name -> manpasik.v1.Recommendation
 	18,  // 116: manpasik.v1.CheckCartridgeAccessResponse.access_level:type_name -> manpasik.v1.CartridgeAccessLevel
 	4,   // 117: manpasik.v1.CheckCartridgeAccessResponse.required_tier:type_name -> manpasik.v1.SubscriptionTier
@@ -28333,15 +29613,15 @@ var file_manpasik_proto_depIdxs = []int32{
 	20,  // 126: manpasik.v1.Facility.specialties:type_name -> manpasik.v1.DoctorSpecialty
 	20,  // 127: manpasik.v1.GetAvailableSlotsRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
 	180, // 128: manpasik.v1.GetAvailableSlotsResponse.slots:type_name -> manpasik.v1.TimeSlot
-	384, // 129: manpasik.v1.TimeSlot.start_time:type_name -> google.protobuf.Timestamp
-	384, // 130: manpasik.v1.TimeSlot.end_time:type_name -> google.protobuf.Timestamp
+	401, // 129: manpasik.v1.TimeSlot.start_time:type_name -> google.protobuf.Timestamp
+	401, // 130: manpasik.v1.TimeSlot.end_time:type_name -> google.protobuf.Timestamp
 	20,  // 131: manpasik.v1.TimeSlot.specialty:type_name -> manpasik.v1.DoctorSpecialty
 	20,  // 132: manpasik.v1.CreateReservationRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
 	20,  // 133: manpasik.v1.Reservation.specialty:type_name -> manpasik.v1.DoctorSpecialty
-	384, // 134: manpasik.v1.Reservation.appointment_time:type_name -> google.protobuf.Timestamp
+	401, // 134: manpasik.v1.Reservation.appointment_time:type_name -> google.protobuf.Timestamp
 	21,  // 135: manpasik.v1.Reservation.status:type_name -> manpasik.v1.ReservationStatus
-	384, // 136: manpasik.v1.Reservation.created_at:type_name -> google.protobuf.Timestamp
-	384, // 137: manpasik.v1.Reservation.updated_at:type_name -> google.protobuf.Timestamp
+	401, // 136: manpasik.v1.Reservation.created_at:type_name -> google.protobuf.Timestamp
+	401, // 137: manpasik.v1.Reservation.updated_at:type_name -> google.protobuf.Timestamp
 	21,  // 138: manpasik.v1.ListReservationsRequest.status:type_name -> manpasik.v1.ReservationStatus
 	182, // 139: manpasik.v1.ListReservationsResponse.reservations:type_name -> manpasik.v1.Reservation
 	22,  // 140: manpasik.v1.CreateAdminRequest.role:type_name -> manpasik.v1.AdminRole
@@ -28349,51 +29629,51 @@ var file_manpasik_proto_depIdxs = []int32{
 	194, // 142: manpasik.v1.ListAdminsResponse.admins:type_name -> manpasik.v1.AdminUser
 	22,  // 143: manpasik.v1.UpdateAdminRoleRequest.new_role:type_name -> manpasik.v1.AdminRole
 	22,  // 144: manpasik.v1.AdminUser.role:type_name -> manpasik.v1.AdminRole
-	384, // 145: manpasik.v1.AdminUser.created_at:type_name -> google.protobuf.Timestamp
-	384, // 146: manpasik.v1.AdminUser.last_login_at:type_name -> google.protobuf.Timestamp
+	401, // 145: manpasik.v1.AdminUser.created_at:type_name -> google.protobuf.Timestamp
+	401, // 146: manpasik.v1.AdminUser.last_login_at:type_name -> google.protobuf.Timestamp
 	4,   // 147: manpasik.v1.AdminListUsersRequest.tier_filter:type_name -> manpasik.v1.SubscriptionTier
 	197, // 148: manpasik.v1.AdminListUsersResponse.users:type_name -> manpasik.v1.AdminUserSummary
 	4,   // 149: manpasik.v1.AdminUserSummary.tier:type_name -> manpasik.v1.SubscriptionTier
-	384, // 150: manpasik.v1.AdminUserSummary.created_at:type_name -> google.protobuf.Timestamp
-	384, // 151: manpasik.v1.AdminUserSummary.last_active_at:type_name -> google.protobuf.Timestamp
-	373, // 152: manpasik.v1.GetSystemStatsResponse.users_by_tier:type_name -> manpasik.v1.GetSystemStatsResponse.UsersByTierEntry
-	374, // 153: manpasik.v1.GetSystemStatsResponse.measurements_by_type:type_name -> manpasik.v1.GetSystemStatsResponse.MeasurementsByTypeEntry
-	384, // 154: manpasik.v1.GetSystemStatsResponse.generated_at:type_name -> google.protobuf.Timestamp
+	401, // 150: manpasik.v1.AdminUserSummary.created_at:type_name -> google.protobuf.Timestamp
+	401, // 151: manpasik.v1.AdminUserSummary.last_active_at:type_name -> google.protobuf.Timestamp
+	389, // 152: manpasik.v1.GetSystemStatsResponse.users_by_tier:type_name -> manpasik.v1.GetSystemStatsResponse.UsersByTierEntry
+	390, // 153: manpasik.v1.GetSystemStatsResponse.measurements_by_type:type_name -> manpasik.v1.GetSystemStatsResponse.MeasurementsByTypeEntry
+	401, // 154: manpasik.v1.GetSystemStatsResponse.generated_at:type_name -> google.protobuf.Timestamp
 	23,  // 155: manpasik.v1.GetAuditLogRequest.action_filter:type_name -> manpasik.v1.AuditAction
-	384, // 156: manpasik.v1.GetAuditLogRequest.start_time:type_name -> google.protobuf.Timestamp
-	384, // 157: manpasik.v1.GetAuditLogRequest.end_time:type_name -> google.protobuf.Timestamp
+	401, // 156: manpasik.v1.GetAuditLogRequest.start_time:type_name -> google.protobuf.Timestamp
+	401, // 157: manpasik.v1.GetAuditLogRequest.end_time:type_name -> google.protobuf.Timestamp
 	202, // 158: manpasik.v1.GetAuditLogResponse.entries:type_name -> manpasik.v1.AuditLogEntry
 	23,  // 159: manpasik.v1.AuditLogEntry.action:type_name -> manpasik.v1.AuditAction
-	384, // 160: manpasik.v1.AuditLogEntry.timestamp:type_name -> google.protobuf.Timestamp
-	384, // 161: manpasik.v1.SystemConfig.updated_at:type_name -> google.protobuf.Timestamp
+	401, // 160: manpasik.v1.AuditLogEntry.timestamp:type_name -> google.protobuf.Timestamp
+	401, // 161: manpasik.v1.SystemConfig.updated_at:type_name -> google.protobuf.Timestamp
 	209, // 162: manpasik.v1.FamilyGroup.members:type_name -> manpasik.v1.FamilyMember
-	384, // 163: manpasik.v1.FamilyGroup.created_at:type_name -> google.protobuf.Timestamp
+	401, // 163: manpasik.v1.FamilyGroup.created_at:type_name -> google.protobuf.Timestamp
 	24,  // 164: manpasik.v1.FamilyMember.role:type_name -> manpasik.v1.FamilyRole
-	384, // 165: manpasik.v1.FamilyMember.joined_at:type_name -> google.protobuf.Timestamp
+	401, // 165: manpasik.v1.FamilyMember.joined_at:type_name -> google.protobuf.Timestamp
 	24,  // 166: manpasik.v1.InviteMemberRequest.role:type_name -> manpasik.v1.FamilyRole
 	24,  // 167: manpasik.v1.FamilyInvitation.role:type_name -> manpasik.v1.FamilyRole
 	25,  // 168: manpasik.v1.FamilyInvitation.status:type_name -> manpasik.v1.InvitationStatus
-	384, // 169: manpasik.v1.FamilyInvitation.created_at:type_name -> google.protobuf.Timestamp
-	384, // 170: manpasik.v1.FamilyInvitation.expires_at:type_name -> google.protobuf.Timestamp
+	401, // 169: manpasik.v1.FamilyInvitation.created_at:type_name -> google.protobuf.Timestamp
+	401, // 170: manpasik.v1.FamilyInvitation.expires_at:type_name -> google.protobuf.Timestamp
 	208, // 171: manpasik.v1.RespondToInvitationResponse.group:type_name -> manpasik.v1.FamilyGroup
 	24,  // 172: manpasik.v1.UpdateMemberRoleRequest.new_role:type_name -> manpasik.v1.FamilyRole
 	209, // 173: manpasik.v1.ListFamilyMembersResponse.members:type_name -> manpasik.v1.FamilyMember
-	384, // 174: manpasik.v1.SharingPreferences.updated_at:type_name -> google.protobuf.Timestamp
+	401, // 174: manpasik.v1.SharingPreferences.updated_at:type_name -> google.protobuf.Timestamp
 	63,  // 175: manpasik.v1.GetSharedHealthDataResponse.recent_measurements:type_name -> manpasik.v1.MeasurementSummary
 	26,  // 176: manpasik.v1.CreateHealthRecordRequest.record_type:type_name -> manpasik.v1.HealthRecordType
-	375, // 177: manpasik.v1.CreateHealthRecordRequest.metadata:type_name -> manpasik.v1.CreateHealthRecordRequest.MetadataEntry
+	391, // 177: manpasik.v1.CreateHealthRecordRequest.metadata:type_name -> manpasik.v1.CreateHealthRecordRequest.MetadataEntry
 	26,  // 178: manpasik.v1.ListHealthRecordsRequest.type_filter:type_name -> manpasik.v1.HealthRecordType
 	230, // 179: manpasik.v1.ListHealthRecordsResponse.records:type_name -> manpasik.v1.HealthRecord
-	376, // 180: manpasik.v1.UpdateHealthRecordRequest.metadata:type_name -> manpasik.v1.UpdateHealthRecordRequest.MetadataEntry
+	392, // 180: manpasik.v1.UpdateHealthRecordRequest.metadata:type_name -> manpasik.v1.UpdateHealthRecordRequest.MetadataEntry
 	26,  // 181: manpasik.v1.HealthRecord.record_type:type_name -> manpasik.v1.HealthRecordType
-	377, // 182: manpasik.v1.HealthRecord.metadata:type_name -> manpasik.v1.HealthRecord.MetadataEntry
-	384, // 183: manpasik.v1.HealthRecord.created_at:type_name -> google.protobuf.Timestamp
-	384, // 184: manpasik.v1.HealthRecord.updated_at:type_name -> google.protobuf.Timestamp
+	393, // 182: manpasik.v1.HealthRecord.metadata:type_name -> manpasik.v1.HealthRecord.MetadataEntry
+	401, // 183: manpasik.v1.HealthRecord.created_at:type_name -> google.protobuf.Timestamp
+	401, // 184: manpasik.v1.HealthRecord.updated_at:type_name -> google.protobuf.Timestamp
 	27,  // 185: manpasik.v1.ExportToFHIRRequest.target_type:type_name -> manpasik.v1.FHIRResourceType
 	27,  // 186: manpasik.v1.ExportToFHIRResponse.resource_type:type_name -> manpasik.v1.FHIRResourceType
-	378, // 187: manpasik.v1.GetHealthSummaryResponse.records_by_type:type_name -> manpasik.v1.GetHealthSummaryResponse.RecordsByTypeEntry
+	394, // 187: manpasik.v1.GetHealthSummaryResponse.records_by_type:type_name -> manpasik.v1.GetHealthSummaryResponse.RecordsByTypeEntry
 	230, // 188: manpasik.v1.GetHealthSummaryResponse.recent_records:type_name -> manpasik.v1.HealthRecord
-	384, // 189: manpasik.v1.GetHealthSummaryResponse.last_updated:type_name -> google.protobuf.Timestamp
+	401, // 189: manpasik.v1.GetHealthSummaryResponse.last_updated:type_name -> google.protobuf.Timestamp
 	245, // 190: manpasik.v1.CreatePrescriptionRequest.medications:type_name -> manpasik.v1.Medication
 	28,  // 191: manpasik.v1.ListPrescriptionsRequest.status_filter:type_name -> manpasik.v1.PrescriptionStatus
 	244, // 192: manpasik.v1.ListPrescriptionsResponse.prescriptions:type_name -> manpasik.v1.Prescription
@@ -28401,9 +29681,9 @@ var file_manpasik_proto_depIdxs = []int32{
 	245, // 194: manpasik.v1.AddMedicationRequest.medication:type_name -> manpasik.v1.Medication
 	28,  // 195: manpasik.v1.Prescription.status:type_name -> manpasik.v1.PrescriptionStatus
 	245, // 196: manpasik.v1.Prescription.medications:type_name -> manpasik.v1.Medication
-	384, // 197: manpasik.v1.Prescription.prescribed_at:type_name -> google.protobuf.Timestamp
-	384, // 198: manpasik.v1.Prescription.expires_at:type_name -> google.protobuf.Timestamp
-	384, // 199: manpasik.v1.Prescription.updated_at:type_name -> google.protobuf.Timestamp
+	401, // 197: manpasik.v1.Prescription.prescribed_at:type_name -> google.protobuf.Timestamp
+	401, // 198: manpasik.v1.Prescription.expires_at:type_name -> google.protobuf.Timestamp
+	401, // 199: manpasik.v1.Prescription.updated_at:type_name -> google.protobuf.Timestamp
 	248, // 200: manpasik.v1.CheckDrugInteractionResponse.interactions:type_name -> manpasik.v1.DrugInteraction
 	29,  // 201: manpasik.v1.DrugInteraction.severity:type_name -> manpasik.v1.DrugInteractionSeverity
 	251, // 202: manpasik.v1.GetMedicationRemindersResponse.reminders:type_name -> manpasik.v1.MedicationReminder
@@ -28411,68 +29691,68 @@ var file_manpasik_proto_depIdxs = []int32{
 	30,  // 204: manpasik.v1.ListPostsRequest.category:type_name -> manpasik.v1.PostCategory
 	256, // 205: manpasik.v1.ListPostsResponse.posts:type_name -> manpasik.v1.Post
 	30,  // 206: manpasik.v1.Post.category:type_name -> manpasik.v1.PostCategory
-	384, // 207: manpasik.v1.Post.created_at:type_name -> google.protobuf.Timestamp
-	384, // 208: manpasik.v1.Post.updated_at:type_name -> google.protobuf.Timestamp
+	401, // 207: manpasik.v1.Post.created_at:type_name -> google.protobuf.Timestamp
+	401, // 208: manpasik.v1.Post.updated_at:type_name -> google.protobuf.Timestamp
 	262, // 209: manpasik.v1.ListCommentsResponse.comments:type_name -> manpasik.v1.Comment
-	384, // 210: manpasik.v1.Comment.created_at:type_name -> google.protobuf.Timestamp
+	401, // 210: manpasik.v1.Comment.created_at:type_name -> google.protobuf.Timestamp
 	32,  // 211: manpasik.v1.CreateChallengeRequest.challenge_type:type_name -> manpasik.v1.ChallengeType
-	384, // 212: manpasik.v1.CreateChallengeRequest.start_date:type_name -> google.protobuf.Timestamp
-	384, // 213: manpasik.v1.CreateChallengeRequest.end_date:type_name -> google.protobuf.Timestamp
+	401, // 212: manpasik.v1.CreateChallengeRequest.start_date:type_name -> google.protobuf.Timestamp
+	401, // 213: manpasik.v1.CreateChallengeRequest.end_date:type_name -> google.protobuf.Timestamp
 	32,  // 214: manpasik.v1.Challenge.challenge_type:type_name -> manpasik.v1.ChallengeType
 	31,  // 215: manpasik.v1.Challenge.status:type_name -> manpasik.v1.ChallengeStatus
-	384, // 216: manpasik.v1.Challenge.start_date:type_name -> google.protobuf.Timestamp
-	384, // 217: manpasik.v1.Challenge.end_date:type_name -> google.protobuf.Timestamp
-	384, // 218: manpasik.v1.Challenge.created_at:type_name -> google.protobuf.Timestamp
+	401, // 216: manpasik.v1.Challenge.start_date:type_name -> google.protobuf.Timestamp
+	401, // 217: manpasik.v1.Challenge.end_date:type_name -> google.protobuf.Timestamp
+	401, // 218: manpasik.v1.Challenge.created_at:type_name -> google.protobuf.Timestamp
 	32,  // 219: manpasik.v1.ListChallengesRequest.type_filter:type_name -> manpasik.v1.ChallengeType
 	31,  // 220: manpasik.v1.ListChallengesRequest.status_filter:type_name -> manpasik.v1.ChallengeStatus
 	265, // 221: manpasik.v1.ListChallengesResponse.challenges:type_name -> manpasik.v1.Challenge
 	33,  // 222: manpasik.v1.CreateRoomRequest.room_type:type_name -> manpasik.v1.RoomType
 	33,  // 223: manpasik.v1.Room.room_type:type_name -> manpasik.v1.RoomType
 	34,  // 224: manpasik.v1.Room.status:type_name -> manpasik.v1.RoomStatus
-	384, // 225: manpasik.v1.Room.created_at:type_name -> google.protobuf.Timestamp
-	384, // 226: manpasik.v1.Room.started_at:type_name -> google.protobuf.Timestamp
-	384, // 227: manpasik.v1.Room.ended_at:type_name -> google.protobuf.Timestamp
+	401, // 225: manpasik.v1.Room.created_at:type_name -> google.protobuf.Timestamp
+	401, // 226: manpasik.v1.Room.started_at:type_name -> google.protobuf.Timestamp
+	401, // 227: manpasik.v1.Room.ended_at:type_name -> google.protobuf.Timestamp
 	272, // 228: manpasik.v1.JoinRoomResponse.room:type_name -> manpasik.v1.Room
 	278, // 229: manpasik.v1.JoinRoomResponse.participants:type_name -> manpasik.v1.Participant
-	384, // 230: manpasik.v1.Participant.joined_at:type_name -> google.protobuf.Timestamp
+	401, // 230: manpasik.v1.Participant.joined_at:type_name -> google.protobuf.Timestamp
 	35,  // 231: manpasik.v1.SendSignalRequest.signal_type:type_name -> manpasik.v1.SignalType
 	278, // 232: manpasik.v1.ListParticipantsResponse.participants:type_name -> manpasik.v1.Participant
-	384, // 233: manpasik.v1.GetRoomStatsResponse.started_at:type_name -> google.protobuf.Timestamp
+	401, // 233: manpasik.v1.GetRoomStatsResponse.started_at:type_name -> google.protobuf.Timestamp
 	36,  // 234: manpasik.v1.SendNotificationRequest.type:type_name -> manpasik.v1.NotificationType
 	38,  // 235: manpasik.v1.SendNotificationRequest.priority:type_name -> manpasik.v1.NotificationPriority
 	37,  // 236: manpasik.v1.SendNotificationRequest.channel:type_name -> manpasik.v1.NotificationChannel
-	379, // 237: manpasik.v1.SendNotificationRequest.data:type_name -> manpasik.v1.SendNotificationRequest.DataEntry
+	395, // 237: manpasik.v1.SendNotificationRequest.data:type_name -> manpasik.v1.SendNotificationRequest.DataEntry
 	36,  // 238: manpasik.v1.Notification.type:type_name -> manpasik.v1.NotificationType
 	38,  // 239: manpasik.v1.Notification.priority:type_name -> manpasik.v1.NotificationPriority
 	37,  // 240: manpasik.v1.Notification.channel:type_name -> manpasik.v1.NotificationChannel
-	380, // 241: manpasik.v1.Notification.data:type_name -> manpasik.v1.Notification.DataEntry
-	384, // 242: manpasik.v1.Notification.created_at:type_name -> google.protobuf.Timestamp
-	384, // 243: manpasik.v1.Notification.read_at:type_name -> google.protobuf.Timestamp
+	396, // 241: manpasik.v1.Notification.data:type_name -> manpasik.v1.Notification.DataEntry
+	401, // 242: manpasik.v1.Notification.created_at:type_name -> google.protobuf.Timestamp
+	401, // 243: manpasik.v1.Notification.read_at:type_name -> google.protobuf.Timestamp
 	36,  // 244: manpasik.v1.ListNotificationsRequest.type_filter:type_name -> manpasik.v1.NotificationType
 	286, // 245: manpasik.v1.ListNotificationsResponse.notifications:type_name -> manpasik.v1.Notification
-	384, // 246: manpasik.v1.NotificationPreferences.updated_at:type_name -> google.protobuf.Timestamp
+	401, // 246: manpasik.v1.NotificationPreferences.updated_at:type_name -> google.protobuf.Timestamp
 	302, // 247: manpasik.v1.DetectLanguageResponse.languages:type_name -> manpasik.v1.DetectedLanguage
 	305, // 248: manpasik.v1.ListSupportedLanguagesResponse.languages:type_name -> manpasik.v1.SupportedLanguage
 	299, // 249: manpasik.v1.TranslateBatchResponse.translations:type_name -> manpasik.v1.TranslateTextResponse
 	310, // 250: manpasik.v1.GetTranslationHistoryResponse.records:type_name -> manpasik.v1.TranslationRecord
-	384, // 251: manpasik.v1.TranslationRecord.created_at:type_name -> google.protobuf.Timestamp
-	381, // 252: manpasik.v1.GetTranslationUsageResponse.by_language_pair:type_name -> manpasik.v1.GetTranslationUsageResponse.ByLanguagePairEntry
+	401, // 251: manpasik.v1.TranslationRecord.created_at:type_name -> google.protobuf.Timestamp
+	397, // 252: manpasik.v1.GetTranslationUsageResponse.by_language_pair:type_name -> manpasik.v1.GetTranslationUsageResponse.ByLanguagePairEntry
 	315, // 253: manpasik.v1.ListDoctorsByFacilityResponse.doctors:type_name -> manpasik.v1.Doctor
 	318, // 254: manpasik.v1.GetDoctorAvailabilityResponse.slots:type_name -> manpasik.v1.TimeSlotDetail
 	315, // 255: manpasik.v1.SelectDoctorResponse.doctor:type_name -> manpasik.v1.Doctor
 	328, // 256: manpasik.v1.ListConsentsResponse.consents:type_name -> manpasik.v1.DataSharingConsent
 	337, // 257: manpasik.v1.GetDataAccessLogResponse.entries:type_name -> manpasik.v1.DataAccessLogEntry
 	346, // 258: manpasik.v1.ListSystemConfigsResponse.configs:type_name -> manpasik.v1.ConfigWithMeta
-	382, // 259: manpasik.v1.ListSystemConfigsResponse.category_counts:type_name -> manpasik.v1.ListSystemConfigsResponse.CategoryCountsEntry
-	384, // 260: manpasik.v1.ConfigWithMeta.updated_at:type_name -> google.protobuf.Timestamp
+	398, // 259: manpasik.v1.ListSystemConfigsResponse.category_counts:type_name -> manpasik.v1.ListSystemConfigsResponse.CategoryCountsEntry
+	401, // 260: manpasik.v1.ConfigWithMeta.updated_at:type_name -> google.protobuf.Timestamp
 	203, // 261: manpasik.v1.BulkSetConfigsRequest.configs:type_name -> manpasik.v1.SetSystemConfigRequest
 	352, // 262: manpasik.v1.BulkSetConfigsResponse.results:type_name -> manpasik.v1.ConfigChangeResult
 	20,  // 263: manpasik.v1.Consultation.specialty:type_name -> manpasik.v1.DoctorSpecialty
 	39,  // 264: manpasik.v1.Consultation.status:type_name -> manpasik.v1.ConsultationStatus
-	384, // 265: manpasik.v1.Consultation.created_at:type_name -> google.protobuf.Timestamp
-	384, // 266: manpasik.v1.Consultation.scheduled_at:type_name -> google.protobuf.Timestamp
-	384, // 267: manpasik.v1.Consultation.started_at:type_name -> google.protobuf.Timestamp
-	384, // 268: manpasik.v1.Consultation.ended_at:type_name -> google.protobuf.Timestamp
+	401, // 265: manpasik.v1.Consultation.created_at:type_name -> google.protobuf.Timestamp
+	401, // 266: manpasik.v1.Consultation.scheduled_at:type_name -> google.protobuf.Timestamp
+	401, // 267: manpasik.v1.Consultation.started_at:type_name -> google.protobuf.Timestamp
+	401, // 268: manpasik.v1.Consultation.ended_at:type_name -> google.protobuf.Timestamp
 	20,  // 269: manpasik.v1.CreateConsultationRequest.specialty:type_name -> manpasik.v1.DoctorSpecialty
 	39,  // 270: manpasik.v1.ListConsultationsRequest.status_filter:type_name -> manpasik.v1.ConsultationStatus
 	353, // 271: manpasik.v1.ListConsultationsResponse.consultations:type_name -> manpasik.v1.Consultation
@@ -28480,352 +29760,371 @@ var file_manpasik_proto_depIdxs = []int32{
 	360, // 273: manpasik.v1.MatchDoctorResponse.doctors:type_name -> manpasik.v1.DoctorProfile
 	20,  // 274: manpasik.v1.DoctorProfile.specialty:type_name -> manpasik.v1.DoctorSpecialty
 	40,  // 275: manpasik.v1.VideoSession.status:type_name -> manpasik.v1.VideoSessionStatus
-	384, // 276: manpasik.v1.VideoSession.started_at:type_name -> google.protobuf.Timestamp
-	384, // 277: manpasik.v1.VideoSession.ended_at:type_name -> google.protobuf.Timestamp
-	383, // 278: manpasik.v1.SendFromTemplateRequest.data:type_name -> manpasik.v1.SendFromTemplateRequest.DataEntry
+	401, // 276: manpasik.v1.VideoSession.started_at:type_name -> google.protobuf.Timestamp
+	401, // 277: manpasik.v1.VideoSession.ended_at:type_name -> google.protobuf.Timestamp
+	399, // 278: manpasik.v1.SendFromTemplateRequest.data:type_name -> manpasik.v1.SendFromTemplateRequest.DataEntry
 	371, // 279: manpasik.v1.GetAuditLogDetailsResponse.details:type_name -> manpasik.v1.AuditLogDetail
-	384, // 280: manpasik.v1.AuditLogDetail.created_at:type_name -> google.protobuf.Timestamp
-	41,  // 281: manpasik.v1.AuthService.Register:input_type -> manpasik.v1.RegisterRequest
-	43,  // 282: manpasik.v1.AuthService.Login:input_type -> manpasik.v1.LoginRequest
-	50,  // 283: manpasik.v1.AuthService.SocialLogin:input_type -> manpasik.v1.SocialLoginRequest
-	45,  // 284: manpasik.v1.AuthService.RefreshToken:input_type -> manpasik.v1.RefreshTokenRequest
-	46,  // 285: manpasik.v1.AuthService.Logout:input_type -> manpasik.v1.LogoutRequest
-	48,  // 286: manpasik.v1.AuthService.ValidateToken:input_type -> manpasik.v1.ValidateTokenRequest
-	51,  // 287: manpasik.v1.AuthService.ResetPassword:input_type -> manpasik.v1.ResetPasswordRequest
-	53,  // 288: manpasik.v1.MeasurementService.StartSession:input_type -> manpasik.v1.StartSessionRequest
-	55,  // 289: manpasik.v1.MeasurementService.StreamMeasurement:input_type -> manpasik.v1.MeasurementData
-	59,  // 290: manpasik.v1.MeasurementService.EndSession:input_type -> manpasik.v1.EndSessionRequest
-	61,  // 291: manpasik.v1.MeasurementService.GetMeasurementHistory:input_type -> manpasik.v1.GetHistoryRequest
-	338, // 292: manpasik.v1.MeasurementService.ExportSingleMeasurement:input_type -> manpasik.v1.ExportSingleMeasurementRequest
-	339, // 293: manpasik.v1.MeasurementService.ExportToFHIRObservations:input_type -> manpasik.v1.ExportToFHIRObservationsRequest
-	64,  // 294: manpasik.v1.DeviceService.RegisterDevice:input_type -> manpasik.v1.RegisterDeviceRequest
-	66,  // 295: manpasik.v1.DeviceService.ListDevices:input_type -> manpasik.v1.ListDevicesRequest
-	69,  // 296: manpasik.v1.DeviceService.StreamDeviceStatus:input_type -> manpasik.v1.DeviceStatusUpdate
-	71,  // 297: manpasik.v1.DeviceService.RequestOtaUpdate:input_type -> manpasik.v1.OtaRequest
-	341, // 298: manpasik.v1.DeviceService.UpdateDeviceStatus:input_type -> manpasik.v1.UpdateDeviceStatusRequest
-	73,  // 299: manpasik.v1.UserService.GetProfile:input_type -> manpasik.v1.GetProfileRequest
-	74,  // 300: manpasik.v1.UserService.UpdateProfile:input_type -> manpasik.v1.UpdateProfileRequest
-	76,  // 301: manpasik.v1.UserService.GetSubscription:input_type -> manpasik.v1.GetSubscriptionRequest
-	78,  // 302: manpasik.v1.SubscriptionService.CreateSubscription:input_type -> manpasik.v1.CreateSubscriptionRequest
-	79,  // 303: manpasik.v1.SubscriptionService.GetSubscription:input_type -> manpasik.v1.GetSubscriptionDetailRequest
-	80,  // 304: manpasik.v1.SubscriptionService.UpdateSubscription:input_type -> manpasik.v1.UpdateSubscriptionRequest
-	81,  // 305: manpasik.v1.SubscriptionService.CancelSubscription:input_type -> manpasik.v1.CancelSubscriptionRequest
-	84,  // 306: manpasik.v1.SubscriptionService.CheckFeatureAccess:input_type -> manpasik.v1.CheckFeatureAccessRequest
-	86,  // 307: manpasik.v1.SubscriptionService.ListSubscriptionPlans:input_type -> manpasik.v1.ListSubscriptionPlansRequest
-	169, // 308: manpasik.v1.SubscriptionService.CheckCartridgeAccess:input_type -> manpasik.v1.CheckCartridgeAccessRequest
-	171, // 309: manpasik.v1.SubscriptionService.ListAccessibleCartridges:input_type -> manpasik.v1.ListAccessibleCartridgesRequest
-	89,  // 310: manpasik.v1.ShopService.ListProducts:input_type -> manpasik.v1.ListProductsRequest
-	91,  // 311: manpasik.v1.ShopService.GetProduct:input_type -> manpasik.v1.GetProductRequest
-	93,  // 312: manpasik.v1.ShopService.AddToCart:input_type -> manpasik.v1.AddToCartRequest
-	94,  // 313: manpasik.v1.ShopService.GetCart:input_type -> manpasik.v1.GetCartRequest
-	95,  // 314: manpasik.v1.ShopService.RemoveFromCart:input_type -> manpasik.v1.RemoveFromCartRequest
-	98,  // 315: manpasik.v1.ShopService.CreateOrder:input_type -> manpasik.v1.CreateOrderRequest
-	99,  // 316: manpasik.v1.ShopService.GetOrder:input_type -> manpasik.v1.GetOrderRequest
-	100, // 317: manpasik.v1.ShopService.ListOrders:input_type -> manpasik.v1.ListOrdersRequest
-	104, // 318: manpasik.v1.PaymentService.CreatePayment:input_type -> manpasik.v1.CreatePaymentRequest
-	105, // 319: manpasik.v1.PaymentService.ConfirmPayment:input_type -> manpasik.v1.ConfirmPaymentRequest
-	106, // 320: manpasik.v1.PaymentService.GetPayment:input_type -> manpasik.v1.GetPaymentRequest
-	107, // 321: manpasik.v1.PaymentService.ListPayments:input_type -> manpasik.v1.ListPaymentsRequest
-	110, // 322: manpasik.v1.PaymentService.RefundPayment:input_type -> manpasik.v1.RefundPaymentRequest
-	112, // 323: manpasik.v1.AiInferenceService.AnalyzeMeasurement:input_type -> manpasik.v1.AnalyzeMeasurementRequest
-	116, // 324: manpasik.v1.AiInferenceService.GetHealthScore:input_type -> manpasik.v1.GetHealthScoreRequest
-	118, // 325: manpasik.v1.AiInferenceService.PredictTrend:input_type -> manpasik.v1.PredictTrendRequest
-	121, // 326: manpasik.v1.AiInferenceService.GetModelInfo:input_type -> manpasik.v1.GetModelInfoRequest
-	123, // 327: manpasik.v1.AiInferenceService.ListModels:input_type -> manpasik.v1.ListModelsRequest
-	125, // 328: manpasik.v1.CartridgeService.ReadCartridge:input_type -> manpasik.v1.ReadCartridgeRequest
-	127, // 329: manpasik.v1.CartridgeService.RecordUsage:input_type -> manpasik.v1.RecordUsageRequest
-	129, // 330: manpasik.v1.CartridgeService.GetUsageHistory:input_type -> manpasik.v1.GetUsageHistoryRequest
-	132, // 331: manpasik.v1.CartridgeService.GetCartridgeType:input_type -> manpasik.v1.GetCartridgeTypeRequest
-	133, // 332: manpasik.v1.CartridgeService.ListCategories:input_type -> manpasik.v1.ListCategoriesRequest
-	135, // 333: manpasik.v1.CartridgeService.ListTypesByCategory:input_type -> manpasik.v1.ListTypesByCategoryRequest
-	137, // 334: manpasik.v1.CartridgeService.GetRemainingUses:input_type -> manpasik.v1.GetRemainingUsesRequest
-	139, // 335: manpasik.v1.CartridgeService.ValidateCartridge:input_type -> manpasik.v1.ValidateCartridgeRequest
-	141, // 336: manpasik.v1.CalibrationService.RegisterFactoryCalibration:input_type -> manpasik.v1.RegisterFactoryCalibrationRequest
-	142, // 337: manpasik.v1.CalibrationService.PerformFieldCalibration:input_type -> manpasik.v1.PerformFieldCalibrationRequest
-	143, // 338: manpasik.v1.CalibrationService.GetCalibration:input_type -> manpasik.v1.GetCalibrationRequest
-	145, // 339: manpasik.v1.CalibrationService.ListCalibrationHistory:input_type -> manpasik.v1.ListCalibrationHistoryRequest
-	147, // 340: manpasik.v1.CalibrationService.CheckCalibrationStatus:input_type -> manpasik.v1.CheckCalibrationStatusRequest
-	149, // 341: manpasik.v1.CalibrationService.ListCalibrationModels:input_type -> manpasik.v1.ListCalibrationModelsRequest
-	152, // 342: manpasik.v1.CoachingService.SetHealthGoal:input_type -> manpasik.v1.SetHealthGoalRequest
-	154, // 343: manpasik.v1.CoachingService.GetHealthGoals:input_type -> manpasik.v1.GetHealthGoalsRequest
-	156, // 344: manpasik.v1.CoachingService.GenerateCoaching:input_type -> manpasik.v1.GenerateCoachingRequest
-	158, // 345: manpasik.v1.CoachingService.ListCoachingMessages:input_type -> manpasik.v1.ListCoachingMessagesRequest
-	160, // 346: manpasik.v1.CoachingService.GenerateDailyReport:input_type -> manpasik.v1.GenerateDailyReportRequest
-	162, // 347: manpasik.v1.CoachingService.GetWeeklyReport:input_type -> manpasik.v1.GetWeeklyReportRequest
-	164, // 348: manpasik.v1.CoachingService.GetRecommendations:input_type -> manpasik.v1.GetRecommendationsRequest
-	174, // 349: manpasik.v1.ReservationService.SearchFacilities:input_type -> manpasik.v1.SearchFacilitiesRequest
-	176, // 350: manpasik.v1.ReservationService.GetFacility:input_type -> manpasik.v1.GetFacilityRequest
-	178, // 351: manpasik.v1.ReservationService.GetAvailableSlots:input_type -> manpasik.v1.GetAvailableSlotsRequest
-	181, // 352: manpasik.v1.ReservationService.CreateReservation:input_type -> manpasik.v1.CreateReservationRequest
-	183, // 353: manpasik.v1.ReservationService.GetReservation:input_type -> manpasik.v1.GetReservationRequest
-	184, // 354: manpasik.v1.ReservationService.ListReservations:input_type -> manpasik.v1.ListReservationsRequest
-	186, // 355: manpasik.v1.ReservationService.CancelReservation:input_type -> manpasik.v1.CancelReservationRequest
-	313, // 356: manpasik.v1.ReservationService.ListDoctorsByFacility:input_type -> manpasik.v1.ListDoctorsByFacilityRequest
-	316, // 357: manpasik.v1.ReservationService.GetDoctorAvailability:input_type -> manpasik.v1.GetDoctorAvailabilityRequest
-	319, // 358: manpasik.v1.ReservationService.SelectDoctor:input_type -> manpasik.v1.SelectDoctorRequest
-	188, // 359: manpasik.v1.AdminService.CreateAdmin:input_type -> manpasik.v1.CreateAdminRequest
-	189, // 360: manpasik.v1.AdminService.GetAdmin:input_type -> manpasik.v1.GetAdminRequest
-	190, // 361: manpasik.v1.AdminService.ListAdmins:input_type -> manpasik.v1.ListAdminsRequest
-	192, // 362: manpasik.v1.AdminService.UpdateAdminRole:input_type -> manpasik.v1.UpdateAdminRoleRequest
-	193, // 363: manpasik.v1.AdminService.DeactivateAdmin:input_type -> manpasik.v1.DeactivateAdminRequest
-	195, // 364: manpasik.v1.AdminService.ListUsers:input_type -> manpasik.v1.AdminListUsersRequest
-	198, // 365: manpasik.v1.AdminService.GetSystemStats:input_type -> manpasik.v1.GetSystemStatsRequest
-	200, // 366: manpasik.v1.AdminService.GetAuditLog:input_type -> manpasik.v1.GetAuditLogRequest
-	203, // 367: manpasik.v1.AdminService.SetSystemConfig:input_type -> manpasik.v1.SetSystemConfigRequest
-	204, // 368: manpasik.v1.AdminService.GetSystemConfig:input_type -> manpasik.v1.GetSystemConfigRequest
-	343, // 369: manpasik.v1.AdminService.ListAdminsByRegion:input_type -> manpasik.v1.ListAdminsByRegionRequest
-	344, // 370: manpasik.v1.AdminService.ListSystemConfigs:input_type -> manpasik.v1.ListSystemConfigsRequest
-	347, // 371: manpasik.v1.AdminService.GetConfigWithMeta:input_type -> manpasik.v1.GetConfigWithMetaRequest
-	348, // 372: manpasik.v1.AdminService.ValidateConfigValue:input_type -> manpasik.v1.ValidateConfigValueRequest
-	350, // 373: manpasik.v1.AdminService.BulkSetConfigs:input_type -> manpasik.v1.BulkSetConfigsRequest
-	369, // 374: manpasik.v1.AdminService.GetAuditLogDetails:input_type -> manpasik.v1.GetAuditLogDetailsRequest
-	206, // 375: manpasik.v1.FamilyService.CreateFamilyGroup:input_type -> manpasik.v1.CreateFamilyGroupRequest
-	207, // 376: manpasik.v1.FamilyService.GetFamilyGroup:input_type -> manpasik.v1.GetFamilyGroupRequest
-	210, // 377: manpasik.v1.FamilyService.InviteMember:input_type -> manpasik.v1.InviteMemberRequest
-	212, // 378: manpasik.v1.FamilyService.RespondToInvitation:input_type -> manpasik.v1.RespondToInvitationRequest
-	214, // 379: manpasik.v1.FamilyService.RemoveMember:input_type -> manpasik.v1.RemoveMemberRequest
-	216, // 380: manpasik.v1.FamilyService.UpdateMemberRole:input_type -> manpasik.v1.UpdateMemberRoleRequest
-	217, // 381: manpasik.v1.FamilyService.ListFamilyMembers:input_type -> manpasik.v1.ListFamilyMembersRequest
-	219, // 382: manpasik.v1.FamilyService.SetSharingPreferences:input_type -> manpasik.v1.SetSharingPreferencesRequest
-	221, // 383: manpasik.v1.FamilyService.GetSharedHealthData:input_type -> manpasik.v1.GetSharedHealthDataRequest
-	367, // 384: manpasik.v1.FamilyService.ValidateSharingAccess:input_type -> manpasik.v1.ValidateSharingAccessRequest
-	223, // 385: manpasik.v1.HealthRecordService.CreateRecord:input_type -> manpasik.v1.CreateHealthRecordRequest
-	224, // 386: manpasik.v1.HealthRecordService.GetRecord:input_type -> manpasik.v1.GetHealthRecordRequest
-	225, // 387: manpasik.v1.HealthRecordService.ListRecords:input_type -> manpasik.v1.ListHealthRecordsRequest
-	227, // 388: manpasik.v1.HealthRecordService.UpdateRecord:input_type -> manpasik.v1.UpdateHealthRecordRequest
-	228, // 389: manpasik.v1.HealthRecordService.DeleteRecord:input_type -> manpasik.v1.DeleteHealthRecordRequest
-	231, // 390: manpasik.v1.HealthRecordService.ExportToFHIR:input_type -> manpasik.v1.ExportToFHIRRequest
-	233, // 391: manpasik.v1.HealthRecordService.ImportFromFHIR:input_type -> manpasik.v1.ImportFromFHIRRequest
-	235, // 392: manpasik.v1.HealthRecordService.GetHealthSummary:input_type -> manpasik.v1.GetHealthSummaryRequest
-	327, // 393: manpasik.v1.HealthRecordService.CreateDataSharingConsent:input_type -> manpasik.v1.CreateConsentRequest
-	329, // 394: manpasik.v1.HealthRecordService.RevokeDataSharingConsent:input_type -> manpasik.v1.RevokeConsentRequest
-	331, // 395: manpasik.v1.HealthRecordService.ListDataSharingConsents:input_type -> manpasik.v1.ListConsentsRequest
-	333, // 396: manpasik.v1.HealthRecordService.ShareWithProvider:input_type -> manpasik.v1.ShareWithProviderRequest
-	335, // 397: manpasik.v1.HealthRecordService.GetDataAccessLog:input_type -> manpasik.v1.GetDataAccessLogRequest
-	237, // 398: manpasik.v1.PrescriptionService.CreatePrescription:input_type -> manpasik.v1.CreatePrescriptionRequest
-	238, // 399: manpasik.v1.PrescriptionService.GetPrescription:input_type -> manpasik.v1.GetPrescriptionRequest
-	239, // 400: manpasik.v1.PrescriptionService.ListPrescriptions:input_type -> manpasik.v1.ListPrescriptionsRequest
-	241, // 401: manpasik.v1.PrescriptionService.UpdatePrescriptionStatus:input_type -> manpasik.v1.UpdatePrescriptionStatusRequest
-	242, // 402: manpasik.v1.PrescriptionService.AddMedication:input_type -> manpasik.v1.AddMedicationRequest
-	243, // 403: manpasik.v1.PrescriptionService.RemoveMedication:input_type -> manpasik.v1.RemoveMedicationRequest
-	246, // 404: manpasik.v1.PrescriptionService.CheckDrugInteraction:input_type -> manpasik.v1.CheckDrugInteractionRequest
-	249, // 405: manpasik.v1.PrescriptionService.GetMedicationReminders:input_type -> manpasik.v1.GetMedicationRemindersRequest
-	321, // 406: manpasik.v1.PrescriptionService.SelectPharmacyAndFulfillment:input_type -> manpasik.v1.SelectPharmacyRequest
-	323, // 407: manpasik.v1.PrescriptionService.SendPrescriptionToPharmacy:input_type -> manpasik.v1.SendToPharmacyRequest
-	325, // 408: manpasik.v1.PrescriptionService.GetPrescriptionByToken:input_type -> manpasik.v1.GetByTokenRequest
-	326, // 409: manpasik.v1.PrescriptionService.UpdateDispensaryStatus:input_type -> manpasik.v1.UpdateDispensaryStatusRequest
-	252, // 410: manpasik.v1.CommunityService.CreatePost:input_type -> manpasik.v1.CreatePostRequest
-	253, // 411: manpasik.v1.CommunityService.GetPost:input_type -> manpasik.v1.GetPostRequest
-	254, // 412: manpasik.v1.CommunityService.ListPosts:input_type -> manpasik.v1.ListPostsRequest
-	257, // 413: manpasik.v1.CommunityService.LikePost:input_type -> manpasik.v1.LikePostRequest
-	259, // 414: manpasik.v1.CommunityService.CreateComment:input_type -> manpasik.v1.CreateCommentRequest
-	260, // 415: manpasik.v1.CommunityService.ListComments:input_type -> manpasik.v1.ListCommentsRequest
-	263, // 416: manpasik.v1.CommunityService.CreateChallenge:input_type -> manpasik.v1.CreateChallengeRequest
-	264, // 417: manpasik.v1.CommunityService.GetChallenge:input_type -> manpasik.v1.GetChallengeRequest
-	266, // 418: manpasik.v1.CommunityService.JoinChallenge:input_type -> manpasik.v1.JoinChallengeRequest
-	268, // 419: manpasik.v1.CommunityService.ListChallenges:input_type -> manpasik.v1.ListChallengesRequest
-	270, // 420: manpasik.v1.VideoService.CreateRoom:input_type -> manpasik.v1.CreateRoomRequest
-	271, // 421: manpasik.v1.VideoService.GetRoom:input_type -> manpasik.v1.GetRoomRequest
-	273, // 422: manpasik.v1.VideoService.JoinRoom:input_type -> manpasik.v1.JoinRoomRequest
-	275, // 423: manpasik.v1.VideoService.LeaveRoom:input_type -> manpasik.v1.LeaveRoomRequest
-	277, // 424: manpasik.v1.VideoService.EndRoom:input_type -> manpasik.v1.EndRoomRequest
-	279, // 425: manpasik.v1.VideoService.SendSignal:input_type -> manpasik.v1.SendSignalRequest
-	281, // 426: manpasik.v1.VideoService.ListParticipants:input_type -> manpasik.v1.ListParticipantsRequest
-	283, // 427: manpasik.v1.VideoService.GetRoomStats:input_type -> manpasik.v1.GetRoomStatsRequest
-	285, // 428: manpasik.v1.NotificationService.SendNotification:input_type -> manpasik.v1.SendNotificationRequest
-	287, // 429: manpasik.v1.NotificationService.ListNotifications:input_type -> manpasik.v1.ListNotificationsRequest
-	289, // 430: manpasik.v1.NotificationService.MarkAsRead:input_type -> manpasik.v1.MarkAsReadRequest
-	291, // 431: manpasik.v1.NotificationService.MarkAllAsRead:input_type -> manpasik.v1.MarkAllAsReadRequest
-	293, // 432: manpasik.v1.NotificationService.GetUnreadCount:input_type -> manpasik.v1.GetUnreadCountRequest
-	295, // 433: manpasik.v1.NotificationService.UpdateNotificationPreferences:input_type -> manpasik.v1.UpdateNotificationPreferencesRequest
-	296, // 434: manpasik.v1.NotificationService.GetNotificationPreferences:input_type -> manpasik.v1.GetNotificationPreferencesRequest
-	366, // 435: manpasik.v1.NotificationService.SendFromTemplate:input_type -> manpasik.v1.SendFromTemplateRequest
-	298, // 436: manpasik.v1.TranslationService.TranslateText:input_type -> manpasik.v1.TranslateTextRequest
-	300, // 437: manpasik.v1.TranslationService.DetectLanguage:input_type -> manpasik.v1.DetectLanguageRequest
-	303, // 438: manpasik.v1.TranslationService.ListSupportedLanguages:input_type -> manpasik.v1.ListSupportedLanguagesRequest
-	306, // 439: manpasik.v1.TranslationService.TranslateBatch:input_type -> manpasik.v1.TranslateBatchRequest
-	308, // 440: manpasik.v1.TranslationService.GetTranslationHistory:input_type -> manpasik.v1.GetTranslationHistoryRequest
-	311, // 441: manpasik.v1.TranslationService.GetTranslationUsage:input_type -> manpasik.v1.GetTranslationUsageRequest
-	354, // 442: manpasik.v1.TelemedicineService.CreateConsultation:input_type -> manpasik.v1.CreateConsultationRequest
-	355, // 443: manpasik.v1.TelemedicineService.GetConsultation:input_type -> manpasik.v1.GetConsultationRequest
-	356, // 444: manpasik.v1.TelemedicineService.ListConsultations:input_type -> manpasik.v1.ListConsultationsRequest
-	358, // 445: manpasik.v1.TelemedicineService.MatchDoctor:input_type -> manpasik.v1.MatchDoctorRequest
-	361, // 446: manpasik.v1.TelemedicineService.StartVideoSession:input_type -> manpasik.v1.StartVideoSessionRequest
-	363, // 447: manpasik.v1.TelemedicineService.EndVideoSession:input_type -> manpasik.v1.EndVideoSessionRequest
-	364, // 448: manpasik.v1.TelemedicineService.RateConsultation:input_type -> manpasik.v1.RateConsultationRequest
-	42,  // 449: manpasik.v1.AuthService.Register:output_type -> manpasik.v1.RegisterResponse
-	44,  // 450: manpasik.v1.AuthService.Login:output_type -> manpasik.v1.LoginResponse
-	44,  // 451: manpasik.v1.AuthService.SocialLogin:output_type -> manpasik.v1.LoginResponse
-	44,  // 452: manpasik.v1.AuthService.RefreshToken:output_type -> manpasik.v1.LoginResponse
-	47,  // 453: manpasik.v1.AuthService.Logout:output_type -> manpasik.v1.LogoutResponse
-	49,  // 454: manpasik.v1.AuthService.ValidateToken:output_type -> manpasik.v1.ValidateTokenResponse
-	52,  // 455: manpasik.v1.AuthService.ResetPassword:output_type -> manpasik.v1.ResetPasswordResponse
-	54,  // 456: manpasik.v1.MeasurementService.StartSession:output_type -> manpasik.v1.StartSessionResponse
-	58,  // 457: manpasik.v1.MeasurementService.StreamMeasurement:output_type -> manpasik.v1.MeasurementResult
-	60,  // 458: manpasik.v1.MeasurementService.EndSession:output_type -> manpasik.v1.EndSessionResponse
-	62,  // 459: manpasik.v1.MeasurementService.GetMeasurementHistory:output_type -> manpasik.v1.GetHistoryResponse
-	340, // 460: manpasik.v1.MeasurementService.ExportSingleMeasurement:output_type -> manpasik.v1.ExportFHIRResponse
-	340, // 461: manpasik.v1.MeasurementService.ExportToFHIRObservations:output_type -> manpasik.v1.ExportFHIRResponse
-	65,  // 462: manpasik.v1.DeviceService.RegisterDevice:output_type -> manpasik.v1.RegisterDeviceResponse
-	67,  // 463: manpasik.v1.DeviceService.ListDevices:output_type -> manpasik.v1.ListDevicesResponse
-	70,  // 464: manpasik.v1.DeviceService.StreamDeviceStatus:output_type -> manpasik.v1.DeviceCommand
-	72,  // 465: manpasik.v1.DeviceService.RequestOtaUpdate:output_type -> manpasik.v1.OtaResponse
-	342, // 466: manpasik.v1.DeviceService.UpdateDeviceStatus:output_type -> manpasik.v1.UpdateDeviceStatusResponse
-	75,  // 467: manpasik.v1.UserService.GetProfile:output_type -> manpasik.v1.UserProfile
-	75,  // 468: manpasik.v1.UserService.UpdateProfile:output_type -> manpasik.v1.UserProfile
-	77,  // 469: manpasik.v1.UserService.GetSubscription:output_type -> manpasik.v1.SubscriptionInfo
-	83,  // 470: manpasik.v1.SubscriptionService.CreateSubscription:output_type -> manpasik.v1.SubscriptionDetail
-	83,  // 471: manpasik.v1.SubscriptionService.GetSubscription:output_type -> manpasik.v1.SubscriptionDetail
-	83,  // 472: manpasik.v1.SubscriptionService.UpdateSubscription:output_type -> manpasik.v1.SubscriptionDetail
-	82,  // 473: manpasik.v1.SubscriptionService.CancelSubscription:output_type -> manpasik.v1.CancelSubscriptionResponse
-	85,  // 474: manpasik.v1.SubscriptionService.CheckFeatureAccess:output_type -> manpasik.v1.CheckFeatureAccessResponse
-	87,  // 475: manpasik.v1.SubscriptionService.ListSubscriptionPlans:output_type -> manpasik.v1.ListSubscriptionPlansResponse
-	170, // 476: manpasik.v1.SubscriptionService.CheckCartridgeAccess:output_type -> manpasik.v1.CheckCartridgeAccessResponse
-	172, // 477: manpasik.v1.SubscriptionService.ListAccessibleCartridges:output_type -> manpasik.v1.ListAccessibleCartridgesResponse
-	90,  // 478: manpasik.v1.ShopService.ListProducts:output_type -> manpasik.v1.ListProductsResponse
-	92,  // 479: manpasik.v1.ShopService.GetProduct:output_type -> manpasik.v1.Product
-	96,  // 480: manpasik.v1.ShopService.AddToCart:output_type -> manpasik.v1.Cart
-	96,  // 481: manpasik.v1.ShopService.GetCart:output_type -> manpasik.v1.Cart
-	96,  // 482: manpasik.v1.ShopService.RemoveFromCart:output_type -> manpasik.v1.Cart
-	102, // 483: manpasik.v1.ShopService.CreateOrder:output_type -> manpasik.v1.Order
-	102, // 484: manpasik.v1.ShopService.GetOrder:output_type -> manpasik.v1.Order
-	101, // 485: manpasik.v1.ShopService.ListOrders:output_type -> manpasik.v1.ListOrdersResponse
-	109, // 486: manpasik.v1.PaymentService.CreatePayment:output_type -> manpasik.v1.PaymentDetail
-	109, // 487: manpasik.v1.PaymentService.ConfirmPayment:output_type -> manpasik.v1.PaymentDetail
-	109, // 488: manpasik.v1.PaymentService.GetPayment:output_type -> manpasik.v1.PaymentDetail
-	108, // 489: manpasik.v1.PaymentService.ListPayments:output_type -> manpasik.v1.ListPaymentsResponse
-	111, // 490: manpasik.v1.PaymentService.RefundPayment:output_type -> manpasik.v1.RefundResponse
-	115, // 491: manpasik.v1.AiInferenceService.AnalyzeMeasurement:output_type -> manpasik.v1.AnalysisResult
-	117, // 492: manpasik.v1.AiInferenceService.GetHealthScore:output_type -> manpasik.v1.HealthScoreResponse
-	120, // 493: manpasik.v1.AiInferenceService.PredictTrend:output_type -> manpasik.v1.TrendPrediction
-	122, // 494: manpasik.v1.AiInferenceService.GetModelInfo:output_type -> manpasik.v1.ModelInfo
-	124, // 495: manpasik.v1.AiInferenceService.ListModels:output_type -> manpasik.v1.ListModelsResponse
-	126, // 496: manpasik.v1.CartridgeService.ReadCartridge:output_type -> manpasik.v1.CartridgeDetail
-	128, // 497: manpasik.v1.CartridgeService.RecordUsage:output_type -> manpasik.v1.RecordUsageResponse
-	130, // 498: manpasik.v1.CartridgeService.GetUsageHistory:output_type -> manpasik.v1.GetUsageHistoryResponse
-	168, // 499: manpasik.v1.CartridgeService.GetCartridgeType:output_type -> manpasik.v1.CartridgeTypeInfo
-	134, // 500: manpasik.v1.CartridgeService.ListCategories:output_type -> manpasik.v1.ListCategoriesResponse
-	136, // 501: manpasik.v1.CartridgeService.ListTypesByCategory:output_type -> manpasik.v1.ListTypesByCategoryResponse
-	138, // 502: manpasik.v1.CartridgeService.GetRemainingUses:output_type -> manpasik.v1.GetRemainingUsesResponse
-	140, // 503: manpasik.v1.CartridgeService.ValidateCartridge:output_type -> manpasik.v1.ValidateCartridgeResponse
-	144, // 504: manpasik.v1.CalibrationService.RegisterFactoryCalibration:output_type -> manpasik.v1.CalibrationRecord
-	144, // 505: manpasik.v1.CalibrationService.PerformFieldCalibration:output_type -> manpasik.v1.CalibrationRecord
-	144, // 506: manpasik.v1.CalibrationService.GetCalibration:output_type -> manpasik.v1.CalibrationRecord
-	146, // 507: manpasik.v1.CalibrationService.ListCalibrationHistory:output_type -> manpasik.v1.ListCalibrationHistoryResponse
-	148, // 508: manpasik.v1.CalibrationService.CheckCalibrationStatus:output_type -> manpasik.v1.CalibrationStatusResponse
-	151, // 509: manpasik.v1.CalibrationService.ListCalibrationModels:output_type -> manpasik.v1.ListCalibrationModelsResponse
-	153, // 510: manpasik.v1.CoachingService.SetHealthGoal:output_type -> manpasik.v1.HealthGoal
-	155, // 511: manpasik.v1.CoachingService.GetHealthGoals:output_type -> manpasik.v1.GetHealthGoalsResponse
-	157, // 512: manpasik.v1.CoachingService.GenerateCoaching:output_type -> manpasik.v1.CoachingMessage
-	159, // 513: manpasik.v1.CoachingService.ListCoachingMessages:output_type -> manpasik.v1.ListCoachingMessagesResponse
-	161, // 514: manpasik.v1.CoachingService.GenerateDailyReport:output_type -> manpasik.v1.DailyHealthReport
-	163, // 515: manpasik.v1.CoachingService.GetWeeklyReport:output_type -> manpasik.v1.WeeklyHealthReport
-	166, // 516: manpasik.v1.CoachingService.GetRecommendations:output_type -> manpasik.v1.GetRecommendationsResponse
-	175, // 517: manpasik.v1.ReservationService.SearchFacilities:output_type -> manpasik.v1.SearchFacilitiesResponse
-	177, // 518: manpasik.v1.ReservationService.GetFacility:output_type -> manpasik.v1.Facility
-	179, // 519: manpasik.v1.ReservationService.GetAvailableSlots:output_type -> manpasik.v1.GetAvailableSlotsResponse
-	182, // 520: manpasik.v1.ReservationService.CreateReservation:output_type -> manpasik.v1.Reservation
-	182, // 521: manpasik.v1.ReservationService.GetReservation:output_type -> manpasik.v1.Reservation
-	185, // 522: manpasik.v1.ReservationService.ListReservations:output_type -> manpasik.v1.ListReservationsResponse
-	187, // 523: manpasik.v1.ReservationService.CancelReservation:output_type -> manpasik.v1.CancelReservationResponse
-	314, // 524: manpasik.v1.ReservationService.ListDoctorsByFacility:output_type -> manpasik.v1.ListDoctorsByFacilityResponse
-	317, // 525: manpasik.v1.ReservationService.GetDoctorAvailability:output_type -> manpasik.v1.GetDoctorAvailabilityResponse
-	320, // 526: manpasik.v1.ReservationService.SelectDoctor:output_type -> manpasik.v1.SelectDoctorResponse
-	194, // 527: manpasik.v1.AdminService.CreateAdmin:output_type -> manpasik.v1.AdminUser
-	194, // 528: manpasik.v1.AdminService.GetAdmin:output_type -> manpasik.v1.AdminUser
-	191, // 529: manpasik.v1.AdminService.ListAdmins:output_type -> manpasik.v1.ListAdminsResponse
-	194, // 530: manpasik.v1.AdminService.UpdateAdminRole:output_type -> manpasik.v1.AdminUser
-	194, // 531: manpasik.v1.AdminService.DeactivateAdmin:output_type -> manpasik.v1.AdminUser
-	196, // 532: manpasik.v1.AdminService.ListUsers:output_type -> manpasik.v1.AdminListUsersResponse
-	199, // 533: manpasik.v1.AdminService.GetSystemStats:output_type -> manpasik.v1.GetSystemStatsResponse
-	201, // 534: manpasik.v1.AdminService.GetAuditLog:output_type -> manpasik.v1.GetAuditLogResponse
-	205, // 535: manpasik.v1.AdminService.SetSystemConfig:output_type -> manpasik.v1.SystemConfig
-	205, // 536: manpasik.v1.AdminService.GetSystemConfig:output_type -> manpasik.v1.SystemConfig
-	191, // 537: manpasik.v1.AdminService.ListAdminsByRegion:output_type -> manpasik.v1.ListAdminsResponse
-	345, // 538: manpasik.v1.AdminService.ListSystemConfigs:output_type -> manpasik.v1.ListSystemConfigsResponse
-	346, // 539: manpasik.v1.AdminService.GetConfigWithMeta:output_type -> manpasik.v1.ConfigWithMeta
-	349, // 540: manpasik.v1.AdminService.ValidateConfigValue:output_type -> manpasik.v1.ValidateConfigValueResponse
-	351, // 541: manpasik.v1.AdminService.BulkSetConfigs:output_type -> manpasik.v1.BulkSetConfigsResponse
-	370, // 542: manpasik.v1.AdminService.GetAuditLogDetails:output_type -> manpasik.v1.GetAuditLogDetailsResponse
-	208, // 543: manpasik.v1.FamilyService.CreateFamilyGroup:output_type -> manpasik.v1.FamilyGroup
-	208, // 544: manpasik.v1.FamilyService.GetFamilyGroup:output_type -> manpasik.v1.FamilyGroup
-	211, // 545: manpasik.v1.FamilyService.InviteMember:output_type -> manpasik.v1.FamilyInvitation
-	213, // 546: manpasik.v1.FamilyService.RespondToInvitation:output_type -> manpasik.v1.RespondToInvitationResponse
-	215, // 547: manpasik.v1.FamilyService.RemoveMember:output_type -> manpasik.v1.RemoveMemberResponse
-	209, // 548: manpasik.v1.FamilyService.UpdateMemberRole:output_type -> manpasik.v1.FamilyMember
-	218, // 549: manpasik.v1.FamilyService.ListFamilyMembers:output_type -> manpasik.v1.ListFamilyMembersResponse
-	220, // 550: manpasik.v1.FamilyService.SetSharingPreferences:output_type -> manpasik.v1.SharingPreferences
-	222, // 551: manpasik.v1.FamilyService.GetSharedHealthData:output_type -> manpasik.v1.GetSharedHealthDataResponse
-	368, // 552: manpasik.v1.FamilyService.ValidateSharingAccess:output_type -> manpasik.v1.ValidateSharingAccessResponse
-	230, // 553: manpasik.v1.HealthRecordService.CreateRecord:output_type -> manpasik.v1.HealthRecord
-	230, // 554: manpasik.v1.HealthRecordService.GetRecord:output_type -> manpasik.v1.HealthRecord
-	226, // 555: manpasik.v1.HealthRecordService.ListRecords:output_type -> manpasik.v1.ListHealthRecordsResponse
-	230, // 556: manpasik.v1.HealthRecordService.UpdateRecord:output_type -> manpasik.v1.HealthRecord
-	229, // 557: manpasik.v1.HealthRecordService.DeleteRecord:output_type -> manpasik.v1.DeleteHealthRecordResponse
-	232, // 558: manpasik.v1.HealthRecordService.ExportToFHIR:output_type -> manpasik.v1.ExportToFHIRResponse
-	234, // 559: manpasik.v1.HealthRecordService.ImportFromFHIR:output_type -> manpasik.v1.ImportFromFHIRResponse
-	236, // 560: manpasik.v1.HealthRecordService.GetHealthSummary:output_type -> manpasik.v1.GetHealthSummaryResponse
-	328, // 561: manpasik.v1.HealthRecordService.CreateDataSharingConsent:output_type -> manpasik.v1.DataSharingConsent
-	330, // 562: manpasik.v1.HealthRecordService.RevokeDataSharingConsent:output_type -> manpasik.v1.RevokeConsentResponse
-	332, // 563: manpasik.v1.HealthRecordService.ListDataSharingConsents:output_type -> manpasik.v1.ListConsentsResponse
-	334, // 564: manpasik.v1.HealthRecordService.ShareWithProvider:output_type -> manpasik.v1.ShareWithProviderResponse
-	336, // 565: manpasik.v1.HealthRecordService.GetDataAccessLog:output_type -> manpasik.v1.GetDataAccessLogResponse
-	244, // 566: manpasik.v1.PrescriptionService.CreatePrescription:output_type -> manpasik.v1.Prescription
-	244, // 567: manpasik.v1.PrescriptionService.GetPrescription:output_type -> manpasik.v1.Prescription
-	240, // 568: manpasik.v1.PrescriptionService.ListPrescriptions:output_type -> manpasik.v1.ListPrescriptionsResponse
-	244, // 569: manpasik.v1.PrescriptionService.UpdatePrescriptionStatus:output_type -> manpasik.v1.Prescription
-	244, // 570: manpasik.v1.PrescriptionService.AddMedication:output_type -> manpasik.v1.Prescription
-	244, // 571: manpasik.v1.PrescriptionService.RemoveMedication:output_type -> manpasik.v1.Prescription
-	247, // 572: manpasik.v1.PrescriptionService.CheckDrugInteraction:output_type -> manpasik.v1.CheckDrugInteractionResponse
-	250, // 573: manpasik.v1.PrescriptionService.GetMedicationReminders:output_type -> manpasik.v1.GetMedicationRemindersResponse
-	322, // 574: manpasik.v1.PrescriptionService.SelectPharmacyAndFulfillment:output_type -> manpasik.v1.SelectPharmacyResponse
-	324, // 575: manpasik.v1.PrescriptionService.SendPrescriptionToPharmacy:output_type -> manpasik.v1.SendToPharmacyResponse
-	244, // 576: manpasik.v1.PrescriptionService.GetPrescriptionByToken:output_type -> manpasik.v1.Prescription
-	244, // 577: manpasik.v1.PrescriptionService.UpdateDispensaryStatus:output_type -> manpasik.v1.Prescription
-	256, // 578: manpasik.v1.CommunityService.CreatePost:output_type -> manpasik.v1.Post
-	256, // 579: manpasik.v1.CommunityService.GetPost:output_type -> manpasik.v1.Post
-	255, // 580: manpasik.v1.CommunityService.ListPosts:output_type -> manpasik.v1.ListPostsResponse
-	258, // 581: manpasik.v1.CommunityService.LikePost:output_type -> manpasik.v1.LikePostResponse
-	262, // 582: manpasik.v1.CommunityService.CreateComment:output_type -> manpasik.v1.Comment
-	261, // 583: manpasik.v1.CommunityService.ListComments:output_type -> manpasik.v1.ListCommentsResponse
-	265, // 584: manpasik.v1.CommunityService.CreateChallenge:output_type -> manpasik.v1.Challenge
-	265, // 585: manpasik.v1.CommunityService.GetChallenge:output_type -> manpasik.v1.Challenge
-	267, // 586: manpasik.v1.CommunityService.JoinChallenge:output_type -> manpasik.v1.JoinChallengeResponse
-	269, // 587: manpasik.v1.CommunityService.ListChallenges:output_type -> manpasik.v1.ListChallengesResponse
-	272, // 588: manpasik.v1.VideoService.CreateRoom:output_type -> manpasik.v1.Room
-	272, // 589: manpasik.v1.VideoService.GetRoom:output_type -> manpasik.v1.Room
-	274, // 590: manpasik.v1.VideoService.JoinRoom:output_type -> manpasik.v1.JoinRoomResponse
-	276, // 591: manpasik.v1.VideoService.LeaveRoom:output_type -> manpasik.v1.LeaveRoomResponse
-	272, // 592: manpasik.v1.VideoService.EndRoom:output_type -> manpasik.v1.Room
-	280, // 593: manpasik.v1.VideoService.SendSignal:output_type -> manpasik.v1.SendSignalResponse
-	282, // 594: manpasik.v1.VideoService.ListParticipants:output_type -> manpasik.v1.ListParticipantsResponse
-	284, // 595: manpasik.v1.VideoService.GetRoomStats:output_type -> manpasik.v1.GetRoomStatsResponse
-	286, // 596: manpasik.v1.NotificationService.SendNotification:output_type -> manpasik.v1.Notification
-	288, // 597: manpasik.v1.NotificationService.ListNotifications:output_type -> manpasik.v1.ListNotificationsResponse
-	290, // 598: manpasik.v1.NotificationService.MarkAsRead:output_type -> manpasik.v1.MarkAsReadResponse
-	292, // 599: manpasik.v1.NotificationService.MarkAllAsRead:output_type -> manpasik.v1.MarkAllAsReadResponse
-	294, // 600: manpasik.v1.NotificationService.GetUnreadCount:output_type -> manpasik.v1.GetUnreadCountResponse
-	297, // 601: manpasik.v1.NotificationService.UpdateNotificationPreferences:output_type -> manpasik.v1.NotificationPreferences
-	297, // 602: manpasik.v1.NotificationService.GetNotificationPreferences:output_type -> manpasik.v1.NotificationPreferences
-	286, // 603: manpasik.v1.NotificationService.SendFromTemplate:output_type -> manpasik.v1.Notification
-	299, // 604: manpasik.v1.TranslationService.TranslateText:output_type -> manpasik.v1.TranslateTextResponse
-	301, // 605: manpasik.v1.TranslationService.DetectLanguage:output_type -> manpasik.v1.DetectLanguageResponse
-	304, // 606: manpasik.v1.TranslationService.ListSupportedLanguages:output_type -> manpasik.v1.ListSupportedLanguagesResponse
-	307, // 607: manpasik.v1.TranslationService.TranslateBatch:output_type -> manpasik.v1.TranslateBatchResponse
-	309, // 608: manpasik.v1.TranslationService.GetTranslationHistory:output_type -> manpasik.v1.GetTranslationHistoryResponse
-	312, // 609: manpasik.v1.TranslationService.GetTranslationUsage:output_type -> manpasik.v1.GetTranslationUsageResponse
-	353, // 610: manpasik.v1.TelemedicineService.CreateConsultation:output_type -> manpasik.v1.Consultation
-	353, // 611: manpasik.v1.TelemedicineService.GetConsultation:output_type -> manpasik.v1.Consultation
-	357, // 612: manpasik.v1.TelemedicineService.ListConsultations:output_type -> manpasik.v1.ListConsultationsResponse
-	359, // 613: manpasik.v1.TelemedicineService.MatchDoctor:output_type -> manpasik.v1.MatchDoctorResponse
-	362, // 614: manpasik.v1.TelemedicineService.StartVideoSession:output_type -> manpasik.v1.VideoSession
-	362, // 615: manpasik.v1.TelemedicineService.EndVideoSession:output_type -> manpasik.v1.VideoSession
-	365, // 616: manpasik.v1.TelemedicineService.RateConsultation:output_type -> manpasik.v1.RateConsultationResponse
-	449, // [449:617] is the sub-list for method output_type
-	281, // [281:449] is the sub-list for method input_type
-	281, // [281:281] is the sub-list for extension type_name
-	281, // [281:281] is the sub-list for extension extendee
-	0,   // [0:281] is the sub-list for field type_name
+	401, // 280: manpasik.v1.AuditLogDetail.created_at:type_name -> google.protobuf.Timestamp
+	376, // 281: manpasik.v1.GetChallengeLeaderboardResponse.entries:type_name -> manpasik.v1.LeaderboardEntry
+	376, // 282: manpasik.v1.GetChallengeLeaderboardResponse.my_entry:type_name -> manpasik.v1.LeaderboardEntry
+	401, // 283: manpasik.v1.LeaderboardEntry.last_updated:type_name -> google.protobuf.Timestamp
+	381, // 284: manpasik.v1.GetRevenueStatsResponse.periods:type_name -> manpasik.v1.RevenuePeriod
+	400, // 285: manpasik.v1.GetRevenueStatsResponse.revenue_by_tier:type_name -> manpasik.v1.GetRevenueStatsResponse.RevenueByTierEntry
+	384, // 286: manpasik.v1.GetInventoryStatsResponse.items:type_name -> manpasik.v1.InventoryItem
+	387, // 287: manpasik.v1.TranslateRealtimeResponse.medical_terms:type_name -> manpasik.v1.MedicalTermMapping
+	41,  // 288: manpasik.v1.AuthService.Register:input_type -> manpasik.v1.RegisterRequest
+	43,  // 289: manpasik.v1.AuthService.Login:input_type -> manpasik.v1.LoginRequest
+	50,  // 290: manpasik.v1.AuthService.SocialLogin:input_type -> manpasik.v1.SocialLoginRequest
+	45,  // 291: manpasik.v1.AuthService.RefreshToken:input_type -> manpasik.v1.RefreshTokenRequest
+	46,  // 292: manpasik.v1.AuthService.Logout:input_type -> manpasik.v1.LogoutRequest
+	48,  // 293: manpasik.v1.AuthService.ValidateToken:input_type -> manpasik.v1.ValidateTokenRequest
+	51,  // 294: manpasik.v1.AuthService.ResetPassword:input_type -> manpasik.v1.ResetPasswordRequest
+	53,  // 295: manpasik.v1.MeasurementService.StartSession:input_type -> manpasik.v1.StartSessionRequest
+	55,  // 296: manpasik.v1.MeasurementService.StreamMeasurement:input_type -> manpasik.v1.MeasurementData
+	59,  // 297: manpasik.v1.MeasurementService.EndSession:input_type -> manpasik.v1.EndSessionRequest
+	61,  // 298: manpasik.v1.MeasurementService.GetMeasurementHistory:input_type -> manpasik.v1.GetHistoryRequest
+	338, // 299: manpasik.v1.MeasurementService.ExportSingleMeasurement:input_type -> manpasik.v1.ExportSingleMeasurementRequest
+	339, // 300: manpasik.v1.MeasurementService.ExportToFHIRObservations:input_type -> manpasik.v1.ExportToFHIRObservationsRequest
+	64,  // 301: manpasik.v1.DeviceService.RegisterDevice:input_type -> manpasik.v1.RegisterDeviceRequest
+	66,  // 302: manpasik.v1.DeviceService.ListDevices:input_type -> manpasik.v1.ListDevicesRequest
+	69,  // 303: manpasik.v1.DeviceService.StreamDeviceStatus:input_type -> manpasik.v1.DeviceStatusUpdate
+	71,  // 304: manpasik.v1.DeviceService.RequestOtaUpdate:input_type -> manpasik.v1.OtaRequest
+	341, // 305: manpasik.v1.DeviceService.UpdateDeviceStatus:input_type -> manpasik.v1.UpdateDeviceStatusRequest
+	73,  // 306: manpasik.v1.UserService.GetProfile:input_type -> manpasik.v1.GetProfileRequest
+	74,  // 307: manpasik.v1.UserService.UpdateProfile:input_type -> manpasik.v1.UpdateProfileRequest
+	76,  // 308: manpasik.v1.UserService.GetSubscription:input_type -> manpasik.v1.GetSubscriptionRequest
+	78,  // 309: manpasik.v1.SubscriptionService.CreateSubscription:input_type -> manpasik.v1.CreateSubscriptionRequest
+	79,  // 310: manpasik.v1.SubscriptionService.GetSubscription:input_type -> manpasik.v1.GetSubscriptionDetailRequest
+	80,  // 311: manpasik.v1.SubscriptionService.UpdateSubscription:input_type -> manpasik.v1.UpdateSubscriptionRequest
+	81,  // 312: manpasik.v1.SubscriptionService.CancelSubscription:input_type -> manpasik.v1.CancelSubscriptionRequest
+	84,  // 313: manpasik.v1.SubscriptionService.CheckFeatureAccess:input_type -> manpasik.v1.CheckFeatureAccessRequest
+	86,  // 314: manpasik.v1.SubscriptionService.ListSubscriptionPlans:input_type -> manpasik.v1.ListSubscriptionPlansRequest
+	169, // 315: manpasik.v1.SubscriptionService.CheckCartridgeAccess:input_type -> manpasik.v1.CheckCartridgeAccessRequest
+	171, // 316: manpasik.v1.SubscriptionService.ListAccessibleCartridges:input_type -> manpasik.v1.ListAccessibleCartridgesRequest
+	89,  // 317: manpasik.v1.ShopService.ListProducts:input_type -> manpasik.v1.ListProductsRequest
+	91,  // 318: manpasik.v1.ShopService.GetProduct:input_type -> manpasik.v1.GetProductRequest
+	93,  // 319: manpasik.v1.ShopService.AddToCart:input_type -> manpasik.v1.AddToCartRequest
+	94,  // 320: manpasik.v1.ShopService.GetCart:input_type -> manpasik.v1.GetCartRequest
+	95,  // 321: manpasik.v1.ShopService.RemoveFromCart:input_type -> manpasik.v1.RemoveFromCartRequest
+	98,  // 322: manpasik.v1.ShopService.CreateOrder:input_type -> manpasik.v1.CreateOrderRequest
+	99,  // 323: manpasik.v1.ShopService.GetOrder:input_type -> manpasik.v1.GetOrderRequest
+	100, // 324: manpasik.v1.ShopService.ListOrders:input_type -> manpasik.v1.ListOrdersRequest
+	104, // 325: manpasik.v1.PaymentService.CreatePayment:input_type -> manpasik.v1.CreatePaymentRequest
+	105, // 326: manpasik.v1.PaymentService.ConfirmPayment:input_type -> manpasik.v1.ConfirmPaymentRequest
+	106, // 327: manpasik.v1.PaymentService.GetPayment:input_type -> manpasik.v1.GetPaymentRequest
+	107, // 328: manpasik.v1.PaymentService.ListPayments:input_type -> manpasik.v1.ListPaymentsRequest
+	110, // 329: manpasik.v1.PaymentService.RefundPayment:input_type -> manpasik.v1.RefundPaymentRequest
+	112, // 330: manpasik.v1.AiInferenceService.AnalyzeMeasurement:input_type -> manpasik.v1.AnalyzeMeasurementRequest
+	116, // 331: manpasik.v1.AiInferenceService.GetHealthScore:input_type -> manpasik.v1.GetHealthScoreRequest
+	118, // 332: manpasik.v1.AiInferenceService.PredictTrend:input_type -> manpasik.v1.PredictTrendRequest
+	121, // 333: manpasik.v1.AiInferenceService.GetModelInfo:input_type -> manpasik.v1.GetModelInfoRequest
+	123, // 334: manpasik.v1.AiInferenceService.ListModels:input_type -> manpasik.v1.ListModelsRequest
+	372, // 335: manpasik.v1.AiInferenceService.StreamChat:input_type -> manpasik.v1.StreamChatRequest
+	125, // 336: manpasik.v1.CartridgeService.ReadCartridge:input_type -> manpasik.v1.ReadCartridgeRequest
+	127, // 337: manpasik.v1.CartridgeService.RecordUsage:input_type -> manpasik.v1.RecordUsageRequest
+	129, // 338: manpasik.v1.CartridgeService.GetUsageHistory:input_type -> manpasik.v1.GetUsageHistoryRequest
+	132, // 339: manpasik.v1.CartridgeService.GetCartridgeType:input_type -> manpasik.v1.GetCartridgeTypeRequest
+	133, // 340: manpasik.v1.CartridgeService.ListCategories:input_type -> manpasik.v1.ListCategoriesRequest
+	135, // 341: manpasik.v1.CartridgeService.ListTypesByCategory:input_type -> manpasik.v1.ListTypesByCategoryRequest
+	137, // 342: manpasik.v1.CartridgeService.GetRemainingUses:input_type -> manpasik.v1.GetRemainingUsesRequest
+	139, // 343: manpasik.v1.CartridgeService.ValidateCartridge:input_type -> manpasik.v1.ValidateCartridgeRequest
+	141, // 344: manpasik.v1.CalibrationService.RegisterFactoryCalibration:input_type -> manpasik.v1.RegisterFactoryCalibrationRequest
+	142, // 345: manpasik.v1.CalibrationService.PerformFieldCalibration:input_type -> manpasik.v1.PerformFieldCalibrationRequest
+	143, // 346: manpasik.v1.CalibrationService.GetCalibration:input_type -> manpasik.v1.GetCalibrationRequest
+	145, // 347: manpasik.v1.CalibrationService.ListCalibrationHistory:input_type -> manpasik.v1.ListCalibrationHistoryRequest
+	147, // 348: manpasik.v1.CalibrationService.CheckCalibrationStatus:input_type -> manpasik.v1.CheckCalibrationStatusRequest
+	149, // 349: manpasik.v1.CalibrationService.ListCalibrationModels:input_type -> manpasik.v1.ListCalibrationModelsRequest
+	152, // 350: manpasik.v1.CoachingService.SetHealthGoal:input_type -> manpasik.v1.SetHealthGoalRequest
+	154, // 351: manpasik.v1.CoachingService.GetHealthGoals:input_type -> manpasik.v1.GetHealthGoalsRequest
+	156, // 352: manpasik.v1.CoachingService.GenerateCoaching:input_type -> manpasik.v1.GenerateCoachingRequest
+	158, // 353: manpasik.v1.CoachingService.ListCoachingMessages:input_type -> manpasik.v1.ListCoachingMessagesRequest
+	160, // 354: manpasik.v1.CoachingService.GenerateDailyReport:input_type -> manpasik.v1.GenerateDailyReportRequest
+	162, // 355: manpasik.v1.CoachingService.GetWeeklyReport:input_type -> manpasik.v1.GetWeeklyReportRequest
+	164, // 356: manpasik.v1.CoachingService.GetRecommendations:input_type -> manpasik.v1.GetRecommendationsRequest
+	174, // 357: manpasik.v1.ReservationService.SearchFacilities:input_type -> manpasik.v1.SearchFacilitiesRequest
+	176, // 358: manpasik.v1.ReservationService.GetFacility:input_type -> manpasik.v1.GetFacilityRequest
+	178, // 359: manpasik.v1.ReservationService.GetAvailableSlots:input_type -> manpasik.v1.GetAvailableSlotsRequest
+	181, // 360: manpasik.v1.ReservationService.CreateReservation:input_type -> manpasik.v1.CreateReservationRequest
+	183, // 361: manpasik.v1.ReservationService.GetReservation:input_type -> manpasik.v1.GetReservationRequest
+	184, // 362: manpasik.v1.ReservationService.ListReservations:input_type -> manpasik.v1.ListReservationsRequest
+	186, // 363: manpasik.v1.ReservationService.CancelReservation:input_type -> manpasik.v1.CancelReservationRequest
+	313, // 364: manpasik.v1.ReservationService.ListDoctorsByFacility:input_type -> manpasik.v1.ListDoctorsByFacilityRequest
+	316, // 365: manpasik.v1.ReservationService.GetDoctorAvailability:input_type -> manpasik.v1.GetDoctorAvailabilityRequest
+	319, // 366: manpasik.v1.ReservationService.SelectDoctor:input_type -> manpasik.v1.SelectDoctorRequest
+	188, // 367: manpasik.v1.AdminService.CreateAdmin:input_type -> manpasik.v1.CreateAdminRequest
+	189, // 368: manpasik.v1.AdminService.GetAdmin:input_type -> manpasik.v1.GetAdminRequest
+	190, // 369: manpasik.v1.AdminService.ListAdmins:input_type -> manpasik.v1.ListAdminsRequest
+	192, // 370: manpasik.v1.AdminService.UpdateAdminRole:input_type -> manpasik.v1.UpdateAdminRoleRequest
+	193, // 371: manpasik.v1.AdminService.DeactivateAdmin:input_type -> manpasik.v1.DeactivateAdminRequest
+	195, // 372: manpasik.v1.AdminService.ListUsers:input_type -> manpasik.v1.AdminListUsersRequest
+	198, // 373: manpasik.v1.AdminService.GetSystemStats:input_type -> manpasik.v1.GetSystemStatsRequest
+	200, // 374: manpasik.v1.AdminService.GetAuditLog:input_type -> manpasik.v1.GetAuditLogRequest
+	203, // 375: manpasik.v1.AdminService.SetSystemConfig:input_type -> manpasik.v1.SetSystemConfigRequest
+	204, // 376: manpasik.v1.AdminService.GetSystemConfig:input_type -> manpasik.v1.GetSystemConfigRequest
+	343, // 377: manpasik.v1.AdminService.ListAdminsByRegion:input_type -> manpasik.v1.ListAdminsByRegionRequest
+	344, // 378: manpasik.v1.AdminService.ListSystemConfigs:input_type -> manpasik.v1.ListSystemConfigsRequest
+	347, // 379: manpasik.v1.AdminService.GetConfigWithMeta:input_type -> manpasik.v1.GetConfigWithMetaRequest
+	348, // 380: manpasik.v1.AdminService.ValidateConfigValue:input_type -> manpasik.v1.ValidateConfigValueRequest
+	350, // 381: manpasik.v1.AdminService.BulkSetConfigs:input_type -> manpasik.v1.BulkSetConfigsRequest
+	369, // 382: manpasik.v1.AdminService.GetAuditLogDetails:input_type -> manpasik.v1.GetAuditLogDetailsRequest
+	379, // 383: manpasik.v1.AdminService.GetRevenueStats:input_type -> manpasik.v1.GetRevenueStatsRequest
+	382, // 384: manpasik.v1.AdminService.GetInventoryStats:input_type -> manpasik.v1.GetInventoryStatsRequest
+	206, // 385: manpasik.v1.FamilyService.CreateFamilyGroup:input_type -> manpasik.v1.CreateFamilyGroupRequest
+	207, // 386: manpasik.v1.FamilyService.GetFamilyGroup:input_type -> manpasik.v1.GetFamilyGroupRequest
+	210, // 387: manpasik.v1.FamilyService.InviteMember:input_type -> manpasik.v1.InviteMemberRequest
+	212, // 388: manpasik.v1.FamilyService.RespondToInvitation:input_type -> manpasik.v1.RespondToInvitationRequest
+	214, // 389: manpasik.v1.FamilyService.RemoveMember:input_type -> manpasik.v1.RemoveMemberRequest
+	216, // 390: manpasik.v1.FamilyService.UpdateMemberRole:input_type -> manpasik.v1.UpdateMemberRoleRequest
+	217, // 391: manpasik.v1.FamilyService.ListFamilyMembers:input_type -> manpasik.v1.ListFamilyMembersRequest
+	219, // 392: manpasik.v1.FamilyService.SetSharingPreferences:input_type -> manpasik.v1.SetSharingPreferencesRequest
+	221, // 393: manpasik.v1.FamilyService.GetSharedHealthData:input_type -> manpasik.v1.GetSharedHealthDataRequest
+	367, // 394: manpasik.v1.FamilyService.ValidateSharingAccess:input_type -> manpasik.v1.ValidateSharingAccessRequest
+	223, // 395: manpasik.v1.HealthRecordService.CreateRecord:input_type -> manpasik.v1.CreateHealthRecordRequest
+	224, // 396: manpasik.v1.HealthRecordService.GetRecord:input_type -> manpasik.v1.GetHealthRecordRequest
+	225, // 397: manpasik.v1.HealthRecordService.ListRecords:input_type -> manpasik.v1.ListHealthRecordsRequest
+	227, // 398: manpasik.v1.HealthRecordService.UpdateRecord:input_type -> manpasik.v1.UpdateHealthRecordRequest
+	228, // 399: manpasik.v1.HealthRecordService.DeleteRecord:input_type -> manpasik.v1.DeleteHealthRecordRequest
+	231, // 400: manpasik.v1.HealthRecordService.ExportToFHIR:input_type -> manpasik.v1.ExportToFHIRRequest
+	233, // 401: manpasik.v1.HealthRecordService.ImportFromFHIR:input_type -> manpasik.v1.ImportFromFHIRRequest
+	235, // 402: manpasik.v1.HealthRecordService.GetHealthSummary:input_type -> manpasik.v1.GetHealthSummaryRequest
+	327, // 403: manpasik.v1.HealthRecordService.CreateDataSharingConsent:input_type -> manpasik.v1.CreateConsentRequest
+	329, // 404: manpasik.v1.HealthRecordService.RevokeDataSharingConsent:input_type -> manpasik.v1.RevokeConsentRequest
+	331, // 405: manpasik.v1.HealthRecordService.ListDataSharingConsents:input_type -> manpasik.v1.ListConsentsRequest
+	333, // 406: manpasik.v1.HealthRecordService.ShareWithProvider:input_type -> manpasik.v1.ShareWithProviderRequest
+	335, // 407: manpasik.v1.HealthRecordService.GetDataAccessLog:input_type -> manpasik.v1.GetDataAccessLogRequest
+	237, // 408: manpasik.v1.PrescriptionService.CreatePrescription:input_type -> manpasik.v1.CreatePrescriptionRequest
+	238, // 409: manpasik.v1.PrescriptionService.GetPrescription:input_type -> manpasik.v1.GetPrescriptionRequest
+	239, // 410: manpasik.v1.PrescriptionService.ListPrescriptions:input_type -> manpasik.v1.ListPrescriptionsRequest
+	241, // 411: manpasik.v1.PrescriptionService.UpdatePrescriptionStatus:input_type -> manpasik.v1.UpdatePrescriptionStatusRequest
+	242, // 412: manpasik.v1.PrescriptionService.AddMedication:input_type -> manpasik.v1.AddMedicationRequest
+	243, // 413: manpasik.v1.PrescriptionService.RemoveMedication:input_type -> manpasik.v1.RemoveMedicationRequest
+	246, // 414: manpasik.v1.PrescriptionService.CheckDrugInteraction:input_type -> manpasik.v1.CheckDrugInteractionRequest
+	249, // 415: manpasik.v1.PrescriptionService.GetMedicationReminders:input_type -> manpasik.v1.GetMedicationRemindersRequest
+	321, // 416: manpasik.v1.PrescriptionService.SelectPharmacyAndFulfillment:input_type -> manpasik.v1.SelectPharmacyRequest
+	323, // 417: manpasik.v1.PrescriptionService.SendPrescriptionToPharmacy:input_type -> manpasik.v1.SendToPharmacyRequest
+	325, // 418: manpasik.v1.PrescriptionService.GetPrescriptionByToken:input_type -> manpasik.v1.GetByTokenRequest
+	326, // 419: manpasik.v1.PrescriptionService.UpdateDispensaryStatus:input_type -> manpasik.v1.UpdateDispensaryStatusRequest
+	252, // 420: manpasik.v1.CommunityService.CreatePost:input_type -> manpasik.v1.CreatePostRequest
+	253, // 421: manpasik.v1.CommunityService.GetPost:input_type -> manpasik.v1.GetPostRequest
+	254, // 422: manpasik.v1.CommunityService.ListPosts:input_type -> manpasik.v1.ListPostsRequest
+	257, // 423: manpasik.v1.CommunityService.LikePost:input_type -> manpasik.v1.LikePostRequest
+	259, // 424: manpasik.v1.CommunityService.CreateComment:input_type -> manpasik.v1.CreateCommentRequest
+	260, // 425: manpasik.v1.CommunityService.ListComments:input_type -> manpasik.v1.ListCommentsRequest
+	263, // 426: manpasik.v1.CommunityService.CreateChallenge:input_type -> manpasik.v1.CreateChallengeRequest
+	264, // 427: manpasik.v1.CommunityService.GetChallenge:input_type -> manpasik.v1.GetChallengeRequest
+	266, // 428: manpasik.v1.CommunityService.JoinChallenge:input_type -> manpasik.v1.JoinChallengeRequest
+	268, // 429: manpasik.v1.CommunityService.ListChallenges:input_type -> manpasik.v1.ListChallengesRequest
+	374, // 430: manpasik.v1.CommunityService.GetChallengeLeaderboard:input_type -> manpasik.v1.GetChallengeLeaderboardRequest
+	377, // 431: manpasik.v1.CommunityService.UpdateChallengeProgress:input_type -> manpasik.v1.UpdateChallengeProgressRequest
+	270, // 432: manpasik.v1.VideoService.CreateRoom:input_type -> manpasik.v1.CreateRoomRequest
+	271, // 433: manpasik.v1.VideoService.GetRoom:input_type -> manpasik.v1.GetRoomRequest
+	273, // 434: manpasik.v1.VideoService.JoinRoom:input_type -> manpasik.v1.JoinRoomRequest
+	275, // 435: manpasik.v1.VideoService.LeaveRoom:input_type -> manpasik.v1.LeaveRoomRequest
+	277, // 436: manpasik.v1.VideoService.EndRoom:input_type -> manpasik.v1.EndRoomRequest
+	279, // 437: manpasik.v1.VideoService.SendSignal:input_type -> manpasik.v1.SendSignalRequest
+	281, // 438: manpasik.v1.VideoService.ListParticipants:input_type -> manpasik.v1.ListParticipantsRequest
+	283, // 439: manpasik.v1.VideoService.GetRoomStats:input_type -> manpasik.v1.GetRoomStatsRequest
+	285, // 440: manpasik.v1.NotificationService.SendNotification:input_type -> manpasik.v1.SendNotificationRequest
+	287, // 441: manpasik.v1.NotificationService.ListNotifications:input_type -> manpasik.v1.ListNotificationsRequest
+	289, // 442: manpasik.v1.NotificationService.MarkAsRead:input_type -> manpasik.v1.MarkAsReadRequest
+	291, // 443: manpasik.v1.NotificationService.MarkAllAsRead:input_type -> manpasik.v1.MarkAllAsReadRequest
+	293, // 444: manpasik.v1.NotificationService.GetUnreadCount:input_type -> manpasik.v1.GetUnreadCountRequest
+	295, // 445: manpasik.v1.NotificationService.UpdateNotificationPreferences:input_type -> manpasik.v1.UpdateNotificationPreferencesRequest
+	296, // 446: manpasik.v1.NotificationService.GetNotificationPreferences:input_type -> manpasik.v1.GetNotificationPreferencesRequest
+	366, // 447: manpasik.v1.NotificationService.SendFromTemplate:input_type -> manpasik.v1.SendFromTemplateRequest
+	298, // 448: manpasik.v1.TranslationService.TranslateText:input_type -> manpasik.v1.TranslateTextRequest
+	300, // 449: manpasik.v1.TranslationService.DetectLanguage:input_type -> manpasik.v1.DetectLanguageRequest
+	303, // 450: manpasik.v1.TranslationService.ListSupportedLanguages:input_type -> manpasik.v1.ListSupportedLanguagesRequest
+	306, // 451: manpasik.v1.TranslationService.TranslateBatch:input_type -> manpasik.v1.TranslateBatchRequest
+	308, // 452: manpasik.v1.TranslationService.GetTranslationHistory:input_type -> manpasik.v1.GetTranslationHistoryRequest
+	311, // 453: manpasik.v1.TranslationService.GetTranslationUsage:input_type -> manpasik.v1.GetTranslationUsageRequest
+	385, // 454: manpasik.v1.TranslationService.TranslateRealtime:input_type -> manpasik.v1.TranslateRealtimeRequest
+	354, // 455: manpasik.v1.TelemedicineService.CreateConsultation:input_type -> manpasik.v1.CreateConsultationRequest
+	355, // 456: manpasik.v1.TelemedicineService.GetConsultation:input_type -> manpasik.v1.GetConsultationRequest
+	356, // 457: manpasik.v1.TelemedicineService.ListConsultations:input_type -> manpasik.v1.ListConsultationsRequest
+	358, // 458: manpasik.v1.TelemedicineService.MatchDoctor:input_type -> manpasik.v1.MatchDoctorRequest
+	361, // 459: manpasik.v1.TelemedicineService.StartVideoSession:input_type -> manpasik.v1.StartVideoSessionRequest
+	363, // 460: manpasik.v1.TelemedicineService.EndVideoSession:input_type -> manpasik.v1.EndVideoSessionRequest
+	364, // 461: manpasik.v1.TelemedicineService.RateConsultation:input_type -> manpasik.v1.RateConsultationRequest
+	42,  // 462: manpasik.v1.AuthService.Register:output_type -> manpasik.v1.RegisterResponse
+	44,  // 463: manpasik.v1.AuthService.Login:output_type -> manpasik.v1.LoginResponse
+	44,  // 464: manpasik.v1.AuthService.SocialLogin:output_type -> manpasik.v1.LoginResponse
+	44,  // 465: manpasik.v1.AuthService.RefreshToken:output_type -> manpasik.v1.LoginResponse
+	47,  // 466: manpasik.v1.AuthService.Logout:output_type -> manpasik.v1.LogoutResponse
+	49,  // 467: manpasik.v1.AuthService.ValidateToken:output_type -> manpasik.v1.ValidateTokenResponse
+	52,  // 468: manpasik.v1.AuthService.ResetPassword:output_type -> manpasik.v1.ResetPasswordResponse
+	54,  // 469: manpasik.v1.MeasurementService.StartSession:output_type -> manpasik.v1.StartSessionResponse
+	58,  // 470: manpasik.v1.MeasurementService.StreamMeasurement:output_type -> manpasik.v1.MeasurementResult
+	60,  // 471: manpasik.v1.MeasurementService.EndSession:output_type -> manpasik.v1.EndSessionResponse
+	62,  // 472: manpasik.v1.MeasurementService.GetMeasurementHistory:output_type -> manpasik.v1.GetHistoryResponse
+	340, // 473: manpasik.v1.MeasurementService.ExportSingleMeasurement:output_type -> manpasik.v1.ExportFHIRResponse
+	340, // 474: manpasik.v1.MeasurementService.ExportToFHIRObservations:output_type -> manpasik.v1.ExportFHIRResponse
+	65,  // 475: manpasik.v1.DeviceService.RegisterDevice:output_type -> manpasik.v1.RegisterDeviceResponse
+	67,  // 476: manpasik.v1.DeviceService.ListDevices:output_type -> manpasik.v1.ListDevicesResponse
+	70,  // 477: manpasik.v1.DeviceService.StreamDeviceStatus:output_type -> manpasik.v1.DeviceCommand
+	72,  // 478: manpasik.v1.DeviceService.RequestOtaUpdate:output_type -> manpasik.v1.OtaResponse
+	342, // 479: manpasik.v1.DeviceService.UpdateDeviceStatus:output_type -> manpasik.v1.UpdateDeviceStatusResponse
+	75,  // 480: manpasik.v1.UserService.GetProfile:output_type -> manpasik.v1.UserProfile
+	75,  // 481: manpasik.v1.UserService.UpdateProfile:output_type -> manpasik.v1.UserProfile
+	77,  // 482: manpasik.v1.UserService.GetSubscription:output_type -> manpasik.v1.SubscriptionInfo
+	83,  // 483: manpasik.v1.SubscriptionService.CreateSubscription:output_type -> manpasik.v1.SubscriptionDetail
+	83,  // 484: manpasik.v1.SubscriptionService.GetSubscription:output_type -> manpasik.v1.SubscriptionDetail
+	83,  // 485: manpasik.v1.SubscriptionService.UpdateSubscription:output_type -> manpasik.v1.SubscriptionDetail
+	82,  // 486: manpasik.v1.SubscriptionService.CancelSubscription:output_type -> manpasik.v1.CancelSubscriptionResponse
+	85,  // 487: manpasik.v1.SubscriptionService.CheckFeatureAccess:output_type -> manpasik.v1.CheckFeatureAccessResponse
+	87,  // 488: manpasik.v1.SubscriptionService.ListSubscriptionPlans:output_type -> manpasik.v1.ListSubscriptionPlansResponse
+	170, // 489: manpasik.v1.SubscriptionService.CheckCartridgeAccess:output_type -> manpasik.v1.CheckCartridgeAccessResponse
+	172, // 490: manpasik.v1.SubscriptionService.ListAccessibleCartridges:output_type -> manpasik.v1.ListAccessibleCartridgesResponse
+	90,  // 491: manpasik.v1.ShopService.ListProducts:output_type -> manpasik.v1.ListProductsResponse
+	92,  // 492: manpasik.v1.ShopService.GetProduct:output_type -> manpasik.v1.Product
+	96,  // 493: manpasik.v1.ShopService.AddToCart:output_type -> manpasik.v1.Cart
+	96,  // 494: manpasik.v1.ShopService.GetCart:output_type -> manpasik.v1.Cart
+	96,  // 495: manpasik.v1.ShopService.RemoveFromCart:output_type -> manpasik.v1.Cart
+	102, // 496: manpasik.v1.ShopService.CreateOrder:output_type -> manpasik.v1.Order
+	102, // 497: manpasik.v1.ShopService.GetOrder:output_type -> manpasik.v1.Order
+	101, // 498: manpasik.v1.ShopService.ListOrders:output_type -> manpasik.v1.ListOrdersResponse
+	109, // 499: manpasik.v1.PaymentService.CreatePayment:output_type -> manpasik.v1.PaymentDetail
+	109, // 500: manpasik.v1.PaymentService.ConfirmPayment:output_type -> manpasik.v1.PaymentDetail
+	109, // 501: manpasik.v1.PaymentService.GetPayment:output_type -> manpasik.v1.PaymentDetail
+	108, // 502: manpasik.v1.PaymentService.ListPayments:output_type -> manpasik.v1.ListPaymentsResponse
+	111, // 503: manpasik.v1.PaymentService.RefundPayment:output_type -> manpasik.v1.RefundResponse
+	115, // 504: manpasik.v1.AiInferenceService.AnalyzeMeasurement:output_type -> manpasik.v1.AnalysisResult
+	117, // 505: manpasik.v1.AiInferenceService.GetHealthScore:output_type -> manpasik.v1.HealthScoreResponse
+	120, // 506: manpasik.v1.AiInferenceService.PredictTrend:output_type -> manpasik.v1.TrendPrediction
+	122, // 507: manpasik.v1.AiInferenceService.GetModelInfo:output_type -> manpasik.v1.ModelInfo
+	124, // 508: manpasik.v1.AiInferenceService.ListModels:output_type -> manpasik.v1.ListModelsResponse
+	373, // 509: manpasik.v1.AiInferenceService.StreamChat:output_type -> manpasik.v1.StreamChatResponse
+	126, // 510: manpasik.v1.CartridgeService.ReadCartridge:output_type -> manpasik.v1.CartridgeDetail
+	128, // 511: manpasik.v1.CartridgeService.RecordUsage:output_type -> manpasik.v1.RecordUsageResponse
+	130, // 512: manpasik.v1.CartridgeService.GetUsageHistory:output_type -> manpasik.v1.GetUsageHistoryResponse
+	168, // 513: manpasik.v1.CartridgeService.GetCartridgeType:output_type -> manpasik.v1.CartridgeTypeInfo
+	134, // 514: manpasik.v1.CartridgeService.ListCategories:output_type -> manpasik.v1.ListCategoriesResponse
+	136, // 515: manpasik.v1.CartridgeService.ListTypesByCategory:output_type -> manpasik.v1.ListTypesByCategoryResponse
+	138, // 516: manpasik.v1.CartridgeService.GetRemainingUses:output_type -> manpasik.v1.GetRemainingUsesResponse
+	140, // 517: manpasik.v1.CartridgeService.ValidateCartridge:output_type -> manpasik.v1.ValidateCartridgeResponse
+	144, // 518: manpasik.v1.CalibrationService.RegisterFactoryCalibration:output_type -> manpasik.v1.CalibrationRecord
+	144, // 519: manpasik.v1.CalibrationService.PerformFieldCalibration:output_type -> manpasik.v1.CalibrationRecord
+	144, // 520: manpasik.v1.CalibrationService.GetCalibration:output_type -> manpasik.v1.CalibrationRecord
+	146, // 521: manpasik.v1.CalibrationService.ListCalibrationHistory:output_type -> manpasik.v1.ListCalibrationHistoryResponse
+	148, // 522: manpasik.v1.CalibrationService.CheckCalibrationStatus:output_type -> manpasik.v1.CalibrationStatusResponse
+	151, // 523: manpasik.v1.CalibrationService.ListCalibrationModels:output_type -> manpasik.v1.ListCalibrationModelsResponse
+	153, // 524: manpasik.v1.CoachingService.SetHealthGoal:output_type -> manpasik.v1.HealthGoal
+	155, // 525: manpasik.v1.CoachingService.GetHealthGoals:output_type -> manpasik.v1.GetHealthGoalsResponse
+	157, // 526: manpasik.v1.CoachingService.GenerateCoaching:output_type -> manpasik.v1.CoachingMessage
+	159, // 527: manpasik.v1.CoachingService.ListCoachingMessages:output_type -> manpasik.v1.ListCoachingMessagesResponse
+	161, // 528: manpasik.v1.CoachingService.GenerateDailyReport:output_type -> manpasik.v1.DailyHealthReport
+	163, // 529: manpasik.v1.CoachingService.GetWeeklyReport:output_type -> manpasik.v1.WeeklyHealthReport
+	166, // 530: manpasik.v1.CoachingService.GetRecommendations:output_type -> manpasik.v1.GetRecommendationsResponse
+	175, // 531: manpasik.v1.ReservationService.SearchFacilities:output_type -> manpasik.v1.SearchFacilitiesResponse
+	177, // 532: manpasik.v1.ReservationService.GetFacility:output_type -> manpasik.v1.Facility
+	179, // 533: manpasik.v1.ReservationService.GetAvailableSlots:output_type -> manpasik.v1.GetAvailableSlotsResponse
+	182, // 534: manpasik.v1.ReservationService.CreateReservation:output_type -> manpasik.v1.Reservation
+	182, // 535: manpasik.v1.ReservationService.GetReservation:output_type -> manpasik.v1.Reservation
+	185, // 536: manpasik.v1.ReservationService.ListReservations:output_type -> manpasik.v1.ListReservationsResponse
+	187, // 537: manpasik.v1.ReservationService.CancelReservation:output_type -> manpasik.v1.CancelReservationResponse
+	314, // 538: manpasik.v1.ReservationService.ListDoctorsByFacility:output_type -> manpasik.v1.ListDoctorsByFacilityResponse
+	317, // 539: manpasik.v1.ReservationService.GetDoctorAvailability:output_type -> manpasik.v1.GetDoctorAvailabilityResponse
+	320, // 540: manpasik.v1.ReservationService.SelectDoctor:output_type -> manpasik.v1.SelectDoctorResponse
+	194, // 541: manpasik.v1.AdminService.CreateAdmin:output_type -> manpasik.v1.AdminUser
+	194, // 542: manpasik.v1.AdminService.GetAdmin:output_type -> manpasik.v1.AdminUser
+	191, // 543: manpasik.v1.AdminService.ListAdmins:output_type -> manpasik.v1.ListAdminsResponse
+	194, // 544: manpasik.v1.AdminService.UpdateAdminRole:output_type -> manpasik.v1.AdminUser
+	194, // 545: manpasik.v1.AdminService.DeactivateAdmin:output_type -> manpasik.v1.AdminUser
+	196, // 546: manpasik.v1.AdminService.ListUsers:output_type -> manpasik.v1.AdminListUsersResponse
+	199, // 547: manpasik.v1.AdminService.GetSystemStats:output_type -> manpasik.v1.GetSystemStatsResponse
+	201, // 548: manpasik.v1.AdminService.GetAuditLog:output_type -> manpasik.v1.GetAuditLogResponse
+	205, // 549: manpasik.v1.AdminService.SetSystemConfig:output_type -> manpasik.v1.SystemConfig
+	205, // 550: manpasik.v1.AdminService.GetSystemConfig:output_type -> manpasik.v1.SystemConfig
+	191, // 551: manpasik.v1.AdminService.ListAdminsByRegion:output_type -> manpasik.v1.ListAdminsResponse
+	345, // 552: manpasik.v1.AdminService.ListSystemConfigs:output_type -> manpasik.v1.ListSystemConfigsResponse
+	346, // 553: manpasik.v1.AdminService.GetConfigWithMeta:output_type -> manpasik.v1.ConfigWithMeta
+	349, // 554: manpasik.v1.AdminService.ValidateConfigValue:output_type -> manpasik.v1.ValidateConfigValueResponse
+	351, // 555: manpasik.v1.AdminService.BulkSetConfigs:output_type -> manpasik.v1.BulkSetConfigsResponse
+	370, // 556: manpasik.v1.AdminService.GetAuditLogDetails:output_type -> manpasik.v1.GetAuditLogDetailsResponse
+	380, // 557: manpasik.v1.AdminService.GetRevenueStats:output_type -> manpasik.v1.GetRevenueStatsResponse
+	383, // 558: manpasik.v1.AdminService.GetInventoryStats:output_type -> manpasik.v1.GetInventoryStatsResponse
+	208, // 559: manpasik.v1.FamilyService.CreateFamilyGroup:output_type -> manpasik.v1.FamilyGroup
+	208, // 560: manpasik.v1.FamilyService.GetFamilyGroup:output_type -> manpasik.v1.FamilyGroup
+	211, // 561: manpasik.v1.FamilyService.InviteMember:output_type -> manpasik.v1.FamilyInvitation
+	213, // 562: manpasik.v1.FamilyService.RespondToInvitation:output_type -> manpasik.v1.RespondToInvitationResponse
+	215, // 563: manpasik.v1.FamilyService.RemoveMember:output_type -> manpasik.v1.RemoveMemberResponse
+	209, // 564: manpasik.v1.FamilyService.UpdateMemberRole:output_type -> manpasik.v1.FamilyMember
+	218, // 565: manpasik.v1.FamilyService.ListFamilyMembers:output_type -> manpasik.v1.ListFamilyMembersResponse
+	220, // 566: manpasik.v1.FamilyService.SetSharingPreferences:output_type -> manpasik.v1.SharingPreferences
+	222, // 567: manpasik.v1.FamilyService.GetSharedHealthData:output_type -> manpasik.v1.GetSharedHealthDataResponse
+	368, // 568: manpasik.v1.FamilyService.ValidateSharingAccess:output_type -> manpasik.v1.ValidateSharingAccessResponse
+	230, // 569: manpasik.v1.HealthRecordService.CreateRecord:output_type -> manpasik.v1.HealthRecord
+	230, // 570: manpasik.v1.HealthRecordService.GetRecord:output_type -> manpasik.v1.HealthRecord
+	226, // 571: manpasik.v1.HealthRecordService.ListRecords:output_type -> manpasik.v1.ListHealthRecordsResponse
+	230, // 572: manpasik.v1.HealthRecordService.UpdateRecord:output_type -> manpasik.v1.HealthRecord
+	229, // 573: manpasik.v1.HealthRecordService.DeleteRecord:output_type -> manpasik.v1.DeleteHealthRecordResponse
+	232, // 574: manpasik.v1.HealthRecordService.ExportToFHIR:output_type -> manpasik.v1.ExportToFHIRResponse
+	234, // 575: manpasik.v1.HealthRecordService.ImportFromFHIR:output_type -> manpasik.v1.ImportFromFHIRResponse
+	236, // 576: manpasik.v1.HealthRecordService.GetHealthSummary:output_type -> manpasik.v1.GetHealthSummaryResponse
+	328, // 577: manpasik.v1.HealthRecordService.CreateDataSharingConsent:output_type -> manpasik.v1.DataSharingConsent
+	330, // 578: manpasik.v1.HealthRecordService.RevokeDataSharingConsent:output_type -> manpasik.v1.RevokeConsentResponse
+	332, // 579: manpasik.v1.HealthRecordService.ListDataSharingConsents:output_type -> manpasik.v1.ListConsentsResponse
+	334, // 580: manpasik.v1.HealthRecordService.ShareWithProvider:output_type -> manpasik.v1.ShareWithProviderResponse
+	336, // 581: manpasik.v1.HealthRecordService.GetDataAccessLog:output_type -> manpasik.v1.GetDataAccessLogResponse
+	244, // 582: manpasik.v1.PrescriptionService.CreatePrescription:output_type -> manpasik.v1.Prescription
+	244, // 583: manpasik.v1.PrescriptionService.GetPrescription:output_type -> manpasik.v1.Prescription
+	240, // 584: manpasik.v1.PrescriptionService.ListPrescriptions:output_type -> manpasik.v1.ListPrescriptionsResponse
+	244, // 585: manpasik.v1.PrescriptionService.UpdatePrescriptionStatus:output_type -> manpasik.v1.Prescription
+	244, // 586: manpasik.v1.PrescriptionService.AddMedication:output_type -> manpasik.v1.Prescription
+	244, // 587: manpasik.v1.PrescriptionService.RemoveMedication:output_type -> manpasik.v1.Prescription
+	247, // 588: manpasik.v1.PrescriptionService.CheckDrugInteraction:output_type -> manpasik.v1.CheckDrugInteractionResponse
+	250, // 589: manpasik.v1.PrescriptionService.GetMedicationReminders:output_type -> manpasik.v1.GetMedicationRemindersResponse
+	322, // 590: manpasik.v1.PrescriptionService.SelectPharmacyAndFulfillment:output_type -> manpasik.v1.SelectPharmacyResponse
+	324, // 591: manpasik.v1.PrescriptionService.SendPrescriptionToPharmacy:output_type -> manpasik.v1.SendToPharmacyResponse
+	244, // 592: manpasik.v1.PrescriptionService.GetPrescriptionByToken:output_type -> manpasik.v1.Prescription
+	244, // 593: manpasik.v1.PrescriptionService.UpdateDispensaryStatus:output_type -> manpasik.v1.Prescription
+	256, // 594: manpasik.v1.CommunityService.CreatePost:output_type -> manpasik.v1.Post
+	256, // 595: manpasik.v1.CommunityService.GetPost:output_type -> manpasik.v1.Post
+	255, // 596: manpasik.v1.CommunityService.ListPosts:output_type -> manpasik.v1.ListPostsResponse
+	258, // 597: manpasik.v1.CommunityService.LikePost:output_type -> manpasik.v1.LikePostResponse
+	262, // 598: manpasik.v1.CommunityService.CreateComment:output_type -> manpasik.v1.Comment
+	261, // 599: manpasik.v1.CommunityService.ListComments:output_type -> manpasik.v1.ListCommentsResponse
+	265, // 600: manpasik.v1.CommunityService.CreateChallenge:output_type -> manpasik.v1.Challenge
+	265, // 601: manpasik.v1.CommunityService.GetChallenge:output_type -> manpasik.v1.Challenge
+	267, // 602: manpasik.v1.CommunityService.JoinChallenge:output_type -> manpasik.v1.JoinChallengeResponse
+	269, // 603: manpasik.v1.CommunityService.ListChallenges:output_type -> manpasik.v1.ListChallengesResponse
+	375, // 604: manpasik.v1.CommunityService.GetChallengeLeaderboard:output_type -> manpasik.v1.GetChallengeLeaderboardResponse
+	378, // 605: manpasik.v1.CommunityService.UpdateChallengeProgress:output_type -> manpasik.v1.UpdateChallengeProgressResponse
+	272, // 606: manpasik.v1.VideoService.CreateRoom:output_type -> manpasik.v1.Room
+	272, // 607: manpasik.v1.VideoService.GetRoom:output_type -> manpasik.v1.Room
+	274, // 608: manpasik.v1.VideoService.JoinRoom:output_type -> manpasik.v1.JoinRoomResponse
+	276, // 609: manpasik.v1.VideoService.LeaveRoom:output_type -> manpasik.v1.LeaveRoomResponse
+	272, // 610: manpasik.v1.VideoService.EndRoom:output_type -> manpasik.v1.Room
+	280, // 611: manpasik.v1.VideoService.SendSignal:output_type -> manpasik.v1.SendSignalResponse
+	282, // 612: manpasik.v1.VideoService.ListParticipants:output_type -> manpasik.v1.ListParticipantsResponse
+	284, // 613: manpasik.v1.VideoService.GetRoomStats:output_type -> manpasik.v1.GetRoomStatsResponse
+	286, // 614: manpasik.v1.NotificationService.SendNotification:output_type -> manpasik.v1.Notification
+	288, // 615: manpasik.v1.NotificationService.ListNotifications:output_type -> manpasik.v1.ListNotificationsResponse
+	290, // 616: manpasik.v1.NotificationService.MarkAsRead:output_type -> manpasik.v1.MarkAsReadResponse
+	292, // 617: manpasik.v1.NotificationService.MarkAllAsRead:output_type -> manpasik.v1.MarkAllAsReadResponse
+	294, // 618: manpasik.v1.NotificationService.GetUnreadCount:output_type -> manpasik.v1.GetUnreadCountResponse
+	297, // 619: manpasik.v1.NotificationService.UpdateNotificationPreferences:output_type -> manpasik.v1.NotificationPreferences
+	297, // 620: manpasik.v1.NotificationService.GetNotificationPreferences:output_type -> manpasik.v1.NotificationPreferences
+	286, // 621: manpasik.v1.NotificationService.SendFromTemplate:output_type -> manpasik.v1.Notification
+	299, // 622: manpasik.v1.TranslationService.TranslateText:output_type -> manpasik.v1.TranslateTextResponse
+	301, // 623: manpasik.v1.TranslationService.DetectLanguage:output_type -> manpasik.v1.DetectLanguageResponse
+	304, // 624: manpasik.v1.TranslationService.ListSupportedLanguages:output_type -> manpasik.v1.ListSupportedLanguagesResponse
+	307, // 625: manpasik.v1.TranslationService.TranslateBatch:output_type -> manpasik.v1.TranslateBatchResponse
+	309, // 626: manpasik.v1.TranslationService.GetTranslationHistory:output_type -> manpasik.v1.GetTranslationHistoryResponse
+	312, // 627: manpasik.v1.TranslationService.GetTranslationUsage:output_type -> manpasik.v1.GetTranslationUsageResponse
+	386, // 628: manpasik.v1.TranslationService.TranslateRealtime:output_type -> manpasik.v1.TranslateRealtimeResponse
+	353, // 629: manpasik.v1.TelemedicineService.CreateConsultation:output_type -> manpasik.v1.Consultation
+	353, // 630: manpasik.v1.TelemedicineService.GetConsultation:output_type -> manpasik.v1.Consultation
+	357, // 631: manpasik.v1.TelemedicineService.ListConsultations:output_type -> manpasik.v1.ListConsultationsResponse
+	359, // 632: manpasik.v1.TelemedicineService.MatchDoctor:output_type -> manpasik.v1.MatchDoctorResponse
+	362, // 633: manpasik.v1.TelemedicineService.StartVideoSession:output_type -> manpasik.v1.VideoSession
+	362, // 634: manpasik.v1.TelemedicineService.EndVideoSession:output_type -> manpasik.v1.VideoSession
+	365, // 635: manpasik.v1.TelemedicineService.RateConsultation:output_type -> manpasik.v1.RateConsultationResponse
+	462, // [462:636] is the sub-list for method output_type
+	288, // [288:462] is the sub-list for method input_type
+	288, // [288:288] is the sub-list for extension type_name
+	288, // [288:288] is the sub-list for extension extendee
+	0,   // [0:288] is the sub-list for field type_name
 }
 
 func init() { file_manpasik_proto_init() }
@@ -28839,7 +30138,7 @@ func file_manpasik_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_manpasik_proto_rawDesc), len(file_manpasik_proto_rawDesc)),
 			NumEnums:      41,
-			NumMessages:   343,
+			NumMessages:   360,
 			NumExtensions: 0,
 			NumServices:   21,
 		},

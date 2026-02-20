@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:manpasik/shared/providers/auth_provider.dart';
 import 'package:manpasik/core/providers/grpc_provider.dart';
@@ -13,6 +14,7 @@ void main() {
   late ProviderContainer authContainer;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     authContainer = ProviderContainer(
       overrides: [
         authRepositoryProvider.overrideWithValue(FakeAuthRepository()),
@@ -78,9 +80,9 @@ void main() {
   });
 
   group('ThemeModeProvider 테스트', () {
-    test('기본 테마는 system', () {
+    test('기본 테마는 dark', () {
       final notifier = ThemeModeNotifier();
-      expect(notifier.state, ThemeMode.system);
+      expect(notifier.state, ThemeMode.dark);
     });
 
     test('라이트 모드 전환', () {
@@ -95,8 +97,11 @@ void main() {
       expect(notifier.state, ThemeMode.dark);
     });
 
-    test('토글 순환 (system → light → dark → system)', () {
+    test('토글 순환 (dark → system → light → dark)', () {
       final notifier = ThemeModeNotifier();
+      expect(notifier.state, ThemeMode.dark);
+
+      notifier.toggle();
       expect(notifier.state, ThemeMode.system);
 
       notifier.toggle();
@@ -104,9 +109,6 @@ void main() {
 
       notifier.toggle();
       expect(notifier.state, ThemeMode.dark);
-
-      notifier.toggle();
-      expect(notifier.state, ThemeMode.system);
     });
   });
 

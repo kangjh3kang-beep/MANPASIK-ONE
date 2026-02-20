@@ -88,8 +88,8 @@ func main() {
 	// 라우터 설정
 	mux := restHandler.SetupRoutes()
 
-	// CORS + 로깅 미들웨어 적용
-	finalHandler := gw.CORS(gw.Logging(mux))
+	// 미들웨어 체인: 보안헤더 → CORS → Rate Limit → 바디크기제한 → 로깅
+	finalHandler := gw.SecurityHeaders(gw.CORS(gw.RateLimit(gw.MaxBodySize(10<<20)(gw.Logging(mux)))))
 
 	server := &http.Server{
 		Addr:         httpPort,

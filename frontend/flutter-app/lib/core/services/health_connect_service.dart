@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show debugPrint, kIsWeb;
 import 'package:flutter/services.dart';
 
 import 'package:manpasik/core/config/app_config.dart';
+import 'package:manpasik/core/services/rest_client.dart';
 
 /// 외부 건강 플랫폼 연동 서비스
 ///
@@ -158,6 +159,68 @@ class HealthConnectService {
   Future<void> disconnect() async {
     _isAuthorized = false;
     _platform = null;
+  }
+
+  /// 건강 데이터를 ManPaSik 서버에 동기화합니다.
+  ///
+  /// 로컬 HealthKit/Health Connect 데이터를 읽어서
+  /// REST API를 통해 서버에 업로드합니다.
+  Future<int> syncToServer({
+    required ManPaSikRestClient restClient,
+    required String userId,
+    DateTime? since,
+  }) async {
+    if (!_isAuthorized) return 0;
+
+    final startDate = since ?? DateTime.now().subtract(const Duration(days: 1));
+    final endDate = DateTime.now();
+    int synced = 0;
+
+    for (final type in supportedTypes) {
+      try {
+        final records = await fetchHealthData(
+          type: type,
+          startDate: startDate,
+          endDate: endDate,
+        );
+        if (records.isEmpty) continue;
+
+        // 최신 레코드만 서버에 전송
+        final latest = records.last;
+        await restClient.createHealthRecord(
+          userId: userId,
+          recordType: _healthDataTypeIndex(type),
+          title: '${type.displayName} 자동 동기화',
+          description: '${latest.value} ${latest.unit}',
+          provider: _platform ?? 'health_connect',
+          metadata: {
+            'source': latest.source,
+            'value': latest.value.toString(),
+            'unit': latest.unit,
+            'timestamp': latest.timestamp.toIso8601String(),
+          },
+        );
+        synced++;
+      } catch (e) {
+        debugPrint('[HealthConnect] $type 동기화 실패: $e');
+      }
+    }
+
+    debugPrint('[HealthConnect] 서버 동기화 완료: $synced/${ supportedTypes.length} 타입');
+    return synced;
+  }
+
+  int _healthDataTypeIndex(HealthDataType type) {
+    return switch (type) {
+      HealthDataType.steps => 10,
+      HealthDataType.heartRate => 11,
+      HealthDataType.bloodPressureSystolic => 12,
+      HealthDataType.bloodPressureDiastolic => 13,
+      HealthDataType.bloodGlucose => 14,
+      HealthDataType.weight => 15,
+      HealthDataType.sleep => 16,
+      HealthDataType.oxygenSaturation => 17,
+    };
   }
 
   List<HealthRecord> _generateSimulatedData(

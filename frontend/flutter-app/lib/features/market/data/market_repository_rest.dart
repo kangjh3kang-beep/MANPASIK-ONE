@@ -84,6 +84,56 @@ class MarketRepositoryRest implements MarketRepository {
     }
   }
 
+  @override
+  Future<List<GeneralProduct>> getGeneralProducts({String? category}) async {
+    try {
+      final res = await _client.listProducts();
+      final products = res['general_products'] as List<dynamic>? ?? [];
+      var list = products
+          .map((p) => _mapGeneralProduct(p as Map<String, dynamic>))
+          .toList();
+      if (category != null) {
+        list = list.where((p) => p.category == category).toList();
+      }
+      return list;
+    } on DioException {
+      // 서버에 일반상품 미구현 시 시뮬레이션 데이터
+      return _simulatedGeneralProducts(category);
+    }
+  }
+
+  List<GeneralProduct> _simulatedGeneralProducts(String? category) {
+    final all = [
+      const GeneralProduct(id: 'gp-1', name: '오메가-3 피쉬오일 (60캡슐)', price: 29900, originalPrice: 39000, rating: 4.5, reviewCount: 342, category: 'supplement', freeShipping: true),
+      const GeneralProduct(id: 'gp-2', name: '프로바이오틱스 유산균', price: 24900, rating: 4.3, reviewCount: 218, category: 'supplement', freeShipping: true),
+      const GeneralProduct(id: 'gp-3', name: '만파식 리더기 보호 케이스', price: 15000, rating: 4.8, reviewCount: 89, category: 'accessory'),
+      const GeneralProduct(id: 'gp-4', name: '휴대용 카트리지 보관함', price: 22000, originalPrice: 28000, rating: 4.6, reviewCount: 156, category: 'accessory', freeShipping: true),
+      const GeneralProduct(id: 'gp-5', name: '비타민 D3 + K2 복합', price: 19900, rating: 4.4, reviewCount: 275, category: 'supplement'),
+      const GeneralProduct(id: 'gp-6', name: '아로마 테라피 디퓨저', price: 45000, originalPrice: 55000, rating: 4.7, reviewCount: 62, category: 'wellness', freeShipping: true),
+      const GeneralProduct(id: 'gp-7', name: '스트레스 릴리프 티 세트', price: 18500, rating: 4.2, reviewCount: 94, category: 'wellness'),
+      const GeneralProduct(id: 'gp-8', name: '만파식 프리미엄 선물세트', price: 89000, originalPrice: 110000, rating: 4.9, reviewCount: 45, category: 'giftset', freeShipping: true),
+    ];
+    if (category != null) {
+      return all.where((p) => p.category == category).toList();
+    }
+    return all;
+  }
+
+  GeneralProduct _mapGeneralProduct(Map<String, dynamic> m) {
+    return GeneralProduct(
+      id: m['id'] as String? ?? '',
+      name: m['name'] as String? ?? '',
+      price: m['price'] as int? ?? 0,
+      originalPrice: m['original_price'] as int?,
+      rating: (m['rating'] as num?)?.toDouble() ?? 0.0,
+      reviewCount: m['review_count'] as int? ?? 0,
+      category: m['category'] as String? ?? 'supplement',
+      imageUrl: m['image_url'] as String?,
+      freeShipping: m['free_shipping'] as bool? ?? false,
+      isWishlisted: m['is_wishlisted'] as bool? ?? false,
+    );
+  }
+
   CartridgeProduct _mapProduct(Map<String, dynamic> m) {
     return CartridgeProduct(
       id: m['id'] as String? ?? m['product_id'] as String? ?? '',

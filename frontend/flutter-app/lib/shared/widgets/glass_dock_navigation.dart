@@ -28,19 +28,19 @@ class GlassDockNavigation extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
       child: KoreanEdgeBorder(
         borderRadius: BorderRadius.circular(32),
-        borderWidth: 1.5, // Thinner, elegant border
+        borderWidth: 0.5, // Thinner, elegant border
         child: ClipRRect(
           borderRadius: BorderRadius.circular(32),
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5), // Reduced blur to show background
             child: Container(
               height: 80,
               decoration: BoxDecoration(
-                color: const Color(0xFF0A0E21).withOpacity(0.65), // Midnight Blue transparent
+                color: const Color(0xFF0A0E21).withOpacity(0.05), // Ultra-Transparent (5% Opacity)
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withOpacity(0.1), // Softer shadow
                     spreadRadius: 0,
                     blurRadius: 20,
                     offset: const Offset(0, 10),
@@ -112,7 +112,10 @@ class _GlassNavItemState extends State<_GlassNavItem> {
       bgColor = Colors.transparent;
     }
 
-    return MouseRegion(
+    return Semantics(
+      button: true,
+      label: '${widget.item.label} 탭${isSelected ? ", 선택됨" : ""}',
+      child: MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
       onExit: (_) => setState(() => _isHovered = false),
       cursor: SystemMouseCursors.click,
@@ -159,6 +162,7 @@ class _GlassNavItemState extends State<_GlassNavItem> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

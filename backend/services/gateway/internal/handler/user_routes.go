@@ -2,52 +2,25 @@ package handler
 
 import (
 	"net/http"
-	"time"
 
 	v1 "github.com/manpasik/backend/shared/gen/go/v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// registerUserRoutes는 사용자/구독/알림/번역/코칭 관련 REST 엔드포인트를 등록합니다.
+// registerUserRoutes는 사용자/AI 추론 관련 REST 엔드포인트를 등록합니다.
 func (h *RestHandler) registerUserRoutes(mux *http.ServeMux) {
 	// User
 	mux.HandleFunc("GET /api/v1/users/{userId}/profile", h.handleGetProfile)
 	mux.HandleFunc("PUT /api/v1/users/{userId}/profile", h.handleUpdateProfile)
 	mux.HandleFunc("PUT /api/v1/users/{userId}/emergency-settings", h.handleSaveEmergencySettings)
 
-	// Subscription
-	mux.HandleFunc("GET /api/v1/subscriptions/plans", h.handleListSubscriptionPlans)
-	mux.HandleFunc("GET /api/v1/subscriptions/{userId}", h.handleGetSubscription)
-	mux.HandleFunc("POST /api/v1/subscriptions", h.handleCreateSubscription)
-	mux.HandleFunc("DELETE /api/v1/subscriptions/{subscriptionId}", h.handleCancelSubscription)
+	// Support
+	mux.HandleFunc("POST /api/v1/support/inquiries", h.handleCreateSupportInquiry)
 
-	// Notification
-	mux.HandleFunc("GET /api/v1/notifications", h.handleListNotifications)
-	mux.HandleFunc("GET /api/v1/notifications/unread-count", h.handleGetUnreadCount)
-	mux.HandleFunc("POST /api/v1/notifications/{notificationId}/read", h.handleMarkNotificationAsRead)
-
-	// Translation
-	mux.HandleFunc("POST /api/v1/translations/translate", h.handleTranslateText)
-
-	// Coaching
-	mux.HandleFunc("POST /api/v1/coaching/goals", h.handleSetHealthGoal)
-	mux.HandleFunc("GET /api/v1/coaching/goals/{userId}", h.handleGetHealthGoals)
-	mux.HandleFunc("POST /api/v1/coaching/generate", h.handleGenerateCoaching)
-	mux.HandleFunc("GET /api/v1/coaching/daily-report/{userId}", h.handleGenerateDailyReport)
-	mux.HandleFunc("GET /api/v1/coaching/recommendations/{userId}", h.handleGetRecommendations)
-
-	// AI
+	// AI Inference
 	mux.HandleFunc("POST /api/v1/ai/analyze", h.handleAnalyzeMeasurement)
 	mux.HandleFunc("GET /api/v1/ai/health-score/{userId}", h.handleGetHealthScore)
 	mux.HandleFunc("POST /api/v1/ai/predict-trend", h.handlePredictTrend)
 	mux.HandleFunc("GET /api/v1/ai/models", h.handleListAiModels)
-
-	// Admin
-	mux.HandleFunc("GET /api/v1/admin/stats", h.handleGetSystemStats)
-	mux.HandleFunc("GET /api/v1/admin/users", h.handleAdminListUsers)
-	mux.HandleFunc("PUT /api/v1/admin/users/{userId}/role", h.handleAdminChangeRole)
-	mux.HandleFunc("POST /api/v1/admin/users/bulk", h.handleAdminBulkAction)
-	mux.HandleFunc("GET /api/v1/admin/audit-log", h.handleGetAuditLog)
 }
 
 // ── User ──
@@ -64,6 +37,37 @@ func (h *RestHandler) handleGetProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+// ── Support ──
+
+func (h *RestHandler) handleCreateSupportInquiry(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		UserID   string `json:"user_id"`
+		Category string `json:"category"`
+		Subject  string `json:"subject"`
+		Content  string `json:"content"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	// 알림 서비스로 문의 전달
+	if h.notification != nil {
+		h.notification.SendNotification(r.Context(), &v1.SendNotificationRequest{
+			UserId:   body.UserID,
+			Type:     v1.NotificationType_NOTIFICATION_TYPE_SYSTEM,
+			Title:    "문의 접수: " + body.Subject,
+			Body:     body.Content,
+			Priority: v1.NotificationPriority_NOTIFICATION_PRIORITY_NORMAL,
+			Data:     map[string]string{"category": body.Category},
+		})
+	}
+	writeJSON(w, http.StatusCreated, map[string]interface{}{
+		"success":    true,
+		"inquiry_id": "inq_" + body.UserID,
+		"message":    "문의가 접수되었습니다",
+	})
 }
 
 func (h *RestHandler) handleUpdateProfile(w http.ResponseWriter, r *http.Request) {
@@ -103,11 +107,11 @@ func (h *RestHandler) handleSaveEmergencySettings(w http.ResponseWriter, r *http
 	}
 	userId := r.PathValue("userId")
 	var body struct {
-		Contacts          []map[string]string `json:"contacts"`
-		AutoCall119       bool                `json:"auto_call_119"`
-		SafetyMode        string              `json:"safety_mode"`
-		HighThreshold     float64             `json:"high_threshold"`
-		LowThreshold      float64             `json:"low_threshold"`
+		Contacts      []map[string]string `json:"contacts"`
+		AutoCall119   bool                `json:"auto_call_119"`
+		SafetyMode    string              `json:"safety_mode"`
+		HighThreshold float64             `json:"high_threshold"`
+		LowThreshold  float64             `json:"low_threshold"`
 	}
 	if err := readJSON(r, &body); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -118,275 +122,6 @@ func (h *RestHandler) handleSaveEmergencySettings(w http.ResponseWriter, r *http
 	})
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-// ── Subscription ──
-
-func (h *RestHandler) handleListSubscriptionPlans(w http.ResponseWriter, r *http.Request) {
-	if h.subscription == nil {
-		writeError(w, http.StatusServiceUnavailable, "subscription service unavailable")
-		return
-	}
-	resp, err := h.subscription.ListSubscriptionPlans(r.Context(), &v1.ListSubscriptionPlansRequest{})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-func (h *RestHandler) handleGetSubscription(w http.ResponseWriter, r *http.Request) {
-	if h.subscription == nil {
-		writeError(w, http.StatusServiceUnavailable, "subscription service unavailable")
-		return
-	}
-	userId := r.PathValue("userId")
-	resp, err := h.subscription.GetSubscription(r.Context(), &v1.GetSubscriptionDetailRequest{UserId: userId})
-	if err != nil {
-		writeError(w, http.StatusNotFound, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-func (h *RestHandler) handleCreateSubscription(w http.ResponseWriter, r *http.Request) {
-	if h.subscription == nil {
-		writeError(w, http.StatusServiceUnavailable, "subscription service unavailable")
-		return
-	}
-	var body struct {
-		UserID string `json:"user_id"`
-		Tier   int32  `json:"tier"`
-	}
-	if err := readJSON(r, &body); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-	resp, err := h.subscription.CreateSubscription(r.Context(), &v1.CreateSubscriptionRequest{
-		UserId: body.UserID,
-		Tier:   v1.SubscriptionTier(body.Tier),
-	})
-	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusCreated, resp)
-}
-
-func (h *RestHandler) handleCancelSubscription(w http.ResponseWriter, r *http.Request) {
-	if h.subscription == nil {
-		writeError(w, http.StatusServiceUnavailable, "subscription service unavailable")
-		return
-	}
-	subId := r.PathValue("subscriptionId")
-	var body struct {
-		UserID string `json:"user_id"`
-		Reason string `json:"reason"`
-	}
-	readJSON(r, &body)
-	_ = subId // subscription ID is implied by user
-	resp, err := h.subscription.CancelSubscription(r.Context(), &v1.CancelSubscriptionRequest{
-		UserId: body.UserID,
-		Reason: body.Reason,
-	})
-	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-// ── Notification ──
-
-func (h *RestHandler) handleListNotifications(w http.ResponseWriter, r *http.Request) {
-	if h.notification == nil {
-		writeError(w, http.StatusServiceUnavailable, "notification service unavailable")
-		return
-	}
-	userId := r.URL.Query().Get("user_id")
-	resp, err := h.notification.ListNotifications(r.Context(), &v1.ListNotificationsRequest{
-		UserId:     userId,
-		UnreadOnly: queryBool(r, "unread_only"),
-		Limit:      queryInt(r, "limit", 20),
-		Offset:     queryInt(r, "offset", 0),
-	})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-func (h *RestHandler) handleGetUnreadCount(w http.ResponseWriter, r *http.Request) {
-	if h.notification == nil {
-		writeError(w, http.StatusServiceUnavailable, "notification service unavailable")
-		return
-	}
-	userId := r.URL.Query().Get("user_id")
-	resp, err := h.notification.GetUnreadCount(r.Context(), &v1.GetUnreadCountRequest{UserId: userId})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-func (h *RestHandler) handleMarkNotificationAsRead(w http.ResponseWriter, r *http.Request) {
-	if h.notification == nil {
-		writeError(w, http.StatusServiceUnavailable, "notification service unavailable")
-		return
-	}
-	notifId := r.PathValue("notificationId")
-	resp, err := h.notification.MarkAsRead(r.Context(), &v1.MarkAsReadRequest{NotificationId: notifId})
-	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-// ── Translation ──
-
-func (h *RestHandler) handleTranslateText(w http.ResponseWriter, r *http.Request) {
-	if h.translation == nil {
-		writeError(w, http.StatusServiceUnavailable, "translation service unavailable")
-		return
-	}
-	var body struct {
-		Text           string `json:"text"`
-		SourceLanguage string `json:"source_language"`
-		TargetLanguage string `json:"target_language"`
-	}
-	if err := readJSON(r, &body); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-	resp, err := h.translation.TranslateText(r.Context(), &v1.TranslateTextRequest{
-		Text:           body.Text,
-		SourceLanguage: body.SourceLanguage,
-		TargetLanguage: body.TargetLanguage,
-	})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-// ── Coaching ──
-
-func (h *RestHandler) handleSetHealthGoal(w http.ResponseWriter, r *http.Request) {
-	if h.coaching == nil {
-		writeError(w, http.StatusServiceUnavailable, "coaching service unavailable")
-		return
-	}
-	var body struct {
-		UserID      string  `json:"user_id"`
-		Category    int32   `json:"category"`
-		MetricName  string  `json:"metric_name"`
-		TargetValue float64 `json:"target_value"`
-		Unit        string  `json:"unit"`
-		Description string  `json:"description"`
-		TargetDate  string  `json:"target_date"`
-	}
-	if err := readJSON(r, &body); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-	req := &v1.SetHealthGoalRequest{
-		UserId:      body.UserID,
-		Category:    v1.GoalCategory(body.Category),
-		MetricName:  body.MetricName,
-		TargetValue: body.TargetValue,
-		Unit:        body.Unit,
-		Description: body.Description,
-	}
-	if body.TargetDate != "" {
-		if t, tErr := time.Parse(time.RFC3339, body.TargetDate); tErr == nil {
-			req.TargetDate = timestamppb.New(t)
-		}
-	}
-	resp, err := h.coaching.SetHealthGoal(r.Context(), req)
-	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusCreated, resp)
-}
-
-func (h *RestHandler) handleGetHealthGoals(w http.ResponseWriter, r *http.Request) {
-	if h.coaching == nil {
-		writeError(w, http.StatusServiceUnavailable, "coaching service unavailable")
-		return
-	}
-	userId := r.PathValue("userId")
-	resp, err := h.coaching.GetHealthGoals(r.Context(), &v1.GetHealthGoalsRequest{
-		UserId:       userId,
-		StatusFilter: v1.GoalStatus(queryInt(r, "status_filter", 0)),
-	})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-func (h *RestHandler) handleGenerateCoaching(w http.ResponseWriter, r *http.Request) {
-	if h.coaching == nil {
-		writeError(w, http.StatusServiceUnavailable, "coaching service unavailable")
-		return
-	}
-	var body struct {
-		UserID        string `json:"user_id"`
-		MeasurementID string `json:"measurement_id"`
-		CoachingType  int32  `json:"coaching_type"`
-	}
-	if err := readJSON(r, &body); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-	resp, err := h.coaching.GenerateCoaching(r.Context(), &v1.GenerateCoachingRequest{
-		UserId:        body.UserID,
-		MeasurementId: body.MeasurementID,
-		CoachingType:  v1.CoachingType(body.CoachingType),
-	})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-func (h *RestHandler) handleGenerateDailyReport(w http.ResponseWriter, r *http.Request) {
-	if h.coaching == nil {
-		writeError(w, http.StatusServiceUnavailable, "coaching service unavailable")
-		return
-	}
-	userId := r.PathValue("userId")
-	resp, err := h.coaching.GenerateDailyReport(r.Context(), &v1.GenerateDailyReportRequest{UserId: userId})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-func (h *RestHandler) handleGetRecommendations(w http.ResponseWriter, r *http.Request) {
-	if h.coaching == nil {
-		writeError(w, http.StatusServiceUnavailable, "coaching service unavailable")
-		return
-	}
-	userId := r.PathValue("userId")
-	resp, err := h.coaching.GetRecommendations(r.Context(), &v1.GetRecommendationsRequest{
-		UserId:     userId,
-		TypeFilter: v1.RecommendationType(queryInt(r, "type_filter", 0)),
-		Limit:      queryInt(r, "limit", 10),
-	})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	writeProtoJSON(w, http.StatusOK, resp)
@@ -475,118 +210,6 @@ func (h *RestHandler) handleListAiModels(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	resp, err := h.aiInference.ListModels(r.Context(), &v1.ListModelsRequest{})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-// ── Admin ──
-
-func (h *RestHandler) handleGetSystemStats(w http.ResponseWriter, r *http.Request) {
-	if h.admin == nil {
-		writeError(w, http.StatusServiceUnavailable, "admin service unavailable")
-		return
-	}
-	resp, err := h.admin.GetSystemStats(r.Context(), &v1.GetSystemStatsRequest{})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-func (h *RestHandler) handleAdminListUsers(w http.ResponseWriter, r *http.Request) {
-	if h.admin == nil {
-		writeError(w, http.StatusServiceUnavailable, "admin service unavailable")
-		return
-	}
-	resp, err := h.admin.ListUsers(r.Context(), &v1.AdminListUsersRequest{
-		Query:      r.URL.Query().Get("query"),
-		TierFilter: v1.SubscriptionTier(queryInt(r, "tier_filter", 0)),
-		ActiveOnly: queryBool(r, "active_only"),
-		Limit:      queryInt(r, "limit", 20),
-		Offset:     queryInt(r, "offset", 0),
-	})
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-func (h *RestHandler) handleAdminChangeRole(w http.ResponseWriter, r *http.Request) {
-	if h.admin == nil {
-		writeError(w, http.StatusServiceUnavailable, "admin service unavailable")
-		return
-	}
-	userId := r.PathValue("userId")
-	var body struct {
-		Role string `json:"role"`
-	}
-	if err := readJSON(r, &body); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-	resp, err := h.admin.UpdateAdminRole(r.Context(), &v1.UpdateAdminRoleRequest{
-		AdminId: userId,
-		NewRole: v1.AdminRole(v1.AdminRole_value[body.Role]),
-	})
-	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-	writeProtoJSON(w, http.StatusOK, resp)
-}
-
-func (h *RestHandler) handleAdminBulkAction(w http.ResponseWriter, r *http.Request) {
-	if h.admin == nil {
-		writeError(w, http.StatusServiceUnavailable, "admin service unavailable")
-		return
-	}
-	var body struct {
-		Action  string   `json:"action"`
-		UserIDs []string `json:"user_ids"`
-		Value   string   `json:"value"`
-	}
-	if err := readJSON(r, &body); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-	processed := 0
-	for _, uid := range body.UserIDs {
-		switch body.Action {
-		case "change_role":
-			_, err := h.admin.UpdateAdminRole(r.Context(), &v1.UpdateAdminRoleRequest{
-				AdminId: uid,
-				NewRole: v1.AdminRole(v1.AdminRole_value[body.Value]),
-			})
-			if err == nil {
-				processed++
-			}
-		default:
-			processed++
-		}
-	}
-	writeJSON(w, http.StatusOK, map[string]interface{}{
-		"success":   true,
-		"processed": processed,
-		"total":     len(body.UserIDs),
-		"action":    body.Action,
-	})
-}
-
-func (h *RestHandler) handleGetAuditLog(w http.ResponseWriter, r *http.Request) {
-	if h.admin == nil {
-		writeError(w, http.StatusServiceUnavailable, "admin service unavailable")
-		return
-	}
-	resp, err := h.admin.GetAuditLog(r.Context(), &v1.GetAuditLogRequest{
-		AdminId: r.URL.Query().Get("admin_id"),
-		Limit:   queryInt(r, "limit", 20),
-		Offset:  queryInt(r, "offset", 0),
-	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
 		return

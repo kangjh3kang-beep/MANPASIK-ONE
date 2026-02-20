@@ -566,6 +566,75 @@ func (h *AdminHandler) GetAuditLogDetails(ctx context.Context, req *v1.GetAuditL
 	}, nil
 }
 
+// ============================================================================
+// GetRevenueStats — 매출 통계 조회
+// ============================================================================
+
+func (h *AdminHandler) GetRevenueStats(ctx context.Context, req *v1.GetRevenueStatsRequest) (*v1.GetRevenueStatsResponse, error) {
+	if req == nil {
+		req = &v1.GetRevenueStatsRequest{}
+	}
+
+	stats, err := h.svc.GetRevenueStats(ctx, req.Period, req.StartDate, req.EndDate)
+	if err != nil {
+		return nil, toGRPC(err)
+	}
+
+	protoPeriods := make([]*v1.RevenuePeriod, 0, len(stats.Periods))
+	for _, p := range stats.Periods {
+		protoPeriods = append(protoPeriods, &v1.RevenuePeriod{
+			Label:            p.Label,
+			RevenueKrw:       p.RevenueKRW,
+			TransactionCount: p.TransactionCount,
+		})
+	}
+
+	return &v1.GetRevenueStatsResponse{
+		TotalRevenueKrw:        stats.TotalRevenueKRW,
+		SubscriptionRevenueKrw: stats.SubscriptionRevenueKRW,
+		ProductRevenueKrw:      stats.ProductRevenueKRW,
+		TotalTransactions:      stats.TotalTransactions,
+		Periods:                protoPeriods,
+		RevenueByTier:          stats.RevenueByTier,
+	}, nil
+}
+
+// ============================================================================
+// GetInventoryStats — 재고 통계 조회
+// ============================================================================
+
+func (h *AdminHandler) GetInventoryStats(ctx context.Context, req *v1.GetInventoryStatsRequest) (*v1.GetInventoryStatsResponse, error) {
+	if req == nil {
+		req = &v1.GetInventoryStatsRequest{}
+	}
+
+	stats, err := h.svc.GetInventoryStats(ctx, req.CategoryFilter)
+	if err != nil {
+		return nil, toGRPC(err)
+	}
+
+	protoItems := make([]*v1.InventoryItem, 0, len(stats.Items))
+	for _, item := range stats.Items {
+		protoItems = append(protoItems, &v1.InventoryItem{
+			ProductId:         item.ProductID,
+			ProductName:       item.ProductName,
+			Category:          item.Category,
+			CurrentStock:      item.CurrentStock,
+			MinStockThreshold: item.MinStockThreshold,
+			MonthlySales:      item.MonthlySales,
+			PriceKrw:          item.PriceKRW,
+			Status:            item.Status,
+		})
+	}
+
+	return &v1.GetInventoryStatsResponse{
+		Items:           protoItems,
+		TotalProducts:   stats.TotalProducts,
+		LowStockCount:   stats.LowStockCount,
+		OutOfStockCount: stats.OutOfStockCount,
+	}, nil
+}
+
 // --- toGRPC 에러 변환 ---
 
 func toGRPC(err error) error {

@@ -365,19 +365,79 @@ class _ChallengeTab extends ConsumerWidget {
           itemCount: challenges.length,
           itemBuilder: (context, index) {
             final c = challenges[index];
+            final progress = c.myProgress ?? 0.0;
             return Card(
               margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                leading: Icon(Icons.emoji_events, color: theme.colorScheme.primary),
-                title: Text(c.title),
-                subtitle: Text('${c.participantCount}명 참여 중'),
-                trailing: c.isJoined
-                    ? Text('${((c.myProgress ?? 0) * 100).toInt()}%')
-                    : OutlinedButton(
-                        onPressed: () => ref.read(communityRepositoryProvider).joinChallenge(c.id),
-                        child: const Text('참가'),
-                      ),
+              child: InkWell(
                 onTap: () => context.push('/community/challenge/${c.id}'),
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.emoji_events, color: theme.colorScheme.primary, size: 28),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(c.title, style: theme.textTheme.titleMedium),
+                                const SizedBox(height: 2),
+                                Text('${c.participantCount}명 참여 중',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                        color: theme.colorScheme.onSurfaceVariant)),
+                              ],
+                            ),
+                          ),
+                          if (!c.isJoined)
+                            OutlinedButton(
+                              onPressed: () => ref.read(communityRepositoryProvider).joinChallenge(c.id),
+                              child: const Text('참가'),
+                            ),
+                        ],
+                      ),
+                      if (c.isJoined) ...[
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Text('내 진행률', style: theme.textTheme.bodySmall),
+                            const Spacer(),
+                            Text('${(progress * 100).toInt()}%',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.colorScheme.primary)),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: progress.clamp(0.0, 1.0),
+                            minHeight: 6,
+                            backgroundColor: theme.colorScheme.surfaceContainerHighest,
+                            valueColor: AlwaysStoppedAnimation(theme.colorScheme.primary),
+                          ),
+                        ),
+                      ],
+                      // 리더보드 요약
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Icon(Icons.leaderboard, size: 16, color: theme.colorScheme.outline),
+                          const SizedBox(width: 4),
+                          Text('리더보드',
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.outline)),
+                          const Spacer(),
+                          Icon(Icons.chevron_right, size: 16, color: theme.colorScheme.outline),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
             );
           },

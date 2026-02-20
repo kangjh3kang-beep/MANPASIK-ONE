@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/features/community/domain/community_repository.dart';
 import 'package:manpasik/shared/widgets/cached_image.dart';
 
 /// 커뮤니티 게시글 상세 화면
@@ -20,12 +21,51 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
   final _commentController = TextEditingController();
   bool _isLiked = false;
   bool _isBookmarked = false;
+  bool _isSubmitting = false;
   late Future<Map<String, dynamic>> _postFuture;
+  List<Comment> _comments = [];
+  bool _commentsLoading = true;
 
   @override
   void initState() {
     super.initState();
     _postFuture = ref.read(restClientProvider).getPost(widget.postId);
+    _loadComments();
+  }
+
+  Future<void> _loadComments() async {
+    try {
+      final comments = await ref.read(communityRepositoryProvider).getComments(widget.postId);
+      if (!mounted) return;
+      setState(() {
+        _comments = comments;
+        _commentsLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _commentsLoading = false);
+    }
+  }
+
+  Future<void> _submitComment() async {
+    final text = _commentController.text.trim();
+    if (text.isEmpty || _isSubmitting) return;
+    setState(() => _isSubmitting = true);
+    try {
+      final comment = await ref.read(communityRepositoryProvider).createComment(widget.postId, text);
+      if (!mounted) return;
+      setState(() {
+        _comments.add(comment);
+        _isSubmitting = false;
+      });
+      _commentController.clear();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isSubmitting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('댓글 등록에 실패했습니다.')),
+      );
+    }
   }
 
   @override
@@ -201,9 +241,14 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           const Divider(),
 
           // 댓글 섹션
-          Text('댓글', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+          Text('댓글 (${_comments.length})', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          if (commentCount == 0)
+          if (_commentsLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 24),
+              child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+            )
+          else if (_comments.isEmpty)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 24),
               child: Center(
@@ -211,16 +256,20 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
               ),
             )
           else
-            ...List.generate(
-              commentCount.clamp(0, 5),
-              (i) => _buildCommentTile(theme, i),
-            ),
+            ..._comments.map((c) => _buildCommentTile(theme, c)),
         ],
       ),
     );
   }
 
-  Widget _buildCommentTile(ThemeData theme, int index) {
+  Widget _buildCommentTile(ThemeData theme, Comment comment) {
+    final timeAgo = DateTime.now().difference(comment.createdAt);
+    final timeLabel = timeAgo.inMinutes < 60
+        ? '${timeAgo.inMinutes}분 전'
+        : timeAgo.inHours < 24
+            ? '${timeAgo.inHours}시간 전'
+            : '${timeAgo.inDays}일 전';
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
@@ -229,16 +278,25 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
           CircleAvatar(
             radius: 14,
             backgroundColor: theme.colorScheme.secondaryContainer,
-            child: Text('${index + 1}', style: const TextStyle(fontSize: 11)),
+            child: Text(
+              comment.authorName.isNotEmpty ? comment.authorName[0] : '?',
+              style: const TextStyle(fontSize: 11),
+            ),
           ),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('사용자${index + 1}', style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
+                Row(
+                  children: [
+                    Text(comment.authorName, style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(width: 8),
+                    Text(timeLabel, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant, fontSize: 11)),
+                  ],
+                ),
                 const SizedBox(height: 2),
-                Text('댓글 내용이 여기에 표시됩니다.', style: theme.textTheme.bodySmall),
+                Text(comment.content, style: theme.textTheme.bodySmall),
               ],
             ),
           ),
@@ -267,17 +325,15 @@ class _PostDetailScreenState extends ConsumerState<PostDetailScreen> {
                 ),
               ),
             ),
-            IconButton(
-              icon: const Icon(Icons.send, color: AppTheme.sanggamGold),
-              onPressed: () {
-                if (_commentController.text.isNotEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('댓글이 등록되었습니다.')),
-                  );
-                  _commentController.clear();
-                }
-              },
-            ),
+            _isSubmitting
+                ? const Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                  )
+                : IconButton(
+                    icon: const Icon(Icons.send, color: AppTheme.sanggamGold),
+                    onPressed: _submitComment,
+                  ),
           ],
         ),
       ),

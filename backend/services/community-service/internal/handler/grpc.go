@@ -267,6 +267,63 @@ func (h *CommunityHandler) ListChallenges(ctx context.Context, req *v1.ListChall
 }
 
 // ============================================================================
+// GetChallengeLeaderboard — 챌린지 리더보드 조회
+// ============================================================================
+
+func (h *CommunityHandler) GetChallengeLeaderboard(ctx context.Context, req *v1.GetChallengeLeaderboardRequest) (*v1.GetChallengeLeaderboardResponse, error) {
+	if req == nil || req.ChallengeId == "" {
+		return nil, status.Error(codes.InvalidArgument, "challenge_id는 필수입니다")
+	}
+
+	limit := req.Limit
+	if limit <= 0 {
+		limit = 20
+	}
+
+	entries, totalParticipants, myEntry, err := h.svc.GetChallengeLeaderboard(ctx, req.ChallengeId, limit, req.Offset)
+	if err != nil {
+		return nil, toGRPC(err)
+	}
+
+	protoEntries := make([]*v1.LeaderboardEntry, 0, len(entries))
+	for _, e := range entries {
+		protoEntries = append(protoEntries, leaderboardEntryToProto(e))
+	}
+
+	resp := &v1.GetChallengeLeaderboardResponse{
+		Entries:           protoEntries,
+		TotalParticipants: totalParticipants,
+	}
+	if myEntry != nil {
+		resp.MyEntry = leaderboardEntryToProto(myEntry)
+	}
+
+	return resp, nil
+}
+
+// ============================================================================
+// UpdateChallengeProgress — 챌린지 진행도 업데이트
+// ============================================================================
+
+func (h *CommunityHandler) UpdateChallengeProgress(ctx context.Context, req *v1.UpdateChallengeProgressRequest) (*v1.UpdateChallengeProgressResponse, error) {
+	if req == nil || req.ChallengeId == "" || req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "challenge_id와 user_id는 필수입니다")
+	}
+
+	newProgress, targetValue, newRank, err := h.svc.UpdateChallengeProgress(ctx, req.ChallengeId, req.UserId, req.Value)
+	if err != nil {
+		return nil, toGRPC(err)
+	}
+
+	return &v1.UpdateChallengeProgressResponse{
+		Success:     true,
+		NewProgress: newProgress,
+		TargetValue: targetValue,
+		NewRank:     newRank,
+	}, nil
+}
+
+// ============================================================================
 // 헬퍼 함수 — Proto ↔ Service 변환
 // ============================================================================
 
@@ -321,6 +378,22 @@ func challengeToProto(ch *service.Challenge) *v1.Challenge {
 		StartDate:        timestamppb.New(ch.StartDate),
 		EndDate:          timestamppb.New(ch.EndDate),
 		CreatedAt:        timestamppb.New(ch.CreatedAt),
+	}
+}
+
+// --- LeaderboardEntry 변환 ---
+
+func leaderboardEntryToProto(e *service.LeaderboardEntry) *v1.LeaderboardEntry {
+	return &v1.LeaderboardEntry{
+		Rank:          e.Rank,
+		UserId:        e.UserID,
+		DisplayName:   e.DisplayName,
+		AvatarUrl:     e.AvatarURL,
+		ProgressValue: e.ProgressValue,
+		TargetValue:   e.TargetValue,
+		ProgressPct:   e.ProgressPct,
+		StreakDays:     e.StreakDays,
+		LastUpdated:   timestamppb.New(e.LastUpdated),
 	}
 }
 

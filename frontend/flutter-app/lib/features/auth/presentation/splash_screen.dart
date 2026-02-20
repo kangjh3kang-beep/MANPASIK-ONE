@@ -6,6 +6,7 @@ import 'package:manpasik/shared/providers/auth_provider.dart';
 import 'package:manpasik/core/theme/app_theme.dart';
 import 'package:manpasik/shared/widgets/wave_ripple_painter.dart';
 import 'package:manpasik/shared/widgets/cosmic_background.dart';
+import 'package:lottie/lottie.dart';
 
 /// 스플래시 화면
 ///
@@ -141,13 +142,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         ),
                       ),
                       const SizedBox(height: 64),
-                      // 로딩 인디케이터
+                      // 로딩 인디케이터 (Lottie)
                       SizedBox(
-                        width: 32,
-                        height: 32,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.5,
-                          color: AppTheme.sanggamGold.withOpacity(0.6),
+                        width: 64,
+                        height: 64,
+                        child: Lottie.asset(
+                          'assets/lottie/logo_intro.json',
+                          repeat: true,
+                          errorBuilder: (_, __, ___) => CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: AppTheme.sanggamGold.withOpacity(0.6),
+                          ),
                         ),
                       ),
                     ],

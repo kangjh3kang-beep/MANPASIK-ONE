@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:manpasik/shared/widgets/glass_dock_navigation.dart';
+import 'package:manpasik/features/data_hub/presentation/widgets/floating_monitor_bubble.dart';
 import 'package:manpasik/shared/widgets/jagae_pattern.dart';
-import 'package:manpasik/shared/widgets/cosmic_background.dart';
+import 'package:manpasik/shared/widgets/royal_cloud_background.dart';
 import 'package:manpasik/shared/widgets/hanji_background.dart'; // Added Import
 
 import 'package:manpasik/features/auth/presentation/splash_screen.dart';
@@ -20,6 +21,7 @@ import 'package:manpasik/features/settings/presentation/settings_screen.dart';
 import 'package:manpasik/features/admin/presentation/admin_settings_screen.dart';
 import 'package:manpasik/features/chat/presentation/chat_screen.dart';
 import 'package:manpasik/features/data_hub/presentation/data_hub_screen.dart';
+import 'package:manpasik/features/data_hub/presentation/monitoring_dashboard_screen.dart'; // Added Import
 import 'package:manpasik/features/ai_coach/presentation/ai_coach_screen.dart';
 import 'package:manpasik/features/market/presentation/market_screen.dart';
 import 'package:manpasik/features/community/presentation/community_screen.dart';
@@ -34,6 +36,7 @@ import 'package:manpasik/features/settings/presentation/consent_management_scree
 import 'package:manpasik/features/settings/presentation/profile_edit_screen.dart';
 import 'package:manpasik/features/settings/presentation/security_screen.dart';
 import 'package:manpasik/features/settings/presentation/accessibility_screen.dart';
+import 'package:manpasik/features/settings/presentation/notification_settings_screen.dart';
 import 'package:manpasik/features/settings/presentation/notice_screen.dart';
 import 'package:manpasik/features/market/presentation/cartridge_detail_screen.dart';
 import 'package:manpasik/features/market/presentation/encyclopedia_screen.dart';
@@ -72,6 +75,9 @@ import 'package:manpasik/features/medical/presentation/consultation_result_scree
 import 'package:manpasik/features/market/presentation/order_detail_screen.dart';
 import 'package:manpasik/features/market/presentation/plan_comparison_screen.dart';
 import 'package:manpasik/features/settings/presentation/inquiry_create_screen.dart';
+import 'package:manpasik/features/settings/presentation/escalation_screen.dart';
+import 'package:manpasik/features/settings/presentation/data_export_screen.dart';
+import 'package:manpasik/features/market/presentation/subscription_cancel_screen.dart';
 import 'package:manpasik/core/theme/app_theme.dart';
 import 'package:manpasik/core/network/conflict_resolver_screen.dart';
 import 'package:manpasik/shared/widgets/network_indicator.dart';
@@ -154,6 +160,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/data',
             builder: (context, state) => const DataHubScreen(),
+            routes: [
+              GoRoute(
+                path: 'monitoring',
+                parentNavigatorKey: _rootNavigatorKey,
+                builder: (context, state) => const MonitoringDashboardScreen(),
+              ),
+            ],
           ),
           // 탭 3: 측정 (사이트맵: /measure)
           GoRoute(
@@ -312,6 +325,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const ConsentManagementScreen(),
       ),
       GoRoute(
+        path: '/settings/escalation',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const EscalationScreen(),
+      ),
+      GoRoute(
+        path: '/settings/data-export',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const DataExportScreen(),
+      ),
+      GoRoute(
+        path: '/market/subscription/cancel',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const SubscriptionCancelScreen(),
+      ),
+      GoRoute(
         path: '/settings/emergency',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const EmergencySettingsScreen(),
@@ -325,6 +353,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/settings/security',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const SecurityScreen(),
+      ),
+      GoRoute(
+        path: '/settings/notifications',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const NotificationSettingsScreen(),
       ),
       GoRoute(
         path: '/settings/accessibility',
@@ -582,20 +615,32 @@ class ScaffoldWithBottomNav extends StatelessWidget {
       extendBody: true, // Key for floating dock effect
       // 2. Global Premium Background (Stacked)
       // Switch between Cosmic (Dark) and Hanji (Light)
-      body: isDark 
-          ? CosmicBackground(
-              child: Column(
+      // 2. Global Premium Background (Stacked)
+      // Switch between Cosmic (Dark) and Hanji (Light)
+      body: isDark
+          ? RoyalCloudBackground(
+              child: Stack(
                 children: [
-                  const NetworkIndicator(),
-                  Expanded(child: child),
+                  Column(
+                    children: [
+                      const NetworkIndicator(),
+                      Expanded(child: child),
+                    ],
+                  ),
+                  const FloatingMonitorBubble(),
                 ],
               ),
             )
           : HanjiBackground(
-              child: Column(
+              child: Stack(
                 children: [
-                   const NetworkIndicator(),
-                   Expanded(child: child),
+                  Column(
+                    children: [
+                       const NetworkIndicator(),
+                       Expanded(child: child),
+                    ],
+                  ),
+                  const FloatingMonitorBubble(),
                 ],
               ),
             ),

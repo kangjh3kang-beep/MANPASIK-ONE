@@ -37,7 +37,7 @@ class MedicalRepositoryRest implements MedicalRepository {
 
   @override
   Future<void> cancelReservation(String reservationId) async {
-    // No direct cancel endpoint; placeholder
+    await _client.cancelReservation(reservationId);
   }
 
   @override
@@ -85,7 +85,73 @@ class MedicalRepositoryRest implements MedicalRepository {
     required double abnormalValue,
     required String biomarkerType,
   }) async {
-    // No direct emergency alert REST endpoint; placeholder
+    await _client.sendNotification(
+      userId: userId,
+      title: '긴급 건강 알림: $biomarkerType',
+      body: '$alertType - 측정값: $abnormalValue',
+      type: 'emergency',
+    );
+  }
+
+  @override
+  Future<List<DoctorInfo>> getRecommendedDoctors({int limit = 5}) async {
+    try {
+      final res = await _client.searchFacilities(type: 'doctor', limit: limit);
+      final doctors = res['facilities'] as List<dynamic>? ?? [];
+      return doctors.map((d) {
+        final m = d as Map<String, dynamic>;
+        return DoctorInfo(
+          doctorId: m['facility_id'] as String? ?? m['id'] as String? ?? '',
+          name: m['name'] as String? ?? '',
+          specialty: m['specialty'] as String? ?? m['type'] as String? ?? '',
+          rating: (m['rating'] as num?)?.toDouble() ?? 4.5,
+          reviewCount: m['review_count'] as int? ?? 0,
+          avatarUrl: m['avatar_url'] as String?,
+          isAvailable: m['is_available'] as bool? ?? true,
+          nextSlot: m['next_slot'] as String?,
+        );
+      }).toList();
+    } on DioException {
+      // 서버 미연결 시 시뮬레이션 데이터
+      return [
+        const DoctorInfo(doctorId: 'doc-1', name: '김민수', specialty: '내과', rating: 4.8, reviewCount: 234, isAvailable: true, nextSlot: '오늘 15:00'),
+        const DoctorInfo(doctorId: 'doc-2', name: '이서연', specialty: '피부과', rating: 4.9, reviewCount: 189, isAvailable: false, nextSlot: '내일 10:00'),
+        const DoctorInfo(doctorId: 'doc-3', name: '박준영', specialty: '정신건강', rating: 4.7, reviewCount: 156, isAvailable: true, nextSlot: '오늘 16:30'),
+        const DoctorInfo(doctorId: 'doc-4', name: '최수진', specialty: '내분비', rating: 4.6, reviewCount: 128, isAvailable: true, nextSlot: '오늘 17:00'),
+        const DoctorInfo(doctorId: 'doc-5', name: '정하늘', specialty: '가정의학', rating: 4.5, reviewCount: 97, isAvailable: false, nextSlot: '3/1 09:00'),
+      ];
+    }
+  }
+
+  @override
+  Future<List<TimeSlot>> getDoctorAvailability(String doctorId) async {
+    try {
+      final res = await _client.searchFacilities(type: 'doctor');
+      // 시뮬레이션: 오늘/내일 시간대
+      final now = DateTime.now();
+      return List.generate(6, (i) {
+        final start = DateTime(now.year, now.month, now.day, 9 + i * 2);
+        return TimeSlot(
+          startTime: start,
+          endTime: start.add(const Duration(hours: 1)),
+          isAvailable: i % 3 != 0,
+        );
+      });
+    } on DioException {
+      return [];
+    }
+  }
+
+  @override
+  Future<bool> sendPrescriptionToPharmacy(
+      String prescriptionId, String pharmacyId) async {
+    try {
+      await _client.selectPharmacy(prescriptionId, pharmacyId: pharmacyId);
+      await _client.sendToPharmacy(prescriptionId);
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   TelemedicineReservation _mapReservation(Map<String, dynamic> m) {

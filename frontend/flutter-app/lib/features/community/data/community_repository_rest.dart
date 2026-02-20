@@ -59,7 +59,7 @@ class CommunityRepositoryRest implements CommunityRepository {
 
   @override
   Future<void> deletePost(String postId) async {
-    // No delete endpoint in REST client yet
+    await _client.deletePost(postId);
   }
 
   @override
@@ -78,24 +78,77 @@ class CommunityRepositoryRest implements CommunityRepository {
 
   @override
   Future<List<Comment>> getComments(String postId) async {
-    // No comments endpoint in REST client yet
-    return [];
+    try {
+      final res = await _client.listComments(postId);
+      final comments = res['comments'] as List<dynamic>? ?? [];
+      return comments.map((c) {
+        final m = c as Map<String, dynamic>;
+        return Comment(
+          id: m['comment_id'] as String? ?? m['id'] as String? ?? '',
+          postId: postId, // Add postId
+          authorId: m['author_id'] as String? ?? '',
+          authorName: m['author_name'] as String? ?? '',
+          content: m['content'] as String? ?? '',
+          createdAt: m['created_at'] != null
+              ? DateTime.tryParse(m['created_at'] as String) ?? DateTime.now()
+              : DateTime.now(),
+        );
+      }).toList();
+    } on DioException {
+      return [];
+    }
   }
 
   @override
   Future<Comment> createComment(String postId, String content) async {
-    throw UnimplementedError('Comment creation not available via REST yet');
+    final res = await _client.createComment(
+      postId: postId,
+      authorId: userId,
+      content: content,
+    );
+    return Comment(
+      id: res['comment_id'] as String? ?? res['id'] as String? ?? '',
+      postId: postId, // Add postId
+      authorId: userId,
+      authorName: res['author_name'] as String? ?? '',
+      content: content,
+      createdAt: DateTime.now(),
+    );
   }
 
   @override
   Future<List<HealthChallenge>> getChallenges() async {
-    // No challenges endpoint in REST client yet
-    return [];
+    try {
+      final res = await _client.listChallenges();
+      final challenges = res['challenges'] as List<dynamic>? ?? [];
+      return challenges.map((c) {
+        final m = c as Map<String, dynamic>;
+        return HealthChallenge(
+          id: m['challenge_id'] as String? ?? m['id'] as String? ?? '',
+          title: m['title'] as String? ?? '',
+          description: m['description'] as String? ?? '',
+          startDate: m['start_date'] != null
+              ? DateTime.tryParse(m['start_date'] as String) ?? DateTime.now()
+              : DateTime.now(),
+          endDate: m['end_date'] != null
+              ? DateTime.tryParse(m['end_date'] as String) ??
+                  DateTime.now().add(const Duration(days: 30))
+              : DateTime.now().add(const Duration(days: 30)),
+          participantCount: m['participant_count'] as int? ?? 0,
+          isJoined: m['is_joined'] as bool? ?? false,
+        );
+      }).toList();
+    } on DioException {
+      return [];
+    }
   }
 
   @override
   Future<void> joinChallenge(String challengeId) async {
-    // No challenge join endpoint yet
+    await _client.joinChallenge(
+      challengeId: challengeId,
+      userId: userId,
+    );
   }
 
   CommunityPost _mapPost(Map<String, dynamic> m) {

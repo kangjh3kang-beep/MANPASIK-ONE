@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:manpasik/core/providers/grpc_provider.dart';
+import 'package:manpasik/core/services/webrtc_service.dart';
 import 'package:manpasik/core/theme/app_theme.dart';
 import 'package:manpasik/shared/providers/auth_provider.dart';
+import 'package:manpasik/features/medical/presentation/widgets/vital_signs_hud.dart';
 
 /// WebRTC 화상 통화 화면
 ///
@@ -27,11 +29,13 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
   bool _isMuted = false;
   bool _isVideoOff = false;
   bool _isSpeakerOn = true;
-  bool _isWebRtcActive = false;
+  bool _isHudExpanded = false;
+  bool _showHud = true;
   Duration _callDuration = Duration.zero;
   Timer? _timer;
   String _remoteName = '의사';
   String? _roomToken;
+  WebRtcService? _webRtcService;
 
   @override
   void initState() {
@@ -78,40 +82,30 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
   }
 
   /// WebRTC P2P 연결 초기화
-  ///
-  /// flutter_webrtc 패키지 설치 후 아래 주석 해제:
-  /// RTCPeerConnection 생성 → offer/answer 교환 → ICE candidate 설정
   Future<void> _initWebRtc() async {
-    // if (!AppConfig.enableWebRtc) return;
-    //
-    // final config = {
-    //   'iceServers': [
-    //     {'urls': 'stun:stun.l.google.com:19302'},
-    //     {'urls': 'turn:turn.manpasik.com:3478', 'username': 'mpk', 'credential': _roomToken},
-    //   ],
-    // };
-    //
-    // _peerConnection = await createPeerConnection(config);
-    // _localStream = await navigator.mediaDevices.getUserMedia({
-    //   'audio': true,
-    //   'video': {'facingMode': 'user', 'width': 640, 'height': 480},
-    // });
-    // _localStream!.getTracks().forEach((track) => _peerConnection!.addTrack(track, _localStream!));
-    //
-    // _peerConnection!.onTrack = (event) {
-    //   if (event.streams.isNotEmpty) {
-    //     setState(() => _remoteStream = event.streams[0]);
-    //   }
-    // };
-    //
-    // _isWebRtcActive = true;
+    final client = ref.read(restClientProvider);
+    final userId = ref.read(authProvider).userId ?? '';
+    _webRtcService = WebRtcService.create(restClient: client);
+
+    await _webRtcService!.initialize(
+      roomId: widget.sessionId,
+      userId: userId,
+      token: _roomToken ?? '',
+    );
+
+    await _webRtcService!.startLocalMedia();
+
+    _webRtcService!.onStateChanged.listen((state) {
+      if (!mounted) return;
+      if (state == WebRtcConnectionState.failed) {
+        setState(() => _isConnected = false);
+      }
+    });
   }
 
   /// WebRTC 자원 해제
   Future<void> _disposeWebRtc() async {
-    // _localStream?.getTracks().forEach((track) => track.stop());
-    // _localStream?.dispose();
-    // _peerConnection?.close();
+    await _webRtcService?.dispose();
   }
 
   void _startTimer() {
@@ -131,6 +125,27 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
   }
 
   Future<void> _endCall() async {
+    // 종료 확인 다이얼로그
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('통화 종료'),
+        content: const Text('화상 상담을 종료하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('계속 통화'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('종료'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
     _timer?.cancel();
     try {
       final client = ref.read(restClientProvider);
@@ -141,6 +156,9 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
       );
     } catch (_) {}
     if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('상담이 종료되었습니다'), duration: Duration(seconds: 2)),
+      );
       context.pushReplacement('/medical/consultation/${widget.sessionId}/result');
     }
   }
@@ -257,6 +275,18 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
               ),
             ),
 
+            // 생체 신호 HUD 오버레이
+            if (_isConnected && _showHud)
+              Positioned(
+                bottom: 110,
+                left: 0,
+                right: 0,
+                child: VitalSignsHud(
+                  isExpanded: _isHudExpanded,
+                  onToggle: () => setState(() => _isHudExpanded = !_isHudExpanded),
+                ),
+              ),
+
             // 하단 컨트롤 바
             Positioned(
               bottom: 24,
@@ -272,13 +302,19 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
                         icon: _isMuted ? Icons.mic_off : Icons.mic,
                         label: _isMuted ? '음소거 해제' : '음소거',
                         isActive: _isMuted,
-                        onTap: () => setState(() => _isMuted = !_isMuted),
+                        onTap: () {
+                          setState(() => _isMuted = !_isMuted);
+                          _webRtcService?.toggleMute(_isMuted);
+                        },
                       ),
                       _buildControlButton(
                         icon: _isVideoOff ? Icons.videocam_off : Icons.videocam,
                         label: _isVideoOff ? '카메라 켜기' : '카메라 끄기',
                         isActive: _isVideoOff,
-                        onTap: () => setState(() => _isVideoOff = !_isVideoOff),
+                        onTap: () {
+                          setState(() => _isVideoOff = !_isVideoOff);
+                          _webRtcService?.toggleVideo(_isVideoOff);
+                        },
                       ),
                       // 통화 종료
                       GestureDetector(
@@ -304,6 +340,15 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
                         label: '채팅',
                         isActive: false,
                         onTap: () => _showChatSheet(context),
+                      ),
+                      _buildControlButton(
+                        icon: _showHud ? Icons.monitor_heart : Icons.monitor_heart_outlined,
+                        label: _showHud ? '바이탈' : '바이탈 끔',
+                        isActive: _showHud,
+                        onTap: () => setState(() {
+                          _showHud = !_showHud;
+                          if (!_showHud) _isHudExpanded = false;
+                        }),
                       ),
                     ],
                   ),

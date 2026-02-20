@@ -66,4 +66,33 @@ class AuthRepositoryRest implements AuthRepository {
   Future<bool> isAuthenticated() async {
     return false;
   }
+
+  @override
+  Future<AuthResult> socialLogin(String provider, String token) async {
+    try {
+      final res = await _client.socialLogin(
+        provider: provider,
+        idToken: token,
+      );
+      final accessToken = res['access_token'] as String? ?? '';
+      final refreshToken = res['refresh_token'] as String? ?? '';
+      final userId = res['user_id'] as String? ?? '';
+
+      if (accessToken.isNotEmpty) {
+        _client.setAuthToken(accessToken);
+        return AuthResult.success(
+          userId: userId.isNotEmpty ? userId : 'unknown',
+          email: res['email'] as String? ?? '',
+          displayName: res['display_name'] as String?,
+          accessToken: accessToken,
+          refreshToken: refreshToken,
+        );
+      }
+      return AuthResult.failure(res['error'] as String? ?? '소셜 로그인 실패');
+    } on DioException catch (e) {
+      return AuthResult.failure(e.message ?? '네트워크 오류');
+    } catch (e) {
+      return AuthResult.failure(e.toString());
+    }
+  }
 }

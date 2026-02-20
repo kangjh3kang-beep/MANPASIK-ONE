@@ -24,7 +24,7 @@ class _HoloGlobeState extends State<HoloGlobe> with TickerProviderStateMixin {
   late AnimationController _scanController;
   
   final List<_Point3D> _points = [];
-  final int _pointCount = 600; // Increased density
+  final int _pointCount = 1500; // Increased density for volumetric feel
 
   @override
   void initState() {
@@ -76,21 +76,23 @@ class _HoloGlobeState extends State<HoloGlobe> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: Listenable.merge([_rotationController, _pulseController, _scanController]),
-      builder: (context, child) {
-        return CustomPaint(
-          size: Size(widget.size, widget.size),
-          painter: _GlobePainter(
-            points: _points,
-            rotation: _rotationController.value * 2 * math.pi,
-            pulseValue: _pulseController.value,
-            scanValue: _scanController.value,
-            color: widget.color,
-            accentColor: widget.accentColor ?? widget.color,
-          ),
-        );
-      },
+    return ExcludeSemantics(
+      child: AnimatedBuilder(
+        animation: Listenable.merge([_rotationController, _pulseController, _scanController]),
+        builder: (context, child) {
+          return CustomPaint(
+            size: Size(widget.size, widget.size),
+            painter: _GlobePainter(
+              points: _points,
+              rotation: _rotationController.value * 2 * math.pi,
+              pulseValue: _pulseController.value,
+              scanValue: _scanController.value,
+              color: widget.color,
+              accentColor: widget.accentColor ?? widget.color,
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -122,34 +124,43 @@ class _GlobePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width * 0.4;
 
-    // 1. Core Glow (The "Manpasik Pearl")
-    final glowPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          accentColor.withOpacity(0.4),
-          color.withOpacity(0.0),
-        ],
-        stops: const [0.0, 0.7],
-      ).createShader(Rect.fromCircle(center: center, radius: radius * 1.2));
+    // 1. Pearl Core (Yeouiju) - Solid glowing center
+    final coreGradient = RadialGradient(
+      colors: [
+        Colors.white.withOpacity(0.6),      // Bright core
+        accentColor.withOpacity(0.4),       // Inner glow
+        color.withOpacity(0.05),            // Outer aura
+        Colors.transparent,
+      ],
+      stops: const [0.0, 0.2, 0.5, 1.0],
+    ).createShader(Rect.fromCircle(center: center, radius: radius * 0.6));
     
-    canvas.drawCircle(center, radius * 1.2, glowPaint);
+    // Draw Core
+    canvas.drawCircle(center, radius * 0.6, Paint()..shader = coreGradient);
 
-    // 2. Wireframe Lat/Long (Background Structure)
+    // 2. Wireframe Lat/Long (Subtle Background Structure)
     final wireframePaint = Paint()
-      ..color = color.withOpacity(0.1)
+      ..color = color.withOpacity(0.05)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
+      ..strokeWidth = 0.5;
 
     _drawWireframe(canvas, center, radius, rotation, wireframePaint);
 
-    // 3. Particles (High Density)
-    final pointPaint = Paint()..color = color;
+    // 3. Particles (Volumetric Cloud)
+    final pointPaint = Paint()
+      ..color = color
+      ..strokeCap = StrokeCap.round
+      ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 1.0); // Soften edges
     
+    final glowPaint = Paint()
+      ..color = accentColor.withOpacity(0.3)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.0); // Outer glow
+
     for (var point in points) {
       // Rotate Point
       double rotatedX = point.x * math.cos(rotation) - point.z * math.sin(rotation);
       double rotatedZ = point.x * math.sin(rotation) + point.z * math.cos(rotation);
-      double y = point.y; // Keep Y axis vertical
+      double y = point.y;
 
       // Perspective Projection
       double scale = 300 / (300 - rotatedZ);
@@ -157,52 +168,82 @@ class _GlobePainter extends CustomPainter {
       double y2d = y * scale + center.dy;
 
       // Depth alpha
-      double alpha = ((rotatedZ + radius) / (2 * radius)).clamp(0.1, 1.0);
+      double alpha = ((rotatedZ + radius) / (2 * radius)).clamp(0.0, 1.0);
       
-      // Draw Particle
-      pointPaint.color = color.withOpacity(alpha * 0.8);
-      canvas.drawCircle(Offset(x2d, y2d), 1.5 * scale, pointPaint);
+      // Interaction with Scan Line
+      // Map scanValue (0..1) to (-radius..+radius)
+      double scanY = (scanValue * 2 - 1) * radius;
+      double distToScan = (y - scanY).abs();
+      
+      bool isScanned = distToScan < 5.0; // Particles near scan line
+
+      if (isScanned) {
+         pointPaint.color = Colors.white.withOpacity(alpha); // White hot scan
+         pointPaint.strokeWidth = 2.5 * scale;
+         pointPaint.maskFilter = null; // Sharp for scanned points
+         
+         // Extra glow for scanned points
+         canvas.drawCircle(Offset(x2d, y2d), 4.0 * scale, glowPaint);
+      } else {
+         pointPaint.color = color.withOpacity(alpha * 0.7); // Slightly more opaque
+         pointPaint.strokeWidth = 1.5 * scale; // Slightly larger
+         pointPaint.maskFilter = const MaskFilter.blur(BlurStyle.solid, 1.0);
+      }
+      
+      canvas.drawCircle(Offset(x2d, y2d), (isScanned ? 2.0 : 1.2) * scale, pointPaint);
     }
 
-    // 4. Energy Pulse (Expanding Ring)
-    final pulseRadius = radius * (0.5 + pulseValue * 1.0); // Expand from 50% to 150%
-    if (pulseRadius < size.width / 2) {
-       final pulsePaint = Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0
-        ..color = accentColor.withOpacity((1.0 - pulseValue) * 0.5) // Fade out
-        ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 4);
+    // 4. Shockwave (Multiple Expanding Rings)
+    for(int i=0; i<3; i++) {
+        double waveProgress = (pulseValue + i * 0.33) % 1.0;
+        double waveRadius = radius * (0.4 + waveProgress * 0.8);
         
-       canvas.drawCircle(center, pulseRadius, pulsePaint);
+        if (waveRadius < size.width * 0.55) {
+             final waveAlpha = (1.0 - waveProgress).clamp(0.0, 1.0);
+             final pulsePaint = Paint()
+              ..style = PaintingStyle.stroke
+              ..strokeWidth = 1.5 * (1.0 - waveProgress)
+              ..color = accentColor.withOpacity(waveAlpha * 0.4)
+              ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 2);
+              
+             // Draw elliptical ring to match perspective
+             canvas.drawOval(
+               Rect.fromCenter(center: center, width: waveRadius * 2, height: waveRadius * 2), 
+               pulsePaint
+             );
+        }
     }
 
-    // 5. Data Scan (Vertical Plane)
-    // Map scanValue (0..1) to (-radius..+radius)
-    // Actually scanValue is 0..1 from controller. Let's make it go up and down.
-    double scanY = center.dy + (scanValue * 2 - 1) * radius; // -R to +R
-    
-    final scanPaint = Paint()
-      ..color = accentColor.withOpacity(0.6)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    final path = Path();
-    // Ellipse at height scanY? No, just a line or ring section.
-    // Let's draw a horizontal scanning ring (ellipse perspective)
-    double scanWidth = math.sqrt(math.max(0, radius * radius - math.pow((scanY - center.dy), 2))) * 2;
-    if (scanWidth > 0) {
-        canvas.drawOval(
-          Rect.fromCenter(center: Offset(center.dx, scanY), width: scanWidth, height: scanWidth * 0.3), 
-          scanPaint
+    // 5. Data Scan Laser (Horizontal Plane)
+    double scanPlanY = center.dy + (scanValue * 2 - 1) * radius;
+    // Calculate width at this Y
+    double dY = (scanPlanY - center.dy).abs();
+    if (dY < radius) {
+        double scanWidth = math.sqrt(radius * radius - dY * dY) * 2;
+        
+        // Laser Line
+        canvas.drawLine(
+          Offset(center.dx - scanWidth/2, scanPlanY),
+          Offset(center.dx + scanWidth/2, scanPlanY),
+          Paint()
+            ..color = Colors.white.withOpacity(0.8)
+            ..strokeWidth = 1.0
+            ..shader = LinearGradient(colors: [
+               Colors.transparent, accentColor, Colors.white, accentColor, Colors.transparent
+            ]).createShader(Rect.fromLTWH(center.dx - scanWidth/2, scanPlanY, scanWidth, 2))
         );
-        // Scan Glow
+        
+        // Laser Glow
         canvas.drawOval(
-          Rect.fromCenter(center: Offset(center.dx, scanY), width: scanWidth, height: scanWidth * 0.3), 
-          Paint()..color = accentColor.withOpacity(0.2)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10)..style = PaintingStyle.stroke
+           Rect.fromCenter(center: Offset(center.dx, scanPlanY), width: scanWidth, height: scanWidth * 0.3),
+           Paint()
+            ..color = accentColor.withOpacity(0.1)
+            ..style = PaintingStyle.fill
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15)
         );
     }
 
-    // 6. Complex Waves (Interference Pattern)
+    // 6. Complex Waves
     _drawMultiWaves(canvas, center, size.width * 0.9, rotation);
   }
 

@@ -50,6 +50,14 @@ final notificationsListProvider = FutureProvider<List<NotificationItem>>((ref) a
   }
 });
 
+/// 탭별 필터 타입
+const _tabFilters = <String?>[
+  null, // 전체
+  'health_alert,measurement', // 건강
+  'order,community', // 시스템
+  'family', // 가족
+];
+
 /// 알림 센터 화면
 class NotificationScreen extends ConsumerWidget {
   const NotificationScreen({super.key});
@@ -59,45 +67,72 @@ class NotificationScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final notiAsync = ref.watch(notificationsListProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('알림'),
-        centerTitle: true,
-      ),
-      body: notiAsync.when(
-        data: (notifications) {
-          if (notifications.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.notifications_off_outlined, size: 48, color: theme.colorScheme.outline),
-                  const SizedBox(height: 12),
-                  Text(
-                    '알림이 없습니다',
-                    style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+    return DefaultTabController(
+      length: 4,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('알림'),
+          centerTitle: true,
+          bottom: TabBar(
+            isScrollable: false,
+            labelColor: theme.colorScheme.primary,
+            unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
+            indicatorColor: theme.colorScheme.primary,
+            tabs: const [
+              Tab(text: '전체'),
+              Tab(text: '건강'),
+              Tab(text: '시스템'),
+              Tab(text: '가족'),
+            ],
+          ),
+        ),
+        body: notiAsync.when(
+          data: (notifications) {
+            return TabBarView(
+              children: List.generate(4, (tabIndex) {
+                final filter = _tabFilters[tabIndex];
+                final filtered = filter == null
+                    ? notifications
+                    : notifications.where((n) {
+                        final types = filter.split(',');
+                        return types.contains(n.type);
+                      }).toList();
+
+                if (filtered.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.notifications_off_outlined, size: 48, color: theme.colorScheme.outline),
+                        const SizedBox(height: 12),
+                        Text(
+                          '알림이 없습니다',
+                          style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    ref.invalidate(notificationsListProvider);
+                    ref.invalidate(unreadNotificationCountProvider);
+                  },
+                  child: ListView.builder(
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      return _NotificationTile(noti: filtered[index]);
+                    },
                   ),
-                ],
-              ),
+                );
+              }),
             );
-          }
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(notificationsListProvider);
-              ref.invalidate(unreadNotificationCountProvider);
-            },
-            child: ListView.builder(
-              itemCount: notifications.length,
-              itemBuilder: (context, index) {
-                final noti = notifications[index];
-                return _NotificationTile(noti: noti);
-              },
-            ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => Center(
-          child: Text('알림을 불러올 수 없습니다', style: theme.textTheme.bodyLarge),
+          },
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (_, __) => Center(
+            child: Text('알림을 불러올 수 없습니다', style: theme.textTheme.bodyLarge),
+          ),
         ),
       ),
     );

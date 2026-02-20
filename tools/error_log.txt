@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "\\wsl.localhost\Ubuntu\home\kangjh3kang\Manpasik\tools\generate_organic_body_v14.py", line 225, in <module>
+    create_organic_body()
+    ~~~~~~~~~~~~~~~~~~~^^
+  File "\\wsl.localhost\Ubuntu\home\kangjh3kang\Manpasik\tools\generate_organic_body_v14.py", line 218, in create_organic_body
+    json.dump(data, f)
+    ~~~~~~~~~^^^^^^^^^
+  File "C:\Users\kangj\AppData\Local\Python\pythoncore-3.14-64\Lib\json\__init__.py", line 181, in dump
+    for chunk in iterable:
+                 ^^^^^^^^
+  File "C:\Users\kangj\AppData\Local\Python\pythoncore-3.14-64\Lib\json\encoder.py", line 444, in _iterencode
+    yield from _iterencode_dict(o, _current_indent_level)
+  File "C:\Users\kangj\AppData\Local\Python\pythoncore-3.14-64\Lib\json\encoder.py", line 413, in _iterencode_dict
+    yield from chunks
+  File "C:\Users\kangj\AppData\Local\Python\pythoncore-3.14-64\Lib\json\encoder.py", line 326, in _iterencode_list
+    yield from chunks
+  File "C:\Users\kangj\AppData\Local\Python\pythoncore-3.14-64\Lib\json\encoder.py", line 451, in _iterencode
+    newobj = _default(o)
+  File "C:\Users\kangj\AppData\Local\Python\pythoncore-3.14-64\Lib\json\encoder.py", line 182, in default
+    raise TypeError(f'Object of type {o.__class__.__name__} '
+                    f'is not JSON serializable')
+TypeError: Object of type int64 is not JSON serializable
+when serializing list item 0
+when serializing dict item 'indices'

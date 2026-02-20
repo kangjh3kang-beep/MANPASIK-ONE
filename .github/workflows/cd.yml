@@ -12,9 +12,9 @@ on:
         default: 'dev'
         type: choice
         options:
-          - dev
-          - staging
-          - production
+          - 'dev'
+          - 'staging'
+          - 'production'
 
 env:
   REGISTRY: ghcr.io

@@ -45,6 +45,17 @@ class FakeAuthRepository implements AuthRepository {
 
   @override
   Future<bool> isAuthenticated() async => false;
+
+  @override
+  Future<AuthResult> socialLogin(String provider, String token) async {
+    return AuthResult.success(
+      userId: 'test-social-user',
+      email: 'social@$provider.com',
+      displayName: '$provider 사용자',
+      accessToken: 'fake-social-token',
+      refreshToken: 'fake-social-refresh',
+    );
+  }
 }
 
 /// 테스트용 Fake DeviceRepository
@@ -61,6 +72,11 @@ class FakeDeviceRepository implements DeviceRepository {
         batteryPercent: 85,
       ),
     ];
+  }
+
+  @override
+  Future<List<ConnectedDevice>> getConnectedDevices() async {
+    return [];
   }
 }
 

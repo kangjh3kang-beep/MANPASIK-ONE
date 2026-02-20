@@ -84,6 +84,24 @@ func (h *DeviceHandler) UpdateDeviceStatus(ctx context.Context, req *v1.UpdateDe
 	}, nil
 }
 
+// RequestOtaUpdate는 OTA 펌웨어 업데이트 요청 RPC입니다.
+func (h *DeviceHandler) RequestOtaUpdate(ctx context.Context, req *v1.OtaRequest) (*v1.OtaResponse, error) {
+	if req == nil || req.DeviceId == "" || req.TargetVersion == "" {
+		return nil, status.Error(codes.InvalidArgument, "device_id와 target_version은 필수입니다")
+	}
+
+	updateID, downloadURL, checksum, err := h.svc.RequestOtaUpdate(ctx, req.DeviceId, req.TargetVersion)
+	if err != nil {
+		return nil, toGRPC(err)
+	}
+
+	return &v1.OtaResponse{
+		UpdateId:    updateID,
+		DownloadUrl: downloadURL,
+		Checksum:    checksum,
+	}, nil
+}
+
 // toGRPC는 AppError를 gRPC status로 변환합니다.
 func toGRPC(err error) error {
 	if err == nil {

@@ -9,6 +9,7 @@ import 'package:manpasik/core/theme/app_theme.dart';
 import 'package:manpasik/shared/widgets/primary_button.dart';
 import 'package:manpasik/shared/widgets/wave_ripple_painter.dart';
 import 'package:manpasik/shared/widgets/breathing_overlay.dart';
+import 'package:lottie/lottie.dart';
 
 /// 측정 상태
 enum MeasurementStatus { idle, connecting, measuring, complete, error }
@@ -160,6 +161,7 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
     final isMeasuring = _status == MeasurementStatus.measuring;
 
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -187,20 +189,28 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
                 if (_status == MeasurementStatus.idle)
                   Column(
                     children: [
-                      PrimaryButton(
-                        text: '측정 시작',
-                        icon: Icons.play_arrow_rounded,
-                        onPressed: _startMeasurement,
+                      Semantics(
+                        button: true,
+                        label: '건강 측정 시작 버튼',
+                        child: PrimaryButton(
+                          text: '측정 시작',
+                          icon: Icons.play_arrow_rounded,
+                          onPressed: _startMeasurement,
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      OutlinedButton.icon(
-                        onPressed: _readCartridge,
-                        icon: const Icon(Icons.nfc),
-                        label: Text(_cartridgeId != null ? '카트리지 읽음' : 'NFC 카트리지 읽기'),
+                      Semantics(
+                        button: true,
+                        label: 'NFC 카트리지 읽기 버튼',
+                        child: OutlinedButton.icon(
+                          onPressed: _readCartridge,
+                          icon: const Icon(Icons.nfc),
+                          label: Text(_cartridgeId != null ? '카트리지 읽음' : 'NFC 카트리지 읽기'),
                         style: OutlinedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 48),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
+                      ),
                       ),
                     ],
                   )
@@ -244,17 +254,19 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
+            SizedBox(
               width: 160,
               height: 160,
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                Icons.sensors_rounded,
-                size: 72,
-                color: theme.colorScheme.onPrimaryContainer,
+              child: Lottie.asset(
+                'assets/lottie/blood_drop.json',
+                repeat: true,
+                errorBuilder: (_, __, ___) => Container(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.sensors_rounded, size: 72, color: theme.colorScheme.onPrimaryContainer),
+                ),
               ),
             ),
             const SizedBox(height: 24),

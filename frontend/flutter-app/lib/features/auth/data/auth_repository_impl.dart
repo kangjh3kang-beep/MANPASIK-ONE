@@ -77,4 +77,10 @@ class AuthRepositoryImpl implements AuthRepository {
     // 토큰 유효성은 ValidateToken RPC로 검사 가능. 현재는 로컬 상태만 확인
     return false;
   }
+
+  @override
+  Future<AuthResult> socialLogin(String provider, String token) async {
+    // gRPC proto에 SocialLogin RPC 미정의 → REST 전환 권장
+    return AuthResult.failure('gRPC 소셜 로그인 미지원. REST를 사용해주세요.');
+  }
 }

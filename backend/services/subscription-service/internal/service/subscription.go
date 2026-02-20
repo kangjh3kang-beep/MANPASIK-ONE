@@ -583,6 +583,55 @@ func (s *SubscriptionService) CheckCartridgeAccess(ctx context.Context, userID s
 	}
 }
 
+// CartridgeAccessEntry는 접근 가능 카트리지 항목입니다.
+type CartridgeAccessEntry struct {
+	CategoryCode     int32
+	TypeIndex        int32
+	Name             string
+	AccessLevel      CartridgeAccessLevel
+	RemainingDaily   int32
+	RemainingMonthly int32
+}
+
+// ListAccessibleCartridges는 사용자가 접근 가능한 카트리지 목록을 반환합니다.
+func (s *SubscriptionService) ListAccessibleCartridges(ctx context.Context, userID string) []*CartridgeAccessEntry {
+	sub, err := s.subRepo.GetByUserID(ctx, userID)
+	tier := TierFree
+	if err == nil && sub != nil {
+		tier = sub.Tier
+	}
+
+	// 카트리지 타입 목록 (주요 14종 + 환경 4종 + 식품 4종)
+	cartridgeTypes := []struct {
+		Cat  int32
+		Type int32
+		Name string
+	}{
+		{1, 1, "혈당 (Glucose)"}, {1, 2, "지질 패널 (Lipid Panel)"}, {1, 3, "당화혈색소 (HbA1c)"},
+		{1, 4, "요산 (Uric Acid)"}, {1, 5, "크레아티닌 (Creatinine)"}, {1, 6, "빌리루빈 (Bilirubin)"},
+		{1, 7, "ALT"}, {1, 8, "AST"}, {1, 9, "TSH"}, {1, 10, "CRP"},
+		{1, 11, "비타민 D"}, {1, 12, "철분 (Ferritin)"}, {1, 13, "전해질"}, {1, 14, "BNP"},
+		{2, 1, "미세먼지 (PM2.5)"}, {2, 2, "VOC"}, {2, 3, "이산화탄소 (CO2)"}, {2, 4, "라돈"},
+		{3, 1, "잔류농약"}, {3, 2, "중금속"}, {3, 3, "세균"}, {3, 4, "항생제"},
+	}
+
+	entries := make([]*CartridgeAccessEntry, 0, len(cartridgeTypes))
+	for _, ct := range cartridgeTypes {
+		result := s.CheckCartridgeAccess(ctx, userID, ct.Cat, ct.Type)
+		_ = tier // already used via CheckCartridgeAccess
+		entries = append(entries, &CartridgeAccessEntry{
+			CategoryCode:     ct.Cat,
+			TypeIndex:        ct.Type,
+			Name:             ct.Name,
+			AccessLevel:      result.AccessLevel,
+			RemainingDaily:   result.RemainingDaily,
+			RemainingMonthly: result.RemainingMonthly,
+		})
+	}
+
+	return entries
+}
+
 func (s *SubscriptionService) buildAccessResult(policy *cartridgeAccessPolicy, currentTier SubscriptionTier) *CartridgeAccessResult {
 	result := &CartridgeAccessResult{
 		AccessLevel: policy.AccessLevel,

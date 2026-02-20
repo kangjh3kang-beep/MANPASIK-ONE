@@ -7,6 +7,9 @@ abstract class AuthRepository {
   Future<void> logout();
   Future<bool> refreshToken();
   Future<bool> isAuthenticated();
+
+  /// 소셜 로그인 (Google/Kakao/Apple)
+  Future<AuthResult> socialLogin(String provider, String token);
 }
 
 /// 인증 결과

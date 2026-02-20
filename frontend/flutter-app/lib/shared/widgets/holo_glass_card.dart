@@ -21,7 +21,10 @@ class HoloGlassCard extends StatelessWidget {
     this.margin = EdgeInsets.zero,
     this.onTap,
     this.isActive = false,
+    this.glowColor,
   });
+
+  final Color? glowColor;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +43,8 @@ class HoloGlassCard extends StatelessWidget {
             boxShadow: [
               if (isActive) ...[
                 BoxShadow(
-                  color: isDark ? AppTheme.waveCyan.withOpacity(0.3) : AppTheme.celadonTeal.withOpacity(0.2),
+                  color: glowColor?.withOpacity(0.4) ?? 
+                         (isDark ? AppTheme.waveCyan.withOpacity(0.3) : AppTheme.celadonTeal.withOpacity(0.2)),
                   blurRadius: 20,
                   spreadRadius: -5,
                 ),

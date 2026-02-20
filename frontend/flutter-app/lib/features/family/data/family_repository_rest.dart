@@ -14,26 +14,11 @@ class FamilyRepositoryRest implements FamilyRepository {
 
   @override
   Future<FamilyGroup> createGroup(String name) async {
-    // Placeholder: family REST endpoints not yet in gateway
-    return FamilyGroup(
-      id: 'group-${DateTime.now().millisecondsSinceEpoch}',
+    final res = await _client.createFamilyGroup(
+      userId: userId,
       name: name,
-      ownerId: userId,
-      members: [
-        FamilyMember(
-          userId: userId,
-          displayName: '나',
-          role: FamilyRole.owner,
-          permission: const SharingPermission(
-            canViewResults: true,
-            canViewTrends: true,
-            canReceiveAlerts: true,
-            canSendReminders: true,
-          ),
-        ),
-      ],
-      createdAt: DateTime.now(),
     );
+    return _mapGroup(res);
   }
 
   @override
@@ -49,7 +34,7 @@ class FamilyRepositoryRest implements FamilyRepository {
 
   @override
   Future<FamilyGroup> getGroup(String groupId) async {
-    final res = await _client.getFamilyGroupReport(groupId);
+    final res = await _client.getFamilyGroup(groupId);
     return _mapGroup(res);
   }
 
@@ -94,36 +79,57 @@ class FamilyRepositoryRest implements FamilyRepository {
 
   @override
   Future<FamilyInvitation> createInvitation(String groupId) async {
-    return FamilyInvitation(
-      id: 'inv-${DateTime.now().millisecondsSinceEpoch}',
+    final res = await _client.inviteFamilyMember(
       groupId: groupId,
-      inviterName: '나',
-      inviteCode: 'MPK-${DateTime.now().millisecondsSinceEpoch.toRadixString(36).toUpperCase()}',
-      expiresAt: DateTime.now().add(const Duration(days: 7)),
+      inviteePhone: '',
+    );
+    return FamilyInvitation(
+      id: res['invitation_id'] as String? ?? 'inv-${DateTime.now().millisecondsSinceEpoch}',
+      groupId: groupId,
+      inviterName: res['inviter_name'] as String? ?? '나',
+      inviteCode: res['invite_code'] as String? ?? '',
+      expiresAt: res['expires_at'] != null
+          ? DateTime.tryParse(res['expires_at'] as String) ??
+              DateTime.now().add(const Duration(days: 7))
+          : DateTime.now().add(const Duration(days: 7)),
     );
   }
 
   @override
   Future<void> acceptInvitation(String inviteCode) async {
-    // Placeholder
+    await _client.respondToInvitation(
+      invitationId: inviteCode,
+      accept: true,
+    );
   }
 
   @override
   Future<void> updateMemberPermission(
     String groupId,
-    String userId,
+    String targetUserId,
     SharingPermission permission,
   ) async {
-    // Placeholder
+    await _client.setSharingPreferences(groupId, {
+      'user_id': targetUserId,
+      'can_view_results': permission.canViewResults,
+      'can_view_trends': permission.canViewTrends,
+      'can_receive_alerts': permission.canReceiveAlerts,
+      'can_send_reminders': permission.canSendReminders,
+    });
   }
 
   @override
-  Future<void> removeMember(String groupId, String userId) async {
-    // Placeholder
+  Future<void> removeMember(String groupId, String targetUserId) async {
+    await _client.removeFamilyMember(groupId, targetUserId);
   }
 
   @override
   Future<void> sendMeasurementReminder(String groupId, String targetUserId) async {
-    // Placeholder
+    await _client.sendNotification(
+      userId: targetUserId,
+      title: '측정 리마인더',
+      body: '가족 그룹에서 건강 측정을 요청했습니다.',
+      type: 'family',
+    );
   }
 }

@@ -87,6 +87,38 @@ class OrderItem {
 /// 주문 상태
 enum OrderStatus { pending, confirmed, shipping, delivered, cancelled }
 
+/// 일반 상품 (건강식품/웰빙/액세서리)
+class GeneralProduct {
+  final String id;
+  final String name;
+  final int price;
+  final int? originalPrice;
+  final double rating;
+  final int reviewCount;
+  final String category; // supplement, wellness, accessory, giftset
+  final String? imageUrl;
+  final bool freeShipping;
+  final bool isWishlisted;
+
+  const GeneralProduct({
+    required this.id,
+    required this.name,
+    required this.price,
+    this.originalPrice,
+    required this.rating,
+    required this.reviewCount,
+    required this.category,
+    this.imageUrl,
+    this.freeShipping = false,
+    this.isWishlisted = false,
+  });
+
+  int? get discountPercent {
+    if (originalPrice == null || originalPrice! <= price) return null;
+    return ((originalPrice! - price) / originalPrice! * 100).round();
+  }
+}
+
 /// 마켓 리포지토리 인터페이스
 abstract class MarketRepository {
   /// 카트리지 상품 목록
@@ -109,4 +141,7 @@ abstract class MarketRepository {
 
   /// 카트리지 호환성 확인
   Future<bool> checkCompatibility(String typeCode, String deviceId);
+
+  /// 일반 상품 목록
+  Future<List<GeneralProduct>> getGeneralProducts({String? category});
 }

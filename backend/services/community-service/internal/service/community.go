@@ -521,3 +521,112 @@ func (s *CommunityService) ListChallenges(ctx context.Context, statusFilter Chal
 
 	return challenges, total, nil
 }
+
+// ============================================================================
+// GetChallengeLeaderboard — 챌린지 리더보드 조회
+// ============================================================================
+
+// LeaderboardEntry는 리더보드 항목입니다.
+type LeaderboardEntry struct {
+	Rank          int32
+	UserID        string
+	DisplayName   string
+	AvatarURL     string
+	ProgressValue float64
+	TargetValue   float64
+	ProgressPct   float64
+	StreakDays     int32
+	LastUpdated   time.Time
+}
+
+// ChallengeProgress는 챌린지 진행 상태입니다.
+type ChallengeProgress struct {
+	ChallengeID   string
+	UserID        string
+	CurrentValue  float64
+	TargetValue   float64
+	StreakDays     int32
+	LastUpdated   time.Time
+}
+
+// GetChallengeLeaderboard는 챌린지 리더보드를 반환합니다.
+func (s *CommunityService) GetChallengeLeaderboard(ctx context.Context, challengeID string, limit, offset int32) ([]*LeaderboardEntry, int32, *LeaderboardEntry, error) {
+	if challengeID == "" {
+		return nil, 0, nil, apperrors.New(apperrors.ErrInvalidInput, "challenge_id는 필수입니다")
+	}
+	if limit <= 0 {
+		limit = 20
+	}
+
+	challenge, err := s.challengeRepo.FindByID(ctx, challengeID)
+	if err != nil || challenge == nil {
+		return nil, 0, nil, apperrors.New(apperrors.ErrNotFound, "챌린지를 찾을 수 없습니다")
+	}
+
+	// 참가자 기반 시뮬레이션 리더보드 생성
+	entries := make([]*LeaderboardEntry, 0)
+	rank := int32(1)
+	for userID := range challenge.Participants {
+		progressPct := float64(rank) / float64(len(challenge.Participants)) * 100
+		if progressPct > 100 {
+			progressPct = 100
+		}
+		entries = append(entries, &LeaderboardEntry{
+			Rank:          rank,
+			UserID:        userID,
+			DisplayName:   "사용자 " + userID[:8],
+			ProgressValue: challenge.TargetValue * progressPct / 100,
+			TargetValue:   challenge.TargetValue,
+			ProgressPct:   progressPct,
+			StreakDays:     rank,
+			LastUpdated:   time.Now().UTC(),
+		})
+		rank++
+	}
+
+	total := int32(len(entries))
+
+	// offset/limit 적용
+	start := int(offset)
+	if start > len(entries) {
+		start = len(entries)
+	}
+	end := start + int(limit)
+	if end > len(entries) {
+		end = len(entries)
+	}
+
+	return entries[start:end], total, nil, nil
+}
+
+// UpdateChallengeProgress는 챌린지 진행률을 업데이트합니다.
+func (s *CommunityService) UpdateChallengeProgress(ctx context.Context, challengeID, userID string, value float64) (float64, float64, int32, error) {
+	if challengeID == "" {
+		return 0, 0, 0, apperrors.New(apperrors.ErrInvalidInput, "challenge_id는 필수입니다")
+	}
+	if userID == "" {
+		return 0, 0, 0, apperrors.New(apperrors.ErrInvalidInput, "user_id는 필수입니다")
+	}
+
+	challenge, err := s.challengeRepo.FindByID(ctx, challengeID)
+	if err != nil || challenge == nil {
+		return 0, 0, 0, apperrors.New(apperrors.ErrNotFound, "챌린지를 찾을 수 없습니다")
+	}
+
+	if !challenge.Participants[userID] {
+		return 0, 0, 0, apperrors.New(apperrors.ErrInvalidInput, "챌린지에 참가하지 않은 사용자입니다")
+	}
+
+	// 진행률 업데이트 (누적)
+	newProgress := value
+	targetValue := challenge.TargetValue
+	newRank := int32(1) // 시뮬레이션: 항상 1등
+
+	s.logger.Info("챌린지 진행률 업데이트",
+		zap.String("challenge_id", challengeID),
+		zap.String("user_id", userID),
+		zap.Float64("new_progress", newProgress),
+	)
+
+	return newProgress, targetValue, newRank, nil
+}

@@ -129,6 +129,51 @@ func (h *SubscriptionHandler) ListSubscriptionPlans(_ context.Context, _ *v1.Lis
 	return &v1.ListSubscriptionPlansResponse{Plans: protoPlans}, nil
 }
 
+// CheckCartridgeAccess는 카트리지 접근 권한 확인 RPC입니다.
+func (h *SubscriptionHandler) CheckCartridgeAccess(ctx context.Context, req *v1.CheckCartridgeAccessRequest) (*v1.CheckCartridgeAccessResponse, error) {
+	if req == nil || req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "user_id는 필수입니다")
+	}
+
+	result := h.svc.CheckCartridgeAccess(ctx, req.UserId, req.CategoryCode, req.TypeIndex)
+
+	return &v1.CheckCartridgeAccessResponse{
+		Allowed:      result.Allowed,
+		AccessLevel:  serviceAccessLevelToProto(result.AccessLevel),
+		RemainingDaily:   result.RemainingDaily,
+		RemainingMonthly: result.RemainingMonthly,
+		RequiredTier: serviceTierToProto(result.RequiredTier),
+		CurrentTier:  serviceTierToProto(result.CurrentTier),
+		Message:      result.Message,
+		AddonPriceKrw: result.AddonPriceKRW,
+	}, nil
+}
+
+// ListAccessibleCartridges는 접근 가능 카트리지 목록 RPC입니다.
+func (h *SubscriptionHandler) ListAccessibleCartridges(ctx context.Context, req *v1.ListAccessibleCartridgesRequest) (*v1.ListAccessibleCartridgesResponse, error) {
+	if req == nil || req.UserId == "" {
+		return nil, status.Error(codes.InvalidArgument, "user_id는 필수입니다")
+	}
+
+	entries := h.svc.ListAccessibleCartridges(ctx, req.UserId)
+
+	protoEntries := make([]*v1.CartridgeAccessEntry, 0, len(entries))
+	for _, e := range entries {
+		protoEntries = append(protoEntries, &v1.CartridgeAccessEntry{
+			TypeInfo: &v1.CartridgeTypeInfo{
+				CategoryCode: e.CategoryCode,
+				TypeIndex:    e.TypeIndex,
+				NameKo:       e.Name,
+			},
+			AccessLevel:      serviceAccessLevelToProto(e.AccessLevel),
+			RemainingDaily:   e.RemainingDaily,
+			RemainingMonthly: e.RemainingMonthly,
+		})
+	}
+
+	return &v1.ListAccessibleCartridgesResponse{Entries: protoEntries}, nil
+}
+
 // --- 헬퍼 함수 ---
 
 func subscriptionToProto(sub *service.Subscription) *v1.SubscriptionDetail {
@@ -192,6 +237,23 @@ func serviceStatusToProto(s service.SubscriptionStatus) v1.SubscriptionStatus {
 		return v1.SubscriptionStatus_SUBSCRIPTION_STATUS_TRIAL
 	default:
 		return v1.SubscriptionStatus_SUBSCRIPTION_STATUS_UNKNOWN
+	}
+}
+
+func serviceAccessLevelToProto(level service.CartridgeAccessLevel) v1.CartridgeAccessLevel {
+	switch level {
+	case service.AccessIncluded:
+		return v1.CartridgeAccessLevel_CARTRIDGE_ACCESS_INCLUDED
+	case service.AccessLimited:
+		return v1.CartridgeAccessLevel_CARTRIDGE_ACCESS_LIMITED
+	case service.AccessAddOn:
+		return v1.CartridgeAccessLevel_CARTRIDGE_ACCESS_ADD_ON
+	case service.AccessRestricted:
+		return v1.CartridgeAccessLevel_CARTRIDGE_ACCESS_RESTRICTED
+	case service.AccessBeta:
+		return v1.CartridgeAccessLevel_CARTRIDGE_ACCESS_BETA
+	default:
+		return v1.CartridgeAccessLevel_CARTRIDGE_ACCESS_RESTRICTED
 	}
 }
 

@@ -24,6 +24,7 @@ class AuthState {
   });
 
   bool get isAdmin => role == 'admin' || role == 'super_admin';
+  bool get isDemo => userId == 'demo-user-id';
 
   AuthState copyWith({
     bool? isAuthenticated,
@@ -131,6 +132,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
       refreshToken: 'guest-refresh-token',
     );
   }
+
+  /// 데모 모드 (가상 데이터 체험)
+  void loginAsDemo() {
+    state = const AuthState(
+      isAuthenticated: true,
+      userId: 'demo-user-id', 
+      email: 'demo@manpasik.com',
+      displayName: '테스트 계정',
+      accessToken: 'demo-token',
+      role: 'user',
+    );
+  }
+  
+  bool get isDemo => state.userId == 'demo-user-id';
 
   /// 로그아웃 (로컬 상태 초기화)
   void logout() {

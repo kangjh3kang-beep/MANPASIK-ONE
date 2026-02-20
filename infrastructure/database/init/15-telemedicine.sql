@@ -80,3 +80,5 @@ CREATE INDEX IF NOT EXISTS idx_consultations_status ON consultations(status);
 CREATE INDEX IF NOT EXISTS idx_doctors_specialty ON doctors(specialty);
 CREATE INDEX IF NOT EXISTS idx_doctors_available ON doctors(is_available);
 CREATE INDEX IF NOT EXISTS idx_video_sessions_consultation ON video_sessions(consultation_id);
+CREATE INDEX IF NOT EXISTS idx_consultations_created ON consultations(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_consultations_patient_status ON consultations(patient_user_id, status);

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:manpasik/features/market/domain/market_repository.dart';
 import 'package:manpasik/shared/widgets/jagae_pattern.dart';
 import 'package:manpasik/shared/widgets/scale_button.dart';
+import 'package:manpasik/shared/widgets/porcelain_container.dart';
 
 class MarketProductCard extends StatelessWidget {
   final CartridgeProduct product;
@@ -14,104 +15,74 @@ class MarketProductCard extends StatelessWidget {
     // NanoBanana Pro Theme Colors (Local Override for Premium Feel)
     final tierColor = _getTierColor(product.tier);
     final icon = _getProductIcon(product.typeCode);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ScaleButton(
       onPressed: () => context.push('/market/product/${product.id}'),
-      child: KoreanEdgeBorder(
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1F35).withOpacity(0.25), // More Transparent (Glassier)
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.5), // Stronger shadow for contrast
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: JagaeContainer(
-            opacity: 0.08, // Subtle texture
-            showLattice: true,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  const Color(0xFF2C3E50).withOpacity(0.4),
-                  const Color(0xFF000000).withOpacity(0.6),
-                ],
-              ),
+      child: PorcelainContainer(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Icon & Tier Badge
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildGlowingIcon(icon, tierColor),
+                _buildTierBadge(product.tier, tierColor),
+              ],
             ),
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Icon & Tier Badge
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildGlowingIcon(icon, tierColor),
-                      _buildTierBadge(product.tier, tierColor),
-                    ],
+            const Spacer(),
+            // Product Name
+            Text(
+              product.nameKo,
+              style: TextStyle(
+                color: isDark ? Colors.white : const Color(0xFF1A1A1A), // Adaptive Color
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                letterSpacing: -0.5,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 4),
+            // English Name
+            Text(
+              product.nameEn,
+              style: TextStyle(
+                color: isDark ? Colors.white70 : const Color(0xFF1A1A1A).withOpacity(0.6),
+                fontSize: 12,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 12),
+            // Price
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '₩${_formatPrice(product.price)}',
+                  style: const TextStyle(
+                    color: Color(0xFFD4AF37), // Omni Gold
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'Roboto', 
                   ),
-                  const Spacer(),
-                  // Product Name
+                ),
+                if (product.unit.isNotEmpty) ...[
+                  const SizedBox(width: 4),
                   Text(
-                    product.nameKo,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: -0.5,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  // English Name
-                  Text(
-                    product.nameEn,
+                    '/ ${product.unit}',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.6),
-                      fontSize: 12,
+                      color: const Color(0xFF1A1A1A).withOpacity(0.4),
+                      fontSize: 11,
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 12),
-                  // Price
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '₩${_formatPrice(product.price)}',
-                        style: const TextStyle(
-                          color: Color(0xFFD4AF37), // Omni Gold
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          fontFamily: 'Roboto', 
-                        ),
-                      ),
-                      if (product.unit.isNotEmpty) ...[
-                        const SizedBox(width: 4),
-                        Text(
-                          '/ ${product.unit}',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.4),
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ],
                   ),
                 ],
-              ),
+              ],
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
-import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'dart:math' as math;
+import 'package:manpasik/core/theme/app_theme.dart';
 
 class OrnateGoldFrame extends StatefulWidget {
   final Widget child;
@@ -41,6 +41,8 @@ class _OrnateGoldFrameState extends State<OrnateGoldFrame> with TickerProviderSt
     )..repeat(reverse: true);
   }
 
+  bool _isHovered = false;
+
   @override
   void dispose() {
     _shimmerController.dispose();
@@ -52,16 +54,21 @@ class _OrnateGoldFrameState extends State<OrnateGoldFrame> with TickerProviderSt
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return AnimatedBuilder(
-      animation: _breathingController,
-      builder: (context, _) {
-        final scale = 1.0 + (_breathingController.value * 0.005); // Micro-breathing
-        
-        return Transform.scale(
-          scale: scale,
-          child: Container(
-            width: widget.width,
-            height: widget.height,
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedBuilder(
+        animation: _breathingController,
+        builder: (context, _) {
+          // Hover Scale: 1.02x when hovered, plus breathing
+          final baseScale = _isHovered ? 1.02 : 1.0;
+          final scale = baseScale + (_breathingController.value * 0.005); 
+          
+          return Transform.scale(
+            scale: scale,
+            child: Container(
+              width: widget.width,
+              height: widget.height,
             child: AnimatedBuilder(
               animation: _shimmerController,
               builder: (context, _) {
@@ -78,22 +85,36 @@ class _OrnateGoldFrameState extends State<OrnateGoldFrame> with TickerProviderSt
                       child: BackdropFilter(
                         filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                         child: Container(
+                           // Renovated: Ultra-Glass (Cyan Tint + Max Transparency)
+                           // BOOSTED VISIBILITY: Increased opacity slightly and added stronger borders/glows
                            decoration: BoxDecoration(
-                             // Theme-aware Glass Background
                              color: isDark 
-                                ? const Color(0xFF051525).withOpacity(0.15) // Dark Mode: Deep Space Glass
-                                : const Color(0xFF1A1A1A).withOpacity(0.03), // White Mode: Very Sheer Ink Glass
+                                    ? const Color(0xFF001020).withOpacity(0.01) // Ultra Transparent (Deep Void)
+                                    : const Color(0xFFFFFFFF).withOpacity(0.05),
                              borderRadius: BorderRadius.circular(16),
                              border: Border.all(
-                               color: isDark 
-                                  ? Colors.white.withOpacity(0.08) 
-                                  : Colors.black.withOpacity(0.05), // Subtle rim
-                               width: 0.5
+                               color: _isHovered 
+                                  ? AppTheme.sanggamGold // Bright Gold on Hover
+                                  : (isDark 
+                                      ? AppTheme.sanggamGold.withOpacity(0.8) 
+                                      : Colors.black.withOpacity(0.2)),
+                               width: _isHovered ? 2.5 : 1.5 // Thicker on Hover
                              ), 
+                             gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  AppTheme.waveCyan.withOpacity(0.15), // Stronger Glint
+                                  Colors.transparent,
+                                  Colors.transparent,
+                                  AppTheme.sanggamGold.withOpacity(0.1), // Stronger Gold Tint
+                                ],
+                                stops: const [0.0, 0.3, 0.7, 1.0],
+                             ),
                              boxShadow: [
                                BoxShadow(
-                                 color: Colors.black.withOpacity(isDark ? 0.3 : 0.05), // Lighter shadow in White Mode
-                                 blurRadius: 15,
+                                 color: AppTheme.waveCyan.withOpacity(0.1), // Stronger Glow
+                                 blurRadius: 20,
                                  spreadRadius: -2,
                                ),
                              ]
@@ -106,22 +127,35 @@ class _OrnateGoldFrameState extends State<OrnateGoldFrame> with TickerProviderSt
                                    decoration: BoxDecoration(
                                      gradient: RadialGradient(
                                        colors: isDark
-                                          ? [Colors.black.withOpacity(0.5), Colors.transparent]
-                                          : [Colors.black.withOpacity(0.05), Colors.transparent], // Lighter Vignette in White Mode
-                                       radius: 0.9,
+                                          ? [Colors.black.withOpacity(0.05), Colors.transparent] // Almost invisible vignette
+                                          : [Colors.black.withOpacity(0.02), Colors.transparent],
+                                       radius: 1.2,
                                      ),
                                    ),
                                  ),
                                ),
 
-                               // 2. Tech Grid (Subtle)
+                               // 2. Korean Patterned Glass Etching
                                Positioned.fill(
-                                 child: CustomPaint(
-                                   painter: _TechGridPainter(color: AppTheme.waveCyan.withOpacity(0.04)),
+                                 child: Opacity(
+                                   opacity: 0.6, // Keep 60% Pattern
+                                   child: CustomPaint(
+                                     painter: _KoreanGlassPatternPainter(
+                                       color: AppTheme.sanggamGold, 
+                                       patternType: PatternType.cloud
+                                     ),
+                                   ),
                                  ),
                                ),
+
+                               // 3. Tech Grid (REMOVED: User requested removal of meaningless lines)
+                               // Positioned.fill(
+                               //   child: CustomPaint(
+                               //     painter: _TechGridPainter(color: AppTheme.waveCyan.withOpacity(0.04)),
+                               //   ),
+                               // ),
                                
-                               // 3. Cinematic Sheen (Soft & Blurred)
+                               // 4. Cinematic Sheen (Subtle & Soft)
                                Positioned.fill(
                                  child: LayoutBuilder(
                                    builder: (context, constraints) {
@@ -130,17 +164,20 @@ class _OrnateGoldFrameState extends State<OrnateGoldFrame> with TickerProviderSt
                                        offset: Offset(shimmerPos, 0),
                                        child: Transform.rotate(
                                          angle: -math.pi / 5,
-                                         child: ImageFiltered( // NEW: Blur effect on sheen
-                                            imageFilter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                         child: ImageFiltered( 
+                                            imageFilter: ui.ImageFilter.blur(sigmaX: 8, sigmaY: 8), // Softer blur
                                             child: Container(
-                                              width: 30, // Slightly wider to account for blur
+                                              width: 60, 
                                               decoration: BoxDecoration(
                                                 gradient: LinearGradient(
                                                   colors: [
                                                     Colors.transparent,
-                                                    Colors.white.withOpacity(0.08), // Much subtler (was 0.4)
+                                                    Colors.white.withOpacity(0.05),
+                                                    Colors.white.withOpacity(0.15), // Soft Highlight
+                                                    Colors.white.withOpacity(0.05),
                                                     Colors.transparent,
                                                   ],
+                                                  stops: const [0.0, 0.4, 0.5, 0.6, 1.0],
                                                   begin: Alignment.centerLeft,
                                                   end: Alignment.centerRight,
                                                 ),
@@ -153,7 +190,7 @@ class _OrnateGoldFrameState extends State<OrnateGoldFrame> with TickerProviderSt
                                  ),
                                ),
 
-                               // 4. Content
+                               // 5. Content
                                Padding(
                                  padding: widget.padding,
                                  child: widget.child,
@@ -170,8 +207,68 @@ class _OrnateGoldFrameState extends State<OrnateGoldFrame> with TickerProviderSt
           ),
         );
       }
+    ),
     );
   }
+}
+
+enum PatternType { cloud, geometric }
+
+class _KoreanGlassPatternPainter extends CustomPainter {
+  final Color color;
+  final PatternType patternType;
+
+  _KoreanGlassPatternPainter({required this.color, required this.patternType});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+
+    if (patternType == PatternType.cloud) {
+      _drawCloudPattern(canvas, size, paint);
+    } 
+  }
+
+  void _drawCloudPattern(Canvas canvas, Size size, Paint paint) {
+    // Detailed "Un-Mun" (Cloud) Pattern
+    // Replaces the simple 3-line curve with a proper spiral motif
+    double step = 80.0;
+    
+    // Golden sub-pattern paint
+    final goldPaint = Paint()
+      ..color = AppTheme.sanggamGold.withOpacity(0.15)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 0.5;
+
+    for (double y = 0; y < size.height; y += step) {
+      for (double x = 0; x < size.width; x += step) {
+        if ((x + y) % (step * 2) == 0) continue; // Checkerboard placement
+        
+        final cx = x + step/2;
+        final cy = y + step/2;
+        
+        // 1. Cloud Spiral (Main)
+        final path = Path();
+        // A recognizable traditional cloud tail and head
+        path.moveTo(cx - 15, cy + 5);
+        path.cubicTo(cx - 10, cy - 10, cx + 5, cy - 15, cx + 15, cy - 5); // Upper arch
+        path.cubicTo(cx + 25, cy + 5, cx + 15, cy + 15, cx + 5, cy + 10); // Lower loop
+        path.cubicTo(cx, cy + 5, cx - 10, cy + 15, cx - 20, cy + 10); // Tail
+        
+        canvas.drawPath(path, paint..color = color.withOpacity(0.1));
+
+        // 2. Subtle Gold Accent (Detail)
+        canvas.drawCircle(Offset(cx + 15, cy - 5), 1.5, goldPaint);
+        canvas.drawCircle(Offset(cx - 5, cy + 10), 1.0, goldPaint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _OrnateFramePainter extends CustomPainter {
@@ -228,11 +325,12 @@ class _OrnateFramePainter extends CustomPainter {
 
     _drawDragonScalePattern(canvas, path, patternPaint, w, h, cs);
 
-    // 6. Glow
+    // 6. Glow (Pulsating)
+    final pulse = math.sin(shimmerValue * 2 * math.pi) * 0.5 + 0.5; // 0.0 to 1.0
     final glowPaint = Paint()
-      ..color = glowColor.withOpacity(0.4)
+      ..color = glowColor.withOpacity(0.3 + (pulse * 0.2)) // Pulse Opacity
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 10.0
+      ..strokeWidth = 8.0 + (pulse * 4.0) // Pulse Width
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
     canvas.drawPath(path, glowPaint);
 
@@ -261,6 +359,22 @@ class _OrnateFramePainter extends CustomPainter {
     innerPath.moveTo(cs, h - inset); innerPath.lineTo(inset + 10, h - inset); innerPath.quadraticBezierTo(inset, h - inset, inset, h - inset - 10); innerPath.lineTo(inset, h - cs);
     
     canvas.drawPath(innerPath, Paint()..color = color.withOpacity(0.4)..style = PaintingStyle.stroke..strokeWidth = 1.0);
+    
+    // Tech Accents (Cybernetic Corners)
+    final techPaint = Paint()..color = glowColor.withOpacity(0.6)..style = PaintingStyle.fill;
+    final double gap = 4.0;
+    // TL
+    canvas.drawCircle(Offset(cs + gap, gap + 2), 1.5, techPaint);
+    canvas.drawCircle(Offset(gap + 2, cs + gap), 1.5, techPaint);
+    // TR
+    canvas.drawCircle(Offset(w - cs - gap, gap + 2), 1.5, techPaint);
+    canvas.drawCircle(Offset(w - gap - 2, cs + gap), 1.5, techPaint);
+    // BR
+    canvas.drawCircle(Offset(w - cs - gap, h - gap - 2), 1.5, techPaint);
+    canvas.drawCircle(Offset(w - gap - 2, h - cs - gap), 1.5, techPaint);
+    // BL
+    canvas.drawCircle(Offset(cs + gap, h - gap - 2), 1.5, techPaint);
+    canvas.drawCircle(Offset(gap + 2, h - cs - gap), 1.5, techPaint);
     
     // Decor Center
     _drawLotusDecoration(canvas, Offset(w/2, 0), paint, isTop: true);
@@ -292,13 +406,33 @@ class _OrnateFramePainter extends CustomPainter {
   }
   
   void _drawLotusDecoration(Canvas canvas, Offset center, Paint paint, {required bool isTop}) {
-    final yOffset = isTop ? -2.0 : 2.0;
-    final path = Path();
-    path.moveTo(center.dx - 12, center.dy + yOffset);
-    path.quadraticBezierTo(center.dx, center.dy + (isTop ? 12 : -12), center.dx + 12, center.dy + yOffset);
-    path.addRect(Rect.fromCenter(center: Offset(center.dx, center.dy + (isTop ? 6 : -6)), width: 4, height: 4));
-    canvas.drawPath(path, paint..style = PaintingStyle.fill);
-    paint.style = PaintingStyle.stroke; // Reset
+    // Renovated: "Cyber-Lotus" (Geometric + Tech)
+    final yFlip = isTop ? 1.0 : -1.0;
+    
+    // 1. Central Diamond (Cyber-Core)
+    final diamondPath = Path();
+    diamondPath.moveTo(center.dx, center.dy + (8 * yFlip)); // Top/Bottom tip
+    diamondPath.lineTo(center.dx + 6, center.dy + (14 * yFlip)); // Right
+    diamondPath.lineTo(center.dx, center.dy + (20 * yFlip)); // Bottom Tip
+    diamondPath.lineTo(center.dx - 6, center.dy + (14 * yFlip)); // Left
+    diamondPath.close();
+    
+    canvas.drawPath(diamondPath, Paint()..color = AppTheme.sanggamGold..style = PaintingStyle.fill);
+    
+    // 2. Digital Wings (Circuit Lines)
+    final wingPath = Path();
+    wingPath.moveTo(center.dx - 6, center.dy + (14 * yFlip));
+    wingPath.lineTo(center.dx - 15, center.dy + (14 * yFlip));
+    wingPath.lineTo(center.dx - 20, center.dy + (8 * yFlip));
+    
+    wingPath.moveTo(center.dx + 6, center.dy + (14 * yFlip));
+    wingPath.lineTo(center.dx + 15, center.dy + (14 * yFlip));
+    wingPath.lineTo(center.dx + 20, center.dy + (8 * yFlip));
+    
+    canvas.drawPath(wingPath, Paint()..color = AppTheme.sanggamGold.withOpacity(0.8)..style = PaintingStyle.stroke..strokeWidth = 1.5);
+    
+    // 3. Glowing Dot
+    canvas.drawCircle(Offset(center.dx, center.dy + (14 * yFlip)), 1.5, Paint()..color = Colors.white);
   }
 
   @override

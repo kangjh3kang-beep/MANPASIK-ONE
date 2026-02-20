@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:manpasik/core/theme/app_theme.dart';
 import 'package:manpasik/core/services/rust_ffi_stub.dart';
+import 'package:lottie/lottie.dart';
 
 /// 온보딩 완료 상태 Provider (메모리 — 추후 SharedPreferences 연동)
 final onboardingCompletedProvider = StateProvider<bool>((ref) => false);
@@ -182,24 +183,23 @@ class _WelcomePage extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
+          SizedBox(
             width: 120,
             height: 120,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.deepSeaBlue, Color(0xFF112240)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+            child: Lottie.asset(
+              'assets/lottie/welcome.json',
+              repeat: true,
+              errorBuilder: (_, __, ___) => Container(
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [AppTheme.deepSeaBlue, Color(0xFF112240)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(32),
+                ),
+                child: const Icon(Icons.biotech_rounded, size: 64, color: AppTheme.sanggamGold),
               ),
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(
-                color: AppTheme.sanggamGold.withOpacity(0.4),
-              ),
-            ),
-            child: const Icon(
-              Icons.biotech_rounded,
-              size: 64,
-              color: AppTheme.sanggamGold,
             ),
           ),
           const SizedBox(height: 40),

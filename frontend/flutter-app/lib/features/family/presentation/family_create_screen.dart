@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 /// 가족 그룹 생성 화면
 class FamilyCreateScreen extends ConsumerStatefulWidget {
@@ -112,8 +113,21 @@ class _FamilyCreateScreenState extends ConsumerState<FamilyCreateScreen> {
                   padding: const EdgeInsets.all(32),
                   child: Column(
                     children: [
-                      Icon(Icons.qr_code_2, size: 120, color: theme.colorScheme.onSurfaceVariant),
-                      const SizedBox(height: 8),
+                      QrImageView(
+                        data: 'https://manpasik.com/invite/${_nameController.text.trim().isNotEmpty ? _nameController.text.trim().hashCode.abs() : "new-group"}',
+                        version: QrVersions.auto,
+                        size: 160,
+                        dataModuleStyle: const QrDataModuleStyle(
+                          dataModuleShape: QrDataModuleShape.square,
+                          color: Colors.white,
+                        ),
+                        eyeStyle: const QrEyeStyle(
+                          eyeShape: QrEyeShape.square,
+                          color: AppTheme.sanggamGold,
+                        ),
+                        errorCorrectionLevel: QrErrorCorrectLevel.M,
+                      ),
+                      const SizedBox(height: 12),
                       Text('QR 코드를 스캔하여 참여하세요', style: theme.textTheme.bodySmall),
                     ],
                   ),

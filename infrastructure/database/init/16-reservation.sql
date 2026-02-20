@@ -71,3 +71,5 @@ CREATE INDEX IF NOT EXISTS idx_reservations_user ON reservations(user_id);
 CREATE INDEX IF NOT EXISTS idx_reservations_facility ON reservations(facility_id);
 CREATE INDEX IF NOT EXISTS idx_reservations_status ON reservations(status);
 CREATE INDEX IF NOT EXISTS idx_reservations_scheduled ON reservations(scheduled_at);
+CREATE INDEX IF NOT EXISTS idx_reservations_created ON reservations(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reservations_user_status ON reservations(user_id, status);

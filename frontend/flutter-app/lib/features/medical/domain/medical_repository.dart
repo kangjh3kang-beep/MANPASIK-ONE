@@ -102,6 +102,42 @@ class BiomarkerAnalysis {
   });
 }
 
+/// 의사 정보 (추천 목록용)
+class DoctorInfo {
+  final String doctorId;
+  final String name;
+  final String specialty;
+  final double rating;
+  final int reviewCount;
+  final String? avatarUrl;
+  final bool isAvailable;
+  final String? nextSlot; // "오늘 15:00" 등
+
+  const DoctorInfo({
+    required this.doctorId,
+    required this.name,
+    required this.specialty,
+    required this.rating,
+    required this.reviewCount,
+    this.avatarUrl,
+    required this.isAvailable,
+    this.nextSlot,
+  });
+}
+
+/// 진료 시간 슬롯
+class TimeSlot {
+  final DateTime startTime;
+  final DateTime endTime;
+  final bool isAvailable;
+
+  const TimeSlot({
+    required this.startTime,
+    required this.endTime,
+    required this.isAvailable,
+  });
+}
+
 /// 의료 서비스 리포지토리 인터페이스
 abstract class MedicalRepository {
   /// 비대면 진료 예약 생성
@@ -134,4 +170,14 @@ abstract class MedicalRepository {
     required double abnormalValue,
     required String biomarkerType,
   });
+
+  /// 추천 의사 목록
+  Future<List<DoctorInfo>> getRecommendedDoctors({int limit = 5});
+
+  /// 의사 가용성 확인
+  Future<List<TimeSlot>> getDoctorAvailability(String doctorId);
+
+  /// 처방전 약국 전송
+  Future<bool> sendPrescriptionToPharmacy(
+      String prescriptionId, String pharmacyId);
 }
