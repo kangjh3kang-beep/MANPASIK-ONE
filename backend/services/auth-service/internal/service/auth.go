@@ -5,7 +5,10 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -316,6 +319,132 @@ func (s *AuthService) SocialLogin(ctx context.Context, provider, idToken, access
 
 	s.logger.Info("소셜 로그인 성공", zap.String("provider", provider), zap.String("user_id", user.ID))
 	return tokenPair, nil
+}
+
+// KakaoUserInfo는 카카오 사용자 정보 API 응답에서 추출한 데이터입니다.
+type KakaoUserInfo struct {
+	ID       int64  `json:"id"`
+	Email    string `json:"email"`
+	Nickname string `json:"nickname"`
+}
+
+// KakaoLogin은 카카오 Access Token을 검증하고 만파식 JWT를 발급합니다.
+//
+// 1. 카카오 사용자 정보 API(kapi.kakao.com/v2/user/me) 호출로 토큰 검증
+// 2. 카카오 ID 기반 기존 사용자 조회 → 없으면 자동 가입
+// 3. 만파식 JWT(Access/Refresh Token) 발급
+func (s *AuthService) KakaoLogin(ctx context.Context, kakaoAccessToken, email, nickname string) (*TokenPair, *User, error) {
+	if kakaoAccessToken == "" {
+		return nil, nil, apperrors.New(apperrors.ErrInvalidInput, "kakao_access_token은 필수입니다")
+	}
+
+	// 1단계: 카카오 사용자 정보 API 호출로 토큰 검증
+	kakaoUser, err := s.verifyKakaoToken(ctx, kakaoAccessToken)
+	if err != nil {
+		s.logger.Error("카카오 토큰 검증 실패", zap.Error(err))
+		return nil, nil, apperrors.New(apperrors.ErrUnauthorized, "카카오 인증에 실패했습니다")
+	}
+
+	s.logger.Info("카카오 사용자 검증 완료",
+		zap.Int64("kakao_id", kakaoUser.ID),
+		zap.String("email", kakaoUser.Email),
+	)
+
+	// 2단계: 카카오 ID 기반 이메일로 기존 사용자 조회
+	kakaoEmail := kakaoUser.Email
+	if kakaoEmail == "" {
+		kakaoEmail = fmt.Sprintf("kakao_%d@social.manpasik.com", kakaoUser.ID)
+	}
+	displayName := kakaoUser.Nickname
+	if displayName == "" {
+		displayName = nickname
+	}
+	if displayName == "" {
+		displayName = "카카오 사용자"
+	}
+
+	user, err := s.userRepo.GetByEmail(ctx, kakaoEmail)
+	if err != nil || user == nil {
+		// 3단계: 신규 사용자 자동 가입
+		hashedPw, _ := bcrypt.GenerateFromPassword([]byte(uuid.New().String()), 10)
+		user = &User{
+			ID:             uuid.New().String(),
+			Email:          kakaoEmail,
+			HashedPassword: string(hashedPw),
+			DisplayName:    displayName,
+			Role:           "user",
+			IsActive:       true,
+			CreatedAt:      time.Now().UTC(),
+			UpdatedAt:      time.Now().UTC(),
+		}
+		if createErr := s.userRepo.Create(ctx, user); createErr != nil {
+			s.logger.Error("카카오 사용자 생성 실패", zap.Error(createErr))
+			return nil, nil, apperrors.New(apperrors.ErrInternal, "카카오 로그인 사용자 생성 실패")
+		}
+		s.logger.Info("카카오 신규 가입 완료",
+			zap.String("user_id", user.ID),
+			zap.Int64("kakao_id", kakaoUser.ID),
+		)
+	}
+
+	// 4단계: 만파식 JWT 발급
+	tokenPair, err := s.generateTokenPair(ctx, user)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	s.logger.Info("카카오 로그인 성공",
+		zap.String("user_id", user.ID),
+		zap.Int64("kakao_id", kakaoUser.ID),
+	)
+	return tokenPair, user, nil
+}
+
+// verifyKakaoToken은 카카오 Access Token으로 사용자 정보 API를 호출하여
+// 토큰 유효성을 검증하고 사용자 고유 번호(ID)를 반환합니다.
+func (s *AuthService) verifyKakaoToken(ctx context.Context, accessToken string) (*KakaoUserInfo, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, "https://kapi.kakao.com/v2/user/me", nil)
+	if err != nil {
+		return nil, fmt.Errorf("카카오 API 요청 생성 실패: %w", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+accessToken)
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded;charset=utf-8")
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("카카오 API 호출 실패: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("카카오 API 응답 오류 (HTTP %d): %s", resp.StatusCode, string(body))
+	}
+
+	var kakaoResp struct {
+		ID           int64 `json:"id"`
+		KakaoAccount struct {
+			Email   string `json:"email"`
+			Profile struct {
+				Nickname string `json:"nickname"`
+			} `json:"profile"`
+		} `json:"kakao_account"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&kakaoResp); err != nil {
+		return nil, fmt.Errorf("카카오 API 응답 파싱 실패: %w", err)
+	}
+
+	if kakaoResp.ID == 0 {
+		return nil, fmt.Errorf("카카오 사용자 ID가 0입니다 — 유효하지 않은 토큰")
+	}
+
+	return &KakaoUserInfo{
+		ID:       kakaoResp.ID,
+		Email:    kakaoResp.KakaoAccount.Email,
+		Nickname: kakaoResp.KakaoAccount.Profile.Nickname,
+	}, nil
 }
 
 // ResetPassword는 비밀번호 재설정 요청을 처리합니다.

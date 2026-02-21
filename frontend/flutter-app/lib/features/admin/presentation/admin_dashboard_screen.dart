@@ -138,6 +138,12 @@ class AdminDashboardScreen extends ConsumerWidget {
           subtitle: '카트리지 재고 현황 및 입출고 관리',
           onTap: () => context.push('/admin/inventory'),
         ),
+        _AdminMenuTile(
+          icon: Icons.hub,
+          title: '생태계 총괄 관리',
+          subtitle: '28개 마이크로서비스 및 전체 생태계 설정',
+          onTap: () => context.push('/admin/ecosystem'),
+        ),
         const SizedBox(height: 24),
 
         // 최근 감사 로그

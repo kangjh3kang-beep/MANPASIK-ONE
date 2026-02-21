@@ -1,3 +1,4 @@
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- BLE 권한 (Android 12+) -->
@@ -35,11 +36,13 @@
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
     <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
     <application
         android:label="manpasik"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -74,6 +77,19 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="manpasik.com" />
+            </intent-filter>
+        </activity>
+        <!-- 카카오 로그인 AuthCodeHandlerActivity -->
+        <activity
+            android:name="com.kakao.sdk.flutter.AuthCodeHandlerActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- 카카오 네이티브 앱 키 (YOUR_NATIVE_APP_KEY를 실제 키로 교체) -->
+                <data android:host="oauth"
+                    android:scheme="kakaoYOUR_NATIVE_APP_KEY" />
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

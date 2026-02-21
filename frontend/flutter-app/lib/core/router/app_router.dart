@@ -7,7 +7,8 @@ import 'package:manpasik/shared/widgets/glass_dock_navigation.dart';
 import 'package:manpasik/features/data_hub/presentation/widgets/floating_monitor_bubble.dart';
 import 'package:manpasik/shared/widgets/jagae_pattern.dart';
 import 'package:manpasik/shared/widgets/royal_cloud_background.dart';
-import 'package:manpasik/shared/widgets/hanji_background.dart'; // Added Import
+import 'package:manpasik/shared/widgets/hanji_background.dart';
+import 'package:manpasik/core/providers/grpc_provider.dart';
 
 import 'package:manpasik/features/auth/presentation/splash_screen.dart';
 import 'package:manpasik/features/auth/presentation/login_screen.dart';
@@ -62,6 +63,7 @@ import 'package:manpasik/features/admin/presentation/admin_hierarchy_screen.dart
 import 'package:manpasik/features/admin/presentation/admin_compliance_screen.dart';
 import 'package:manpasik/features/admin/presentation/admin_revenue_screen.dart';
 import 'package:manpasik/features/admin/presentation/admin_inventory_table.dart';
+import 'package:manpasik/features/admin/presentation/admin_ecosystem_screen.dart';
 import 'package:manpasik/features/community/presentation/research_post_screen.dart';
 import 'package:manpasik/features/devices/presentation/device_detail_screen.dart';
 import 'package:manpasik/features/community/presentation/create_post_screen.dart';
@@ -294,6 +296,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/admin/inventory',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const AdminInventoryTable(),
+      ),
+      GoRoute(
+        path: '/admin/ecosystem',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const AdminEcosystemScreen(),
       ),
 
       // ── 인증 보조 ──
@@ -583,7 +590,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 });
 
 /// 하단 네비게이션 바 포함 Scaffold (Glass Dock Ver.)
-class ScaffoldWithBottomNav extends StatelessWidget {
+class ScaffoldWithBottomNav extends ConsumerWidget {
   const ScaffoldWithBottomNav({super.key, required this.child});
 
   final Widget child;
@@ -605,12 +612,11 @@ class ScaffoldWithBottomNav extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = _currentIndex(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final notifCount = ref.watch(unreadNotificationCountProvider).valueOrNull ?? 0;
 
-    // Global Theme Override for the shared scaffold
-    // This allows the Glass Dock to feel integrated
     return Scaffold(
       extendBody: true, // Key for floating dock effect
       // 2. Global Premium Background (Stacked)
@@ -646,6 +652,7 @@ class ScaffoldWithBottomNav extends StatelessWidget {
             ),
       bottomNavigationBar: GlassDockNavigation(
         currentIndex: currentIndex,
+        badgeCounts: {if (notifCount > 0) 0: notifCount},
         onTap: (index) => context.go(_tabs[index]),
       ),
     );

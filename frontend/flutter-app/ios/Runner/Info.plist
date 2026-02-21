@@ -52,7 +52,7 @@
 	<string>만파식 리더기와 BLE로 연결하여 건강 측정을 수행합니다.</string>
 	<!-- 카메라 권한 -->
 	<key>NSCameraUsageDescription</key>
-	<string>게시글 사진 촬영 및 음식 분석에 카메라를 사용합니다.</string>
+	<string>만파식 카트리지 분석을 위해 카메라 접근 권한이 필요합니다.</string>
 	<!-- 사진 라이브러리 권한 -->
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>게시글 이미지를 첨부하기 위해 사진 라이브러리에 접근합니다.</string>
@@ -64,7 +64,14 @@
 	<string>건강 데이터를 데이터 허브에 통합하기 위해 HealthKit에 접근합니다.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>측정 결과를 HealthKit에 저장합니다.</string>
-	<!-- Deep Link 스킴 (manpasik://) -->
+	<!-- 카카오 앱 쿼리 스킴 (iOS 9+) -->
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>kakaokompassauth</string>
+		<string>kakaolink</string>
+		<string>kakaoplus</string>
+	</array>
+	<!-- Deep Link 스킴 (manpasik:// + 카카오 로그인) -->
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -74,6 +81,17 @@
 			</array>
 			<key>CFBundleURLName</key>
 			<string>com.manpasik.app</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<!-- 카카오 네이티브 앱 키 (YOUR_NATIVE_APP_KEY를 실제 키로 교체) -->
+				<string>kakaoYOUR_NATIVE_APP_KEY</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.manpasik.app.kakao</string>
 		</dict>
 	</array>
 	<!-- Universal Link (https://manpasik.com) -->

@@ -1,6 +1,6 @@
 import 'dart:async';
+import 'dart:ui';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -10,6 +10,7 @@ import 'package:manpasik/core/theme/app_theme.dart';
 import 'package:manpasik/core/services/rust_ffi_stub.dart';
 import 'package:manpasik/core/services/crash_reporter.dart';
 import 'package:manpasik/core/services/app_logger.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 import 'package:manpasik/core/services/app_lifecycle_observer.dart';
 import 'package:manpasik/shared/providers/theme_provider.dart';
 import 'package:manpasik/shared/providers/locale_provider.dart';
@@ -19,6 +20,7 @@ import 'package:manpasik/l10n/app_localizations.dart';
 final CrashReporter crashReporter = ConsoleCrashReporter();
 
 void main() async {
+
   // Zone.runGuarded로 비동기 에러 포착
   runZonedGuarded<Future<void>>(() async {
     WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +57,11 @@ void main() async {
 
     // Hive 초기화 (로컬 저장소)
     // await Hive.initFlutter();
+
+    // 카카오 SDK 초기화 (네이티브 앱 키 설정)
+    // 실제 배포 시 YOUR_NATIVE_APP_KEY를 카카오 개발자 콘솔에서 발급받은 키로 교체
+    KakaoSdk.init(nativeAppKey: 'YOUR_NATIVE_APP_KEY');
+    log.info('카카오 SDK 초기화 완료', tag: 'Bootstrap');
 
     // Rust Core 엔진 초기화 (스텁/네이티브 자동 선택)
     await RustBridge.init();
