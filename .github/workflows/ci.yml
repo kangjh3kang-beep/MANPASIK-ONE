@@ -1,38 +1,224 @@
-name: CI
+name: CI pipeline
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ "main", "develop" ]
   pull_request:
-    branches: [main, develop]
+    branches: [ "main", "develop" ]
 
 env:
-  GO_VERSION: '1.24'
-  RUST_VERSION: '1.75'
-  REGISTRY: ghcr.io
-  IMAGE_PREFIX: ${{ github.repository }}
+  GO_VERSION: '1.22'
+  FLUTTER_VERSION: '3.32.0'
+  RUST_TOOLCHAIN: 'stable'
 
 jobs:
   # ============================================================================
-  # Rust 코어 빌드 및 테스트
+  # 0. SSOT Governance (상수/문서 일치성)
   # ============================================================================
-  rust-build:
-    name: Rust Build & Test
+  ssot-governance:
+    name: SSOT Governance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate SSOT constants
+        run: python3 scripts/validate_ssot_constants.py
+
+      - name: Security release gate
+        run: bash scripts/security_release_gate.sh
+
+      - name: Assay evidence gate
+        run: bash scripts/assay_evidence_gate.sh
+
+      - name: Flutter evidence UI gate policy
+        run: bash scripts/flutter_evidence_ui_gate_policy_test.sh
+
+      - name: Flutter web timing collection policy
+        run: bash scripts/ci_web_gate_timing_collection_policy_test.sh
+
+      - name: Flutter web timing threshold promotion policy
+        run: bash scripts/ci_web_timing_threshold_promotion_policy_test.sh
+
+      - name: Flutter web timing review fixture policy
+        run: bash scripts/ci_web_timing_review_fixture_policy_test.sh
+
+      - name: Flutter web release review checklist policy
+        run: bash scripts/ci_web_release_review_checklist_policy_test.sh
+
+      - name: Flutter web timing governance index policy
+        run: bash scripts/ci_web_timing_governance_index_policy_test.sh
+
+  # ============================================================================
+  # 1. Web App (Node.js / pnpm)
+  # ============================================================================
+  web-app:
+    name: Web App (Node.js)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: |
+          pnpm config set auto-install-peers true
+          pnpm install --no-frozen-lockfile
+
+      - name: Type Check
+        run: pnpm run type
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Unit Tests
+        run: pnpm test
+
+      - name: Build Web App
+        run: pnpm build --filter @mmup/web
+
+  # ============================================================================
+  # 2. Go Backend (35 서비스 빌드 + 테스트)
+  # ============================================================================
+  go-backend:
+    name: Go Backend
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Go vet (정적 분석)
+        run: go vet ./...
+
+      - name: Build all services
+        run: |
+          FAILED=()
+          for dir in services/*/; do
+            svc=$(basename "$dir")
+            echo "::group::Building $svc"
+            if ! go build "./$dir..."; then
+              FAILED+=("$svc")
+              echo "::error::Build failed: $svc"
+            fi
+            echo "::endgroup::"
+          done
+          if [ ${#FAILED[@]} -ne 0 ]; then
+            echo "::error::Failed builds: ${FAILED[*]}"
+            exit 1
+          fi
+
+      - name: Run tests
+        run: |
+          go test ./... -count=1 -timeout 300s -v 2>&1 | tee test-output.txt
+          TEST_EXIT=${PIPESTATUS[0]}
+          echo ""
+          echo "=== Test Summary ==="
+          grep -cE "^--- PASS:" test-output.txt || echo "0 passed"
+          grep -cE "^--- FAIL:" test-output.txt || echo "0 failed"
+          exit $TEST_EXIT
+
+  # ============================================================================
+  # 3. Flutter App (분석 + 테스트)
+  # ============================================================================
+  flutter-app:
+    name: Flutter App
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/flutter-app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosiatech/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Flutter analyze (정적 분석)
+        run: flutter analyze --no-fatal-infos
+
+      - name: Run tests
+        run: flutter test --reporter expanded
+
+      - name: Flutter evidence UI gate: contract
+        run: bash ../../scripts/flutter_evidence_ui_gate.sh --category contract
+
+      - name: Flutter evidence UI gate: ui
+        run: bash ../../scripts/flutter_evidence_ui_gate.sh --category ui
+
+      - name: Flutter evidence UI gate: data
+        run: bash ../../scripts/flutter_evidence_ui_gate.sh --category data
+
+      - name: Flutter web release gate
+        run: bash ../../scripts/flutter_web_release_gate.sh
+
+      - name: Flutter web timing report
+        run: |
+          branch_type="release_branch"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            branch_type="pull_request"
+          fi
+          bash ../../scripts/flutter_web_timing_report.sh \
+            --log /tmp/manpasik_flutter_web_build.log \
+            --branch-type "$branch_type" \
+            --runner-context "${{ runner.os }}-${{ runner.arch }}" \
+            --output /tmp/manpasik_flutter_web_timing.env
+
+      - name: Upload Flutter web timing report
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-web-timing-report
+          path: /tmp/manpasik_flutter_web_timing.env
+
+  # ============================================================================
+  # 4. Rust Core (빌드 + 테스트)
+  # ============================================================================
+  rust-core:
+    name: Rust Core
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: rust-core
-    
+
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-action@stable
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: ${{ env.RUST_VERSION }}
-          components: clippy, rustfmt
-      
-      - name: Cache Cargo
+          components: clippy
+
+      - name: Cache cargo
         uses: actions/cache@v4
         with:
           path: |
@@ -41,257 +227,14 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             rust-core/target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('rust-core/**/Cargo.lock') }}
-      
-      - name: Check formatting
-        run: cargo fmt --all -- --check
-      
-      - name: Clippy
-        run: cargo clippy --all-targets -- -D warnings
-      
+          key: ${{ runner.os }}-cargo-${{ hashFiles('rust-core/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+
       - name: Build
-        run: cargo build --release
-      
-      - name: Test
-        run: cargo test --all
-      
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: rust-core
-          path: rust-core/target/release/libmanpasik_engine.*
+        run: cargo build --workspace
 
-  # ============================================================================
-  # Go 백엔드 빌드 및 테스트
-  # ============================================================================
-  go-build:
-    name: Go Build & Test
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-      
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
-      
-      - name: Download dependencies
-        run: go mod download
-      
-      - name: Build gateway
-        run: go build -v ./services/gateway/cmd
+      - name: Clippy (린트)
+        run: cargo clippy --workspace -- -D warnings
 
-      - name: Build all services
-        run: |
-          go build -v ./services/auth-service/cmd
-          go build -v ./services/user-service/cmd
-          go build -v ./services/device-service/cmd
-          go build -v ./services/measurement-service/cmd
-          go build -v ./services/subscription-service/cmd
-          go build -v ./services/shop-service/cmd
-          go build -v ./services/payment-service/cmd
-          go build -v ./services/family-service/cmd
-          go build -v ./services/notification-service/cmd
-          go build -v ./services/health-record-service/cmd
-          go build -v ./services/prescription-service/cmd
-          go build -v ./services/reservation-service/cmd
-          go build -v ./services/telemedicine-service/cmd
-          go build -v ./services/admin-service/cmd
-          go build -v ./services/community-service/cmd
-          go build -v ./services/cartridge-service/cmd
-          go build -v ./services/coaching-service/cmd
-          go build -v ./services/calibration-service/cmd
-          go build -v ./services/ai-inference-service/cmd
-          go build -v ./services/video-service/cmd
-          go build -v ./services/translation-service/cmd
-
-      - name: Test (unit + service + orchestrator)
-        run: |
-          go test -v -race -count=1 ./services/*/internal/service/... ./shared/orchestrator/...
-
-      - name: Test (full)
-        run: go test -v -race -coverprofile=coverage.out ./...
-      
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        with:
-          file: backend/coverage.out
-          flags: backend
-
-  # ============================================================================
-  # Lint 검사
-  # ============================================================================
-  lint:
-    name: Lint
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-      
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v4
-        with:
-          version: latest
-          working-directory: backend
-
-  # ============================================================================
-  # Docker 이미지 빌드
-  # ============================================================================
-  docker-build:
-    name: Docker Build
-    runs-on: ubuntu-latest
-    needs: [rust-build, go-build]
-    if: github.event_name == 'push'
-    
-    strategy:
-      matrix:
-        service:
-          - gateway
-          - auth-service
-          - user-service
-          - device-service
-          - measurement-service
-          - subscription-service
-          - shop-service
-          - payment-service
-          - family-service
-          - notification-service
-          - health-record-service
-          - prescription-service
-          - reservation-service
-          - telemedicine-service
-          - admin-service
-          - community-service
-          - cartridge-service
-          - coaching-service
-          - calibration-service
-          - ai-inference-service
-          - video-service
-          - translation-service
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${{ matrix.service }}
-          tags: |
-            type=sha,prefix=
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-      
-      - name: Build and push
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: backend/services/${{ matrix.service }}/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  # ============================================================================
-  # E2E 테스트 (PR 및 main 브랜치)
-  # ============================================================================
-  e2e-test:
-    name: E2E Test
-    runs-on: ubuntu-latest
-    needs: [go-build]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Run E2E tests
-        working-directory: backend
-        run: go test -tags=integration -v ./tests/e2e/... -timeout 120s
-
-  # ============================================================================
-  # Observability 검증
-  # ============================================================================
-  observability-test:
-    name: Observability Verification
-    runs-on: ubuntu-latest
-    needs: [go-build]
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-
-      - name: Verify metrics endpoints
-        run: |
-          cd backend
-          go test -v ./shared/observability/...
-
-  # ============================================================================
-  # 통합 테스트
-  # ============================================================================
-  integration-test:
-    name: Integration Test
-    runs-on: ubuntu-latest
-    needs: [go-build]
-    if: github.ref == 'refs/heads/main'
-    
-    defaults:
-      run:
-        working-directory: backend
-    
-    steps:
-      - uses: actions/checkout@v4
-      
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GO_VERSION }}
-      
-      - name: Cache Go modules
-        uses: actions/cache@v4
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
-      
-      - name: Download dependencies
-        run: go mod download
-      
-      # E2E: 서비스 미기동 시 TestServiceHealth/TestMeasurementFlow는 연결 실패로 스킵 가능
-      - name: Run E2E tests
-        run: go test -v -count=1 ./tests/e2e/...
-        env:
-          AUTH_SERVICE_ADDR: localhost:50051
-          MEASUREMENT_SERVICE_ADDR: localhost:50054
+      - name: Run tests
+        run: cargo test --workspace

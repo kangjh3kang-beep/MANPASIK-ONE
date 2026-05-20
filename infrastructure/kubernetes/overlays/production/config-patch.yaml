@@ -8,6 +8,12 @@ data:
   LOG_LEVEL: "warn"
   DB_SSLMODE: "require"
   OFFLINE_MODE_ENABLED: "true"
+  # 운영: 테넌시 + OTLP 활성
+  TENANCY_ENFORCED: "true"
+  OTLP_HTTP_ENDPOINT: "http://otel-collector.manpasik-ops.svc.cluster.local:4318/v1/traces"
+  OTLP_GRPC_ENDPOINT: "otel-collector.manpasik-ops.svc.cluster.local:4317"
+  VAULT_ADDR: "http://vault.manpasik-ops.svc.cluster.local:8200"
+  BACKUP_RETENTION_DAYS: "90"
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

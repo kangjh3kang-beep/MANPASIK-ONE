@@ -78,7 +78,7 @@
 
 • S_det     : 검출 전극(Detection electrode) 신호
 • S_ref     : 기준 전극(Reference electrode) 신호
-• α (alpha) : 보정 계수 (기본값 = 0.95, crate::DEFAULT_ALPHA)
+• α (alpha) : 보정 계수 (기본값 = 0.98, crate::DEFAULT_ALPHA)
 
 효과: 99% 매트릭스 노이즈 제거
 ```
@@ -89,7 +89,7 @@ S_corrected[i] = (S_det[i] - α × S_ref[i] - offset[i]) × gain[i]
 ```
 
 **파라미터 구조 (CorrectionParams):**
-- `alpha: f64` — 보정 계수 (0.0~1.0)
+- `alpha: f64` — 보정 계수 (0.90~1.10)
 - `channel_offsets: Vec<f64>` — 채널별 DC 오프셋
 - `channel_gains: Vec<f64>` — 채널별 게인
 - `temp_coefficient: f64` — 온도 보정 계수
@@ -99,7 +99,8 @@ S_corrected[i] = (S_det[i] - α × S_ref[i] - offset[i]) × gain[i]
 차원 확장 경로:
   88차원 (Basic)  → 단일 센서 기본 측정
   448차원 (Enhanced) → 전자코(8ch) + 전자혀(8ch) 융합
-  896차원 (Full)   → 완전 융합 (MAX_CHANNELS = 896)
+  896차원 (Full)   → 완전 융합
+  1792차원 (Max)   → 시간축 확장 포함 (MAX_CHANNELS = 1792)
 ```
 
 **벡터 연산:**
@@ -130,7 +131,7 @@ FingerprintBuilder::new(base_88ch)
 | 모델 타입 | 입력 크기 | 출력 크기 | 용도 |
 |----------|----------|----------|------|
 | Calibration | 88 | 88 | 채널별 보정값 |
-| FingerprintClassifier | 896 | 29 | 카트리지 타입 분류 |
+| FingerprintClassifier | 1792 | 30 | 카트리지 타입 분류 (29종 + NonTarget1792) |
 | AnomalyDetection | 88 | 1 | 이상 스코어 |
 | ValuePredictor | 88 | 1 | 단일 값 예측 |
 | QualityAssessment | 88 | 3 | 품질 등급 (좋음/보통/나쁨) |
@@ -454,8 +455,8 @@ Phase 1: MVP (Month 1-4)
 
 ## 8. 핵심 결정 사항 (변경 불가)
 
-1. **차동측정 공식**: `S_det - α × S_ref` (α 기본값 = 0.95)
-2. **핑거프린트 차원**: 88 → 448 → 896 확장 경로
+1. **차동측정 공식**: `S_det - α × S_ref` (α 기본값 = 0.98)
+2. **핑거프린트 차원**: 88 → 448 → 896 → 1792 확장 경로
 3. **리더기 관리**: 무제한 확장 (티어별 기본값만 다름)
 4. **오프라인**: 100% 완전 동작 (CRDT 동기화)
 5. **데이터 패킷**: 패밀리C 표준 준수

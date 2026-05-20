@@ -54,6 +54,8 @@ data:
   COMMUNITY_SERVICE_ADDR: "community-service:50065"
   RESERVATION_SERVICE_ADDR: "reservation-service:50066"
   ADMIN_SERVICE_ADDR: "admin-service:50068"
+  AUDIT_SERVICE_ADDR: "audit-service:50072"
+  AUDIT_INTAKE_URL: "http://audit-service:9100/audit/events"
   NOTIFICATION_SERVICE_ADDR: "notification-service:50062"
   PRESCRIPTION_SERVICE_ADDR: "prescription-service:50069"
   VIDEO_SERVICE_ADDR: "video-service:50070"
@@ -76,6 +78,7 @@ data:
   COMMUNITY_SERVICE_URL: "community-service.manpasik.svc.cluster.local:50065"
   RESERVATION_SERVICE_URL: "reservation-service.manpasik.svc.cluster.local:50066"
   ADMIN_SERVICE_URL: "admin-service.manpasik.svc.cluster.local:50068"
+  AUDIT_SERVICE_URL: "audit-service.manpasik.svc.cluster.local:50072"
   NOTIFICATION_SERVICE_URL: "notification-service.manpasik.svc.cluster.local:50062"
   PRESCRIPTION_SERVICE_URL: "prescription-service.manpasik.svc.cluster.local:50069"
   VIDEO_SERVICE_URL: "video-service.manpasik.svc.cluster.local:50070"
@@ -88,6 +91,38 @@ data:
   TELEMEDICINE_SERVICE_URL: "telemedicine-service.manpasik.svc.cluster.local:50071"
 
   # ManPaSik domain settings
-  MAX_FINGERPRINT_DIMENSION: "896"
-  DEFAULT_ALPHA: "0.95"
+  MAX_FINGERPRINT_DIMENSION: "1792"
+  DEFAULT_ALPHA: "0.98"
   OFFLINE_MODE_ENABLED: "true"
+
+  # ===== 운영 인프라 (Phase N/S/T/U/V) =====
+
+  # 멀티테넌트 RBAC (점진 도입)
+  # true 시 telemedicine/health-record/family/auth 등 wire-up 된 서비스에서 인터셉터 활성
+  TENANCY_ENFORCED: "false"
+
+  # OTLP 분산 추적 — HTTP exporter
+  # 운영 collector 주소 (예: "http://otel-collector.manpasik-ops.svc.cluster.local:4318/v1/traces")
+  OTLP_HTTP_ENDPOINT: ""
+  OTLP_BATCH_SIZE: "100"
+  OTLP_FLUSH_TIMEOUT_SECONDS: "5"
+
+  # OTLP 분산 추적 — gRPC exporter
+  # 운영 collector gRPC 주소 (예: "otel-collector.manpasik-ops.svc.cluster.local:4317")
+  OTLP_GRPC_ENDPOINT: ""
+
+  # 백업 (PgDumpProvider + ObjectStorage)
+  BACKUP_OUTPUT_DIR: "/var/manpasik/backups"
+  BACKUP_FORMAT: "custom"               # plain | custom | directory | tar
+  BACKUP_RETENTION_DAYS: "30"
+  # 외부 객체 저장소 (HTTPObjectStorage 또는 S3 어댑터)
+  BACKUP_STORAGE_BASE_URL: ""           # 예: "https://r2.manpasik.com/backups"
+  BACKUP_LIST_ENDPOINT: ""
+
+  # Vault Secrets (HTTP 직결)
+  VAULT_ADDR: ""                        # 예: "http://vault.manpasik-ops.svc.cluster.local:8200"
+  VAULT_KV_MOUNT: "secret"
+
+  # 운영 대시보드
+  OPS_DASHBOARD_PATH_PREFIX: "/ops"
+  OPS_DASHBOARD_SNAPSHOT_TIMEOUT_SECONDS: "5"
