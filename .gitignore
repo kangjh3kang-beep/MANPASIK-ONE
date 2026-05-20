@@ -47,9 +47,15 @@ ai-ml/models/*.pt
 ai-ml/models/*.onnx
 ai-ml/models/*.tflite
 
-# ── IDE ──
+# ── IDE / Agent 도구 캐시 ──
 .idea/
 .vscode/
+.cursor/
+.claude/
+.agent/
+.agents/
+.husky/
+.turbo/
 *.swp
 *.swo
 *~
