@@ -1,7 +1,6 @@
 import 'package:manpasik/features/devices/domain/device_repository.dart';
 import 'package:manpasik/core/services/grpc_client.dart';
 import 'package:manpasik/core/services/auth_interceptor.dart';
-import 'package:manpasik/generated/manpasik.pb.dart';
 import 'package:manpasik/generated/manpasik.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 
@@ -25,17 +24,17 @@ class DeviceRepositoryImpl implements DeviceRepository {
     return _client!;
   }
 
-  static String _statusName(int status) {
+  static String _statusName(DeviceStatus status) {
     switch (status) {
-      case 1:
+      case DeviceStatus.DEVICE_STATUS_ONLINE:
         return 'online';
-      case 2:
+      case DeviceStatus.DEVICE_STATUS_OFFLINE:
         return 'offline';
-      case 3:
+      case DeviceStatus.DEVICE_STATUS_MEASURING:
         return 'measuring';
-      case 4:
+      case DeviceStatus.DEVICE_STATUS_UPDATING:
         return 'updating';
-      case 5:
+      case DeviceStatus.DEVICE_STATUS_ERROR:
         return 'error';
       default:
         return 'unknown';
@@ -87,8 +86,23 @@ class DeviceRepositoryImpl implements DeviceRepository {
         status: DeviceConnectionStatus.connected,
         batteryLevel: 90,
         signalStrength: 88,
-        currentValues: {'Temp': '24.5°C', 'Humidity': '45%', 'Light': '300 lux'},
-        latestReadings: [24.0, 24.1, 24.2, 24.5, 24.5, 24.4, 24.5, 24.6, 24.5, 24.5],
+        currentValues: {
+          'Temp': '24.5°C',
+          'Humidity': '45%',
+          'Light': '300 lux'
+        },
+        latestReadings: [
+          24.0,
+          24.1,
+          24.2,
+          24.5,
+          24.5,
+          24.4,
+          24.5,
+          24.6,
+          24.5,
+          24.5
+        ],
       ),
       ConnectedDevice(
         id: 'gas-002',

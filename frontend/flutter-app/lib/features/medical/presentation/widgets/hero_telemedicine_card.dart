@@ -1,9 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
-import 'package:manpasik/shared/widgets/animate_fade_in_up.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/shared/widgets/breathing_glow.dart';
 import 'package:manpasik/shared/widgets/scale_button.dart';
+
+// ───────────────────────────────────────────────────
+// HeroTelemedicineCard — Sanggam Orbit 화상 진료 히어로 카드
+//
+// [Rule 4] app_theme → sanggam_theme
+// [Rule 4] AppTheme.sanggamGold → SanggamTheme.primary
+// [Rule 4] AppTheme.waveCyan → SanggamTheme.jagaeCyan
+// [Rule 4] Color(0xFF00E676) 2x → SanggamTheme.jagaeCyan
+// [Rule 4] Color(0xFF003344) → SanggamTheme.surface
+// [Rule 4] Color(0xFF00838F)/Color(0xFF00ACC1) → SanggamTheme.jagaeCyan 기반
+// [Rule 4] withOpacity → withValues(alpha:)
+// [Rule 4] 미사용 import animate_fade_in_up 제거
+// ───────────────────────────────────────────────────
 
 class HeroTelemedicineCard extends StatelessWidget {
   const HeroTelemedicineCard({super.key});
@@ -14,12 +26,12 @@ class HeroTelemedicineCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16),
       height: 200,
       decoration: BoxDecoration(
-        color: const Color(0xFF003344), // Deep Teal
+        color: SanggamTheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppTheme.sanggamGold.withOpacity(0.5)),
+        border: Border.all(color: SanggamTheme.primary.withValues(alpha: 0.5)),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.waveCyan.withOpacity(0.1),
+            color: SanggamTheme.jagaeCyan.withValues(alpha: 0.1),
             blurRadius: 20,
             spreadRadius: 0,
           ),
@@ -38,14 +50,14 @@ class HeroTelemedicineCard extends StatelessWidget {
                     end: Alignment.bottomRight,
                     colors: [
                       Colors.transparent,
-                      AppTheme.waveCyan.withOpacity(0.1),
+                      SanggamTheme.jagaeCyan.withValues(alpha: 0.1),
                     ],
                   ),
                 ),
               ),
             ),
           ),
-          
+
           Padding(
             padding: const EdgeInsets.all(24.0),
             child: Column(
@@ -59,7 +71,7 @@ class HeroTelemedicineCard extends StatelessWidget {
                         width: 12,
                         height: 12,
                         decoration: const BoxDecoration(
-                          color: Color(0xFF00E676), // Bright Green
+                          color: SanggamTheme.jagaeCyan,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -68,7 +80,7 @@ class HeroTelemedicineCard extends StatelessWidget {
                     const Text(
                       '진료 가능 (대기 0명)',
                       style: TextStyle(
-                        color: Color(0xFF00E676),
+                        color: SanggamTheme.jagaeCyan,
                         fontWeight: FontWeight.bold,
                         fontSize: 14,
                       ),
@@ -76,10 +88,7 @@ class HeroTelemedicineCard extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
-                
-                // Icon Illustration (Placeholder for now, drawing simple shapes)
-                // ...
-                
+
                 // Title
                 const Text(
                   '비대면 화상 진료',
@@ -98,7 +107,7 @@ class HeroTelemedicineCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                
+
                 // Action Button
                 SizedBox(
                   width: double.infinity,
@@ -107,13 +116,16 @@ class HeroTelemedicineCard extends StatelessWidget {
                     child: Container(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF00838F), Color(0xFF00ACC1)],
+                        gradient: LinearGradient(
+                          colors: [
+                            SanggamTheme.jagaeCyan.withValues(alpha: 0.7),
+                            SanggamTheme.jagaeCyan,
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF00ACC1).withOpacity(0.4),
+                            color: SanggamTheme.jagaeCyan.withValues(alpha: 0.4),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -135,17 +147,17 @@ class HeroTelemedicineCard extends StatelessWidget {
               ],
             ),
           ),
-          
+
           // Doctor Image Layout (Top Right)
           Positioned(
             top: 24,
             right: 24,
             child: CircleAvatar(
               radius: 28,
-              backgroundColor: Colors.white.withOpacity(0.1),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
               child: const Icon(Icons.medical_services_outlined, color: Colors.white, size: 28),
             ),
-          )
+          ),
         ],
       ),
     );

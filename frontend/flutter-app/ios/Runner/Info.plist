@@ -94,10 +94,14 @@
 			<string>com.manpasik.app.kakao</string>
 		</dict>
 	</array>
-	<!-- Universal Link (https://manpasik.com) -->
+	<!-- Universal Link (Phase AC-3: 조직 초대 딥링크 + Web fallback)
+	     배포 시 도메인 측에 .well-known/apple-app-site-association 호스팅 필수.
+	     참고: docs/deeplinks/apple-app-site-association.json -->
 	<key>com.apple.developer.associated-domains</key>
 	<array>
 		<string>applinks:manpasik.com</string>
+		<string>applinks:app.manpasik.com</string>
+		<string>applinks:www.manpasik.com</string>
 	</array>
 </dict>
 </plist>

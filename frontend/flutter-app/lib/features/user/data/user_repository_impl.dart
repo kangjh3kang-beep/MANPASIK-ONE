@@ -1,7 +1,6 @@
 import 'package:manpasik/features/user/domain/user_repository.dart';
 import 'package:manpasik/core/services/grpc_client.dart';
 import 'package:manpasik/core/services/auth_interceptor.dart';
-import 'package:manpasik/generated/manpasik.pb.dart';
 import 'package:manpasik/generated/manpasik.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 
@@ -38,7 +37,7 @@ class UserRepositoryImpl implements UserRepository {
         avatarUrl: res.avatarUrl.isNotEmpty ? res.avatarUrl : null,
         language: res.language.isNotEmpty ? res.language : null,
         timezone: res.timezone.isNotEmpty ? res.timezone : null,
-        subscriptionTier: res.subscriptionTier,
+        subscriptionTier: res.subscriptionTier.value,
       );
     } on GrpcError {
       rethrow;
@@ -53,7 +52,7 @@ class UserRepositoryImpl implements UserRepository {
       );
       return SubscriptionInfoDto(
         userId: res.userId,
-        tier: res.tier,
+        tier: res.tier.value,
         maxDevices: res.maxDevices,
         maxFamilyMembers: res.maxFamilyMembers,
         aiCoachingEnabled: res.aiCoachingEnabled,

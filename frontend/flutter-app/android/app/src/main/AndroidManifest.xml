@@ -71,12 +71,23 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="manpasik" />
             </intent-filter>
-            <!-- App Link: https://manpasik.com -->
+            <!-- App Link: https://manpasik.com (autoVerify 필요 — assetlinks.json 배포) -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="https" android:host="manpasik.com" />
+                <data android:scheme="https" android:host="app.manpasik.com" />
+                <data android:scheme="https" android:host="www.manpasik.com" />
+            </intent-filter>
+            <!-- 조직 초대 딥링크 (Phase AC-3): manpasik://invite/{token} 또는
+                 https://app.manpasik.com/invite/{token} → InviteAcceptScreen 자동 라우팅. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="manpasik" android:host="invite" />
+                <data android:scheme="https" android:host="app.manpasik.com" android:pathPrefix="/invite" />
             </intent-filter>
         </activity>
         <!-- 카카오 로그인 AuthCodeHandlerActivity -->

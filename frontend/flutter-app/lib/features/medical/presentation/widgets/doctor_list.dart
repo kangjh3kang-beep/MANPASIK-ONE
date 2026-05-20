@@ -2,10 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:manpasik/core/providers/grpc_provider.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/features/medical/domain/medical_repository.dart';
 import 'package:manpasik/shared/widgets/animate_fade_in_up.dart';
 import 'package:manpasik/shared/widgets/scale_button.dart';
+import 'package:manpasik/shared/widgets/glass_morphism_card.dart';
+
+// ───────────────────────────────────────────────────
+// DoctorList — Sanggam Orbit 추천 의료진 리스트
+//
+// [Rule 4] app_theme → sanggam_theme
+// [Rule 4] AppTheme.sanggamGold 3x → SanggamTheme.primary
+// [Rule 4] Color(0xFF00E676) → SanggamTheme.jagaeCyan
+// [Rule 4] withOpacity → withValues(alpha:)
+// ───────────────────────────────────────────────────
 
 /// 추천 의사 횡스크롤 리스트 — Riverpod Provider 연결
 class DoctorList extends ConsumerWidget {
@@ -31,7 +41,7 @@ class DoctorList extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 150,
+          height: 180,
           child: doctorsAsync.when(
             data: (doctors) {
               if (doctors.isEmpty) {
@@ -59,7 +69,7 @@ class DoctorList extends ConsumerWidget {
               );
             },
             loading: () => const Center(
-              child: CircularProgressIndicator(color: AppTheme.sanggamGold),
+              child: CircularProgressIndicator(color: SanggamTheme.primary),
             ),
             error: (_, __) => const Center(
               child: Text(
@@ -82,25 +92,23 @@ class _DoctorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return ScaleButton(
       onPressed: () => context.push('/medical/telemedicine'),
-      child: Container(
-        width: 120,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.white10),
-        ),
+      child: GlassmorphismCard(
+        width: 130,
+        padding: const EdgeInsets.all(16),
+        useKoreanBorder: true,
+        opacity: 0.15,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // 아바타
             CircleAvatar(
               radius: 24,
-              backgroundColor: AppTheme.sanggamGold.withOpacity(0.2),
+              backgroundColor: SanggamTheme.primary.withValues(alpha: 0.2),
               child: Text(
                 doctor.name.isNotEmpty ? doctor.name[0] : '?',
                 style: const TextStyle(
-                  color: AppTheme.sanggamGold,
+                  color: SanggamTheme.primary,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -122,7 +130,7 @@ class _DoctorCard extends StatelessWidget {
             Text(
               doctor.specialty,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.6),
+                color: Colors.white.withValues(alpha: 0.6),
                 fontSize: 10,
               ),
               maxLines: 1,
@@ -133,7 +141,7 @@ class _DoctorCard extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.star, size: 10, color: Colors.amber),
+                const Icon(Icons.star, size: 10, color: SanggamTheme.primary),
                 const SizedBox(width: 2),
                 Text(
                   '${doctor.rating}',
@@ -145,7 +153,7 @@ class _DoctorCard extends StatelessWidget {
             if (doctor.isAvailable)
               Text(
                 doctor.nextSlot ?? '예약 가능',
-                style: const TextStyle(fontSize: 9, color: Color(0xFF00E676), fontWeight: FontWeight.w600),
+                style: const TextStyle(fontSize: 9, color: SanggamTheme.jagaeCyan, fontWeight: FontWeight.w600),
               )
             else
               const Text(

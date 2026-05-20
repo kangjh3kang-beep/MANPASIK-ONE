@@ -24,6 +24,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/manpasik/backend/services/auth-service/internal/handler"
+	"github.com/manpasik/backend/services/auth-service/internal/oauth"
 	"github.com/manpasik/backend/services/auth-service/internal/repository/memory"
 	"github.com/manpasik/backend/services/auth-service/internal/repository/postgres"
 	redisTokenRepo "github.com/manpasik/backend/services/auth-service/internal/repository/redis"
@@ -32,6 +33,8 @@ import (
 	v1 "github.com/manpasik/backend/shared/gen/go/v1"
 	"github.com/manpasik/backend/shared/middleware"
 	"github.com/manpasik/backend/shared/observability"
+	"github.com/manpasik/backend/shared/ops/secrets"
+	"github.com/manpasik/backend/shared/tenancy"
 	redisclient "github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -121,16 +124,94 @@ func main() {
 		cfg.JWT.Issuer,
 	)
 
+	// Vault 시크릿 자동 회전: VAULT_ADDR 설정 시 활성화.
+	// 시크릿 path JWT_SECRET_VAULT_PATH (기본 "auth/jwt") 의 변경을 감지하여
+	// authSvc.SetJWTSecret 자동 호출 — 서비스 재시작 없이 키 회전.
+	var vaultBootstrap *secrets.VaultBootstrap
+	if vaultAddr := os.Getenv("VAULT_ADDR"); vaultAddr != "" {
+		jwtPath := os.Getenv("JWT_SECRET_VAULT_PATH")
+		if jwtPath == "" {
+			jwtPath = "auth/jwt"
+		}
+		bs, vErr := secrets.NewVaultBootstrap(secrets.VaultBootstrapConfig{
+			WatchPaths:                []string{jwtPath},
+			AutoRenewToken:            true,
+			TokenRenewIntervalSeconds: 1800,
+			OnError: func(path string, err error) {
+				log.Printf("[%s] Vault polling 에러 (%s): %v", serviceName, path, err)
+			},
+		})
+		if vErr != nil {
+			log.Printf("[%s] Vault 초기화 실패, 환경변수 JWT 사용: %v", serviceName, vErr)
+		} else {
+			bs.AddListener(func(_ context.Context, ev secrets.RotationEvent) error {
+				if ev.NewSecret == nil || ev.NewSecret.Value == "" {
+					return nil
+				}
+				authSvc.SetJWTSecret(ev.NewSecret.Value)
+				log.Printf("[%s] JWT 시크릿 핫리로드 완료 (path=%s, version=%d)",
+					serviceName, ev.Path, ev.NewSecret.Version)
+				return nil
+			})
+			bs.Start(context.Background())
+			vaultBootstrap = bs
+			defer bs.Stop()
+			log.Printf("[%s] Vault Bootstrap 활성화 (watch=%s)", serviceName, jwtPath)
+		}
+	}
+	_ = vaultBootstrap
+
+	// OAuth Verifier 초기화 (환경변수 기반)
+	oauthVerifiers := make(map[string]oauth.OAuthVerifier)
+
+	// Google OAuth
+	if clientID := os.Getenv("GOOGLE_CLIENT_ID"); clientID != "" {
+		oauthVerifiers["GOOGLE"] = oauth.NewGoogleVerifier(clientID)
+		log.Printf("[%s] Google OAuth Verifier 활성화", serviceName)
+	}
+
+	// Apple OAuth
+	if clientID := os.Getenv("APPLE_CLIENT_ID"); clientID != "" {
+		oauthVerifiers["APPLE"] = oauth.NewAppleVerifier(clientID)
+		log.Printf("[%s] Apple OAuth Verifier 활성화", serviceName)
+	}
+
+	// Kakao OAuth (Access Token 기반, 별도 키 불필요)
+	oauthVerifiers["KAKAO"] = oauth.NewKakaoVerifier()
+	log.Printf("[%s] Kakao OAuth Verifier 활성화", serviceName)
+
+	// Naver OAuth (Access Token 기반, 별도 키 불필요)
+	oauthVerifiers["NAVER"] = oauth.NewNaverVerifier()
+	log.Printf("[%s] Naver OAuth Verifier 활성화", serviceName)
+
+	authSvc.SetOAuthVerifiers(oauthVerifiers)
+
 	// TokenValidator 어댑터 (인터셉터용)
 	validator := &authTokenValidator{auth: authSvc}
 
-	grpcServer := grpc.NewServer(
+	// auth 는 로그인/등록/리프레시 등 테넌트 컨텍스트 형성 *전* 의 RPC 가 다수.
+	// 테넌시 검증을 면제할 메서드 추가.
+	authSkip := map[string]bool{
+		"/manpasik.v1.AuthService/Register":             true,
+		"/manpasik.v1.AuthService/Login":                true,
+		"/manpasik.v1.AuthService/RefreshToken":         true,
+		"/manpasik.v1.AuthService/ValidateToken":        true,
+		"/manpasik.v1.AuthService/OAuthLogin":           true,
+		"/manpasik.v1.AuthService/RequestPasswordReset": true,
+	}
+	tenancyEngine := tenancy.NewPolicyEngine(tenancy.NewMemoryMembershipStore())
+	serverOpts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			middleware.RequestIDInterceptor(),
 			observability.UnaryServerInterceptor(metrics),
 			middleware.AuthInterceptor(validator),
 		),
-	)
+	}
+	serverOpts = append(serverOpts, tenancy.MaybeServerOptions(tenancyEngine, authSkip)...)
+	if tenancy.EnforcedFromEnv() {
+		log.Printf("[%s] 멀티테넌트 RBAC 인터셉터 활성화 (auth flow skip 포함)", serviceName)
+	}
+	grpcServer := grpc.NewServer(serverOpts...)
 
 	healthServer := health.NewServer()
 	healthpb.RegisterHealthServer(grpcServer, healthServer)
@@ -169,6 +250,9 @@ func main() {
 		mux.HandleFunc("/metrics", metrics.PrometheusHandler())
 		mux.HandleFunc("/health", healthCheck.Handler())
 		metricsAddr := ":9100"
+		if configured := os.Getenv("METRICS_PORT"); configured != "" {
+			metricsAddr = configured
+		}
 		logger.Info("Metrics server starting", zap.String("addr", metricsAddr))
 		if err := http.ListenAndServe(metricsAddr, mux); err != nil {
 			logger.Error("Metrics server failed", zap.Error(err))

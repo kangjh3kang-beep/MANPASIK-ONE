@@ -643,3 +643,292 @@ func TestGetRecommendations_TypeFilter(t *testing.T) {
 		t.Errorf("제한 추천 수: got %d, want 2", len(limitedRecs))
 	}
 }
+
+// ============================================================================
+// Phase F 테스트 보강
+// ============================================================================
+
+func TestGenerateCoaching_GoalProgress(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	ctx := context.Background()
+
+	msg, err := svc.GenerateCoaching(ctx, "user-gp", "", CoachingTypeGoalProgress)
+	if err != nil {
+		t.Fatalf("GenerateCoaching(GoalProgress) 실패: %v", err)
+	}
+	if msg.CoachingType != CoachingTypeGoalProgress {
+		t.Errorf("CoachingType: got %d, want %d", msg.CoachingType, CoachingTypeGoalProgress)
+	}
+	if msg.Title == "" {
+		t.Error("Title이 비어 있습니다")
+	}
+}
+
+func TestGenerateCoaching_GoalProgress_WithGoals(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	ctx := context.Background()
+
+	_, _ = svc.SetHealthGoal(ctx, "user-gpg", GoalCategoryBloodGlucose, "fasting_glucose", 100.0, "mg/dL", "혈당 관리", time.Now().AddDate(0, 3, 0))
+
+	msg, err := svc.GenerateCoaching(ctx, "user-gpg", "", CoachingTypeGoalProgress)
+	if err != nil {
+		t.Fatalf("GoalProgress(with goals) 실패: %v", err)
+	}
+	if msg.Title == "" {
+		t.Error("Title이 비어 있습니다")
+	}
+}
+
+func TestGenerateCoaching_Alert(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	ctx := context.Background()
+
+	msg, err := svc.GenerateCoaching(ctx, "user-alert", "", CoachingTypeAlert)
+	if err != nil {
+		t.Fatalf("GenerateCoaching(Alert) 실패: %v", err)
+	}
+	if msg.CoachingType != CoachingTypeAlert {
+		t.Errorf("CoachingType: got %d, want %d", msg.CoachingType, CoachingTypeAlert)
+	}
+	if msg.RiskLevel < RiskLevelModerate {
+		t.Errorf("Alert RiskLevel은 Moderate 이상이어야 합니다: got %d", msg.RiskLevel)
+	}
+}
+
+func TestGenerateCoaching_Recommendation(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	ctx := context.Background()
+
+	msg, err := svc.GenerateCoaching(ctx, "user-rec", "", CoachingTypeRecommendation)
+	if err != nil {
+		t.Fatalf("GenerateCoaching(Recommendation) 실패: %v", err)
+	}
+	if msg.CoachingType != CoachingTypeRecommendation {
+		t.Errorf("CoachingType: got %d, want %d", msg.CoachingType, CoachingTypeRecommendation)
+	}
+	if msg.Title == "" {
+		t.Error("Title이 비어 있습니다")
+	}
+}
+
+func TestListCoachingMessages_EmptyUserID(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	_, _, err := svc.ListCoachingMessages(context.Background(), "", CoachingTypeUnknown, 10, 0)
+	if err == nil {
+		t.Error("빈 user_id에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestSetHealthGoal_AllCategories(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	ctx := context.Background()
+
+	categories := []GoalCategory{
+		GoalCategoryBloodPressure, GoalCategoryCholesterol,
+		GoalCategoryNutrition, GoalCategorySleep, GoalCategoryStress,
+	}
+	for _, cat := range categories {
+		goal, err := svc.SetHealthGoal(ctx, "user-cat", cat, "metric", 100, "unit", "목표", time.Now().AddDate(0, 1, 0))
+		if err != nil {
+			t.Fatalf("카테고리 %d 목표 설정 실패: %v", cat, err)
+		}
+		if goal.Category != cat {
+			t.Errorf("Category: got %d, want %d", goal.Category, cat)
+		}
+	}
+}
+
+func TestGenerateDailyReport_EmptyUserID(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	_, err := svc.GenerateDailyReport(context.Background(), "", time.Now())
+	if err == nil {
+		t.Error("빈 user_id에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestGetWeeklyReport_EmptyUserID(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	_, err := svc.GetWeeklyReport(context.Background(), "", time.Now())
+	if err == nil {
+		t.Error("빈 user_id에 에러가 반환되어야 합니다")
+	}
+}
+
+// ============================================================================
+// Phase E-2: 데이터 기반 동적 추천 테스트
+// ============================================================================
+
+type fakeHealthDataProvider struct {
+	data *UserHealthData
+	err  error
+}
+
+func (f *fakeHealthDataProvider) GetUserHealthScore(_ context.Context, _ string) (*UserHealthData, error) {
+	if f.err != nil {
+		return nil, f.err
+	}
+	return f.data, nil
+}
+
+func TestGetRecommendations_WithHealthData_LowMetabolic(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	svc.SetHealthDataProvider(&fakeHealthDataProvider{
+		data: &UserHealthData{
+			OverallScore:   55.0,
+			CategoryScores: map[string]float64{"cardiovascular": 80, "metabolic": 45, "nutritional": 70, "fitness": 75},
+			Trend:          "declining",
+		},
+	})
+
+	recs, err := svc.GetRecommendations(context.Background(), "user-health", 0, 5)
+	if err != nil {
+		t.Fatalf("GetRecommendations 실패: %v", err)
+	}
+	if len(recs) != 5 {
+		t.Fatalf("추천 %d개, 5개 기대", len(recs))
+	}
+
+	// 대사 점수 45 → 식단 추천이 High 우선순위
+	var foodRec *Recommendation
+	for _, r := range recs {
+		if r.Type == RecommendationTypeFood {
+			foodRec = r
+			break
+		}
+	}
+	if foodRec == nil {
+		t.Fatal("Food 추천이 없습니다")
+	}
+	if foodRec.Priority != RiskLevelHigh {
+		t.Errorf("대사 점수 낮을 때 Food 우선순위는 High 기대, got %d", foodRec.Priority)
+	}
+	if foodRec.Title != "혈당 관리 긴급 식단 조정" {
+		t.Errorf("Food 제목 = %q, 긴급 식단 조정 기대", foodRec.Title)
+	}
+
+	// 대사가 가장 낮으므로 Food가 첫 번째 추천이어야 함
+	if recs[0].Type != RecommendationTypeFood {
+		t.Errorf("대사가 최저일 때 첫 추천은 Food, got %d", recs[0].Type)
+	}
+}
+
+func TestGetRecommendations_WithHealthData_LowCardiovascular(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	svc.SetHealthDataProvider(&fakeHealthDataProvider{
+		data: &UserHealthData{
+			OverallScore:   60.0,
+			CategoryScores: map[string]float64{"cardiovascular": 40, "metabolic": 80, "nutritional": 75, "fitness": 70},
+			Trend:          "stable",
+		},
+	})
+
+	recs, err := svc.GetRecommendations(context.Background(), "user-cv", 0, 5)
+	if err != nil {
+		t.Fatalf("GetRecommendations 실패: %v", err)
+	}
+
+	// 심혈관 점수 40 → 운동 추천이 High
+	var exerciseRec *Recommendation
+	for _, r := range recs {
+		if r.Type == RecommendationTypeExercise {
+			exerciseRec = r
+			break
+		}
+	}
+	if exerciseRec == nil {
+		t.Fatal("Exercise 추천이 없습니다")
+	}
+	if exerciseRec.Priority != RiskLevelHigh {
+		t.Errorf("심혈관 점수 낮을 때 Exercise 우선순위는 High 기대, got %d", exerciseRec.Priority)
+	}
+
+	// 심혈관이 가장 낮으므로 Exercise가 첫 번째
+	if recs[0].Type != RecommendationTypeExercise {
+		t.Errorf("심혈관이 최저일 때 첫 추천은 Exercise, got %d", recs[0].Type)
+	}
+}
+
+func TestGetRecommendations_WithHealthData_LowOverall_CheckupHigh(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	svc.SetHealthDataProvider(&fakeHealthDataProvider{
+		data: &UserHealthData{
+			OverallScore:   50.0,
+			CategoryScores: map[string]float64{"cardiovascular": 70, "metabolic": 70, "nutritional": 70, "fitness": 70},
+			Trend:          "declining",
+		},
+	})
+
+	recs, err := svc.GetRecommendations(context.Background(), "user-low", 0, 5)
+	if err != nil {
+		t.Fatalf("GetRecommendations 실패: %v", err)
+	}
+
+	// 종합 점수 50 → 건강검진 추천이 High
+	var checkupRec *Recommendation
+	for _, r := range recs {
+		if r.Type == RecommendationTypeCheckup {
+			checkupRec = r
+			break
+		}
+	}
+	if checkupRec == nil {
+		t.Fatal("Checkup 추천이 없습니다")
+	}
+	if checkupRec.Priority != RiskLevelHigh {
+		t.Errorf("종합 50점일 때 Checkup 우선순위는 High 기대, got %d", checkupRec.Priority)
+	}
+}
+
+func TestGetRecommendations_WithoutHealthData_DefaultPriority(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	// HealthDataProvider 미설정 → 기본 추천
+
+	recs, err := svc.GetRecommendations(context.Background(), "user-default", 0, 5)
+	if err != nil {
+		t.Fatalf("GetRecommendations 실패: %v", err)
+	}
+
+	// 기본 추천: 모두 Moderate 또는 Low
+	for _, r := range recs {
+		if r.Priority == RiskLevelHigh || r.Priority == RiskLevelCritical {
+			t.Errorf("건강 데이터 없이 High/Critical 우선순위가 있어서는 안 됩니다: %s", r.Title)
+		}
+	}
+}
+
+func TestGetRecommendations_HealthDataProviderError_Fallback(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	svc.SetHealthDataProvider(&fakeHealthDataProvider{
+		err: context.DeadlineExceeded,
+	})
+
+	// 오류 시에도 기본 추천 반환 (패닉 없음)
+	recs, err := svc.GetRecommendations(context.Background(), "user-err", 0, 5)
+	if err != nil {
+		t.Fatalf("GetRecommendations 에러: %v", err)
+	}
+	if len(recs) != 5 {
+		t.Fatalf("오류 시에도 5개 추천 반환 기대, got %d", len(recs))
+	}
+}
+
+func TestGenerateDailyReport_WithHealthData(t *testing.T) {
+	svc, _, _, _ := newTestCoachingService()
+	svc.SetHealthDataProvider(&fakeHealthDataProvider{
+		data: &UserHealthData{
+			OverallScore:   82.5,
+			CategoryScores: map[string]float64{"cardiovascular": 85, "metabolic": 80, "nutritional": 78, "fitness": 87},
+			Trend:          "improving",
+		},
+	})
+
+	report, err := svc.GenerateDailyReport(context.Background(), "user-daily", time.Now())
+	if err != nil {
+		t.Fatalf("GenerateDailyReport 실패: %v", err)
+	}
+
+	// 건강 데이터 제공자 점수(82.5) 사용
+	if report.OverallScore != 82.5 {
+		t.Errorf("OverallScore = %.1f, 82.5 기대", report.OverallScore)
+	}
+}

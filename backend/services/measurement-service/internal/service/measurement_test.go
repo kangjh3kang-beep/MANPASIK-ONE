@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/manpasik/backend/shared/assay"
 	"go.uber.org/zap"
 )
 
@@ -64,11 +65,14 @@ func (r *mockMeasureRepo) GetHistory(_ context.Context, userID string, start, en
 			continue
 		}
 		filtered = append(filtered, &MeasurementSummary{
-			SessionID:     d.SessionID,
-			CartridgeType: d.CartridgeType,
-			PrimaryValue:  d.PrimaryValue,
-			Unit:          d.Unit,
-			MeasuredAt:    d.Time,
+			SessionID:       d.SessionID,
+			CartridgeType:   d.CartridgeType,
+			PrimaryValue:    d.PrimaryValue,
+			Unit:            d.Unit,
+			EvidenceStatus:  d.EvidenceStatus,
+			DiagnosticReady: d.DiagnosticReady,
+			EvidenceGaps:    append([]string(nil), d.EvidenceGaps...),
+			MeasuredAt:      d.Time,
 		})
 	}
 	total := len(filtered)
@@ -230,6 +234,56 @@ func TestProcessMeasurement_빈_세션ID(t *testing.T) {
 	}
 }
 
+func TestProcessMeasurement_연구용_EvidenceStatus_노출(t *testing.T) {
+	svc, _, measureRepo, _, _ := newTestMeasurementService()
+	ctx := context.Background()
+	session, _ := svc.StartSession(ctx, "device-1", "glucose", "user-1")
+
+	result, err := svc.ProcessMeasurement(ctx, &MeasurementData{
+		SessionID:   session.ID,
+		SCorrected:  98.5,
+		RawChannels: make([]float64, 88),
+		Time:        time.Now().UTC(),
+	})
+	if err != nil {
+		t.Fatalf("측정 처리 실패: %v", err)
+	}
+	if result.EvidenceStatus != assay.EvidenceStatusResearchOnly {
+		t.Fatalf("result EvidenceStatus = %q, want %q", result.EvidenceStatus, assay.EvidenceStatusResearchOnly)
+	}
+	if result.DiagnosticReady {
+		t.Fatal("research-only result must not be diagnostic ready")
+	}
+	if len(result.EvidenceGaps) == 0 {
+		t.Fatal("research-only result must expose evidence gaps")
+	}
+	if len(measureRepo.data) != 1 {
+		t.Fatalf("stored measurement count = %d, want 1", len(measureRepo.data))
+	}
+	stored := measureRepo.data[0]
+	if stored.EvidenceStatus != assay.EvidenceStatusResearchOnly {
+		t.Fatalf("stored EvidenceStatus = %q, want %q", stored.EvidenceStatus, assay.EvidenceStatusResearchOnly)
+	}
+	if stored.DiagnosticReady {
+		t.Fatal("stored research-only measurement must not be diagnostic ready")
+	}
+}
+
+func TestProcessMeasurement_알수없는_카트리지_거부(t *testing.T) {
+	svc, _, _, _, _ := newTestMeasurementService()
+	ctx := context.Background()
+	session, _ := svc.StartSession(ctx, "device-1", "custom-research-unlocked", "user-1")
+
+	_, err := svc.ProcessMeasurement(ctx, &MeasurementData{
+		SessionID:  session.ID,
+		SCorrected: 1.23,
+		Time:       time.Now().UTC(),
+	})
+	if err == nil {
+		t.Fatal("알 수 없는 카트리지에 대해 에러가 발생해야 합니다")
+	}
+}
+
 // =============================================================================
 // EndSession 테스트
 // =============================================================================
@@ -321,6 +375,41 @@ func TestGetHistory_성공(t *testing.T) {
 	}
 	if len(summaries) != 2 {
 		t.Errorf("반환된 요약은 2개여야 합니다: got %d", len(summaries))
+	}
+}
+
+func TestGetHistory_EvidenceFields_보존(t *testing.T) {
+	svc, _, measureRepo, _, _ := newTestMeasurementService()
+	ctx := context.Background()
+
+	measureRepo.data = append(measureRepo.data, &MeasurementData{
+		SessionID:       "sess-evidence",
+		UserID:          "user-1",
+		CartridgeType:   "glucose",
+		PrimaryValue:    100.0,
+		Unit:            "mg/dL",
+		EvidenceStatus:  assay.EvidenceStatusResearchOnly,
+		DiagnosticReady: false,
+		EvidenceGaps:    []string{"clinical_lock_required"},
+		Time:            time.Now().UTC(),
+	})
+
+	summaries, total, err := svc.GetHistory(ctx, "user-1", time.Time{}, time.Time{}, 10, 0)
+	if err != nil {
+		t.Fatalf("측정 기록 조회 실패: %v", err)
+	}
+	if total != 1 || len(summaries) != 1 {
+		t.Fatalf("expected one summary, total=%d len=%d", total, len(summaries))
+	}
+	got := summaries[0]
+	if got.EvidenceStatus != assay.EvidenceStatusResearchOnly {
+		t.Fatalf("EvidenceStatus = %q, want %q", got.EvidenceStatus, assay.EvidenceStatusResearchOnly)
+	}
+	if got.DiagnosticReady {
+		t.Fatal("research_only summary must not be diagnostic ready")
+	}
+	if len(got.EvidenceGaps) != 1 || got.EvidenceGaps[0] != "clinical_lock_required" {
+		t.Fatalf("EvidenceGaps = %v", got.EvidenceGaps)
 	}
 }
 
@@ -472,5 +561,217 @@ func TestGetHistory_기본_Limit(t *testing.T) {
 	}
 	if len(summaries) != 0 {
 		t.Errorf("빈 결과여야 합니다: got %d", len(summaries))
+	}
+}
+
+// =============================================================================
+// Phase F 테스트 보강
+// =============================================================================
+
+func TestSyncDigitalTwin_성공(t *testing.T) {
+	svc, _, _, vectorRepo, _ := newTestMeasurementService()
+	ctx := context.Background()
+
+	session, _ := svc.StartSession(ctx, "device-1", "cartridge-glucose", "user-1")
+
+	state, err := svc.SyncDigitalTwin(ctx, session.ID, "user-1", "device-1",
+		[]float64{0.1, 0.2, 0.3},
+		0.5, 0.3, 0.2, "nominal", 0.1, 450,
+		[]float32{0.1, 0.2, 0.3}, 3,
+	)
+	if err != nil {
+		t.Fatalf("디지털 트윈 동기화 실패: %v", err)
+	}
+	if state.TwinID == "" {
+		t.Error("TwinID가 비어있습니다")
+	}
+	if state.HealthState != "nominal" {
+		t.Errorf("HealthState = %s, want nominal", state.HealthState)
+	}
+	if len(vectorRepo.vectors) != 1 {
+		t.Errorf("벡터 저장 수 = %d, want 1", len(vectorRepo.vectors))
+	}
+}
+
+func TestSyncDigitalTwin_빈_입력(t *testing.T) {
+	svc, _, _, _, _ := newTestMeasurementService()
+	ctx := context.Background()
+
+	_, err := svc.SyncDigitalTwin(ctx, "", "user-1", "device-1",
+		nil, 0, 0, 0, "nominal", 0, 0, nil, 0)
+	if err == nil {
+		t.Fatal("빈 session_id에 에러가 발생해야 합니다")
+	}
+
+	_, err = svc.SyncDigitalTwin(ctx, "sess-1", "", "device-1",
+		nil, 0, 0, 0, "nominal", 0, 0, nil, 0)
+	if err == nil {
+		t.Fatal("빈 user_id에 에러가 발생해야 합니다")
+	}
+}
+
+func TestSyncDigitalTwin_존재하지_않는_세션(t *testing.T) {
+	svc, _, _, _, _ := newTestMeasurementService()
+	ctx := context.Background()
+
+	_, err := svc.SyncDigitalTwin(ctx, "nonexistent", "user-1", "device-1",
+		nil, 0, 0, 0, "nominal", 0, 0, nil, 0)
+	if err == nil {
+		t.Fatal("존재하지 않는 세션에 에러가 발생해야 합니다")
+	}
+}
+
+func TestSyncDigitalTwin_높은_드리프트(t *testing.T) {
+	svc, _, _, _, _ := newTestMeasurementService()
+	ctx := context.Background()
+
+	session, _ := svc.StartSession(ctx, "device-1", "glucose", "user-1")
+
+	state, err := svc.SyncDigitalTwin(ctx, session.ID, "user-1", "device-1",
+		[]float64{0.5, 0.6, 0.7},
+		1.0, 0.8, 0.7, "drift", 0.85, 50,
+		nil, 0,
+	)
+	if err != nil {
+		t.Fatalf("높은 드리프트 동기화 실패: %v", err)
+	}
+	if state.DriftScore != 0.85 {
+		t.Errorf("DriftScore = %f, want 0.85", state.DriftScore)
+	}
+}
+
+func TestGetCalibrationStatus_성공(t *testing.T) {
+	svc, _, _, _, _ := newTestMeasurementService()
+	ctx := context.Background()
+
+	status, err := svc.GetCalibrationStatus(ctx, "sess-1", "device-1")
+	if err != nil {
+		t.Fatalf("보정 상태 조회 실패: %v", err)
+	}
+	if status.CalibrationState != "valid" {
+		t.Errorf("CalibrationState = %s, want valid", status.CalibrationState)
+	}
+	if status.MaxMeasurementsBeforeCal != 500 {
+		t.Errorf("MaxMeasurements = %d, want 500", status.MaxMeasurementsBeforeCal)
+	}
+}
+
+func TestGetCalibrationStatus_빈_입력(t *testing.T) {
+	svc, _, _, _, _ := newTestMeasurementService()
+	ctx := context.Background()
+
+	_, err := svc.GetCalibrationStatus(ctx, "", "")
+	if err == nil {
+		t.Fatal("session_id와 device_id 모두 비면 에러가 발생해야 합니다")
+	}
+}
+
+func TestExportToFHIRObservations_성공(t *testing.T) {
+	svc, _, measureRepo, _, _ := newTestMeasurementService()
+	ctx := context.Background()
+
+	now := time.Now().UTC()
+	measureRepo.data = append(measureRepo.data,
+		&MeasurementData{
+			SessionID: "sess-1", UserID: "user-fhir",
+			CartridgeType: "blood_glucose", PrimaryValue: 100.0,
+			Unit: "mg/dL", Time: now,
+		},
+		&MeasurementData{
+			SessionID: "sess-2", UserID: "user-fhir",
+			CartridgeType: "cholesterol_total", PrimaryValue: 200.0,
+			Unit: "mg/dL", Time: now,
+		},
+	)
+
+	bundle, count, err := svc.ExportToFHIRObservations(ctx, "user-fhir", nil, nil, nil)
+	if err != nil {
+		t.Fatalf("FHIR 내보내기 실패: %v", err)
+	}
+	if count != 2 {
+		t.Errorf("관측 수 = %d, want 2", count)
+	}
+	if bundle == "" {
+		t.Error("Bundle JSON이 비어있습니다")
+	}
+}
+
+func TestExportToFHIRObservations_바이오마커_필터(t *testing.T) {
+	svc, _, measureRepo, _, _ := newTestMeasurementService()
+	ctx := context.Background()
+
+	now := time.Now().UTC()
+	measureRepo.data = append(measureRepo.data,
+		&MeasurementData{
+			SessionID: "s1", UserID: "user-filter",
+			CartridgeType: "blood_glucose", PrimaryValue: 100.0,
+			Unit: "mg/dL", Time: now,
+		},
+		&MeasurementData{
+			SessionID: "s2", UserID: "user-filter",
+			CartridgeType: "cholesterol_total", PrimaryValue: 200.0,
+			Unit: "mg/dL", Time: now,
+		},
+	)
+
+	_, count, err := svc.ExportToFHIRObservations(ctx, "user-filter", nil, nil, []string{"blood_glucose"})
+	if err != nil {
+		t.Fatalf("필터 FHIR 내보내기 실패: %v", err)
+	}
+	if count != 1 {
+		t.Errorf("필터 후 관측 수 = %d, want 1", count)
+	}
+}
+
+func TestExportToFHIRObservations_빈_유저ID(t *testing.T) {
+	svc, _, _, _, _ := newTestMeasurementService()
+	ctx := context.Background()
+
+	_, _, err := svc.ExportToFHIRObservations(ctx, "", nil, nil, nil)
+	if err == nil {
+		t.Fatal("빈 user_id에 에러가 발생해야 합니다")
+	}
+}
+
+func TestGetHistory_최대_Limit(t *testing.T) {
+	svc, _, _, _, _ := newTestMeasurementService()
+	ctx := context.Background()
+
+	// limit > 100이면 100으로 제한
+	_, _, err := svc.GetHistory(ctx, "user-1", time.Time{}, time.Time{}, 200, 0)
+	if err != nil {
+		t.Fatalf("최대 limit 조회 실패: %v", err)
+	}
+}
+
+func TestSetSearchIndexer(t *testing.T) {
+	svc, _, _, _, _ := newTestMeasurementService()
+	// nil → non-nil 설정 확인 (패닉 없이 통과)
+	svc.SetSearchIndexer(nil)
+}
+
+func TestProcessMeasurement_벡터_없이(t *testing.T) {
+	svc, _, measureRepo, vectorRepo, _ := newTestMeasurementService()
+	ctx := context.Background()
+
+	session, _ := svc.StartSession(ctx, "device-1", "glucose", "user-1")
+
+	_, err := svc.ProcessMeasurement(ctx, &MeasurementData{
+		SessionID:    session.ID,
+		DeviceID:     "device-1",
+		UserID:       "user-1",
+		PrimaryValue: 100.0,
+		Unit:         "mg/dL",
+		Time:         time.Now().UTC(),
+		// FingerprintVector is empty
+	})
+	if err != nil {
+		t.Fatalf("벡터 없는 측정 실패: %v", err)
+	}
+	if len(measureRepo.data) != 1 {
+		t.Error("데이터가 저장되어야 합니다")
+	}
+	if len(vectorRepo.vectors) != 0 {
+		t.Error("벡터는 저장되면 안 됩니다")
 	}
 }

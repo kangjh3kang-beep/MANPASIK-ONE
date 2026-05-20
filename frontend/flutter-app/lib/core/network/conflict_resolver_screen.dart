@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/shared/providers/sync_provider.dart';
 
 /// 오프라인 데이터 충돌 해결 화면
@@ -60,14 +60,19 @@ class _ConflictResolverScreenState extends ConsumerState<ConflictResolverScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final allResolved = _choices.length == _conflicts.length;
 
     return Scaffold(
+      backgroundColor: SanggamTheme.background,
       appBar: AppBar(
-        title: const Text('데이터 충돌 해결'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('데이터 충돌 해결', style: TextStyle(
+          color: SanggamTheme.primary,
+          fontWeight: FontWeight.bold,
+        )),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => context.pop(),
         ),
       ),
@@ -76,11 +81,15 @@ class _ConflictResolverScreenState extends ConsumerState<ConflictResolverScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.check_circle, size: 64, color: Colors.green[400]),
+                  Icon(Icons.check_circle, size: 64, color: SanggamTheme.jagaeCyan.withValues(alpha: 0.8)),
                   const SizedBox(height: 16),
-                  Text('충돌이 없습니다.', style: theme.textTheme.titleMedium),
+                  const Text('충돌이 없습니다.', style: TextStyle(
+                    color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold,
+                  )),
                   const SizedBox(height: 8),
-                  Text('모든 데이터가 동기화되었습니다.', style: theme.textTheme.bodyMedium),
+                  const Text('모든 데이터가 동기화되었습니다.', style: TextStyle(
+                    color: SanggamTheme.onSurfaceDim, fontSize: 14,
+                  )),
                 ],
               ),
             )
@@ -90,15 +99,15 @@ class _ConflictResolverScreenState extends ConsumerState<ConflictResolverScreen>
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
-                  color: Colors.orange.withValues(alpha: 0.1),
-                  child: Row(
+                  color: SanggamTheme.primary.withValues(alpha: 0.1),
+                  child: const Row(
                     children: [
-                      const Icon(Icons.sync_problem, color: Colors.orange, size: 20),
-                      const SizedBox(width: 8),
+                      Icon(Icons.sync_problem, color: SanggamTheme.primary, size: 20),
+                      SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           '오프라인 중 변경된 데이터에 충돌이 있습니다.\n각 항목에서 유지할 데이터를 선택해주세요.',
-                          style: theme.textTheme.bodySmall,
+                          style: TextStyle(color: SanggamTheme.onSurfaceDim, fontSize: 12),
                         ),
                       ),
                     ],
@@ -109,7 +118,7 @@ class _ConflictResolverScreenState extends ConsumerState<ConflictResolverScreen>
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
                     itemCount: _conflicts.length,
-                    itemBuilder: (context, index) => _buildConflictCard(theme, index),
+                    itemBuilder: (context, index) => _buildConflictCard(index),
                   ),
                 ),
                 // 확인 버튼
@@ -120,7 +129,7 @@ class _ConflictResolverScreenState extends ConsumerState<ConflictResolverScreen>
                       onPressed: allResolved ? _resolveAll : null,
                       style: FilledButton.styleFrom(
                         minimumSize: const Size.fromHeight(48),
-                        backgroundColor: AppTheme.sanggamGold,
+                        backgroundColor: SanggamTheme.primary,
                       ),
                       child: Text(allResolved
                           ? '${_conflicts.length}건 충돌 해결'
@@ -133,54 +142,56 @@ class _ConflictResolverScreenState extends ConsumerState<ConflictResolverScreen>
     );
   }
 
-  Widget _buildConflictCard(ThemeData theme, int index) {
+  Widget _buildConflictCard(int index) {
     final c = _conflicts[index];
     final choice = _choices[index];
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.compare_arrows, size: 20, color: Colors.orange),
-                const SizedBox(width: 8),
-                Text(c.field, style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // 로컬 데이터
-            _buildChoiceTile(
-              theme,
-              label: '내 기기 (로컬)',
-              value: c.localValue,
-              time: _formatTime(c.localTimestamp),
-              icon: Icons.phone_android,
-              isSelected: choice == _ConflictChoice.local,
-              onTap: () => setState(() => _choices[index] = _ConflictChoice.local),
-            ),
-            const SizedBox(height: 8),
-            // 서버 데이터
-            _buildChoiceTile(
-              theme,
-              label: '서버',
-              value: c.serverValue,
-              time: _formatTime(c.serverTimestamp),
-              icon: Icons.cloud,
-              isSelected: choice == _ConflictChoice.server,
-              onTap: () => setState(() => _choices[index] = _ConflictChoice.server),
-            ),
-          ],
-        ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: SanggamTheme.surfaceVariant),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.compare_arrows, size: 20, color: SanggamTheme.primary),
+              const SizedBox(width: 8),
+              Text(c.field, style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14,
+              )),
+            ],
+          ),
+          const SizedBox(height: 12),
+          // 로컬 데이터
+          _buildChoiceTile(
+            label: '내 기기 (로컬)',
+            value: c.localValue,
+            time: _formatTime(c.localTimestamp),
+            icon: Icons.phone_android,
+            isSelected: choice == _ConflictChoice.local,
+            onTap: () => setState(() => _choices[index] = _ConflictChoice.local),
+          ),
+          const SizedBox(height: 8),
+          // 서버 데이터
+          _buildChoiceTile(
+            label: '서버',
+            value: c.serverValue,
+            time: _formatTime(c.serverTimestamp),
+            icon: Icons.cloud,
+            isSelected: choice == _ConflictChoice.server,
+            onTap: () => setState(() => _choices[index] = _ConflictChoice.server),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildChoiceTile(
-    ThemeData theme, {
+  Widget _buildChoiceTile({
     required String label,
     required String value,
     required String time,
@@ -196,26 +207,28 @@ class _ConflictResolverScreenState extends ConsumerState<ConflictResolverScreen>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? AppTheme.sanggamGold : theme.colorScheme.outlineVariant,
+            color: isSelected ? SanggamTheme.primary : SanggamTheme.surfaceVariant,
             width: isSelected ? 2 : 1,
           ),
-          color: isSelected ? AppTheme.sanggamGold.withValues(alpha: 0.05) : null,
+          color: isSelected ? SanggamTheme.primary.withValues(alpha: 0.05) : null,
         ),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: isSelected ? AppTheme.sanggamGold : null),
+            Icon(icon, size: 20, color: isSelected ? SanggamTheme.primary : SanggamTheme.onSurfaceDim),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(label, style: theme.textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w600)),
-                  Text(value, style: theme.textTheme.bodyMedium),
-                  Text(time, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+                  Text(label, style: const TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12,
+                  )),
+                  Text(value, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                  Text(time, style: const TextStyle(color: SanggamTheme.onSurfaceDim, fontSize: 12)),
                 ],
               ),
             ),
-            if (isSelected) const Icon(Icons.check_circle, color: AppTheme.sanggamGold),
+            if (isSelected) const Icon(Icons.check_circle, color: SanggamTheme.primary),
           ],
         ),
       ),

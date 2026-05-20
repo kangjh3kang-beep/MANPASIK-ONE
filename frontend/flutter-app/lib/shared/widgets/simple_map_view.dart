@@ -1,7 +1,6 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 
 /// 간이 지도 뷰 (C4/C9)
 ///
@@ -25,21 +24,19 @@ class SimpleMapView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: Container(
         height: height,
         width: double.infinity,
-        color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.3),
+        color: SanggamTheme.surfaceVariant.withValues(alpha: 0.3),
         child: Stack(
           children: [
             // 배경 그리드
             CustomPaint(
               size: Size.infinite,
               painter: _GridPainter(
-                lineColor: theme.colorScheme.outlineVariant.withOpacity(0.3),
+                lineColor: SanggamTheme.surfaceVariant.withValues(alpha: 0.3),
               ),
             ),
 
@@ -47,7 +44,7 @@ class SimpleMapView extends StatelessWidget {
             Center(
               child: Icon(
                 Icons.add,
-                color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                color: SanggamTheme.onSurfaceDim.withValues(alpha: 0.5),
                 size: 20,
               ),
             ),
@@ -57,7 +54,7 @@ class SimpleMapView extends StatelessWidget {
               final dx = (m.longitude - centerLongitude) * 5000;
               final dy = -(m.latitude - centerLatitude) * 5000;
               return Positioned(
-                left: height / 2 + dx - 12, // 근사 위치
+                left: height / 2 + dx - 12,
                 top: height / 2 + dy - 24,
                 child: _MarkerWidget(marker: m),
               );
@@ -71,12 +68,12 @@ class SimpleMapView extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface.withOpacity(0.8),
+                  color: SanggamTheme.surface.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '${centerLatitude.toStringAsFixed(4)}, ${centerLongitude.toStringAsFixed(4)}',
-                  style: theme.textTheme.bodySmall?.copyWith(fontSize: 10),
+                  style: const TextStyle(color: Colors.white, fontSize: 10),
                 ),
               ),
             ),
@@ -89,14 +86,14 @@ class SimpleMapView extends StatelessWidget {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surface.withOpacity(0.8),
+                  color: SanggamTheme.surface.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
+                child: const Text(
                   '간이 지도 (SDK 연동 시 교체)',
-                  style: theme.textTheme.bodySmall?.copyWith(
+                  style: TextStyle(
                     fontSize: 9,
-                    color: theme.colorScheme.onSurfaceVariant,
+                    color: SanggamTheme.onSurfaceDim,
                   ),
                 ),
               ),
@@ -121,7 +118,7 @@ class _MarkerWidget extends StatelessWidget {
         children: [
           Icon(
             marker.icon ?? Icons.location_on,
-            color: marker.color ?? AppTheme.dancheongRed,
+            color: marker.color ?? SanggamTheme.error,
             size: 24,
           ),
           Container(

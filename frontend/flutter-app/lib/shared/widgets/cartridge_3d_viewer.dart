@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 
 /// 카트리지 360도 뷰어 (C10)
 ///
@@ -47,8 +47,7 @@ class _Cartridge3DViewerState extends State<Cartridge3DViewer>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = widget.primaryColor ?? AppTheme.sanggamGold;
+    final color = widget.primaryColor ?? SanggamTheme.primary;
 
     return Column(
       children: [
@@ -78,7 +77,6 @@ class _Cartridge3DViewerState extends State<Cartridge3DViewer>
                     scale: _scale,
                     primaryColor: color,
                     label: widget.label,
-                    textStyle: theme.textTheme.bodySmall ?? const TextStyle(),
                   ),
                 ),
               );
@@ -88,8 +86,8 @@ class _Cartridge3DViewerState extends State<Cartridge3DViewer>
         const SizedBox(height: 8),
         Text(
           '드래그하여 회전 | 핀치하여 확대',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant.withOpacity(0.6),
+          style: TextStyle(
+            color: SanggamTheme.onSurfaceDim.withValues(alpha: 0.6),
             fontSize: 11,
           ),
         ),
@@ -105,7 +103,6 @@ class _CartridgePainter extends CustomPainter {
     required this.scale,
     required this.primaryColor,
     required this.label,
-    required this.textStyle,
   });
 
   final double rotationY;
@@ -113,7 +110,6 @@ class _CartridgePainter extends CustomPainter {
   final double scale;
   final Color primaryColor;
   final String label;
-  final TextStyle textStyle;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -136,12 +132,12 @@ class _CartridgePainter extends CustomPainter {
 
     // 그림자
     final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(0.15)
+      ..color = Colors.black.withValues(alpha: 0.15)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
         Rect.fromCenter(
-          center: Offset(4, 8),
+          center: const Offset(4, 8),
           width: perspectiveW * 2 + 8,
           height: baseH * cosX.abs().clamp(0.5, 1.0) + 8,
         ),
@@ -156,9 +152,9 @@ class _CartridgePainter extends CustomPainter {
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
-          primaryColor.withOpacity(0.9),
-          primaryColor.withOpacity(0.6),
-          primaryColor.withOpacity(0.4),
+          primaryColor.withValues(alpha: 0.9),
+          primaryColor.withValues(alpha: 0.6),
+          primaryColor.withValues(alpha: 0.4),
         ],
       ).createShader(Rect.fromCenter(
         center: Offset.zero,
@@ -186,7 +182,7 @@ class _CartridgePainter extends CustomPainter {
     // 측면 깊이 (회전 시 보이는 면)
     if (sinY.abs() > 0.1) {
       final sidePaint = Paint()
-        ..color = primaryColor.withOpacity(0.3);
+        ..color = primaryColor.withValues(alpha: 0.3);
       final sideOffset = sinY > 0 ? perspectiveW : -perspectiveW;
       canvas.drawRRect(
         RRect.fromRectAndRadius(
@@ -204,7 +200,7 @@ class _CartridgePainter extends CustomPainter {
 
     // NFC 칩 표시
     final chipPaint = Paint()
-      ..color = Colors.white.withOpacity(0.6)
+      ..color = Colors.white.withValues(alpha: 0.6)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     canvas.drawCircle(
@@ -215,15 +211,15 @@ class _CartridgePainter extends CustomPainter {
     canvas.drawCircle(
       Offset(0, -baseH * 0.2 * cosX.abs().clamp(0.5, 1.0)),
       6 * scale,
-      Paint()..color = Colors.white.withOpacity(0.4),
+      Paint()..color = Colors.white.withValues(alpha: 0.4),
     );
 
     // 라벨
     final textPainter = TextPainter(
       text: TextSpan(
         text: label,
-        style: textStyle.copyWith(
-          color: Colors.white.withOpacity(cosY.abs().clamp(0.0, 0.8)),
+        style: TextStyle(
+          color: Colors.white.withValues(alpha: cosY.abs().clamp(0.0, 0.8)),
           fontSize: 9 * scale,
         ),
       ),

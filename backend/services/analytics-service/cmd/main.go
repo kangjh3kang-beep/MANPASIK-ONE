@@ -1,14 +1,20 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/manpasik/backend/services/analytics-service/internal/handler"
 	"github.com/manpasik/backend/services/analytics-service/internal/repository/memory"
+	"github.com/manpasik/backend/services/analytics-service/internal/repository/postgres"
 	"github.com/manpasik/backend/services/analytics-service/internal/service"
+	"github.com/manpasik/backend/shared/config"
 )
 
 const serviceName = "analytics-service"
@@ -19,11 +25,40 @@ func main() {
 		httpPort = ":8080"
 	}
 
-	log.Printf("[%s] Starting...", serviceName)
+	cfg := config.LoadFromEnv(serviceName)
+	log.Printf("[%s] Starting v%s...", serviceName, cfg.Version)
 
-	repo := memory.NewAnalyticsRepository()
+	var repo service.AnalyticsRepository
+
+	if _, dbHostSet := os.LookupEnv("DB_HOST"); dbHostSet && cfg.DB.Host != "" && cfg.DB.DBName != "" {
+		connCtx, connCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		pool, poolErr := pgxpool.New(connCtx, cfg.DB.DSN())
+		connCancel()
+		if poolErr != nil {
+			log.Printf("[%s] DB connection failed, using memory: %v", serviceName, poolErr)
+			repo = memory.NewAnalyticsRepository()
+		} else {
+			pingCtx, pingCancel := context.WithTimeout(context.Background(), 3*time.Second)
+			if pingErr := pool.Ping(pingCtx); pingErr != nil {
+				pingCancel()
+				pool.Close()
+				log.Printf("[%s] DB ping failed, using memory: %v", serviceName, pingErr)
+				repo = memory.NewAnalyticsRepository()
+			} else {
+				pingCancel()
+				defer pool.Close()
+				log.Printf("[%s] Connected to PostgreSQL", serviceName)
+				repo = postgres.NewAnalyticsRepository(pool)
+			}
+		}
+	} else {
+		repo = memory.NewAnalyticsRepository()
+	}
+
 	svc := service.NewAnalyticsService(repo)
-	_ = svc
+
+	// REST 핸들러 초기화 + 라우트 등록
+	h := handler.NewAnalyticsHandler(svc)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -31,6 +66,7 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"status":"serving","service":"analytics-service"}`))
 	})
+	h.RegisterRoutes(mux)
 
 	go func() {
 		log.Printf("[%s] HTTP server on %s", serviceName, httpPort)

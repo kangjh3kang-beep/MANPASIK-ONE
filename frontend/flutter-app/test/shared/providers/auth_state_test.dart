@@ -75,5 +75,44 @@ void main() {
       expect(copied.userId, state.userId);
       expect(copied.email, state.email);
     });
+
+    // ====== Phase F 추가 테스트 ======
+
+    test('isAdmin: admin 역할은 true', () {
+      const state = AuthState(role: 'admin');
+      expect(state.isAdmin, isTrue);
+    });
+
+    test('isAdmin: super_admin 역할은 true', () {
+      const state = AuthState(role: 'super_admin');
+      expect(state.isAdmin, isTrue);
+    });
+
+    test('isAdmin: 일반 user 역할은 false', () {
+      const state = AuthState(role: 'user');
+      expect(state.isAdmin, isFalse);
+    });
+
+    test('isDemo: demo-user-id는 true', () {
+      const state = AuthState(userId: 'demo-user-id');
+      expect(state.isDemo, isTrue);
+    });
+
+    test('isDemo: 일반 사용자는 false', () {
+      const state = AuthState(userId: 'user-123');
+      expect(state.isDemo, isFalse);
+    });
+
+    test('role 기본값은 user', () {
+      const state = AuthState();
+      expect(state.role, 'user');
+    });
+
+    test('copyWith으로 role 변경 시 isAdmin 반영', () {
+      const state = AuthState(role: 'user');
+      final admin = state.copyWith(role: 'admin');
+      expect(admin.isAdmin, isTrue);
+      expect(state.isAdmin, isFalse); // 원본 불변
+    });
   });
 }

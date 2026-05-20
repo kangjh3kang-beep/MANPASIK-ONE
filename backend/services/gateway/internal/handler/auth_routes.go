@@ -149,7 +149,7 @@ func (h *RestHandler) handleKakaoLogin(w http.ResponseWriter, r *http.Request) {
 		"refresh_token": resp.RefreshToken,
 		"expires_in":    resp.ExpiresIn,
 		"token_type":    resp.TokenType,
-		"user_id":       kakaoID,
+		"user_id":       authUserID(resp.UserId, kakaoID),
 		"email":         email,
 		"display_name":  displayName,
 		"kakao_id":      kakaoUser.ID,
@@ -239,6 +239,13 @@ func (h *RestHandler) handleSocialLogin(w http.ResponseWriter, r *http.Request) 
 	}
 
 	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func authUserID(userID, fallback string) string {
+	if userID != "" {
+		return userID
+	}
+	return fallback
 }
 
 func (h *RestHandler) handleRefreshToken(w http.ResponseWriter, r *http.Request) {

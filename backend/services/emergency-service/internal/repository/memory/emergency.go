@@ -4,57 +4,30 @@ import (
 	"errors"
 	"sync"
 	"time"
+
+	"github.com/manpasik/backend/services/emergency-service/internal/service"
 )
-
-// Emergency represents an emergency report.
-type Emergency struct {
-	ID          string
-	UserID      string
-	Type        string
-	Location    string
-	Description string
-	Status      string
-	ContactIDs  []string
-	Timestamp   time.Time
-}
-
-// EmergencyContact represents a user's emergency contact.
-type EmergencyContact struct {
-	ID           string
-	UserID       string
-	Name         string
-	Phone        string
-	Relationship string
-}
-
-// EmergencySettings represents a user's emergency settings.
-type EmergencySettings struct {
-	UserID              string
-	AutoCall119         bool
-	EmergencyContactIDs []string
-	MedicalInfo         string
-}
 
 // EmergencyRepository provides in-memory storage for emergency data.
 type EmergencyRepository struct {
 	mu          sync.RWMutex
-	emergencies map[string]*Emergency
-	contacts    map[string][]*EmergencyContact
-	settings    map[string]*EmergencySettings
+	emergencies map[string]*service.Emergency
+	contacts    map[string][]*service.EmergencyContact
+	settings    map[string]*service.EmergencySettings
 	nextID      int
 }
 
 // NewEmergencyRepository creates a new in-memory emergency repository.
 func NewEmergencyRepository() *EmergencyRepository {
 	return &EmergencyRepository{
-		emergencies: make(map[string]*Emergency),
-		contacts:    make(map[string][]*EmergencyContact),
-		settings:    make(map[string]*EmergencySettings),
+		emergencies: make(map[string]*service.Emergency),
+		contacts:    make(map[string][]*service.EmergencyContact),
+		settings:    make(map[string]*service.EmergencySettings),
 	}
 }
 
 // CreateEmergency stores a new emergency and returns its ID.
-func (r *EmergencyRepository) CreateEmergency(e *Emergency) (string, error) {
+func (r *EmergencyRepository) CreateEmergency(e *service.Emergency) (string, error) {
 	if e == nil {
 		return "", errors.New("emergency must not be nil")
 	}
@@ -75,7 +48,7 @@ func (r *EmergencyRepository) CreateEmergency(e *Emergency) (string, error) {
 }
 
 // GetEmergency retrieves an emergency by ID.
-func (r *EmergencyRepository) GetEmergency(id string) (*Emergency, error) {
+func (r *EmergencyRepository) GetEmergency(id string) (*service.Emergency, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
@@ -88,13 +61,46 @@ func (r *EmergencyRepository) GetEmergency(id string) (*Emergency, error) {
 	return &out, nil
 }
 
+// UpdateEmergency updates an existing emergency record.
+func (r *EmergencyRepository) UpdateEmergency(e *service.Emergency) error {
+	if e == nil {
+		return errors.New("emergency must not be nil")
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.emergencies[e.ID]; !ok {
+		return errors.New("emergency not found")
+	}
+	stored := *e
+	stored.ContactIDs = copyStrings(e.ContactIDs)
+	r.emergencies[e.ID] = &stored
+	return nil
+}
+
+// ListEmergenciesByUser returns all emergencies for a user.
+func (r *EmergencyRepository) ListEmergenciesByUser(userID string) ([]*service.Emergency, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var result []*service.Emergency
+	for _, e := range r.emergencies {
+		if e.UserID == userID {
+			out := *e
+			out.ContactIDs = copyStrings(e.ContactIDs)
+			result = append(result, &out)
+		}
+	}
+	return result, nil
+}
+
 // GetContactsByUser returns all emergency contacts for a user.
-func (r *EmergencyRepository) GetContactsByUser(userID string) ([]*EmergencyContact, error) {
+func (r *EmergencyRepository) GetContactsByUser(userID string) ([]*service.EmergencyContact, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	src := r.contacts[userID]
-	out := make([]*EmergencyContact, len(src))
+	out := make([]*service.EmergencyContact, len(src))
 	for i, c := range src {
 		cp := *c
 		out[i] = &cp
@@ -103,7 +109,7 @@ func (r *EmergencyRepository) GetContactsByUser(userID string) ([]*EmergencyCont
 }
 
 // AddContact adds an emergency contact for a user.
-func (r *EmergencyRepository) AddContact(c *EmergencyContact) error {
+func (r *EmergencyRepository) AddContact(c *service.EmergencyContact) error {
 	if c == nil {
 		return errors.New("contact must not be nil")
 	}
@@ -117,14 +123,36 @@ func (r *EmergencyRepository) AddContact(c *EmergencyContact) error {
 	return nil
 }
 
+// RemoveContact removes an emergency contact by ID.
+func (r *EmergencyRepository) RemoveContact(userID, contactID string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	contacts := r.contacts[userID]
+	found := false
+	newList := make([]*service.EmergencyContact, 0, len(contacts))
+	for _, c := range contacts {
+		if c.ID == contactID {
+			found = true
+			continue
+		}
+		newList = append(newList, c)
+	}
+	if !found {
+		return errors.New("contact not found")
+	}
+	r.contacts[userID] = newList
+	return nil
+}
+
 // GetSettings retrieves emergency settings for a user.
-func (r *EmergencyRepository) GetSettings(userID string) (*EmergencySettings, error) {
+func (r *EmergencyRepository) GetSettings(userID string) (*service.EmergencySettings, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	s, ok := r.settings[userID]
 	if !ok {
-		return &EmergencySettings{
+		return &service.EmergencySettings{
 			UserID:              userID,
 			AutoCall119:         false,
 			EmergencyContactIDs: []string{},
@@ -137,7 +165,7 @@ func (r *EmergencyRepository) GetSettings(userID string) (*EmergencySettings, er
 }
 
 // SaveSettings creates or updates emergency settings for a user.
-func (r *EmergencyRepository) SaveSettings(s *EmergencySettings) error {
+func (r *EmergencyRepository) SaveSettings(s *service.EmergencySettings) error {
 	if s == nil {
 		return errors.New("settings must not be nil")
 	}

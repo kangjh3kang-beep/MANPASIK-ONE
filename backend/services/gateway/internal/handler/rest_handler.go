@@ -37,6 +37,25 @@ type RestHandler struct {
 	translation  v1.TranslationServiceClient
 	telemedicine v1.TelemedicineServiceClient
 
+	// 감사/디지털 트윈 전용 서비스 (H6 실패격리: 미연결 시 기존 서비스 fallback)
+	audit         v1.AdminServiceClient       // audit-service (AdminService 위임)
+	auditRecorder auditEventRecorder          // audit-service HTTP write intake
+	digitalTwin   v1.MeasurementServiceClient // digital-twin-service (MeasurementService 위임)
+
+	// Sprint 16-24 신규 서비스
+	assistant       v1.AssistantServiceClient
+	vision          v1.VisionServiceClient
+	concept         v1.ConceptServiceClient
+	organization    v1.OrganizationServiceClient
+	developer       v1.DeveloperServiceClient
+	store           v1.StoreServiceClient
+	cartridgeReview v1.CartridgeReviewServiceClient
+	revenue         v1.RevenueServiceClient
+	cartridgeAnalyt v1.CartridgeAnalyticsServiceClient
+	locationStats   v1.LocationStatsServiceClient
+	dataProvision   v1.DataProvisionServiceClient
+	voiceProfile    v1.VoiceProfileServiceClient
+
 	jwtSecret string
 }
 
@@ -77,6 +96,52 @@ func NewRestHandler(
 	}
 }
 
+// SetAssistantClient는 AI 비서 gRPC 클라이언트를 설정합니다.
+func (h *RestHandler) SetAssistantClient(c v1.AssistantServiceClient) { h.assistant = c }
+
+// SetVisionClient는 비전 gRPC 클라이언트를 설정합니다.
+func (h *RestHandler) SetVisionClient(c v1.VisionServiceClient) { h.vision = c }
+
+// SetConceptClients는 컨셉/조직 gRPC 클라이언트를 설정합니다.
+func (h *RestHandler) SetConceptClients(c v1.ConceptServiceClient, o v1.OrganizationServiceClient) {
+	h.concept = c
+	h.organization = o
+}
+
+// SetCartridgeStoreClients는 카트리지 스토어 gRPC 클라이언트를 설정합니다.
+func (h *RestHandler) SetCartridgeStoreClients(
+	dev v1.DeveloperServiceClient,
+	store v1.StoreServiceClient,
+	review v1.CartridgeReviewServiceClient,
+	rev v1.RevenueServiceClient,
+	analyt v1.CartridgeAnalyticsServiceClient,
+) {
+	h.developer = dev
+	h.store = store
+	h.cartridgeReview = review
+	h.revenue = rev
+	h.cartridgeAnalyt = analyt
+}
+
+// SetDataPlatformClients는 데이터 플랫폼 gRPC 클라이언트를 설정합니다.
+func (h *RestHandler) SetDataPlatformClients(ls v1.LocationStatsServiceClient, dp v1.DataProvisionServiceClient) {
+	h.locationStats = ls
+	h.dataProvision = dp
+}
+
+// SetVoiceProfileClient는 음성 프로필 gRPC 클라이언트를 설정합니다.
+func (h *RestHandler) SetVoiceProfileClient(c v1.VoiceProfileServiceClient) { h.voiceProfile = c }
+
+// SetAuditClient는 감사 서비스 gRPC 클라이언트를 설정합니다. (H6: 미연결 시 admin fallback)
+func (h *RestHandler) SetAuditClient(c v1.AdminServiceClient) { h.audit = c }
+
+func (h *RestHandler) SetAuditEventRecorder(recorder auditEventRecorder) {
+	h.auditRecorder = recorder
+}
+
+// SetDigitalTwinClient는 디지털 트윈 gRPC 클라이언트를 설정합니다. (H6: 미연결 시 measurement fallback)
+func (h *RestHandler) SetDigitalTwinClient(c v1.MeasurementServiceClient) { h.digitalTwin = c }
+
 // SetupRoutes는 모든 REST 라우트를 등록합니다.
 func (h *RestHandler) SetupRoutes() *http.ServeMux {
 	mux := http.NewServeMux()
@@ -100,6 +165,14 @@ func (h *RestHandler) SetupRoutes() *http.ServeMux {
 	h.registerCoachingRoutes(mux)
 	h.registerAdminRoutes(mux)
 
+	// Sprint 16-24 신규 라우트
+	h.registerAssistantRoutes(mux)
+	h.registerVisionRoutes(mux)
+	h.registerConceptRoutes(mux)
+	h.registerCartridgeStoreRoutes(mux)
+	h.registerDataPlatformRoutes(mux)
+	h.registerVoiceProfileRoutes(mux)
+
 	return mux
 }
 
@@ -119,7 +192,7 @@ func writeProtoJSON(w http.ResponseWriter, status int, msg proto.Message) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	marshaler := protojson.MarshalOptions{
-		UseProtoNames:   false,
+		UseProtoNames:   true,
 		EmitUnpopulated: true,
 	}
 	b, err := marshaler.Marshal(msg)

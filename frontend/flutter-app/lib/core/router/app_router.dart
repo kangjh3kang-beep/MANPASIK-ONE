@@ -1,29 +1,26 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:manpasik/shared/widgets/glass_dock_navigation.dart';
-import 'package:manpasik/features/data_hub/presentation/widgets/floating_monitor_bubble.dart';
-import 'package:manpasik/shared/widgets/jagae_pattern.dart';
-import 'package:manpasik/shared/widgets/royal_cloud_background.dart';
-import 'package:manpasik/shared/widgets/hanji_background.dart';
-import 'package:manpasik/core/providers/grpc_provider.dart';
+import 'package:manpasik/core/layout/responsive_layout.dart';
+import 'package:manpasik/shared/widgets/mobile_scaffold.dart';
+import 'package:manpasik/shared/widgets/desktop_scaffold.dart';
 
 import 'package:manpasik/features/auth/presentation/splash_screen.dart';
 import 'package:manpasik/features/auth/presentation/login_screen.dart';
 import 'package:manpasik/features/auth/presentation/register_screen.dart';
 import 'package:manpasik/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:manpasik/features/home/presentation/home_screen.dart';
-import 'package:manpasik/features/measurement/presentation/measurement_screen.dart';
+import 'package:manpasik/features/measurement/presentation/measure_screen.dart';
 import 'package:manpasik/features/measurement/presentation/measurement_result_screen.dart';
+import 'package:manpasik/features/measurement/presentation/vision_analyzer.dart';
 import 'package:manpasik/features/devices/presentation/device_list_screen.dart';
 import 'package:manpasik/features/settings/presentation/settings_screen.dart';
 import 'package:manpasik/features/admin/presentation/admin_settings_screen.dart';
 import 'package:manpasik/features/chat/presentation/chat_screen.dart';
 import 'package:manpasik/features/data_hub/presentation/data_hub_screen.dart';
 import 'package:manpasik/features/data_hub/presentation/monitoring_dashboard_screen.dart'; // Added Import
-import 'package:manpasik/features/ai_coach/presentation/ai_coach_screen.dart';
+import 'package:manpasik/features/coach/presentation/coach_screen.dart';
 import 'package:manpasik/features/market/presentation/market_screen.dart';
 import 'package:manpasik/features/community/presentation/community_screen.dart';
 import 'package:manpasik/features/medical/presentation/medical_screen.dart';
@@ -39,6 +36,10 @@ import 'package:manpasik/features/settings/presentation/security_screen.dart';
 import 'package:manpasik/features/settings/presentation/accessibility_screen.dart';
 import 'package:manpasik/features/settings/presentation/notification_settings_screen.dart';
 import 'package:manpasik/features/settings/presentation/notice_screen.dart';
+import 'package:manpasik/features/settings/presentation/invite_accept_screen.dart';
+import 'package:manpasik/features/settings/presentation/invite_create_screen.dart';
+import 'package:manpasik/features/settings/presentation/tenant_switcher_screen.dart';
+import 'package:manpasik/features/settings/presentation/tenant_members_screen.dart';
 import 'package:manpasik/features/market/presentation/cartridge_detail_screen.dart';
 import 'package:manpasik/features/market/presentation/encyclopedia_screen.dart';
 import 'package:manpasik/features/market/presentation/product_detail_screen.dart';
@@ -64,6 +65,7 @@ import 'package:manpasik/features/admin/presentation/admin_compliance_screen.dar
 import 'package:manpasik/features/admin/presentation/admin_revenue_screen.dart';
 import 'package:manpasik/features/admin/presentation/admin_inventory_table.dart';
 import 'package:manpasik/features/admin/presentation/admin_ecosystem_screen.dart';
+import 'package:manpasik/features/admin/presentation/tenancy_admin_dashboard_screen.dart';
 import 'package:manpasik/features/community/presentation/research_post_screen.dart';
 import 'package:manpasik/features/devices/presentation/device_detail_screen.dart';
 import 'package:manpasik/features/community/presentation/create_post_screen.dart';
@@ -80,14 +82,12 @@ import 'package:manpasik/features/settings/presentation/inquiry_create_screen.da
 import 'package:manpasik/features/settings/presentation/escalation_screen.dart';
 import 'package:manpasik/features/settings/presentation/data_export_screen.dart';
 import 'package:manpasik/features/market/presentation/subscription_cancel_screen.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
 import 'package:manpasik/core/network/conflict_resolver_screen.dart';
-import 'package:manpasik/shared/widgets/network_indicator.dart';
+import 'package:manpasik/core/router/bottom_nav_visibility.dart';
 import 'package:manpasik/shared/providers/auth_provider.dart';
 
 /// 글로벌 네비게이터 키 (ShellRoute 외부 라우트용)
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 /// ManPaSik 앱 라우터 Provider
 ///
@@ -101,7 +101,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/',
+    initialLocation: '/home',
     debugLogDiagnostics: true,
     refreshListenable: GoRouterRefreshStream(authNotifier.stream),
     redirect: (context, state) {
@@ -111,8 +111,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final isAuthRoute = loc == '/login' || loc == '/register';
       final isSplash = loc == '/';
       final isOnboarding = loc == '/onboarding';
+      // 딥링크 — 미로그인 상태에서도 접근 가능 (스크린 자체가 인증 안내 처리)
+      final isInviteDeepLink = loc.startsWith('/invite');
 
       if (isSplash) return null;
+      if (isInviteDeepLink) return null;
       if (!isLoggedIn && !isAuthRoute) return '/login';
       if (isLoggedIn && isAuthRoute) return '/home';
       if (isOnboarding && !isLoggedIn) return '/login';
@@ -140,6 +143,38 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RegisterScreen(),
       ),
 
+      // ── 조직 초대 (Phase Z + AB) ──
+      // 딥링크: manpasik://invite/{token} 또는 https://app.manpasik.com/invite/{token}
+      GoRoute(
+        path: '/invite/:token',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => InviteAcceptScreen(
+          initialToken: state.pathParameters['token'],
+        ),
+      ),
+      GoRoute(
+        path: '/invite',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const InviteAcceptScreen(),
+      ),
+      GoRoute(
+        path: '/invite-create',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const InviteCreateScreen(),
+      ),
+      GoRoute(
+        path: '/tenant-switcher',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const TenantSwitcherScreen(),
+      ),
+      GoRoute(
+        path: '/tenant-members/:tenantId',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => TenantMembersScreen(
+          tenantId: state.pathParameters['tenantId']!,
+        ),
+      ),
+
       // ── 온보딩 (회원가입 후 첫 실행) ──
       GoRoute(
         path: '/onboarding',
@@ -147,50 +182,104 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const OnboardingScreen(),
       ),
 
-      // ── 메인 앱 (BottomNav ShellRoute) ──
-      ShellRoute(
-        navigatorKey: _shellNavigatorKey,
-        builder: (context, state, child) =>
-            ScaffoldWithBottomNav(child: child),
-        routes: [
+      // ── 메인 앱 (BottomNav StatefulShellRoute) ──
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            ScaffoldWithBottomNav(navigationShell: navigationShell),
+        branches: [
           // 탭 1: 홈
-          GoRoute(
-            path: '/home',
-            builder: (context, state) => const HomeScreen(),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/home',
+                builder: (context, state) => const HomeScreen(),
+              ),
+            ],
           ),
           // 탭 2: 데이터 허브 (Phase 2)
-          GoRoute(
-            path: '/data',
-            builder: (context, state) => const DataHubScreen(),
+          StatefulShellBranch(
             routes: [
               GoRoute(
-                path: 'monitoring',
-                parentNavigatorKey: _rootNavigatorKey,
-                builder: (context, state) => const MonitoringDashboardScreen(),
+                path: '/data',
+                builder: (context, state) => const DataHubScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'monitoring',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) =>
+                        const MonitoringDashboardScreen(),
+                  ),
+                ],
               ),
             ],
           ),
-          // 탭 3: 측정 (사이트맵: /measure)
-          GoRoute(
-            path: '/measure',
-            builder: (context, state) => const MeasurementScreen(),
+          // 탭 3: 측정
+          StatefulShellBranch(
             routes: [
               GoRoute(
-                path: 'result',
-                parentNavigatorKey: _rootNavigatorKey,
-                builder: (context, state) => const MeasurementResultScreen(),
+                path: '/measure',
+                builder: (context, state) => const MeasureScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'result',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) =>
+                        const MeasurementResultScreen(),
+                  ),
+                  // Phase AP-2: 카트리지 비전 분석 (codex G2 통합)
+                  GoRoute(
+                    path: 'vision',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) => const VisionAnalyzerScreen(),
+                  ),
+                ],
               ),
             ],
           ),
-          // 탭 4: 마켓 (Phase 2)
-          GoRoute(
-            path: '/market',
-            builder: (context, state) => const MarketScreen(),
+          // 탭 4: 의료 서비스 (Phase 3)
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/medical',
+                builder: (context, state) => const MedicalScreen(),
+              ),
+            ],
           ),
-          // 탭 5: 설정
-          GoRoute(
-            path: '/settings',
-            builder: (context, state) => const SettingsScreen(),
+          // 탭 5: 마켓 (Phase 2)
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/market',
+                builder: (context, state) => const MarketScreen(),
+              ),
+            ],
+          ),
+          // 탭 6: 커뮤니티 (Phase 3)
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/community',
+                builder: (context, state) => const CommunityScreen(),
+              ),
+            ],
+          ),
+          // 탭 7: 가족 관리 (Phase 3)
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/family',
+                builder: (context, state) => const FamilyScreen(),
+              ),
+            ],
+          ),
+          // 탭 8: 설정
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/settings',
+                builder: (context, state) => const SettingsScreen(),
+              ),
+            ],
           ),
         ],
       ),
@@ -201,7 +290,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/coach',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const AiCoachScreen(),
+        builder: (context, state) => const CoachScreen(),
       ),
       // AI 채팅 (코치 하위 기능)
       GoRoute(
@@ -209,18 +298,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const ChatScreen(),
       ),
-      // 커뮤니티 (Phase 3)
-      GoRoute(
-        path: '/community',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const CommunityScreen(),
-      ),
-      // 의료 서비스 (Phase 3)
-      GoRoute(
-        path: '/medical',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const MedicalScreen(),
-      ),
+      // 커뮤니티, 의료 서비스, 가족 관리는 StatefulShellRoute 탭으로 이동
       // 기기 관리 (Phase 1)
       GoRoute(
         path: '/devices',
@@ -234,12 +312,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           deviceId: state.pathParameters['id'] ?? '',
         ),
       ),
-      // 가족 관리 (Phase 3)
-      GoRoute(
-        path: '/family',
-        parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const FamilyScreen(),
-      ),
+      // 가족 관리는 StatefulShellRoute 탭으로 이동
       // 알림 센터
       GoRoute(
         path: '/notifications',
@@ -301,6 +374,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/admin/ecosystem',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const AdminEcosystemScreen(),
+      ),
+      // Phase AN-1: Tenancy 운영자 대시보드
+      // opsBaseUrl 은 build 시 ENV(MANPASIK_OPS_BASE_URL) 또는 query 파라미터 사용
+      GoRoute(
+        path: '/admin/tenancy-dashboard',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => TenancyAdminDashboardScreen(
+          opsBaseUrl: state.uri.queryParameters['ops_url'],
+          targetTenantId: state.uri.queryParameters['tenant'],
+        ),
       ),
 
       // ── 인증 보조 ──
@@ -444,12 +527,14 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/market/subscription/upgrade',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const PlanComparisonScreen(mode: 'upgrade'),
+        builder: (context, state) =>
+            const PlanComparisonScreen(mode: 'upgrade'),
       ),
       GoRoute(
         path: '/market/subscription/downgrade',
         parentNavigatorKey: _rootNavigatorKey,
-        builder: (context, state) => const PlanComparisonScreen(mode: 'downgrade'),
+        builder: (context, state) =>
+            const PlanComparisonScreen(mode: 'downgrade'),
       ),
 
       // ── AI 코치 하위 (Phase 2) ──
@@ -589,72 +674,51 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
-/// 하단 네비게이션 바 포함 Scaffold (Glass Dock Ver.)
 class ScaffoldWithBottomNav extends ConsumerWidget {
-  const ScaffoldWithBottomNav({super.key, required this.child});
+  const ScaffoldWithBottomNav({super.key, required this.navigationShell});
 
-  final Widget child;
-
-  static const _tabs = [
-    '/home',
-    '/data',
-    '/measure',
-    '/market',
-    '/settings',
-  ];
-
-  int _currentIndex(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
-    for (var i = 0; i < _tabs.length; i++) {
-      if (location.startsWith(_tabs[i])) return i;
-    }
-    return 0;
-  }
+  final StatefulNavigationShell navigationShell;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentIndex = _currentIndex(context);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final notifCount = ref.watch(unreadNotificationCountProvider).valueOrNull ?? 0;
+    final location = GoRouterState.of(context).matchedLocation;
 
-    return Scaffold(
-      extendBody: true, // Key for floating dock effect
-      // 2. Global Premium Background (Stacked)
-      // Switch between Cosmic (Dark) and Hanji (Light)
-      // 2. Global Premium Background (Stacked)
-      // Switch between Cosmic (Dark) and Hanji (Light)
-      body: isDark
-          ? RoyalCloudBackground(
-              child: Stack(
-                children: [
-                  Column(
-                    children: [
-                      const NetworkIndicator(),
-                      Expanded(child: child),
-                    ],
-                  ),
-                  const FloatingMonitorBubble(),
-                ],
-              ),
-            )
-          : HanjiBackground(
-              child: Stack(
-                children: [
-                  Column(
-                    children: [
-                       const NetworkIndicator(),
-                       Expanded(child: child),
-                    ],
-                  ),
-                  const FloatingMonitorBubble(),
-                ],
-              ),
-            ),
-      bottomNavigationBar: GlassDockNavigation(
-        currentIndex: currentIndex,
-        badgeCounts: {if (notifCount > 0) 0: notifCount},
-        onTap: (index) => context.go(_tabs[index]),
+    // 경로 기반으로만 전역 프레임/독 표시 여부를 결정한다.
+    // 브랜치 인덱스 기반으로 숨기면 다른 페이지로 이동했을 때
+    // 상/하단 디자인이 의도치 않게 사라지는 문제가 발생한다.
+    final hideGlobalDockOnRoute = shouldHideGlobalDock(location);
+    final hideGlobalTopFrameOnRoute = shouldHideGlobalTopFrame(location);
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // [라우터 결합] ResponsiveLayout을 통한 플랫폼별 스캐폴드 전환
+    return ResponsiveLayout(
+      // 모바일: 하단 독(BottomDock) 기반 3단 프레임 스캐폴드
+      mobile: MobileScaffold(
+        body: navigationShell, // 자식 화면 주입
+        currentIndex: navigationShell.currentIndex,
+        isDark: isDark,
+        hideGlobalDock: hideGlobalDockOnRoute,
+        hideGlobalTopFrame: hideGlobalTopFrameOnRoute,
+        onNavTap: (index) => _onTap(context, index),
       ),
+      // 데스크톱/웹: 좌측 사이드 레일(SideRail) 기반 스캐폴드
+      desktop: DesktopScaffold(
+        body: navigationShell, // 자식 화면 주입
+        currentIndex: navigationShell.currentIndex,
+        isDark: isDark,
+        hideGlobalTopFrame: hideGlobalTopFrameOnRoute,
+        onNavTap: (index) => _onTap(context, index),
+      ),
+    );
+  }
+
+  /// 네비게이션 탭 전환 공통 로직
+  void _onTap(BuildContext context, int index) {
+    navigationShell.goBranch(
+      index,
+      // 현재 탭을 다시 누르면 초기 위치로 이동
+      initialLocation: index == navigationShell.currentIndex,
     );
   }
 }

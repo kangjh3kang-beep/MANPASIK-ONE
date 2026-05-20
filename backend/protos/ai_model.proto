@@ -1,0 +1,38 @@
+syntax = "proto3";
+package manpasik.pccp.v1;
+option go_package = "manpasik/backend/services/ai/protos";
+
+// FDA PCCP(Predetermined Change Control Plan) 대응 모델 레지스트리 서비스
+service ModelRegistryService {
+    rpc RegisterModelVersion(PccpModelSpec) returns (RegisterResponse);
+    rpc CheckUpdateAvailable(CheckRequest) returns (UpdateResponse);
+}
+
+message PccpModelSpec {
+    string model_id = 1;
+    string model_hash_sha256 = 2; // 무결성 검증
+    
+    // PCCP 메타데이터 (사전 인가된 부분 여부)
+    bool is_within_pccp_bounds = 3;
+    string change_protocol_reference = 4;
+    
+    // 성능 리포트 (XAI/SHAP 검증 여부)
+    double target_accuracy = 5;
+    bool regression_detected = 6;
+    
+    bytes tflite_model_blob = 7; // OTA 전송 데이터본
+}
+
+message RegisterResponse {
+    bool approved = 1;
+    string deploy_stage = 2; // "1%_CANARY", "25%_ROLLOUT", "100%"
+}
+
+message CheckRequest {
+    string current_model_id = 1;
+}
+
+message UpdateResponse {
+    bool needs_update = 1;
+    string new_model_id = 2;
+}

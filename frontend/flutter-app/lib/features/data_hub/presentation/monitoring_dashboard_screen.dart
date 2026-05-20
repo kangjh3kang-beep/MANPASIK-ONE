@@ -4,17 +4,39 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/features/devices/domain/device_repository.dart';
 import 'package:manpasik/features/data_hub/presentation/providers/monitoring_providers.dart';
 import 'package:manpasik/features/data_hub/presentation/widgets/device_detail_bottom_sheet.dart';
 import 'package:manpasik/features/data_hub/presentation/widgets/device_status_card.dart';
-import 'package:manpasik/shared/widgets/holo_globe.dart';
-import 'package:manpasik/shared/widgets/holo_body.dart';
+import 'package:manpasik/shared/widgets/golden_orbit_globe.dart';
 import 'package:manpasik/shared/widgets/royal_cloud_background.dart';
-import 'package:manpasik/features/data_hub/presentation/widgets/bio_data_panel.dart';
-import 'package:manpasik/features/data_hub/presentation/widgets/body_scan_hud.dart';
 import 'package:manpasik/shared/widgets/medical_stat_card.dart';
+import 'package:manpasik/shared/widgets/jagae_card.dart';
+import 'package:manpasik/shared/widgets/holo_body.dart';
+import 'package:manpasik/features/data_hub/presentation/widgets/orbital_hud.dart';
+import 'package:manpasik/shared/widgets/glass_morphism_card.dart';
+import 'package:manpasik/shared/widgets/sanggam_orbit_frame.dart';
+
+// ───────────────────────────────────────────────────
+// MonitoringDashboardScreen — Sanggam Orbit 모니터링 대시보드
+//
+// [Rule 4] app_theme → sanggam_theme
+// [Rule 4] isDark 파라미터 전체 제거 (항상 다크)
+// [Rule 4] AppTheme.sanggamGold ~10x → SanggamTheme.primary
+// [Rule 4] AppTheme.waveCyan ~5x → SanggamTheme.jagaeCyan
+// [Rule 4] Color(0xFF00E676) ~6x → SanggamTheme.jagaeCyan
+// [Rule 4] Colors.redAccent ~4x → SanggamTheme.error
+// [Rule 4] Colors.grey ~3x → SanggamTheme.onSurfaceDim
+// [Rule 4] Color(0xFF0A1628) → SanggamTheme.background
+// [Rule 4] Color(0xFF1A1A2E) → SanggamTheme.surface
+// [Rule 4] Color(0xFF1B2640) → SanggamTheme.surfaceVariant
+// [Rule 4] Color(0xFF050B14) → SanggamTheme.background
+// [Rule 4] Color(0xFF080C17) → SanggamTheme.background
+// [Rule 4] withOpacity → withValues(alpha:)
+// [Rule 4] 영문 텍스트 → 한국어
+// ───────────────────────────────────────────────────
 
 class MonitoringDashboardScreen extends ConsumerStatefulWidget {
   const MonitoringDashboardScreen({super.key});
@@ -59,31 +81,31 @@ class _MonitoringDashboardScreenState
     final summary = ref.watch(monitoringSummaryProvider);
     final alertDevices = ref.watch(alertDevicesProvider);
     final selectedId = ref.watch(selectedDeviceIdProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      appBar: _buildAppBar(isDark),
-      // parentDataDirty 근절: KeyedSubtree로 loading→data 전환 안정화
+      appBar: _buildAppBar(),
       body: RoyalCloudBackground(
-        child: filteredAsync.when(
-          data: (devices) => KeyedSubtree(
-            key: const ValueKey('monitoring_data'),
-            child: _buildContent(
-              context, devices, summary, alertDevices, selectedId, isDark,
+        child: SanggamOrbitFrame(
+          child: filteredAsync.when(
+            data: (devices) => KeyedSubtree(
+              key: const ValueKey('monitoring_data'),
+              child: _buildContent(
+                context, devices, summary, alertDevices, selectedId,
+              ),
             ),
-          ),
-          loading: () => const KeyedSubtree(
-            key: ValueKey('monitoring_loading'),
-            child: Center(
-              child: CircularProgressIndicator(color: AppTheme.sanggamGold),
+            loading: () => const KeyedSubtree(
+              key: ValueKey('monitoring_loading'),
+              child: Center(
+                child: CircularProgressIndicator(color: SanggamTheme.primary),
+              ),
             ),
-          ),
-          error: (err, _) => KeyedSubtree(
-            key: const ValueKey('monitoring_error'),
-            child: Center(
-              child: Text('Error: $err',
-                  style: TextStyle(color: Colors.white)),
+            error: (err, _) => KeyedSubtree(
+              key: const ValueKey('monitoring_error'),
+              child: Center(
+                child: Text('Error: $err',
+                    style: const TextStyle(color: Colors.white)),
+              ),
             ),
           ),
         ),
@@ -91,92 +113,143 @@ class _MonitoringDashboardScreenState
     );
   }
 
-  // ── AppBar ────────────────────────────────────────────────────────────
-  PreferredSizeWidget _buildAppBar(bool isDark) {
+  // ── AppBar ──────────────────────────────────────────
+  PreferredSizeWidget _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      title: Text(
-        '전체 리더기 현황',
-        style: TextStyle(
-          color: isDark ? AppTheme.sanggamGold : const Color(0xFF1A1A1A),
-          fontWeight: FontWeight.bold,
-          letterSpacing: 1.0,
-          fontSize: 16,
-        ),
+      title: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            '리더기 카트리지 현황',
+            style: TextStyle(
+              color: SanggamTheme.primary,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+            decoration: BoxDecoration(
+              color: SanggamTheme.primary.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text(
+              'v2.1',
+              style: TextStyle(fontSize: 8, color: SanggamTheme.primary, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
       ),
       leading: IconButton(
-        icon: Icon(Icons.arrow_back,
-            color: isDark ? Colors.white : Colors.black),
+        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        tooltip: '뒤로 가기',
         onPressed: () => context.pop(),
       ),
       actions: [
-        // 성별 토글 (바이오 탭에서만 표시)
-        if (ref.watch(monitoringFilterTabProvider) == 3)
-          _buildGenderToggle(isDark),
+        // 프로필 토글 (바이오 탭에서만 표시)
+        if (ref.watch(monitoringFilterTabProvider) == 1)
+          _buildProfileToggle(),
         IconButton(
-          icon: Icon(Icons.refresh,
-              color: isDark ? Colors.white70 : Colors.black54),
+          icon: const Icon(Icons.refresh, color: Colors.white70),
           onPressed: () => ref.invalidate(pollingConnectedDevicesProvider),
           tooltip: '새로고침',
         ),
       ],
       bottom: TabBar(
         controller: _tabController,
-        indicatorColor: AppTheme.sanggamGold,
-        labelColor: isDark ? AppTheme.sanggamGold : const Color(0xFF1A1A1A),
-        unselectedLabelColor: isDark ? Colors.white54 : Colors.grey,
+        indicatorColor: SanggamTheme.primary,
+        labelColor: SanggamTheme.primary,
+        unselectedLabelColor: Colors.white54,
         tabs: const [
           Tab(text: '전체'),
-          Tab(text: '기체'),
-          Tab(text: '환경'),
           Tab(text: '바이오'),
+          Tab(text: '가스'),
+          Tab(text: '환경'),
         ],
       ),
     );
   }
 
-  // ── Gender Toggle Button ────────────────────────────────────────────────
-  Widget _buildGenderToggle(bool isDark) {
-    final gender = ref.watch(holoGenderProvider);
-    final isMale = gender == HoloGender.male;
+
+  String _profileLabel(HoloBodyProfile profile) {
+    switch (profile) {
+      case HoloBodyProfile.adultMale:
+        return '성인남성';
+      case HoloBodyProfile.adultFemale:
+        return '성인여성';
+      case HoloBodyProfile.juniorMale:
+        return '남자어린이';
+      case HoloBodyProfile.juniorFemale:
+        return '여자어린이';
+      case HoloBodyProfile.baby:
+        return '유아';
+    }
+  }
+
+  Widget _buildProfileToggle() {
+    final selectedProfile = ref.watch(holoBodyProfileProvider);
+
     return Padding(
       padding: const EdgeInsets.only(right: 4),
-      child: GestureDetector(
-        onTap: () {
-          ref.read(holoGenderProvider.notifier).state =
-              isMale ? HoloGender.female : HoloGender.male;
+      child: PopupMenuButton<HoloBodyProfile>(
+        tooltip: '홀로그램 프로필',
+        initialValue: selectedProfile,
+        onSelected: (HoloBodyProfile next) {
+          ref.read(holoBodyProfileProvider.notifier).state = next;
+          ref.read(holoGenderProvider.notifier).state = next.fallbackGender;
+        },
+        color: SanggamTheme.background,
+        itemBuilder: (context) {
+          return HoloBodyProfile.values
+              .map(
+                (profile) => PopupMenuItem<HoloBodyProfile>(
+                  value: profile,
+                  child: Text(
+                    _profileLabel(profile),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              )
+              .toList();
         },
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: AppTheme.sanggamGold.withValues(alpha: 0.6),
+              color: SanggamTheme.primary.withValues(alpha: 0.6),
             ),
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.3)
-                : Colors.white.withValues(alpha: 0.3),
+            color: Colors.black.withValues(alpha: 0.3),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                isMale ? '\u2642' : '\u2640',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: AppTheme.sanggamGold,
-                  fontWeight: FontWeight.bold,
-                ),
+              const Icon(
+                Icons.view_in_ar,
+                size: 14,
+                color: SanggamTheme.primary,
               ),
               const SizedBox(width: 4),
               Text(
-                isMale ? '남성' : '여성',
-                style: TextStyle(
+                _profileLabel(selectedProfile),
+                style: const TextStyle(
                   fontSize: 11,
-                  color: isDark ? Colors.white70 : Colors.black87,
+                  color: Colors.white70,
                   fontWeight: FontWeight.w600,
                 ),
+              ),
+              const SizedBox(width: 2),
+              const Icon(
+                Icons.arrow_drop_down,
+                size: 16,
+                color: Colors.white70,
               ),
             ],
           ),
@@ -185,14 +258,13 @@ class _MonitoringDashboardScreenState
     );
   }
 
-  // ── Content Layout ────────────────────────────────────────────────────
+  // ── Content Layout ──────────────────────────────────
   Widget _buildContent(
     BuildContext context,
     List<ConnectedDevice> devices,
     ({int total, int connected, int alerts, int avgBattery}) summary,
     List<ConnectedDevice> alertDevices,
     String? selectedId,
-    bool isDark,
   ) {
     final double topPadding = MediaQuery.of(context).padding.top;
     const double appBarHeight = kToolbarHeight + 48;
@@ -202,13 +274,13 @@ class _MonitoringDashboardScreenState
         SizedBox(height: topPadding + appBarHeight),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-          child: _buildSummaryBar(summary, isDark),
+          child: _buildSummaryBar(summary),
         ),
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
               return _buildPortraitLayout(
-                  constraints, devices, alertDevices, isDark, selectedId);
+                  constraints, devices, alertDevices, selectedId);
             },
           ),
         ),
@@ -216,12 +288,11 @@ class _MonitoringDashboardScreenState
     );
   }
 
-  // ── Portrait Layout ───────────────────────────────────────────────────
+  // ── Portrait Layout ─────────────────────────────────
   Widget _buildPortraitLayout(
     BoxConstraints constraints,
     List<ConnectedDevice> devices,
     List<ConnectedDevice> alertDevices,
-    bool isDark,
     String? selectedId,
   ) {
     final center = Offset(
@@ -234,231 +305,269 @@ class _MonitoringDashboardScreenState
         (minDim * (isCompact ? 0.28 : 0.32)).clamp(80.0, 200.0);
     final globeSize = baseRadius * 1.3;
 
-    final positions = _computeNodePositions(center, baseRadius, devices, constraints);
-    final connectorData =
-        positions.map((p) => (start: p.surfacePos, end: p.nodePos)).toList();
+    final positions =
+        _computeNodePositions(center, baseRadius, devices, constraints);
 
     return _buildVisualization(
       center, baseRadius, globeSize,
-      positions, connectorData, devices, isDark, selectedId, constraints,
+      positions, devices, selectedId, constraints,
     );
   }
 
-  // ── Visualization (Stack of Positioned.fill layers) ────────────────────
+  // ── Visualization (Stack of Positioned.fill layers) ──
   Widget _buildVisualization(
     Offset center,
     double baseRadius,
     double globeSize,
     List<({Offset nodePos, Offset surfacePos, double angle})> positions,
-    List<({Offset start, Offset end})> connectorData,
     List<ConnectedDevice> devices,
-    bool isDark,
     String? selectedId,
     BoxConstraints constraints,
   ) {
     final filterTab = ref.watch(monitoringFilterTabProvider);
-    final isBody = filterTab == 3;
-    final connColor =
-        (isDark ? AppTheme.sanggamGold : Colors.teal).withValues(alpha: 0.6);
-    // v21: 내부 fitScale이 전신 표시용으로 축소 → 외부 컨테이너를 넉넉히
+    final isBody = filterTab == 1;
+    final connColor = SanggamTheme.primary.withValues(alpha: 0.6);
     final bodyH = constraints.maxHeight * 0.80;
     final bodyW = math.min(bodyH * 0.42, constraints.maxWidth * 0.60);
 
     return Stack(
       children: [
-        // 1. 배경 궤도 링
+        // 1. 배경 궤도 링 (Exclude Semantics - not interactive)
         Positioned.fill(
-          child: CustomPaint(
-            painter: _BackgroundRingsPainter(
-              center: center,
-              isDark: isDark,
-              radius: baseRadius,
-            ),
-          ),
-        ),
-
-        // 2. 커넥터 (애니메이션)
-        Positioned.fill(
-          child: AnimatedBuilder(
-            animation: _flowController,
-            builder: (context, child) {
-              return CustomPaint(
-                painter: _AllConnectorsPainter(
-                  connectors: connectorData,
-                  color: connColor,
-                  animationValue: _flowController.value,
-                ),
-              );
-            },
-          ),
-        ),
-
-        // 3. 중앙 홀로그램 — Globe (AnimatedOpacity)
-        Positioned(
-          left: center.dx - globeSize / 2,
-          top: center.dy - globeSize / 2,
-          width: globeSize,
-          height: globeSize,
-          child: IgnorePointer(
-            child: AnimatedOpacity(
-              opacity: isBody ? 0.0 : 1.0,
-              duration: const Duration(milliseconds: 500),
-              child: HoloGlobe(
-                key: const ValueKey('globe'),
-                size: globeSize,
-                color: isDark ? AppTheme.sanggamGold : const Color(0xFF004D40),
-                accentColor: isDark ? Colors.white : const Color(0xFF00796B),
+          child: ExcludeSemantics(
+            child: CustomPaint(
+              painter: _BackgroundRingsPainter(
+                center: center,
+                radius: baseRadius,
               ),
             ),
           ),
         ),
 
-        // 4. 중앙 홀로그램 — Body (v6.0 전체 화면 확대)
-        Positioned(
-          left: center.dx - bodyW / 2,
-          top: center.dy - bodyH * 0.48,
-          width: bodyW,
-          height: bodyH,
-          child: IgnorePointer(
-            child: AnimatedOpacity(
-              opacity: isBody ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 500),
-              child: HoloBody(
-                key: ValueKey('body_${ref.watch(holoGenderProvider).name}'),
+        // Consolidated Orbital HUD for Bio Tab
+        if (isBody)
+          Positioned.fill(
+            child: OrbitalHud(
+              center: center,
+              baseRadius: baseRadius * 1.5, // 1.2 -> 1.5로 확장하여 더 넓은 시야 확보
+              nodes: const [
+                OrbitalNodeData(
+                  label: '심박수',
+                  value: '72',
+                  unit: 'bpm',
+                  icon: Icons.favorite,
+                  angle: -135,
+                  radiusMultiplier: 1.1,
+                  bodyAttachmentOffset: Offset(0, -100),
+                ),
+                OrbitalNodeData(
+                  label: '산소포화도',
+                  value: '98',
+                  unit: '%',
+                  icon: Icons.air,
+                  angle: -45,
+                  radiusMultiplier: 1.1,
+                  bodyAttachmentOffset: Offset(0, -80),
+                ),
+                OrbitalNodeData(
+                  label: '혈당',
+                  value: '105',
+                  unit: 'mg/dL',
+                  icon: Icons.bloodtype,
+                  angle: 135,
+                  radiusMultiplier: 1.2,
+                  bodyAttachmentOffset: Offset(0, 50),
+                  isAlert: true,
+                ),
+                OrbitalNodeData(
+                  label: '뇌활동',
+                  value: '42',
+                  unit: '%',
+                  icon: Icons.psychology,
+                  angle: 45,
+                  radiusMultiplier: 1.0,
+                  bodyAttachmentOffset: Offset(0, -180),
+                ),
+              ],
+              centerWidget: HoloBody(
+                key: ValueKey('holo_${ref.watch(holoBodyProfileProvider)}_${ref.watch(holoGenderProvider)}'),
                 width: bodyW,
                 height: bodyH,
-                color: isDark ? AppTheme.waveCyan : const Color(0xFF00ACC1),
-                accentColor: isDark ? AppTheme.sanggamGold : const Color(0xFFFF4D4D),
+                profile: ref.watch(holoBodyProfileProvider),
                 gender: ref.watch(holoGenderProvider),
                 bioData: ref.watch(selectedBioDataProvider),
-                showEcg: true,
-                showHud: true,
+                showHud: false,
               ),
             ),
+          )
+        else ...[
+          // Standard Globe & Node layer for connected devices
+          Positioned(
+            left: center.dx - globeSize / 2,
+            top: center.dy - globeSize / 2,
+            width: globeSize,
+            height: globeSize,
+            child: GoldenOrbitGlobe(
+              size: globeSize,
+            ),
           ),
-        ),
-
-        // 5. 인터랙티브 노드 레이어
-        Positioned.fill(
-          child: _InteractiveNodesLayer(
+          _InteractiveNodesLayer(
             positions: positions,
             devices: devices,
             selectedId: selectedId,
-            isDark: isDark,
+            center: center,
+            connectorRadius: globeSize * 0.5,
+            connectorColor: connColor,
+            connectorAnimation: _flowController,
+            viewportSize: constraints.biggest,
             onNodeTap: (device) {
               ref.read(selectedDeviceIdProvider.notifier).state = device.id;
               showDeviceDetailSheet(context, device);
             },
           ),
-        ),
+        ],
 
-        // 7. v6.0 바이오 데이터 패널 오버레이 (바이오탭만)
-        Positioned.fill(
-          child: IgnorePointer(
-            child: AnimatedOpacity(
-              opacity: isBody ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 400),
-              child: _buildBioDataOverlay(isDark, bodyW, bodyH),
-            ),
-          ),
-        ),
-
-        // 8. v6.0 상단 HUD 오버레이 (바이오탭만)
-        Positioned.fill(
-          child: IgnorePointer(
-            child: AnimatedOpacity(
-              opacity: isBody ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 400),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: AnimatedBuilder(
-                  animation: _flowController,
-                  builder: (context, _) => BodyScanHud(
-                    scanProgress: _flowController.value,
-                  ),
+        // Empty State
+        if (devices.isEmpty && !isBody)
+          const Positioned.fill(
+            child: Center(
+              child: Text(
+                '연결된 기기가 없습니다.',
+                style: TextStyle(
+                  color: SanggamTheme.onSurfaceDim,
+                  fontSize: 14,
                 ),
               ),
             ),
           ),
-        ),
-
-        // 9. 빈 상태 (항상 배치 + opacity 제어 → parentDataDirty 근절)
-        Positioned.fill(
-          child: IgnorePointer(
-            ignoring: devices.isNotEmpty,
-            child: AnimatedOpacity(
-              opacity: devices.isEmpty ? 1.0 : 0.0,
-              duration: const Duration(milliseconds: 300),
-              child: Center(
-                child: Text(
-                  '연결된 기기가 없습니다.',
-                  style: TextStyle(
-                    color: isDark ? Colors.white54 : Colors.black38,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
       ],
     );
   }
 
-  // ── Summary Stats Bar (컴팩트) ─────────────────────────────────────────
+  // ── Summary Stats Bar (컴팩트 통계바) ──────────────
   Widget _buildSummaryBar(
     ({int total, int connected, int alerts, int avgBattery}) summary,
-    bool isDark,
   ) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: isDark
-                ? Colors.black.withValues(alpha: 0.35)
-                : Colors.white.withValues(alpha: 0.65),
-            border: Border.all(
-              color: isDark
-                  ? AppTheme.sanggamGold.withValues(alpha: 0.2)
-                  : Colors.black.withValues(alpha: 0.06),
-            ),
-          ),
-          child: Row(
+    return JagaeCard(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      opacity: 0.1,
+      child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               _CompactStatTile(
                 icon: Icons.devices,
                 value: '${summary.total}',
                 label: '전체',
-                color: isDark ? Colors.white70 : Colors.black87,
+                color: Colors.white70,
+                tooltip: '등록된 전체 기기 수',
               ),
-              _statDivider(isDark),
+              _statDivider(),
               _CompactStatTile(
                 icon: Icons.link,
                 value: '${summary.connected}',
-                label: '연결',
-                color: const Color(0xFF00E676),
+                label: '연결됨',
+                color: SanggamTheme.jagaeCyan,
+                tooltip: '현재 연결된 기기 수',
               ),
-              _statDivider(isDark),
+              _statDivider(),
               _CompactStatTile(
                 icon: Icons.warning_amber_rounded,
                 value: '${summary.alerts}',
                 label: '경고',
-                color: summary.alerts > 0 ? Colors.redAccent : Colors.grey,
+                color: summary.alerts > 0
+                    ? SanggamTheme.error
+                    : SanggamTheme.onSurfaceDim,
+                tooltip: '경고 상태 기기 수',
               ),
-              _statDivider(isDark),
+              _statDivider(),
               _CompactStatTile(
                 icon: Icons.battery_std,
                 value: '${summary.avgBattery}%',
                 label: '배터리',
                 color: summary.avgBattery < 30
-                    ? Colors.redAccent
-                    : const Color(0xFF00E676),
+                    ? SanggamTheme.error
+                    : SanggamTheme.jagaeCyan,
+                tooltip: '평균 배터리 잔량',
               ),
+            ],
+          ),
+    );
+  }
+
+  Widget _statDivider() {
+    return Container(
+      width: 1,
+      height: 20,
+      color: Colors.white.withValues(alpha: 0.1),
+    );
+  }
+
+  // Phase 6: Deep HCI Optimization - F-Pattern & Progressive Disclosure
+  // ignore: unused_element
+  Widget _buildBioDataOverlay(double bodyW, double bodyH) {
+    final bioData = ref.watch(selectedBioDataProvider);
+    const cardColor = SanggamTheme.jagaeCyan;
+
+    Widget buildInteractiveCard(String key, String label, String unitText, IconData icon, {String? tip}) {
+      final val = bioData[key]?.toString() ?? '--';
+      final num = double.tryParse(RegExp(r'[\d.]+').firstMatch(val)?.group(0) ?? '');
+      bool isAlert = false;
+      if (num != null) {
+        if (key == 'Stress' && num > 70) isAlert = true;
+        if (key == 'O2' && num < 95) isAlert = true;
+        if (key == 'Pulse' && (num < 50 || num > 100)) isAlert = true;
+        if (key == 'Glucose' && (num < 70 || num > 140)) isAlert = true;
+      }
+
+      return RepaintBoundary(
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: GestureDetector(
+            onTap: () {
+               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$label 세부 데이터 로딩 중...'), duration: const Duration(seconds: 1)));
+            },
+            child: Tooltip(
+              message: tip ?? '',
+              child: GlassmorphismCard(
+                opacity: isAlert ? 0.3 : 0.15,
+                useKoreanBorder: isAlert,
+                baseColor: isAlert ? SanggamTheme.error : SanggamTheme.background,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                child: MedicalStatCard(
+                  label: label,
+                  value: val,
+                  unit: unitText,
+                  icon: icon,
+                  isAlert: isAlert,
+                  color: cardColor,
+                  tooltipMessage: null,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Padding(
+        padding: const EdgeInsets.only(top: kToolbarHeight + 110),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildInteractiveCard('Pulse', '심박수', 'bpm', Icons.favorite, tip: '분당 심박수 (bpm)'),
+              const SizedBox(width: 8),
+              buildInteractiveCard('O2', '산소포화도', '%', Icons.air, tip: '혈중 산소 농도 (%)'),
+              const SizedBox(width: 8),
+              buildInteractiveCard('Glucose', '혈당', 'mg/dL', Icons.bloodtype, tip: '혈당 수치 (mg/dL)'),
+              const SizedBox(width: 8),
+              buildInteractiveCard('Stress', '뇌활동', '%', Icons.psychology, tip: '스트레스 지수 (%)'),
             ],
           ),
         ),
@@ -466,65 +575,17 @@ class _MonitoringDashboardScreenState
     );
   }
 
-  Widget _statDivider(bool isDark) {
-    return Container(
-      width: 1,
-      height: 20,
-      color: isDark
-          ? Colors.white.withValues(alpha: 0.1)
-          : Colors.black.withValues(alpha: 0.08),
-    );
-  }
-
-  // ── v6.0 Bio Data Overlay (Medical HUD with Stat Cards) ────────────────
-  Widget _buildBioDataOverlay(bool isDark, double bodyW, double bodyH) {
-    final bioData = ref.watch(selectedBioDataProvider);
-    final unit = bodyW * 0.35;
-    
-    Widget buildCard(String key, String label, String unitText, IconData icon, Alignment alignment, Offset offset) {
-       final val = bioData[key]?.toString() ?? '--';
-       final num = double.tryParse(RegExp(r'[\d.]+').firstMatch(val)?.group(0) ?? '');
-       bool isAlert = false;
-       if (num != null) {
-          if (key == 'Stress' && num > 70) isAlert = true;
-          if (key == 'O2' && num < 95) isAlert = true;
-          if (key == 'Pulse' && (num < 50 || num > 100)) isAlert = true;
-          if (key == 'Glucose' && (num < 70 || num > 140)) isAlert = true;
-       }
-       
-       return Align(
-         alignment: alignment,
-         child: Transform.translate(
-           offset: offset,
-           child: MedicalStatCard(
-             label: label,
-             value: val,
-             unit: unitText,
-             icon: icon,
-             isAlert: isAlert,
-             color: isDark ? AppTheme.waveCyan : const Color(0xFF00ACC1),
-           ),
-         ),
-       );
-    }
-    
-    return Stack(
-      children: [
-        buildCard('Stress', 'BRAIN ACTIVITY', '%', Icons.psychology, Alignment.center, Offset(-unit * 1.5 - 50, -unit * 0.6)),
-        buildCard('O2', 'SpO\u2082 LEVEL', '%', Icons.air, Alignment.center, Offset(-unit * 1.5 - 50, unit * 0.5)),
-        buildCard('Pulse', 'HEART RATE', 'bpm', Icons.favorite, Alignment.center, Offset(unit * 1.5 + 50, -unit * 0.2)),
-        buildCard('Glucose', 'GLUCOSE', 'mg/dL', Icons.bloodtype, Alignment.center, Offset(unit * 1.5 + 50, unit * 0.9)),
-      ],
-    );
-  }
-
-  // ── Alert Banner ──────────────────────────────────────────────────────
-  Widget _buildAlertBanner(List<ConnectedDevice> alertDevices, bool isDark) {
+  // ── Alert Banner ────────────────────────────────────
+  Widget _buildAlertBanner(List<ConnectedDevice> alertDevices) {
     final names = alertDevices.take(3).map((d) => d.name).join(', ');
     final extra =
-        alertDevices.length > 3 ? ' 외 ${alertDevices.length - 3}개' : '';
+        alertDevices.length > 3 ? ' 외 ${alertDevices.length - 3}대' : '';
 
-    return GestureDetector(
+    return Tooltip(
+      message: '경고 기기 상세 보기',
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
       onTap: () {
         if (alertDevices.isNotEmpty) {
           ref.read(selectedDeviceIdProvider.notifier).state =
@@ -532,24 +593,21 @@ class _MonitoringDashboardScreenState
           showDeviceDetailSheet(context, alertDevices.first);
         }
       },
-      child: Container(
+      child: GlassmorphismCard(
+        baseColor: SanggamTheme.error,
+        opacity: 0.15,
+        useKoreanBorder: false,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.redAccent.withValues(alpha: isDark ? 0.15 : 0.08),
-          borderRadius: BorderRadius.circular(8),
-          border:
-              Border.all(color: Colors.redAccent.withValues(alpha: 0.35)),
-        ),
         child: Row(
           children: [
             const Icon(Icons.warning_amber_rounded,
-                size: 14, color: Colors.redAccent),
+                size: 14, color: SanggamTheme.error),
             const SizedBox(width: 6),
             Expanded(
               child: Text(
-                '${alertDevices.length}개 기기 주의: $names$extra',
+                '경고 기기 ${alertDevices.length}대: $names$extra',
                 style: const TextStyle(
-                  color: Colors.redAccent,
+                  color: SanggamTheme.error,
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                 ),
@@ -558,18 +616,18 @@ class _MonitoringDashboardScreenState
               ),
             ),
             const Icon(Icons.chevron_right,
-                size: 14, color: Colors.redAccent),
+                size: 14, color: SanggamTheme.error),
           ],
         ),
       ),
-    );
+    )));
   }
 
-  // ── Device List Panel (DraggableSheet) ─────────────────────────────────
+  // ── Device List Panel (DraggableSheet) ──────────────
+  // ignore: unused_element
   Widget _buildDeviceListPanel(
     List<ConnectedDevice> devices,
     List<ConnectedDevice> alertDevices,
-    bool isDark,
     String? selectedId,
   ) {
     return DraggableScrollableSheet(
@@ -592,21 +650,14 @@ class _MonitoringDashboardScreenState
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: isDark
-                      ? [
-                          const Color(0xFF1B2640).withValues(alpha: 0.85),
-                          const Color(0xFF050B14).withValues(alpha: 0.95),
-                        ]
-                      : [
-                          Colors.white.withValues(alpha: 0.95),
-                          Colors.white.withValues(alpha: 0.85),
-                        ],
+                  colors: [
+                    SanggamTheme.surfaceVariant.withValues(alpha: 0.85),
+                    SanggamTheme.background.withValues(alpha: 0.95),
+                  ],
                 ),
                 border: Border(
                   top: BorderSide(
-                    color: isDark
-                        ? AppTheme.sanggamGold.withValues(alpha: 0.3)
-                        : Colors.black.withValues(alpha: 0.08),
+                    color: SanggamTheme.primary.withValues(alpha: 0.3),
                   ),
                 ),
               ),
@@ -627,7 +678,7 @@ class _MonitoringDashboardScreenState
                               width: 40,
                               height: 4,
                               decoration: BoxDecoration(
-                                color: isDark ? Colors.white24 : Colors.black12,
+                                color: Colors.white24,
                                 borderRadius: BorderRadius.circular(2),
                               ),
                             ),
@@ -635,12 +686,12 @@ class _MonitoringDashboardScreenState
                           if (alertDevices.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(bottom: 8),
-                              child: _buildAlertBanner(alertDevices, isDark),
+                              child: _buildAlertBanner(alertDevices),
                             ),
                           Text(
-                            '기기 목록 (${devices.length}개)',
-                            style: TextStyle(
-                              color: isDark ? Colors.white54 : Colors.black45,
+                            '기기 목록 (${devices.length})',
+                            style: const TextStyle(
+                              color: SanggamTheme.onSurfaceDim,
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
                               letterSpacing: 1.2,
@@ -651,8 +702,8 @@ class _MonitoringDashboardScreenState
                       ),
                     ),
                   ),
-                  
-                  // 기기 목록 (SliverPadding 제거 -> Item Padding으로 대체)
+
+                  // 기기 목록
                   if (devices.isNotEmpty)
                     SliverList.builder(
                       itemCount: devices.length,
@@ -660,7 +711,6 @@ class _MonitoringDashboardScreenState
                         final device = devices[index];
                         return Padding(
                           key: ValueKey('dev_${device.id}'),
-                          // 상하좌우 패딩을 여기서 직접 적용 (SliverPadding 회피)
                           padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
                           child: DeviceStatusCard(
                             device: device,
@@ -676,19 +726,19 @@ class _MonitoringDashboardScreenState
                       },
                     ),
 
-                  // 하단 여백 확보용 (SliverPadding 대체)
+                  // 하단 여백 확보
                   const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
                   // 비어있을 때 안내 문구
                   if (devices.isEmpty)
-                    SliverToBoxAdapter(
+                    const SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 32),
+                        padding: EdgeInsets.symmetric(vertical: 32),
                         child: Center(
                           child: Text(
-                            '이 카테고리에 등록된 기기가 없습니다.',
+                            '해당 카테고리에 기기가 없습니다.',
                             style: TextStyle(
-                              color: isDark ? Colors.white38 : Colors.black38,
+                              color: SanggamTheme.onSurfaceDim,
                               fontSize: 12,
                             ),
                           ),
@@ -704,7 +754,36 @@ class _MonitoringDashboardScreenState
     );
   }
 
-  // ── Node Position Computation (v5.0 — 타원형 가용공간 기반 + 안전 클램프) ───
+
+  // HUD panel avoidance rects
+  List<Rect> _hudAvoidanceRects(BoxConstraints constraints) {
+    final vw = constraints.maxWidth;
+    final vh = constraints.maxHeight;
+    final cX = vw / 2;
+    final cY = vh * 0.42;
+    final bH = vh * 0.80;
+    final bW = math.min(bH * 0.42, vw * 0.60);
+    final cW = (vw * 0.18).clamp(80.0, 130.0);
+    final cH = (vh * 0.13).clamp(70.0, 110.0);
+    final bL = cX - bW / 2;
+    final bR = cX + bW / 2;
+    final pG = (vw * 0.012).clamp(4.0, 12.0);
+    final lX = (bL - cW - pG).clamp(0.0, bL);
+    final rX = (bR + pG).clamp(bR, vw - cW);
+    final vG = (vh * 0.02).clamp(8.0, 20.0);
+    final tY = cY - vG - cH;
+    final bY = cY + vG;
+    const double np = 120.0; // 기존 60.0에서 120.0으로 파격적으로 확장하여 간섭 원천 차단
+    return [
+      Rect.fromLTWH(lX - np, tY - np, cW + np * 2, cH + np * 2),
+      Rect.fromLTWH(cX - 210, cY - 340, 420, 680), // 중앙 홀로그램 영역 대폭 확장 (360x560 -> 420x680)
+      Rect.fromLTWH(lX - np, bY - np, cW + np * 2, cH + np * 2),
+      Rect.fromLTWH(rX - np, tY - np, cW + np * 2, cH + np * 2),
+      Rect.fromLTWH(rX - np, bY - np, cW + np * 2, cH + np * 2),
+    ];
+  }
+
+  // ── Node Position Computation (타원형 각도/간격 기반 + 안전 영역) ──
   List<({Offset nodePos, Offset surfacePos, double angle})>
       _computeNodePositions(
     Offset center,
@@ -717,8 +796,8 @@ class _MonitoringDashboardScreenState
     final List<({Offset nodePos, Offset surfacePos, double angle})> positions =
         [];
     final int count = devices.length;
-    final bool useTwoRings = count > 10;
-    final int innerCount = useTwoRings ? (count / 2).ceil() : count;
+    final bool useTwoRings = count > 8; // 기존 10에서 8로 조정하여 혼잡도 완화
+    final int innerCount = useTwoRings ? (count * 0.4).floor() : count; // 내부 링 비중 축소 (기존 50% -> 40%)
 
     const double nodeRadius = 23.0;
     const double padding = 12.0;
@@ -730,11 +809,36 @@ class _MonitoringDashboardScreenState
     final maxRyBot = constraints.maxHeight * 0.75 - center.dy - nodeRadius;
     final maxRy = math.min(maxRyTop, maxRyBot);
 
-    // 타원형 반경 (가용 공간 비율)
-    final innerRx = maxRx * 0.62;
-    final innerRy = maxRy * 0.55;
-    final outerRx = maxRx * 0.88;
-    final outerRy = maxRy * 0.82;
+    // 타원형 반경 (가용 공간 비율) - 중앙 영역 침범 방지를 위해 최소 반경 확보
+    final innerRx = math.max(maxRx * 0.70, 180.0); // 0.62 -> 0.70, min 180
+    final innerRy = math.max(maxRy * 0.65, 200.0); // 0.55 -> 0.65, min 200
+    final outerRx = math.max(maxRx * 0.92, 260.0); // 0.88 -> 0.92
+    final outerRy = math.max(maxRy * 0.88, 300.0); // 0.82 -> 0.88
+
+    // HUD panel avoidance zones
+    final hudRects = _hudAvoidanceRects(constraints);
+
+    Offset avoidHud(double x, double y) {
+      for (final rect in hudRects) {
+        if (rect.contains(Offset(x, y))) {
+          final adx = x - center.dx;
+          final ady = y - center.dy;
+          final dist = math.sqrt(adx * adx + ady * ady);
+          if (dist < 1) continue;
+          final ux = adx / dist;
+          final uy = ady / dist;
+          for (double step = 10; step <= 200; step += 10) {
+            final nx = x + ux * step;
+            final ny = y + uy * step;
+            if (!rect.contains(Offset(nx, ny))) {
+              return Offset(nx, ny);
+            }
+          }
+        }
+      }
+      return Offset(x, y);
+    }
+
 
     void computeRing(
         List<ConnectedDevice> ringDevices, double rx, double ry, int ringIndex) {
@@ -759,7 +863,12 @@ class _MonitoringDashboardScreenState
         double x = center.dx + (rx + rxJitter) * math.cos(angle);
         double y = center.dy + (ry + ryJitter) * math.sin(angle);
 
-        // 안전 클램프
+        // Push away from HUD panels
+        final avoided = avoidHud(x, y);
+        x = avoided.dx;
+        y = avoided.dy;
+
+        // Keep nodes inside screen bounds.
         x = x.clamp(nodeRadius + padding, constraints.maxWidth - nodeRadius - padding);
         y = y.clamp(nodeRadius + padding, constraints.maxHeight * 0.75 - nodeRadius);
 
@@ -786,22 +895,29 @@ class _MonitoringDashboardScreenState
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Interactive Nodes Layer — StatefulWidget + Listener + 호버 툴팁
-// ═══════════════════════════════════════════════════════════════════════════
-
+// ═══════════════════════════════════════════════════════
+// Interactive Nodes Layer — StatefulWidget + Listener + 드래그 지원
+// ═══════════════════════════════════════════════════════
 class _InteractiveNodesLayer extends StatefulWidget {
   final List<({Offset nodePos, Offset surfacePos, double angle})> positions;
   final List<ConnectedDevice> devices;
   final String? selectedId;
-  final bool isDark;
+  final Offset center;
+  final double connectorRadius;
+  final Color connectorColor;
+  final Animation<double> connectorAnimation;
+  final Size viewportSize;
   final void Function(ConnectedDevice) onNodeTap;
 
   const _InteractiveNodesLayer({
     required this.positions,
     required this.devices,
     required this.selectedId,
-    required this.isDark,
+    required this.center,
+    required this.connectorRadius,
+    required this.connectorColor,
+    required this.connectorAnimation,
+    required this.viewportSize,
     required this.onNodeTap,
   });
 
@@ -812,77 +928,260 @@ class _InteractiveNodesLayer extends StatefulWidget {
 class _InteractiveNodesLayerState extends State<_InteractiveNodesLayer> {
   int? _hoveredIndex;
 
+  // ── Drag state ──────────────────────────────────────
+  final Map<String, Offset> _userOffsets = {};
+  int? _draggingIndex;
+  Offset _dragStartPointer = Offset.zero;
+  Offset _dragStartNode = Offset.zero;
+  bool _didMove = false;
+  static const _prefKeyX = 'node_x_';
+  static const _prefKeyY = 'node_y_';
+
+  String _storageKeyX(String deviceId) => '$_prefKeyX$deviceId';
+  String _storageKeyY(String deviceId) => '$_prefKeyY$deviceId';
+
+  String? _deviceIdByIndex(int index) {
+    if (index < 0 || index >= widget.devices.length) return null;
+    return widget.devices[index].id;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedPositions();
+  }
+
+  @override
+  void didUpdateWidget(covariant _InteractiveNodesLayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final oldIds = oldWidget.devices.map((d) => d.id).toSet();
+    final newIds = widget.devices.map((d) => d.id).toSet();
+    if (oldIds.length == newIds.length && oldIds.containsAll(newIds)) {
+      return;
+    }
+
+    setState(() {
+      _userOffsets.removeWhere((deviceId, _) => !newIds.contains(deviceId));
+      if (_hoveredIndex != null && _hoveredIndex! >= widget.devices.length) {
+        _hoveredIndex = null;
+      }
+      if (_draggingIndex != null && _draggingIndex! >= widget.devices.length) {
+        _draggingIndex = null;
+      }
+    });
+
+    _loadSavedPositions();
+  }
+
+  Future<void> _loadSavedPositions() async {
+    final prefs = await SharedPreferences.getInstance();
+    final loaded = <String, Offset>{};
+    for (final device in widget.devices) {
+      final x = prefs.getDouble(_storageKeyX(device.id));
+      final y = prefs.getDouble(_storageKeyY(device.id));
+      if (x != null && y != null) {
+        loaded[device.id] = Offset(x, y);
+      }
+    }
+    if (loaded.isNotEmpty && mounted) {
+      setState(() => _userOffsets.addAll(loaded));
+    }
+  }
+
+  Future<void> _savePosition(String deviceId, Offset pos) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble(_storageKeyX(deviceId), pos.dx);
+    await prefs.setDouble(_storageKeyY(deviceId), pos.dy);
+  }
+
+  Offset _clampToCanvas(Offset pos) {
+    final size = widget.viewportSize;
+    if (size.width <= 0 || size.height <= 0) return pos;
+    const pad = 26.0;
+    return Offset(
+      pos.dx.clamp(pad, size.width - pad).toDouble(),
+      pos.dy.clamp(pad, size.height - pad).toDouble(),
+    );
+  }
+
+  Offset _effPos(int i) {
+    final deviceId = _deviceIdByIndex(i);
+    if (deviceId == null) return _clampToCanvas(widget.positions[i].nodePos);
+    return _clampToCanvas(_userOffsets[deviceId] ?? widget.positions[i].nodePos);
+  }
+
+  List<({Offset nodePos, Offset surfacePos, double angle})>
+      get _effectivePositions => List.generate(
+            widget.positions.length,
+            (i) {
+              final p = widget.positions[i];
+              final deviceId = _deviceIdByIndex(i);
+              final ov = deviceId == null ? null : _userOffsets[deviceId];
+              final nodePos = _clampToCanvas(ov ?? p.nodePos);
+              return (nodePos: nodePos, surfacePos: p.surfacePos, angle: p.angle);
+            },
+          );
+
   int? _findNodeAt(Offset localPos) {
-    for (int i = 0; i < widget.positions.length && i < widget.devices.length; i++) {
-      if ((localPos - widget.positions[i].nodePos).distance < 28) return i;
+    for (int i = 0;
+        i < widget.positions.length && i < widget.devices.length;
+        i++) {
+      if ((localPos - _effPos(i)).distance < 28) return i;
     }
     return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    final effPos = _effectivePositions;
+
+    final cursor = _draggingIndex != null
+        ? SystemMouseCursors.grabbing
+        : (_hoveredIndex != null ? SystemMouseCursors.grab : MouseCursor.defer);
+
     return MouseRegion(
+      cursor: cursor,
       onExit: (_) {
         if (_hoveredIndex != null) setState(() => _hoveredIndex = null);
       },
       hitTestBehavior: HitTestBehavior.translucent,
       child: Listener(
         behavior: HitTestBehavior.translucent,
+        // ── Hover ──
         onPointerHover: (event) {
+          if (_draggingIndex != null) return;
           final found = _findNodeAt(event.localPosition);
           if (found != _hoveredIndex) setState(() => _hoveredIndex = found);
         },
-        onPointerUp: (event) {
+        // ── Press ──
+        onPointerDown: (event) {
           final found = _findNodeAt(event.localPosition);
-          if (found != null) widget.onNodeTap(widget.devices[found]);
+          if (found != null) {
+            setState(() {
+              _draggingIndex    = found;
+              _dragStartPointer = event.localPosition;
+              _dragStartNode    = _effPos(found);
+              _didMove          = false;
+            });
+          }
         },
+        // ── Drag ──
+        onPointerMove: (event) {
+          if (_draggingIndex == null) return;
+          final delta = event.localPosition - _dragStartPointer;
+          if (delta.distance > 8) _didMove = true;
+          if (_didMove) {
+            setState(() {
+              final next = _clampToCanvas(_dragStartNode + delta);
+
+              final deviceId = _deviceIdByIndex(_draggingIndex!);
+              if (deviceId != null) {
+                _userOffsets[deviceId] = next;
+              }
+            });
+          }
+        },
+        // ── Release ──
+        onPointerUp: (event) {
+          final dragIndex = _draggingIndex;
+          if (dragIndex != null) {
+            if (!_didMove) {
+              widget.onNodeTap(widget.devices[dragIndex]);
+            } else {
+              final deviceId = _deviceIdByIndex(dragIndex);
+              final pos = deviceId == null ? null : _userOffsets[deviceId];
+              if (deviceId != null && pos != null) {
+                _savePosition(deviceId, pos);
+              }
+            }
+            setState(() => _draggingIndex = null);
+          }
+        },
+        onPointerCancel: (_) => setState(() => _draggingIndex = null),
         child: Stack(
-        children: [
-          Positioned.fill(
-            child: CustomPaint(
-              painter: _NodesPainter(
-                positions: widget.positions,
-                devices: widget.devices,
-                selectedId: widget.selectedId,
-                isDark: widget.isDark,
-                hoveredIndex: _hoveredIndex,
-              ),
-              size: Size.infinite,
-            ),
-          ),
-          // parentDataDirty 근절: 항상 2개 자식 고정 (조건부 제거)
-          Positioned.fill(
-            child: IgnorePointer(
-              ignoring: _hoveredIndex == null,
-              child: AnimatedOpacity(
-                opacity: (_hoveredIndex != null &&
-                    _hoveredIndex! < widget.devices.length &&
-                    _hoveredIndex! < widget.positions.length)
-                    ? 1.0
-                    : 0.0,
-                duration: const Duration(milliseconds: 150),
-                child: _buildTooltipLayer(),
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: AnimatedBuilder(
+                  animation: widget.connectorAnimation,
+                  builder: (_, __) => CustomPaint(
+                    painter: _AllConnectorsPainter(
+                      connectors: _buildConnectorData(effPos),
+                      color: widget.connectorColor,
+                      animationValue: widget.connectorAnimation.value,
+                    ),
+                    size: Size.infinite,
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
-      ),
+            Positioned.fill(
+              child: CustomPaint(
+                painter: _NodesPainter(
+                  positions: effPos,
+                  devices: widget.devices,
+                  selectedId: widget.selectedId,
+                  hoveredIndex: _hoveredIndex,
+                  draggingIndex: _draggingIndex,
+                ),
+                size: Size.infinite,
+              ),
+            ),
+            Positioned.fill(
+              child: IgnorePointer(
+                ignoring: _hoveredIndex == null,
+                child: AnimatedOpacity(
+                  opacity: (_hoveredIndex != null &&
+                      _hoveredIndex! < widget.devices.length &&
+                      _hoveredIndex! < effPos.length)
+                      ? 1.0
+                      : 0.0,
+                  duration: const Duration(milliseconds: 150),
+                  child: _buildTooltipLayer(effPos),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  // parentDataDirty 근절: Transform.translate 기반 툴팁 (Positioned 미사용)
-  Widget _buildTooltipLayer() {
+  // parentDataDirty 규제: Transform.translate 기반 툴팁
+  List<({Offset start, Offset end})> _buildConnectorData(
+      List<({Offset nodePos, Offset surfacePos, double angle})> effPos) {
+    final connectors = <({Offset start, Offset end})>[];
+    final radius = widget.connectorRadius.clamp(36.0, 320.0).toDouble();
+    final limit = math.min(effPos.length, widget.devices.length);
+
+    for (int i = 0; i < limit; i++) {
+      final end = effPos[i].nodePos;
+      final dx = end.dx - widget.center.dx;
+      final dy = end.dy - widget.center.dy;
+      final dist = math.sqrt(dx * dx + dy * dy);
+      final start = dist > 0
+          ? Offset(
+              widget.center.dx + (dx / dist) * radius,
+              widget.center.dy + (dy / dist) * radius,
+            )
+          : widget.center;
+      connectors.add((start: start, end: end));
+    }
+
+    return connectors;
+  }
+
+  Widget _buildTooltipLayer(
+      List<({Offset nodePos, Offset surfacePos, double angle})> effPos) {
     final index = _hoveredIndex;
     if (index == null ||
         index >= widget.devices.length ||
-        index >= widget.positions.length) {
+        index >= effPos.length) {
       return const SizedBox.shrink();
     }
 
     final device = widget.devices[index];
-    final pos = widget.positions[index].nodePos;
-    final isDark = widget.isDark;
+    final pos = effPos[index].nodePos;
 
     const tooltipW = 180.0;
     const tooltipH = 72.0;
@@ -907,11 +1206,9 @@ class _InteractiveNodesLayerState extends State<_InteractiveNodesLayer> {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10),
-                  color: isDark
-                      ? const Color(0xFF0A1628).withValues(alpha: 0.85)
-                      : Colors.white.withValues(alpha: 0.90),
+                  color: SanggamTheme.background.withValues(alpha: 0.85),
                   border: Border.all(
-                    color: AppTheme.sanggamGold.withValues(alpha: 0.5),
+                    color: SanggamTheme.primary.withValues(alpha: 0.5),
                     width: 0.5,
                   ),
                 ),
@@ -925,26 +1222,30 @@ class _InteractiveNodesLayerState extends State<_InteractiveNodesLayer> {
                           width: 6, height: 6,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isConnected ? const Color(0xFF00E676) : Colors.grey,
+                            color: isConnected
+                                ? SanggamTheme.jagaeCyan
+                                : SanggamTheme.onSurfaceDim,
                           ),
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          isConnected ? 'LIVE' : 'OFF',
+                          isConnected ? '활성' : '비활성',
                           style: TextStyle(
                             fontSize: 8,
                             fontWeight: FontWeight.bold,
-                            color: isConnected ? const Color(0xFF00E676) : Colors.grey,
+                            color: isConnected
+                                ? SanggamTheme.jagaeCyan
+                                : SanggamTheme.onSurfaceDim,
                           ),
                         ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
                             device.name,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white : Colors.black87,
+                              color: Colors.white,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -956,9 +1257,9 @@ class _InteractiveNodesLayerState extends State<_InteractiveNodesLayer> {
                     if (values.isNotEmpty)
                       Text(
                         values.map((e) => '${e.key}: ${e.value}').join('  '),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 9,
-                          color: isDark ? Colors.white54 : Colors.black54,
+                          color: SanggamTheme.onSurfaceDim,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -967,13 +1268,15 @@ class _InteractiveNodesLayerState extends State<_InteractiveNodesLayer> {
                     Row(
                       children: [
                         Icon(Icons.battery_std, size: 10,
-                            color: device.batteryLevel < 20 ? Colors.redAccent : const Color(0xFF00E676)),
+                            color: device.batteryLevel < 20
+                                ? SanggamTheme.error
+                                : SanggamTheme.jagaeCyan),
                         const SizedBox(width: 2),
                         Text(
                           '${device.batteryLevel}%',
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 9,
-                            color: isDark ? Colors.white54 : Colors.black54,
+                            color: SanggamTheme.onSurfaceDim,
                           ),
                         ),
                       ],
@@ -989,23 +1292,22 @@ class _InteractiveNodesLayerState extends State<_InteractiveNodesLayer> {
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // Nodes Painter — 각 기기를 원형 노드로 그리기
-// ═══════════════════════════════════════════════════════════════════════════
-
+// ═══════════════════════════════════════════════════════
 class _NodesPainter extends CustomPainter {
   final List<({Offset nodePos, Offset surfacePos, double angle})> positions;
   final List<ConnectedDevice> devices;
   final String? selectedId;
-  final bool isDark;
   final int? hoveredIndex;
+  final int? draggingIndex;
 
   _NodesPainter({
     required this.positions,
     required this.devices,
     required this.selectedId,
-    required this.isDark,
     this.hoveredIndex,
+    this.draggingIndex,
   });
 
   @override
@@ -1018,19 +1320,37 @@ class _NodesPainter extends CustomPainter {
           device.batteryLevel < 20;
 
       final statusColor = device.status == DeviceConnectionStatus.connected
-          ? const Color(0xFF00E676)
-          : (isAlert ? Colors.redAccent : Colors.grey);
+          ? SanggamTheme.jagaeCyan
+          : (isAlert ? SanggamTheme.error : SanggamTheme.onSurfaceDim);
 
-      final isHovered = i == hoveredIndex;
-      final double nodeRadius = isSelected ? 23.0 : (isHovered ? 21.0 : 19.0);
+      final isHovered   = i == hoveredIndex;
+      final isDragging  = i == draggingIndex;
+      final double nodeRadius = isDragging ? 25.0 : (isSelected ? 23.0 : (isHovered ? 21.0 : 19.0));
 
+      // 드래그 글로우 (golden + pulsing ring)
+      if (isDragging) {
+        canvas.drawCircle(
+          pos,
+          nodeRadius + 10,
+          Paint()
+            ..color = SanggamTheme.primary.withValues(alpha: 0.40)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
+        );
+        canvas.drawCircle(
+          pos, nodeRadius + 2,
+          Paint()
+            ..color = SanggamTheme.primary.withValues(alpha: 0.80)
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.5,
+        );
+      }
       // 선택 글로우
       if (isSelected) {
         canvas.drawCircle(
           pos,
           nodeRadius + 8,
           Paint()
-            ..color = AppTheme.waveCyan.withValues(alpha: 0.35)
+            ..color = SanggamTheme.jagaeCyan.withValues(alpha: 0.35)
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
         );
       } else if (isHovered) {
@@ -1039,48 +1359,48 @@ class _NodesPainter extends CustomPainter {
           pos,
           nodeRadius + 6,
           Paint()
-            ..color = AppTheme.waveCyan.withValues(alpha: 0.25)
+            ..color = SanggamTheme.jagaeCyan.withValues(alpha: 0.25)
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
         );
       }
 
-      // 배경 원
+      // Background fill.
       canvas.drawCircle(
         pos,
         nodeRadius,
         Paint()
-          ..color = isDark
-              ? const Color(0xFF1A1A2E).withValues(alpha: 0.92)
-              : Colors.white.withValues(alpha: 0.92)
+          ..color = SanggamTheme.surface.withValues(alpha: 0.92)
           ..style = PaintingStyle.fill,
       );
 
-      // 테두리
+      // Outer stroke.
       canvas.drawCircle(
         pos,
         nodeRadius,
         Paint()
-          ..color = isSelected ? AppTheme.waveCyan : (isHovered ? AppTheme.waveCyan.withValues(alpha: 0.7) : statusColor)
+          ..color = isSelected
+              ? SanggamTheme.jagaeCyan
+              : (isHovered
+                  ? SanggamTheme.jagaeCyan.withValues(alpha: 0.7)
+                  : statusColor)
           ..style = PaintingStyle.stroke
           ..strokeWidth = isSelected ? 2.5 : (isHovered ? 2.0 : 1.5),
       );
 
-      // 아이콘
+      // Device icon.
       _paintIcon(
         canvas,
         _deviceTypeIcon(device.type),
         pos,
         isSelected ? 18.0 : 15.0,
-        isSelected
-            ? AppTheme.sanggamGold
-            : (isDark ? Colors.white70 : Colors.black87),
+        isSelected ? SanggamTheme.primary : Colors.white70,
       );
 
-      // LIVE 점 (연결 시)
+      // LIVE 표시 (연결 시)
       if (device.status == DeviceConnectionStatus.connected) {
         final dotPos =
             Offset(pos.dx + nodeRadius * 0.65, pos.dy - nodeRadius * 0.65);
-        canvas.drawCircle(dotPos, 4, Paint()..color = const Color(0xFF00E676));
+        canvas.drawCircle(dotPos, 4, Paint()..color = SanggamTheme.jagaeCyan);
         canvas.drawCircle(
           dotPos,
           4,
@@ -1122,9 +1442,9 @@ class _NodesPainter extends CustomPainter {
     final tp = TextPainter(
       text: TextSpan(
         text: text,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 10,
-          color: isDark ? Colors.white : Colors.black87,
+          color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -1143,7 +1463,7 @@ class _NodesPainter extends CustomPainter {
     canvas.drawRRect(
       bgRect,
       Paint()
-        ..color = (isDark ? Colors.black : Colors.white).withValues(alpha: 0.8),
+        ..color = Colors.black.withValues(alpha: 0.8),
     );
     tp.paint(canvas, Offset(pos.dx - tp.width / 2, pos.dy));
   }
@@ -1163,33 +1483,29 @@ class _NodesPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _NodesPainter oldDelegate) =>
+      oldDelegate.positions != positions ||
       oldDelegate.selectedId != selectedId ||
-      oldDelegate.devices.length != devices.length ||
-      oldDelegate.hoveredIndex != hoveredIndex;
+      oldDelegate.devices != devices ||
+      oldDelegate.hoveredIndex != hoveredIndex ||
+      oldDelegate.draggingIndex != draggingIndex;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // Background Rings Painter
-// ═══════════════════════════════════════════════════════════════════════════
-
+// ═══════════════════════════════════════════════════════
 class _BackgroundRingsPainter extends CustomPainter {
   final Offset center;
-  final bool isDark;
   final double radius;
 
   _BackgroundRingsPainter({
     required this.center,
-    required this.isDark,
     required this.radius,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final color = isDark
-        ? Colors.white.withValues(alpha: 0.05)
-        : Colors.black.withValues(alpha: 0.05);
     final paint = Paint()
-      ..color = color
+      ..color = Colors.white.withValues(alpha: 0.05)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
@@ -1200,13 +1516,12 @@ class _BackgroundRingsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _BackgroundRingsPainter old) =>
-      old.center != center || old.isDark != isDark || old.radius != radius;
+      old.center != center || old.radius != radius;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // All Connectors Painter (단일 CustomPaint로 모든 커넥터)
-// ═══════════════════════════════════════════════════════════════════════════
-
+// ═══════════════════════════════════════════════════════
 class _AllConnectorsPainter extends CustomPainter {
   final List<({Offset start, Offset end})> connectors;
   final Color color;
@@ -1282,29 +1597,32 @@ class _AllConnectorsPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _AllConnectorsPainter oldDelegate) =>
-      oldDelegate.animationValue != animationValue;
+      oldDelegate.animationValue != animationValue ||
+      oldDelegate.connectors != connectors ||
+      oldDelegate.color != color;
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// Compact Stat Tile (요약바 내부)
-// ═══════════════════════════════════════════════════════════════════════════
-
+// ═══════════════════════════════════════════════════════
+// Compact Stat Tile (요약바 타일)
+// ═══════════════════════════════════════════════════════
 class _CompactStatTile extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
   final Color color;
+  final String? tooltip;
 
   const _CompactStatTile({
     required this.icon,
     required this.value,
     required this.label,
     required this.color,
+    this.tooltip,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final content = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Row(
@@ -1326,19 +1644,23 @@ class _CompactStatTile extends StatelessWidget {
         Text(
           label,
           style: const TextStyle(
-            color: Colors.grey,
+            color: SanggamTheme.onSurfaceDim,
             fontSize: 8,
           ),
         ),
       ],
     );
+    if (tooltip != null) {
+      return Tooltip(message: tooltip!, child: content);
+    }
+    return content;
   }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════
-// SafeHitTestWrapper — hitTest 중 viewport null check 크래시 방어
-// ═══════════════════════════════════════════════════════════════════════════
-
+// ═══════════════════════════════════════════════════════
+// SafeHitTestWrapper — hitTest 중 viewport null check 오류 방어
+// ═══════════════════════════════════════════════════════
+// ignore: unused_element
 class _SafeHitTestWrapper extends SingleChildRenderObjectWidget {
   const _SafeHitTestWrapper({required super.child});
 
@@ -1352,7 +1674,7 @@ class _RenderSafeHitTest extends RenderProxyBox {
     try {
       return super.hitTest(result, position: position);
     } catch (_) {
-      // DraggableScrollableSheet 내부 Viewport 리빌드 타이밍 이슈 방어
+      // DraggableScrollableSheet 리빌드 중 Viewport 리사이즈 도중 발생 가능
       return false;
     }
   }

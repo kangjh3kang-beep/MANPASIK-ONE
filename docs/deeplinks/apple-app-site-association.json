@@ -1,0 +1,25 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.manpasik.app"],
+        "components": [
+          {
+            "/": "/invite/*",
+            "comment": "조직 초대 수락 — InviteAcceptScreen"
+          },
+          {
+            "/": "/invite",
+            "comment": "토큰 미입력 폼"
+          }
+        ]
+      }
+    ]
+  },
+  "appclips": {
+    "apps": []
+  },
+  "webcredentials": {
+    "apps": ["TEAMID.com.manpasik.app"]
+  }
+}

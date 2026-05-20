@@ -481,3 +481,278 @@ func TestEndToEnd_CommunityFlow(t *testing.T) {
 		t.Errorf("E2E 반환 챌린지 수: got %d, want 1", len(challenges))
 	}
 }
+
+// =============================================================================
+// Phase F 테스트 보강: 엣지 케이스 + 미테스트 함수
+// =============================================================================
+
+func TestGetPost_EmptyID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, err := svc.GetPost(ctx, "")
+	if err == nil {
+		t.Fatal("빈 post_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestLikePost_EmptyPostID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, err := svc.LikePost(ctx, "", "user-1")
+	if err == nil {
+		t.Fatal("빈 post_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestLikePost_EmptyUserID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	post, _ := svc.CreatePost(ctx, "user-1", "홍길동", service.CatGeneral, "제목", "내용", nil)
+	_, err := svc.LikePost(ctx, post.ID, "")
+	if err == nil {
+		t.Fatal("빈 user_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestCreateComment_EmptyPostID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, err := svc.CreateComment(ctx, "", "user-1", "이름", "내용")
+	if err == nil {
+		t.Fatal("빈 post_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestCreateComment_EmptyContent(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	post, _ := svc.CreatePost(ctx, "user-1", "홍길동", service.CatGeneral, "제목", "내용", nil)
+	_, err := svc.CreateComment(ctx, post.ID, "user-2", "이름", "")
+	if err == nil {
+		t.Fatal("빈 content에 에러가 반환되어야 함")
+	}
+}
+
+func TestListComments_EmptyPostID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, _, err := svc.ListComments(ctx, "", 20, 0)
+	if err == nil {
+		t.Fatal("빈 post_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestCreateChallenge_EmptyCreator(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, err := svc.CreateChallenge(ctx, "", service.ChTypeExercise, "제목", "설명", "목표", 100, "steps", 50, 30, time.Now().UTC())
+	if err == nil {
+		t.Fatal("빈 creator에 에러가 반환되어야 함")
+	}
+}
+
+func TestCreateChallenge_EmptyTitle(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, err := svc.CreateChallenge(ctx, "user-1", service.ChTypeExercise, "", "설명", "목표", 100, "steps", 50, 30, time.Now().UTC())
+	if err == nil {
+		t.Fatal("빈 title에 에러가 반환되어야 함")
+	}
+}
+
+func TestGetChallenge_EmptyID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, err := svc.GetChallenge(ctx, "")
+	if err == nil {
+		t.Fatal("빈 challenge_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestGetChallenge_NotFound(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, err := svc.GetChallenge(ctx, "non-existent")
+	if err == nil {
+		t.Fatal("존재하지 않는 챌린지 조회가 성공했습니다")
+	}
+}
+
+func TestJoinChallenge_EmptyChallengeID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, err := svc.JoinChallenge(ctx, "", "user-1")
+	if err == nil {
+		t.Fatal("빈 challenge_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestJoinChallenge_EmptyUserID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	ch, _ := svc.CreateChallenge(ctx, "user-1", service.ChTypeExercise, "테스트", "설명", "목표", 100, "steps", 50, 30, time.Now().UTC())
+	_, err := svc.JoinChallenge(ctx, ch.ID, "")
+	if err == nil {
+		t.Fatal("빈 user_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestJoinChallenge_MaxParticipants(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	// maxParticipants=2로 생성 (생성자 포함 1명)
+	ch, _ := svc.CreateChallenge(ctx, "creator", service.ChTypeExercise, "제한 챌린지", "설명", "목표", 100, "steps", 2, 30, time.Now().UTC())
+	_, _ = svc.JoinChallenge(ctx, ch.ID, "user-2")
+
+	// 3번째 참가 시도 → 최대 초과 에러
+	_, err := svc.JoinChallenge(ctx, ch.ID, "user-3")
+	if err == nil {
+		t.Fatal("최대 참가자 수 초과 시 에러가 반환되어야 함")
+	}
+}
+
+func TestGetChallengeLeaderboard_Success(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	ch, _ := svc.CreateChallenge(ctx, "user-lb-creator", service.ChTypeSteps, "리더보드 챌린지", "설명", "만보", 10000, "steps", 50, 30, time.Now().UTC())
+	svc.JoinChallenge(ctx, ch.ID, "user-lb-second")
+	svc.JoinChallenge(ctx, ch.ID, "user-lb-thirds")
+
+	entries, total, _, err := svc.GetChallengeLeaderboard(ctx, ch.ID, 10, 0)
+	if err != nil {
+		t.Fatalf("리더보드 조회 실패: %v", err)
+	}
+	if total != 3 {
+		t.Fatalf("리더보드 총 항목 수 불일치: got %d, want 3", total)
+	}
+	if len(entries) != 3 {
+		t.Fatalf("리더보드 반환 항목 수 불일치: got %d, want 3", len(entries))
+	}
+	for _, entry := range entries {
+		if entry.Rank <= 0 {
+			t.Errorf("Rank는 양수여야 함: got %d", entry.Rank)
+		}
+		if entry.UserID == "" {
+			t.Error("UserID가 비어있음")
+		}
+		if entry.TargetValue != 10000 {
+			t.Errorf("TargetValue: got %f, want 10000", entry.TargetValue)
+		}
+	}
+}
+
+func TestGetChallengeLeaderboard_EmptyID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, _, _, err := svc.GetChallengeLeaderboard(ctx, "", 10, 0)
+	if err == nil {
+		t.Fatal("빈 challenge_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestUpdateChallengeProgress_Success(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	ch, _ := svc.CreateChallenge(ctx, "user-1", service.ChTypeSteps, "진행률 챌린지", "설명", "만보", 10000, "steps", 50, 30, time.Now().UTC())
+
+	progress, target, rank, err := svc.UpdateChallengeProgress(ctx, ch.ID, "user-1", 5000)
+	if err != nil {
+		t.Fatalf("진행률 업데이트 실패: %v", err)
+	}
+	if progress != 5000 {
+		t.Errorf("진행률: got %f, want 5000", progress)
+	}
+	if target != 10000 {
+		t.Errorf("목표값: got %f, want 10000", target)
+	}
+	if rank != 1 {
+		t.Errorf("순위: got %d, want 1", rank)
+	}
+}
+
+func TestUpdateChallengeProgress_EmptyChallengeID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, _, _, err := svc.UpdateChallengeProgress(ctx, "", "user-1", 100)
+	if err == nil {
+		t.Fatal("빈 challenge_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestUpdateChallengeProgress_EmptyUserID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	ch, _ := svc.CreateChallenge(ctx, "user-1", service.ChTypeSteps, "제목", "설명", "목표", 100, "steps", 50, 30, time.Now().UTC())
+	_, _, _, err := svc.UpdateChallengeProgress(ctx, ch.ID, "", 100)
+	if err == nil {
+		t.Fatal("빈 user_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestUpdateChallengeProgress_NotParticipant(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	ch, _ := svc.CreateChallenge(ctx, "user-1", service.ChTypeSteps, "제목", "설명", "목표", 100, "steps", 50, 30, time.Now().UTC())
+	_, _, _, err := svc.UpdateChallengeProgress(ctx, ch.ID, "user-999", 100)
+	if err == nil {
+		t.Fatal("참가하지 않은 사용자의 진행률 업데이트에 에러가 반환되어야 함")
+	}
+}
+
+func TestListPosts_DefaultLimit(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	svc.CreatePost(ctx, "user-1", "이름", service.CatGeneral, "제목1", "내용1", nil)
+
+	// limit=0이면 기본값(20) 적용
+	posts, total, err := svc.ListPosts(ctx, service.CatUnknown, 0, 0)
+	if err != nil {
+		t.Fatalf("ListPosts 실패: %v", err)
+	}
+	if total != 1 {
+		t.Fatalf("총 게시글 수: got %d, want 1", total)
+	}
+	if len(posts) != 1 {
+		t.Fatalf("반환 수: got %d, want 1", len(posts))
+	}
+}
+
+func TestSetSearchIndexer(t *testing.T) {
+	svc := setupTestService()
+	// nil로 설정해도 패닉 없이 동작 확인
+	svc.SetSearchIndexer(nil)
+}
+
+func TestListChallenges_StatusFilter(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	svc.CreateChallenge(ctx, "user-1", service.ChTypeExercise, "활성 챌린지", "설명", "목표", 100, "steps", 50, 30, time.Now().UTC())
+	svc.CreateChallenge(ctx, "user-2", service.ChTypeDiet, "다이어트 챌린지", "설명", "목표", 5, "회", 30, 14, time.Now().UTC())
+
+	// Active 필터
+	challenges, total, err := svc.ListChallenges(ctx, service.ChActive, 20, 0)
+	if err != nil {
+		t.Fatalf("ListChallenges 필터 실패: %v", err)
+	}
+	if total != 2 {
+		t.Fatalf("Active 챌린지 수: got %d, want 2", total)
+	}
+	_ = challenges
+}
+
+func TestCreatePost_WithContent(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	post, err := svc.CreatePost(ctx, "user-1", "이름", service.CatRecipe, "건강 레시피", "삶은 계란 샐러드", []string{"레시피", "식이요법"})
+	if err != nil {
+		t.Fatalf("CreatePost Recipe 실패: %v", err)
+	}
+	if post.Category != service.CatRecipe {
+		t.Errorf("Category: got %d, want %d", post.Category, service.CatRecipe)
+	}
+}

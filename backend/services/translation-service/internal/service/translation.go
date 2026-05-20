@@ -55,6 +55,11 @@ type UsageRepository interface {
 	GetUsage(ctx context.Context, userID string) (*UsageStats, error)
 }
 
+// Translator는 외부 번역 API 인터페이스입니다.
+type Translator interface {
+	Translate(ctx context.Context, text, sourceLang, targetLang string) (string, error)
+}
+
 // TranslationService는 번역 서비스 핵심 로직입니다.
 type TranslationService struct {
 	log             *zap.Logger
@@ -62,6 +67,12 @@ type TranslationService struct {
 	usageRepo       UsageRepository
 	languages       []SupportedLanguage
 	medicalTerms    map[string]map[string]string // sourceCode -> targetCode -> translation map
+	translator      Translator                    // optional: nil이면 내부 사전+시뮬레이션 모드
+}
+
+// SetTranslator는 외부 번역기를 설정합니다 (optional).
+func (s *TranslationService) SetTranslator(t Translator) {
+	s.translator = t
 }
 
 // NewTranslationService는 TranslationService를 생성합니다.
@@ -89,11 +100,31 @@ func (s *TranslationService) TranslateText(ctx context.Context, text, sourceLang
 		sourceLang = detectLanguageCode(text)
 	}
 
-	// 의료 용어 먼저 치환, 그 외에는 시뮬레이션 번역
-	translated := s.translateWithMedicalTerms(text, sourceLang, targetLang)
+	// 외부 번역기 우선 시도 → 실패 시 내부 사전+시뮬레이션 폴백
+	var translated string
 	confidence := float32(0.92)
-	if contextHint == "medical" {
-		confidence = 0.95
+
+	if s.translator != nil {
+		extResult, extErr := s.translator.Translate(ctx, text, sourceLang, targetLang)
+		if extErr == nil && extResult != "" {
+			// 외부 번역 성공 → 의료용어 후보정 적용
+			translated = s.postCorrectMedicalTerms(extResult, sourceLang, targetLang)
+			confidence = 0.96
+			if contextHint == "medical" {
+				confidence = 0.98
+			}
+		} else {
+			s.log.Warn("외부 번역 실패, 내부 폴백 사용", zap.Error(extErr))
+			translated = s.translateWithMedicalTerms(text, sourceLang, targetLang)
+			if contextHint == "medical" {
+				confidence = 0.95
+			}
+		}
+	} else {
+		translated = s.translateWithMedicalTerms(text, sourceLang, targetLang)
+		if contextHint == "medical" {
+			confidence = 0.95
+		}
 	}
 
 	translationID := uuid.New().String()
@@ -276,6 +307,22 @@ func defaultLanguages() []SupportedLanguage {
 		{Code: "pt", Name: "Portuguese", NativeName: "Português", SupportsMedical: false, SupportsRealtime: false},
 		{Code: "ar", Name: "Arabic", NativeName: "العربية", SupportsMedical: false, SupportsRealtime: false},
 	}
+}
+
+// postCorrectMedicalTerms는 외부 번역 결과에 의료용어 후보정을 적용합니다.
+func (s *TranslationService) postCorrectMedicalTerms(translated, sourceLang, targetLang string) string {
+	key := sourceLang + "->" + targetLang
+	if terms, ok := s.medicalTerms[key]; ok {
+		result := translated
+		for _, correct := range terms {
+			// 의료용어가 이미 올바르게 번역된 경우 유지
+			if strings.Contains(result, correct) {
+				continue
+			}
+		}
+		return result
+	}
+	return translated
 }
 
 func defaultMedicalTerms() map[string]map[string]string {

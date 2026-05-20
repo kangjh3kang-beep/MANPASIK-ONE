@@ -11,13 +11,18 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/manpasik/backend/services/iot-gateway-service/internal/repository/memory"
+	"github.com/manpasik/backend/services/iot-gateway-service/internal/repository/postgres"
+	"github.com/manpasik/backend/shared/config"
 	"github.com/manpasik/backend/services/iot-gateway-service/internal/service"
 )
 
@@ -29,9 +34,36 @@ func main() {
 		httpPort = ":8080"
 	}
 
-	log.Printf("[%s] Starting...", serviceName)
+	cfg := config.LoadFromEnv(serviceName)
+	log.Printf("[%s] Starting v%s...", serviceName, cfg.Version)
 
-	repo := memory.NewIoTRepository()
+	var repo service.IoTRepository
+
+	if _, dbHostSet := os.LookupEnv("DB_HOST"); dbHostSet && cfg.DB.Host != "" && cfg.DB.DBName != "" {
+		connCtx, connCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		pool, poolErr := pgxpool.New(connCtx, cfg.DB.DSN())
+		connCancel()
+		if poolErr != nil {
+			log.Printf("[%s] DB connection failed, using memory: %v", serviceName, poolErr)
+			repo = memory.NewIoTRepository()
+		} else {
+			pingCtx, pingCancel := context.WithTimeout(context.Background(), 3*time.Second)
+			if pingErr := pool.Ping(pingCtx); pingErr != nil {
+				pingCancel()
+				pool.Close()
+				log.Printf("[%s] DB ping failed, using memory: %v", serviceName, pingErr)
+				repo = memory.NewIoTRepository()
+			} else {
+				pingCancel()
+				defer pool.Close()
+				log.Printf("[%s] Connected to PostgreSQL", serviceName)
+				repo = postgres.NewIoTRepository(pool)
+			}
+		}
+	} else {
+		repo = memory.NewIoTRepository()
+	}
+
 	svc := service.NewIoTGatewayService(repo)
 	_ = svc
 

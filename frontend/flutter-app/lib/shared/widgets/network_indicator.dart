@@ -1,16 +1,17 @@
 import 'dart:async';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:manpasik/shared/providers/sync_provider.dart';
 
-/// 네트워크 상태 인디케이터
+/// Network status indicator banner.
 ///
-/// 앱 상단에 배치하여 오프라인/동기화/온라인/충돌 상태를 표시합니다.
-/// ScaffoldWithBottomNav 등의 상위 위젯에 삽입하여 사용합니다.
-/// 충돌 존재 시 탭하여 `/conflict-resolve` 화면으로 이동합니다.
+/// Shows offline/syncing/online/conflict state near the top of the app.
+/// When conflicts exist, tapping the banner navigates to /conflict-resolve.
 class NetworkIndicator extends ConsumerStatefulWidget {
   const NetworkIndicator({super.key});
 
@@ -18,17 +19,39 @@ class NetworkIndicator extends ConsumerStatefulWidget {
   ConsumerState<NetworkIndicator> createState() => _NetworkIndicatorState();
 }
 
-class _NetworkIndicatorState extends ConsumerState<NetworkIndicator> with SingleTickerProviderStateMixin {
+class _NetworkIndicatorState extends ConsumerState<NetworkIndicator>
+    with SingleTickerProviderStateMixin {
   _NetworkStatus _status = _NetworkStatus.online;
-  late AnimationController _animController;
+  late final AnimationController _animController;
+  Connectivity? _connectivity;
   StreamSubscription<ConnectivityResult>? _connectivitySub;
 
   @override
   void initState() {
     super.initState();
-    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
-    _connectivitySub = Connectivity().onConnectivityChanged.listen(_onConnectivityChanged);
-    _checkConnectivity();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+
+    // Linux desktop(WSL 포함)에서는 NetworkManager DBus가 비활성인 경우가 많아
+    // connectivity_plus가 비동기 예외를 내므로 연결 감시는 비활성화한다.
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.linux) {
+      debugPrint(
+          '[NetworkIndicator] Linux desktop: connectivity probe disabled');
+      return;
+    }
+
+    _connectivity = Connectivity();
+    _connectivitySub = _connectivity?.onConnectivityChanged.listen(
+      _onConnectivityChanged,
+      onError: (Object error, StackTrace stackTrace) {
+        debugPrint('[NetworkIndicator] Connectivity stream unavailable: ' +
+            error.toString());
+        _updateStatus(_NetworkStatus.online);
+      },
+    );
+    unawaited(_checkConnectivity());
   }
 
   @override
@@ -39,12 +62,26 @@ class _NetworkIndicatorState extends ConsumerState<NetworkIndicator> with Single
   }
 
   void _onConnectivityChanged(ConnectivityResult result) {
-    _updateStatus(result != ConnectivityResult.none ? _NetworkStatus.online : _NetworkStatus.offline);
+    _updateStatus(result != ConnectivityResult.none
+        ? _NetworkStatus.online
+        : _NetworkStatus.offline);
   }
 
   Future<void> _checkConnectivity() async {
-    final result = await Connectivity().checkConnectivity();
-    _updateStatus(result != ConnectivityResult.none ? _NetworkStatus.online : _NetworkStatus.offline);
+    final connectivity = _connectivity;
+    if (connectivity == null) return;
+
+    try {
+      final result = await connectivity.checkConnectivity();
+      _updateStatus(result != ConnectivityResult.none
+          ? _NetworkStatus.online
+          : _NetworkStatus.offline);
+    } catch (error, stackTrace) {
+      debugPrint(
+          '[NetworkIndicator] Connectivity probe failed: ' + error.toString());
+      _updateStatus(_NetworkStatus.online);
+      debugPrintStack(stackTrace: stackTrace);
+    }
   }
 
   void _updateStatus(_NetworkStatus newStatus) {
@@ -57,10 +94,8 @@ class _NetworkIndicatorState extends ConsumerState<NetworkIndicator> with Single
     }
   }
 
-  /// 외부에서 오프라인 상태를 설정할 때 사용
   void setOffline() => _updateStatus(_NetworkStatus.offline);
 
-  /// 외부에서 동기화 상태를 설정할 때 사용
   void setSyncing() => _updateStatus(_NetworkStatus.syncing);
 
   @override
@@ -68,21 +103,36 @@ class _NetworkIndicatorState extends ConsumerState<NetworkIndicator> with Single
     final syncState = ref.watch(syncProvider);
     final hasConflicts = syncState.hasConflicts;
 
-    // 충돌이 있으면 온라인이어도 배너 표시
     if (_status == _NetworkStatus.online && !hasConflicts) {
       return const SizedBox.shrink();
     }
 
+    final conflictText =
+        '데이터 충돌 ' + syncState.failedCount.toString() + '건 — 탭하여 해결';
+
     final (color, icon, text) = hasConflicts
-        ? (Colors.deepOrange, Icons.sync_problem, '데이터 충돌 ${syncState.failedCount}건 — 탭하여 해결')
+        ? (
+            Colors.deepOrange,
+            Icons.sync_problem,
+            conflictText,
+          )
         : switch (_status) {
-            _NetworkStatus.offline => (Colors.red, Icons.cloud_off, '오프라인 모드 — 데이터가 로컬에 저장됩니다'),
-            _NetworkStatus.syncing => (Colors.orange, Icons.sync, '데이터 동기화 중...'),
+            _NetworkStatus.offline => (
+                Colors.red,
+                Icons.cloud_off,
+                '오프라인 모드 — 데이터가 로컬에 저장됩니다',
+              ),
+            _NetworkStatus.syncing => (
+                Colors.orange,
+                Icons.sync,
+                '데이터 동기화 중...'
+              ),
             _NetworkStatus.online => (Colors.green, Icons.cloud_done, '연결됨'),
           };
 
     return SizeTransition(
-      sizeFactor: hasConflicts ? const AlwaysStoppedAnimation(1.0) : _animController,
+      sizeFactor:
+          hasConflicts ? const AlwaysStoppedAnimation(1.0) : _animController,
       child: GestureDetector(
         onTap: hasConflicts ? () => context.push('/conflict-resolve') : null,
         child: Container(
@@ -97,7 +147,11 @@ class _NetworkIndicatorState extends ConsumerState<NetworkIndicator> with Single
               Flexible(
                 child: Text(
                   text,
-                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

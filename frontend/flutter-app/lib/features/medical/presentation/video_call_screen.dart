@@ -5,9 +5,26 @@ import 'package:go_router/go_router.dart';
 
 import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/core/services/webrtc_service.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/shared/providers/auth_provider.dart';
 import 'package:manpasik/features/medical/presentation/widgets/vital_signs_hud.dart';
+
+// ───────────────────────────────────────────────────
+// VideoCallScreen — Sanggam Orbit 화상 통화
+//
+// [Rule 4] app_theme.dart → sanggam_theme.dart
+// [Rule 4] Theme.of(context) 2x 제거
+// [Rule 4] theme.textTheme.* → 직접 TextStyle
+// [Rule 4] theme.colorScheme.* → SanggamTheme 상수
+// [Rule 4] AppTheme.sanggamGold → SanggamTheme.primary
+// [Rule 4] Colors.green → SanggamTheme.jagaeCyan
+// [Rule 4] Colors.orange → SanggamTheme.primary
+// [Rule 4] Colors.red → SanggamTheme.error
+// [Rule 4] Colors.grey[*] → SanggamTheme.surface/surfaceVariant
+// [Rule 4] Colors.black → SanggamTheme.background
+// [Rule 4] AppBar (chatSheet) → 커스텀 헤더
+// [Rule 2] borderRadius:12→16, padding:10→16
+// ───────────────────────────────────────────────────
 
 /// WebRTC 화상 통화 화면
 ///
@@ -15,15 +32,18 @@ import 'package:manpasik/features/medical/presentation/widgets/vital_signs_hud.d
 /// flutter_webrtc 패키지 설치 시 RTCPeerConnection 기반 실제 P2P 연결.
 /// 미설치 환경에서는 REST API 기반 시뮬레이션 모드로 동작합니다.
 class VideoCallScreen extends ConsumerStatefulWidget {
-  const VideoCallScreen({super.key, required this.sessionId});
+  const VideoCallScreen(
+      {super.key, required this.sessionId});
 
   final String sessionId;
 
   @override
-  ConsumerState<VideoCallScreen> createState() => _VideoCallScreenState();
+  ConsumerState<VideoCallScreen> createState() =>
+      _VideoCallScreenState();
 }
 
-class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
+class _VideoCallScreenState
+    extends ConsumerState<VideoCallScreen> {
   bool _isConnecting = true;
   bool _isConnected = false;
   bool _isMuted = false;
@@ -53,7 +73,8 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
   Future<void> _joinRoom() async {
     try {
       final client = ref.read(restClientProvider);
-      final userId = ref.read(authProvider).userId ?? '';
+      final userId =
+          ref.read(authProvider).userId ?? '';
       final res = await client.joinVideoRoom(
         roomId: widget.sessionId,
         userId: userId,
@@ -61,7 +82,8 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
       if (!mounted) return;
       setState(() {
         _roomToken = res['token'] as String?;
-        _remoteName = (res['doctor_name'] as String?) ?? '의사';
+        _remoteName =
+            (res['doctor_name'] as String?) ?? '의사';
         _isConnecting = false;
         _isConnected = true;
       });
@@ -84,8 +106,10 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
   /// WebRTC P2P 연결 초기화
   Future<void> _initWebRtc() async {
     final client = ref.read(restClientProvider);
-    final userId = ref.read(authProvider).userId ?? '';
-    _webRtcService = WebRtcService.create(restClient: client);
+    final userId =
+        ref.read(authProvider).userId ?? '';
+    _webRtcService =
+        WebRtcService.create(restClient: client);
 
     await _webRtcService!.initialize(
       roomId: widget.sessionId,
@@ -109,15 +133,23 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
   }
 
   void _startTimer() {
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+    _timer = Timer.periodic(
+        const Duration(seconds: 1), (_) {
       if (!mounted) return;
-      setState(() => _callDuration += const Duration(seconds: 1));
+      setState(() => _callDuration +=
+          const Duration(seconds: 1));
     });
   }
 
   String _formatDuration(Duration d) {
-    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final m = d.inMinutes
+        .remainder(60)
+        .toString()
+        .padLeft(2, '0');
+    final s = d.inSeconds
+        .remainder(60)
+        .toString()
+        .padLeft(2, '0');
     if (d.inHours > 0) {
       return '${d.inHours}:$m:$s';
     }
@@ -125,20 +157,38 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
   }
 
   Future<void> _endCall() async {
-    // 종료 확인 다이얼로그
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('통화 종료'),
-        content: const Text('화상 상담을 종료하시겠습니까?'),
+        backgroundColor: SanggamTheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text('통화 종료',
+            style: TextStyle(color: Colors.white)),
+        content: const Text('화상 상담을 종료하시겠습니까?',
+            style: TextStyle(
+                color: SanggamTheme.onSurfaceDim)),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('계속 통화'),
+            onPressed: () =>
+                Navigator.of(ctx).pop(false),
+            child: const Text('계속 통화',
+                style: TextStyle(
+                    color:
+                        SanggamTheme.onSurfaceDim)),
           ),
           FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () =>
+                Navigator.of(ctx).pop(true),
+            style: FilledButton.styleFrom(
+              backgroundColor: SanggamTheme.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(16),
+              ),
+            ),
             child: const Text('종료'),
           ),
         ],
@@ -149,7 +199,8 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
     _timer?.cancel();
     try {
       final client = ref.read(restClientProvider);
-      final userId = ref.read(authProvider).userId ?? '';
+      final userId =
+          ref.read(authProvider).userId ?? '';
       await client.leaveVideoRoom(
         roomId: widget.sessionId,
         userId: userId,
@@ -157,59 +208,112 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
     } catch (_) {}
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('상담이 종료되었습니다'), duration: Duration(seconds: 2)),
+        const SnackBar(
+            content: Text('상담이 종료되었습니다'),
+            duration: Duration(seconds: 2)),
       );
-      context.pushReplacement('/medical/consultation/${widget.sessionId}/result');
+      context.pushReplacement(
+          '/medical/consultation/${widget.sessionId}/result');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: SanggamTheme.background,
       body: SafeArea(
         child: Stack(
           children: [
-            // 원격 비디오 (전체 화면) — 실제 구현 시 RTCVideoView 사용
+            // 원격 비디오 (전체 화면)
             Center(
               child: _isConnecting
-                  ? Column(
+                  ? const Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const CircularProgressIndicator(color: Colors.white),
-                        const SizedBox(height: 16),
-                        Text('연결 중...', style: theme.textTheme.titleMedium?.copyWith(color: Colors.white)),
+                        CircularProgressIndicator(
+                            color: Colors.white),
+                        SizedBox(height: 16),
+                        Text('연결 중...',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight:
+                                  FontWeight.w500,
+                            )),
                       ],
                     )
                   : _isVideoOff
                       ? Column(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisSize:
+                              MainAxisSize.min,
                           children: [
                             CircleAvatar(
                               radius: 48,
-                              backgroundColor: AppTheme.sanggamGold.withValues(alpha: 0.3),
+                              backgroundColor:
+                                  SanggamTheme
+                                      .primary
+                                      .withValues(
+                                          alpha:
+                                              0.3),
                               child: Text(
-                                _remoteName.isNotEmpty ? _remoteName[0] : '?',
-                                style: const TextStyle(fontSize: 36, color: Colors.white),
+                                _remoteName
+                                        .isNotEmpty
+                                    ? _remoteName[0]
+                                    : '?',
+                                style:
+                                    const TextStyle(
+                                        fontSize:
+                                            36,
+                                        color: Colors
+                                            .white),
                               ),
                             ),
-                            const SizedBox(height: 12),
-                            Text(_remoteName, style: const TextStyle(color: Colors.white, fontSize: 18)),
+                            const SizedBox(
+                                height: 16),
+                            Text(_remoteName,
+                                style:
+                                    const TextStyle(
+                                        color: Colors
+                                            .white,
+                                        fontSize:
+                                            18)),
                           ],
                         )
                       : Container(
-                          // 원격 비디오 플레이스홀더
-                          color: Colors.grey[900],
+                          color:
+                              SanggamTheme.surface,
                           child: Center(
                             child: Column(
-                              mainAxisSize: MainAxisSize.min,
+                              mainAxisSize:
+                                  MainAxisSize.min,
                               children: [
-                                const Icon(Icons.videocam, size: 80, color: Colors.white24),
-                                const SizedBox(height: 8),
-                                Text(_remoteName, style: const TextStyle(color: Colors.white70, fontSize: 16)),
-                                Text('화상 진료 중', style: TextStyle(color: Colors.green[300], fontSize: 14)),
+                                Icon(
+                                    Icons.videocam,
+                                    size: 80,
+                                    color: Colors
+                                        .white
+                                        .withValues(
+                                            alpha:
+                                                0.15)),
+                                const SizedBox(
+                                    height: 8),
+                                Text(_remoteName,
+                                    style: TextStyle(
+                                        color: Colors
+                                            .white
+                                            .withValues(
+                                                alpha:
+                                                    0.7),
+                                        fontSize:
+                                            16)),
+                                const Text(
+                                    '화상 진료 중',
+                                    style:
+                                        TextStyle(
+                                      color: SanggamTheme
+                                          .jagaeCyan,
+                                      fontSize: 14,
+                                    )),
                               ],
                             ),
                           ),
@@ -225,13 +329,28 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
                   width: 100,
                   height: 140,
                   decoration: BoxDecoration(
-                    color: _isVideoOff ? Colors.grey[800] : Colors.grey[700],
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white24, width: 1),
+                    color: _isVideoOff
+                        ? SanggamTheme.surface
+                        : SanggamTheme
+                            .surfaceVariant,
+                    borderRadius:
+                        BorderRadius.circular(16),
+                    border: Border.all(
+                        color: Colors.white
+                            .withValues(
+                                alpha: 0.15),
+                        width: 1),
                   ),
                   child: _isVideoOff
-                      ? const Center(child: Icon(Icons.videocam_off, color: Colors.white54))
-                      : const Center(child: Icon(Icons.person, color: Colors.white38, size: 40)),
+                      ? Icon(Icons.videocam_off,
+                          color: Colors.white
+                              .withValues(
+                                  alpha: 0.5))
+                      : Icon(Icons.person,
+                          color: Colors.white
+                              .withValues(
+                                  alpha: 0.3),
+                          size: 40),
                 ),
               ),
 
@@ -240,35 +359,63 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
               top: 16,
               left: 16,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8),
                     decoration: BoxDecoration(
-                      color: _isConnected ? Colors.green.withValues(alpha: 0.8) : Colors.orange.withValues(alpha: 0.8),
-                      borderRadius: BorderRadius.circular(16),
+                      color: _isConnected
+                          ? SanggamTheme.jagaeCyan
+                              .withValues(
+                                  alpha: 0.8)
+                          : SanggamTheme.primary
+                              .withValues(
+                                  alpha: 0.8),
+                      borderRadius:
+                          BorderRadius.circular(16),
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisSize:
+                          MainAxisSize.min,
                       children: [
                         Container(
                           width: 8,
                           height: 8,
-                          decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+                          decoration:
+                              const BoxDecoration(
+                                  color:
+                                      Colors.white,
+                                  shape: BoxShape
+                                      .circle),
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: 8),
                         Text(
-                          _isConnected ? '통화 중' : '연결 중',
-                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                          _isConnected
+                              ? '통화 중'
+                              : '연결 중',
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight:
+                                  FontWeight.w600),
                         ),
                       ],
                     ),
                   ),
                   if (_isConnected) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     Text(
-                      _formatDuration(_callDuration),
-                      style: const TextStyle(color: Colors.white70, fontSize: 14),
+                      _formatDuration(
+                          _callDuration),
+                      style: TextStyle(
+                          color: Colors.white
+                              .withValues(
+                                  alpha: 0.7),
+                          fontSize: 14),
                     ),
                   ],
                 ],
@@ -283,7 +430,9 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
                 right: 0,
                 child: VitalSignsHud(
                   isExpanded: _isHudExpanded,
-                  onToggle: () => setState(() => _isHudExpanded = !_isHudExpanded),
+                  onToggle: () => setState(() =>
+                      _isHudExpanded =
+                          !_isHudExpanded),
                 ),
               ),
 
@@ -294,60 +443,101 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
               right: 0,
               child: Column(
                 children: [
-                  // 메인 컨트롤
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    mainAxisAlignment:
+                        MainAxisAlignment
+                            .spaceEvenly,
                     children: [
                       _buildControlButton(
-                        icon: _isMuted ? Icons.mic_off : Icons.mic,
-                        label: _isMuted ? '음소거 해제' : '음소거',
+                        icon: _isMuted
+                            ? Icons.mic_off
+                            : Icons.mic,
+                        label: _isMuted
+                            ? '음소거 해제'
+                            : '음소거',
                         isActive: _isMuted,
                         onTap: () {
-                          setState(() => _isMuted = !_isMuted);
-                          _webRtcService?.toggleMute(_isMuted);
+                          setState(() => _isMuted =
+                              !_isMuted);
+                          _webRtcService
+                              ?.toggleMute(
+                                  _isMuted);
                         },
                       ),
                       _buildControlButton(
-                        icon: _isVideoOff ? Icons.videocam_off : Icons.videocam,
-                        label: _isVideoOff ? '카메라 켜기' : '카메라 끄기',
+                        icon: _isVideoOff
+                            ? Icons.videocam_off
+                            : Icons.videocam,
+                        label: _isVideoOff
+                            ? '카메라 켜기'
+                            : '카메라 끄기',
                         isActive: _isVideoOff,
                         onTap: () {
-                          setState(() => _isVideoOff = !_isVideoOff);
-                          _webRtcService?.toggleVideo(_isVideoOff);
+                          setState(() =>
+                              _isVideoOff =
+                                  !_isVideoOff);
+                          _webRtcService
+                              ?.toggleVideo(
+                                  _isVideoOff);
                         },
                       ),
                       // 통화 종료
-                      GestureDetector(
-                        onTap: _endCall,
-                        child: Container(
-                          width: 64,
-                          height: 64,
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
+                      Tooltip(
+                        message: '통화 종료',
+                        child: GestureDetector(
+                          onTap: _endCall,
+                          child: Container(
+                            width: 64,
+                            height: 64,
+                            decoration:
+                                const BoxDecoration(
+                              color: SanggamTheme
+                                  .error,
+                              shape:
+                                  BoxShape.circle,
+                            ),
+                            child: const Icon(
+                                Icons.call_end,
+                                color: Colors.white,
+                                size: 32),
                           ),
-                          child: const Icon(Icons.call_end, color: Colors.white, size: 32),
                         ),
                       ),
                       _buildControlButton(
-                        icon: _isSpeakerOn ? Icons.volume_up : Icons.volume_off,
-                        label: _isSpeakerOn ? '스피커' : '수화기',
+                        icon: _isSpeakerOn
+                            ? Icons.volume_up
+                            : Icons.volume_off,
+                        label: _isSpeakerOn
+                            ? '스피커'
+                            : '수화기',
                         isActive: false,
-                        onTap: () => setState(() => _isSpeakerOn = !_isSpeakerOn),
+                        onTap: () => setState(() =>
+                            _isSpeakerOn =
+                                !_isSpeakerOn),
                       ),
                       _buildControlButton(
-                        icon: Icons.chat_bubble_outline,
+                        icon: Icons
+                            .chat_bubble_outline,
                         label: '채팅',
                         isActive: false,
-                        onTap: () => _showChatSheet(context),
+                        onTap: () =>
+                            _showChatSheet(context),
                       ),
                       _buildControlButton(
-                        icon: _showHud ? Icons.monitor_heart : Icons.monitor_heart_outlined,
-                        label: _showHud ? '바이탈' : '바이탈 끔',
+                        icon: _showHud
+                            ? Icons.monitor_heart
+                            : Icons
+                                .monitor_heart_outlined,
+                        label: _showHud
+                            ? '바이탈'
+                            : '바이탈 끔',
                         isActive: _showHud,
-                        onTap: () => setState(() {
+                        onTap: () =>
+                            setState(() {
                           _showHud = !_showHud;
-                          if (!_showHud) _isHudExpanded = false;
+                          if (!_showHud) {
+                            _isHudExpanded = false;
+                          }
                         }),
                       ),
                     ],
@@ -367,61 +557,159 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: SanggamTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+            top: Radius.circular(16)),
+      ),
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setSheetState) => Padding(
-          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom),
+          padding: EdgeInsets.only(
+              bottom: MediaQuery.of(ctx)
+                  .viewInsets
+                  .bottom),
           child: SizedBox(
             height: 360,
             child: Column(
               children: [
-                AppBar(
-                  title: const Text('진료 중 채팅'),
-                  leading: IconButton(
-                    icon: const Icon(Icons.close),
-                    onPressed: () => Navigator.pop(ctx),
+                // 커스텀 헤더
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 8),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                            Icons.close,
+                            color: Colors.white),
+                        tooltip: '닫기',
+                        onPressed: () =>
+                            Navigator.pop(ctx),
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          '진료 중 채팅',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight:
+                                FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  automaticallyImplyLeading: false,
                 ),
+                const Divider(
+                    height: 1,
+                    color: SanggamTheme
+                        .surfaceVariant),
                 Expanded(
                   child: messages.isEmpty
-                      ? const Center(child: Text('메시지가 없습니다.'))
+                      ? const Center(
+                          child: Text(
+                              '메시지가 없습니다.',
+                              style: TextStyle(
+                                  color: SanggamTheme
+                                      .onSurfaceDim)))
                       : ListView.builder(
-                          padding: const EdgeInsets.all(8),
-                          itemCount: messages.length,
-                          itemBuilder: (_, i) => Align(
-                            alignment: Alignment.centerRight,
+                          padding:
+                              const EdgeInsets.all(
+                                  8),
+                          itemCount:
+                              messages.length,
+                          itemBuilder: (_, i) =>
+                              Align(
+                            alignment: Alignment
+                                .centerRight,
                             child: Container(
-                              margin: const EdgeInsets.only(bottom: 4),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(12),
+                              margin:
+                                  const EdgeInsets
+                                      .only(
+                                      bottom: 8),
+                              padding:
+                                  const EdgeInsets
+                                      .symmetric(
+                                      horizontal:
+                                          16,
+                                      vertical: 8),
+                              decoration:
+                                  BoxDecoration(
+                                color: SanggamTheme
+                                    .primary
+                                    .withValues(
+                                        alpha:
+                                            0.15),
+                                borderRadius:
+                                    BorderRadius
+                                        .circular(
+                                            16),
                               ),
-                              child: Text(messages[i]),
+                              child: Text(
+                                  messages[i],
+                                  style: const TextStyle(
+                                      color: Colors
+                                          .white)),
                             ),
                           ),
                         ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8),
+                  padding:
+                      const EdgeInsets.all(8),
                   child: Row(
                     children: [
                       Expanded(
                         child: TextField(
-                          controller: chatController,
-                          decoration: const InputDecoration(
+                          controller:
+                              chatController,
+                          style: const TextStyle(
+                              color: Colors.white),
+                          decoration:
+                              InputDecoration(
                             hintText: '메시지를 입력하세요',
-                            border: OutlineInputBorder(),
-                            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            hintStyle: const TextStyle(
+                                color: SanggamTheme
+                                    .onSurfaceDim),
+                            filled: true,
+                            fillColor: SanggamTheme
+                                .surfaceVariant,
+                            border:
+                                OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                          16),
+                              borderSide:
+                                  BorderSide.none,
+                            ),
+                            contentPadding:
+                                const EdgeInsets
+                                    .symmetric(
+                                    horizontal: 16,
+                                    vertical: 8),
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
                       IconButton(
-                        icon: const Icon(Icons.send),
+                        icon: const Icon(
+                            Icons.send,
+                            color: SanggamTheme
+                                .primary),
+                        tooltip: '메시지 전송',
                         onPressed: () {
-                          if (chatController.text.trim().isNotEmpty) {
-                            setSheetState(() => messages.add(chatController.text.trim()));
+                          if (chatController.text
+                              .trim()
+                              .isNotEmpty) {
+                            setSheetState(() =>
+                                messages.add(
+                                    chatController
+                                        .text
+                                        .trim()));
                             chatController.clear();
                           }
                         },
@@ -443,23 +731,37 @@ class _VideoCallScreenState extends ConsumerState<VideoCallScreen> {
     required bool isActive,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: isActive ? Colors.white : Colors.white.withValues(alpha: 0.2),
-              shape: BoxShape.circle,
+    return Tooltip(
+      message: label,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: isActive
+                    ? Colors.white
+                    : Colors.white
+                        .withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon,
+                  color: isActive
+                      ? SanggamTheme.background
+                      : Colors.white,
+                  size: 24),
             ),
-            child: Icon(icon, color: isActive ? Colors.black : Colors.white, size: 24),
-          ),
-          const SizedBox(height: 4),
-          Text(label, style: const TextStyle(color: Colors.white70, fontSize: 10)),
-        ],
+            const SizedBox(height: 4),
+            Text(label,
+                style: TextStyle(
+                    color: Colors.white
+                        .withValues(alpha: 0.7),
+                    fontSize: 10)),
+          ],
+        ),
       ),
     );
   }

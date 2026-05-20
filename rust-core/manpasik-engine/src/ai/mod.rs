@@ -65,6 +65,7 @@ pub struct InferenceEngine {
     input_size: usize,
     output_size: usize,
     model_loaded: bool,
+    allow_simulation: bool,
 }
 
 impl InferenceEngine {
@@ -83,7 +84,19 @@ impl InferenceEngine {
             input_size,
             output_size,
             model_loaded: false,
+            allow_simulation: true,
         }
+    }
+
+    /// 운영 모드 추론 엔진 생성
+    pub fn production(model_type: ModelType) -> Self {
+        Self::new(model_type).with_simulation_allowed(false)
+    }
+
+    /// 시뮬레이션 폴백 허용 여부를 설정합니다.
+    pub fn with_simulation_allowed(mut self, allow_simulation: bool) -> Self {
+        self.allow_simulation = allow_simulation;
+        self
     }
 
     /// 보정 모델 엔진 생성
@@ -114,9 +127,8 @@ impl InferenceEngine {
             use std::fs;
 
             // TFLite 모델 파일 검증
-            let model_data = fs::read(model_path).map_err(|e| {
-                InferenceError::LoadError(format!("파일 읽기 실패: {}", e))
-            })?;
+            let model_data = fs::read(model_path)
+                .map_err(|e| InferenceError::LoadError(format!("파일 읽기 실패: {}", e)))?;
 
             // TFLite 매직 넘버 검증 (0x54464C33 = "TFL3")
             if model_data.len() < 4 {
@@ -150,6 +162,13 @@ impl InferenceEngine {
         }
 
         let start = std::time::Instant::now();
+
+        if !self.allow_simulation && !self.has_runtime_backed_model() {
+            return Err(InferenceError::InferenceError(
+                "production inference requires a runtime-backed model; simulation fallback disabled"
+                    .to_string(),
+            ));
+        }
 
         // 모델이 로드된 경우 실제 추론 시도, 실패 시 시뮬레이션 폴백
         let (values, confidence) = if self.model_loaded {
@@ -259,6 +278,15 @@ impl InferenceEngine {
     /// 모델 로드 상태
     pub fn is_loaded(&self) -> bool {
         self.model_loaded
+    }
+
+    /// 시뮬레이션 폴백 허용 여부
+    pub fn simulation_allowed(&self) -> bool {
+        self.allow_simulation
+    }
+
+    fn has_runtime_backed_model(&self) -> bool {
+        false
     }
 }
 
@@ -534,13 +562,25 @@ impl BiasDetector {
         }
 
         // 정확도 범위
-        let acc_max = valid_groups.iter().map(|g| g.accuracy).fold(f64::NEG_INFINITY, f64::max);
-        let acc_min = valid_groups.iter().map(|g| g.accuracy).fold(f64::INFINITY, f64::min);
+        let acc_max = valid_groups
+            .iter()
+            .map(|g| g.accuracy)
+            .fold(f64::NEG_INFINITY, f64::max);
+        let acc_min = valid_groups
+            .iter()
+            .map(|g| g.accuracy)
+            .fold(f64::INFINITY, f64::min);
         let max_accuracy_gap = acc_max - acc_min;
 
         // 민감도 범위
-        let sens_max = valid_groups.iter().map(|g| g.sensitivity).fold(f64::NEG_INFINITY, f64::max);
-        let sens_min = valid_groups.iter().map(|g| g.sensitivity).fold(f64::INFINITY, f64::min);
+        let sens_max = valid_groups
+            .iter()
+            .map(|g| g.sensitivity)
+            .fold(f64::NEG_INFINITY, f64::max);
+        let sens_min = valid_groups
+            .iter()
+            .map(|g| g.sensitivity)
+            .fold(f64::INFINITY, f64::min);
         let max_sensitivity_gap = sens_max - sens_min;
 
         let is_biased = max_accuracy_gap > self.threshold || max_sensitivity_gap > self.threshold;
@@ -548,10 +588,14 @@ impl BiasDetector {
         let mut recommendations = Vec::new();
         if is_biased {
             // 가장 성능 낮은 그룹 찾기
-            let weakest = valid_groups.iter().min_by(|a, b| a.accuracy.partial_cmp(&b.accuracy).unwrap()).unwrap();
+            let weakest = valid_groups
+                .iter()
+                .min_by(|a, b| a.accuracy.partial_cmp(&b.accuracy).unwrap())
+                .unwrap();
             recommendations.push(format!(
                 "편향 감지: '{}' 그룹 정확도 {:.1}% — 데이터 보강 필요",
-                weakest.name, weakest.accuracy * 100.0
+                weakest.name,
+                weakest.accuracy * 100.0
             ));
             recommendations.push("인구통계별 학습 데이터 리밸런싱 권장".to_string());
             recommendations.push("차기 릴리스 전 편향 재평가 필수".to_string());
@@ -590,8 +634,8 @@ pub struct FeatureImportance {
 /// 기여 방향
 #[derive(Debug, Clone, PartialEq)]
 pub enum ContributionDirection {
-    Positive,  // 수치 상승 방향
-    Negative,  // 수치 하강 방향
+    Positive, // 수치 상승 방향
+    Negative, // 수치 하강 방향
     Neutral,
 }
 
@@ -625,7 +669,11 @@ impl ExplainabilityEngine {
         input: &[f32],
         baseline_result: &InferenceResult,
     ) -> Result<Vec<FeatureImportance>, InferenceError> {
-        let baseline_value = baseline_result.values.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
+        let baseline_value = baseline_result
+            .values
+            .iter()
+            .cloned()
+            .fold(f32::NEG_INFINITY, f32::max);
         let mut importances: Vec<FeatureImportance> = Vec::new();
 
         for i in 0..input.len() {
@@ -634,7 +682,11 @@ impl ExplainabilityEngine {
             perturbed[i] = 0.0;
 
             let perturbed_result = engine.predict(&perturbed)?;
-            let perturbed_value = perturbed_result.values.iter().cloned().fold(f32::NEG_INFINITY, f32::max);
+            let perturbed_value = perturbed_result
+                .values
+                .iter()
+                .cloned()
+                .fold(f32::NEG_INFINITY, f32::max);
             let diff = (baseline_value - perturbed_value) as f64;
 
             let direction = if diff > 0.01 {
@@ -700,6 +752,301 @@ impl ExplainabilityEngine {
 }
 
 impl Default for ExplainabilityEngine {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+// ============================================================
+// 시계열 트렌드 분석기 (TrendAnalyzer)
+// 선형회귀 + 신뢰구간 + 이동평균 + 추세 판정
+// ============================================================
+
+/// 트렌드 방향
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TrendDirection {
+    /// 개선 (하강이 좋은 바이오마커) 또는 상승 (상승이 좋은 바이오마커)
+    Improving,
+    /// 악화
+    Worsening,
+    /// 안정
+    Stable,
+    /// 데이터 부족
+    Insufficient,
+}
+
+/// 선형회귀 결과
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LinearRegressionResult {
+    /// 기울기 (단위시간당 변화량)
+    pub slope: f64,
+    /// 절편
+    pub intercept: f64,
+    /// 결정계수 R² (0~1, 1에 가까울수록 설명력 높음)
+    pub r_squared: f64,
+    /// 기울기의 표준오차
+    pub slope_std_error: f64,
+    /// 95% 신뢰구간 [하한, 상한]
+    pub slope_ci_95: [f64; 2],
+}
+
+/// 트렌드 분석 결과
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TrendAnalysis {
+    pub direction: TrendDirection,
+    pub regression: Option<LinearRegressionResult>,
+    /// 예측값 (다음 N 시점)
+    pub predictions: Vec<f64>,
+    /// 예측 신뢰구간 (각 시점별 [하한, 상한])
+    pub prediction_intervals: Vec<[f64; 2]>,
+    /// 이동평균 (가장 최근 윈도우)
+    pub moving_average: f64,
+    /// 변동계수 (CV%) — 안정성 지표
+    pub coefficient_of_variation: f64,
+    /// 한국어 요약
+    pub summary: String,
+}
+
+/// 시계열 트렌드 분석기
+pub struct TrendAnalyzer {
+    /// 트렌드 판정을 위한 기울기 임계값 (기본: 표준편차의 5%)
+    pub slope_threshold_pct: f64,
+    /// 최소 데이터 포인트 수
+    pub min_data_points: usize,
+}
+
+impl TrendAnalyzer {
+    pub fn new() -> Self {
+        Self {
+            slope_threshold_pct: 0.05,
+            min_data_points: 3,
+        }
+    }
+
+    /// 시계열 데이터에 대한 트렌드 분석 수행
+    ///
+    /// `values`: 시간순 측정값 배열
+    /// `biomarker`: 바이오마커 타입 (트렌드 방향 해석용)
+    /// `predict_ahead`: 미래 예측 시점 수
+    pub fn analyze(&self, values: &[f64], biomarker: &str, predict_ahead: usize) -> TrendAnalysis {
+        if values.len() < self.min_data_points {
+            return TrendAnalysis {
+                direction: TrendDirection::Insufficient,
+                regression: None,
+                predictions: Vec::new(),
+                prediction_intervals: Vec::new(),
+                moving_average: if values.is_empty() {
+                    0.0
+                } else {
+                    values.iter().sum::<f64>() / values.len() as f64
+                },
+                coefficient_of_variation: 0.0,
+                summary: format!(
+                    "데이터 부족: {}개 (최소 {}개 필요)",
+                    values.len(),
+                    self.min_data_points
+                ),
+            };
+        }
+
+        let n = values.len();
+        let mean = values.iter().sum::<f64>() / n as f64;
+        let std_dev = (values.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / n as f64).sqrt();
+        let cv = if mean.abs() > 1e-10 {
+            (std_dev / mean.abs()) * 100.0
+        } else {
+            0.0
+        };
+
+        // 선형회귀 (OLS)
+        let regression = self.linear_regression(values);
+
+        // 이동평균 (최근 3개 또는 전체)
+        let window = 3.min(n);
+        let ma = values[n - window..].iter().sum::<f64>() / window as f64;
+
+        // 트렌드 방향 판정
+        let slope_threshold = std_dev * self.slope_threshold_pct;
+        let direction = self.determine_direction(&regression, slope_threshold, biomarker);
+
+        // 미래 예측
+        let (predictions, intervals) = self.predict_future(&regression, n, predict_ahead, values);
+
+        // 한국어 요약
+        let dir_str = match direction {
+            TrendDirection::Improving => "개선",
+            TrendDirection::Worsening => "악화",
+            TrendDirection::Stable => "안정",
+            TrendDirection::Insufficient => "판단 불가",
+        };
+        let summary = format!(
+            "{} 추세: {} (R²={:.2}, 기울기={:.3}/단위시간, CV={:.1}%)",
+            biomarker, dir_str, regression.r_squared, regression.slope, cv,
+        );
+
+        TrendAnalysis {
+            direction,
+            regression: Some(regression),
+            predictions,
+            prediction_intervals: intervals,
+            moving_average: ma,
+            coefficient_of_variation: cv,
+            summary,
+        }
+    }
+
+    /// OLS 선형회귀 (x=0,1,2,...,n-1)
+    fn linear_regression(&self, values: &[f64]) -> LinearRegressionResult {
+        let n = values.len() as f64;
+        let x_mean = (n - 1.0) / 2.0;
+        let y_mean = values.iter().sum::<f64>() / n;
+
+        let mut ss_xy = 0.0;
+        let mut ss_xx = 0.0;
+        let mut ss_yy = 0.0;
+
+        for (i, &y) in values.iter().enumerate() {
+            let x = i as f64;
+            ss_xy += (x - x_mean) * (y - y_mean);
+            ss_xx += (x - x_mean).powi(2);
+            ss_yy += (y - y_mean).powi(2);
+        }
+
+        let slope = if ss_xx.abs() > 1e-15 {
+            ss_xy / ss_xx
+        } else {
+            0.0
+        };
+        let intercept = y_mean - slope * x_mean;
+
+        // R²
+        let r_squared = if ss_yy.abs() > 1e-15 {
+            let ss_res: f64 = values
+                .iter()
+                .enumerate()
+                .map(|(i, &y)| (y - (intercept + slope * i as f64)).powi(2))
+                .sum();
+            1.0 - ss_res / ss_yy
+        } else {
+            1.0 // 모든 값이 동일하면 완벽 적합
+        };
+        let r_squared = r_squared.max(0.0);
+
+        // 기울기 표준오차 + 95% 신뢰구간 (t ≈ 1.96 for large n)
+        let se = if n > 2.0 && ss_xx.abs() > 1e-15 {
+            let ss_res: f64 = values
+                .iter()
+                .enumerate()
+                .map(|(i, &y)| (y - (intercept + slope * i as f64)).powi(2))
+                .sum();
+            let mse = ss_res / (n - 2.0);
+            (mse / ss_xx).sqrt()
+        } else {
+            0.0
+        };
+
+        let t_val = if n > 30.0 { 1.96 } else { 2.0 + 5.0 / n }; // 근사 t-value
+        let ci_low = slope - t_val * se;
+        let ci_high = slope + t_val * se;
+
+        LinearRegressionResult {
+            slope,
+            intercept,
+            r_squared,
+            slope_std_error: se,
+            slope_ci_95: [ci_low, ci_high],
+        }
+    }
+
+    /// 트렌드 방향 결정
+    fn determine_direction(
+        &self,
+        reg: &LinearRegressionResult,
+        threshold: f64,
+        biomarker: &str,
+    ) -> TrendDirection {
+        // 기울기가 임계값 이내이면 안정
+        if reg.slope.abs() <= threshold {
+            return TrendDirection::Stable;
+        }
+
+        // 바이오마커별 "좋은 방향" 판정
+        let lower_is_better = matches!(
+            biomarker,
+            "glucose"
+                | "hba1c"
+                | "cholesterol"
+                | "ldl"
+                | "triglycerides"
+                | "uric_acid"
+                | "creatinine"
+                | "crp"
+                | "cortisol"
+                | "blood_pressure"
+        );
+
+        if lower_is_better {
+            if reg.slope < 0.0 {
+                TrendDirection::Improving
+            } else {
+                TrendDirection::Worsening
+            }
+        } else {
+            if reg.slope > 0.0 {
+                TrendDirection::Improving
+            } else {
+                TrendDirection::Worsening
+            }
+        }
+    }
+
+    /// 미래 시점 예측 + 예측 구간
+    fn predict_future(
+        &self,
+        reg: &LinearRegressionResult,
+        n: usize,
+        ahead: usize,
+        values: &[f64],
+    ) -> (Vec<f64>, Vec<[f64; 2]>) {
+        if ahead == 0 {
+            return (Vec::new(), Vec::new());
+        }
+
+        let nf = n as f64;
+        let x_mean = (nf - 1.0) / 2.0;
+        let ss_xx: f64 = (0..n).map(|i| (i as f64 - x_mean).powi(2)).sum();
+        let mse = if n > 2 {
+            let ss_res: f64 = values
+                .iter()
+                .enumerate()
+                .map(|(i, &y)| (y - (reg.intercept + reg.slope * i as f64)).powi(2))
+                .sum();
+            ss_res / (nf - 2.0)
+        } else {
+            0.0
+        };
+
+        let t_val = if nf > 30.0 { 1.96 } else { 2.0 + 5.0 / nf };
+
+        let mut preds = Vec::with_capacity(ahead);
+        let mut intervals = Vec::with_capacity(ahead);
+
+        for k in 1..=ahead {
+            let x_pred = (n + k - 1) as f64;
+            let y_pred = reg.intercept + reg.slope * x_pred;
+            preds.push(y_pred);
+
+            // 예측 구간 (prediction interval)
+            let h = 1.0 + 1.0 / nf + (x_pred - x_mean).powi(2) / ss_xx.max(1e-15);
+            let margin = t_val * (mse * h).sqrt();
+            intervals.push([y_pred - margin, y_pred + margin]);
+        }
+
+        (preds, intervals)
+    }
+}
+
+impl Default for TrendAnalyzer {
     fn default() -> Self {
         Self::new()
     }
@@ -807,6 +1154,31 @@ mod tests {
         ));
     }
 
+    #[test]
+    fn test_production_engine_rejects_simulation_without_runtime_model() {
+        let engine = InferenceEngine::production(ModelType::Calibration);
+        let input = vec![1.0f32; 88];
+
+        let result = engine.predict(&input);
+
+        assert!(matches!(
+            result,
+            Err(InferenceError::InferenceError(message))
+                if message.contains("simulation fallback disabled")
+        ));
+    }
+
+    #[test]
+    fn test_default_engine_allows_simulation_for_demo_and_tests() {
+        let engine = InferenceEngine::calibration();
+        let input = vec![1.0f32; 88];
+
+        let result = engine.predict(&input).unwrap();
+
+        assert!(engine.simulation_allowed());
+        assert_eq!(result.values.len(), 88);
+    }
+
     // === 편향 탐지 테스트 ===
 
     #[test]
@@ -869,15 +1241,13 @@ mod tests {
     #[test]
     fn test_bias_detector_insufficient_samples() {
         let detector = BiasDetector::new();
-        let groups = vec![
-            DemographicGroup {
-                name: "소수그룹".to_string(),
-                sample_count: 5, // 최소 30 미만
-                accuracy: 0.50,
-                sensitivity: 0.40,
-                specificity: 0.60,
-            },
-        ];
+        let groups = vec![DemographicGroup {
+            name: "소수그룹".to_string(),
+            sample_count: 5, // 최소 30 미만
+            accuracy: 0.50,
+            sensitivity: 0.40,
+            specificity: 0.60,
+        }];
         let report = detector.analyze(&groups);
         assert!(!report.is_biased); // 샘플 부족으로 판단 불가
     }
@@ -892,7 +1262,9 @@ mod tests {
         let input = vec![1.0f32; 88];
         let baseline = engine.predict(&input).unwrap();
 
-        let importances = explainer.compute_importance(&engine, &input, &baseline).unwrap();
+        let importances = explainer
+            .compute_importance(&engine, &input, &baseline)
+            .unwrap();
 
         // top_k = 5개 이하로 반환
         assert!(importances.len() <= 5);
@@ -923,5 +1295,149 @@ mod tests {
         assert!(report.explanation_text.contains("glucose"));
         assert!(report.explanation_text.contains("95.0"));
         assert!(report.explanation_text.contains("의료 진단이 아닙니다"));
+    }
+
+    // === 트렌드 분석 테스트 ===
+
+    #[test]
+    fn test_trend_analyzer_improving() {
+        let analyzer = TrendAnalyzer::new();
+        // 혈당 하강 추세 (lower is better → Improving)
+        let values = vec![120.0, 115.0, 110.0, 105.0, 100.0];
+        let result = analyzer.analyze(&values, "glucose", 3);
+        assert_eq!(result.direction, TrendDirection::Improving);
+        let reg = result.regression.as_ref().unwrap();
+        assert!(reg.slope < 0.0); // 하강
+        assert!(reg.r_squared > 0.95); // 높은 적합도
+        assert_eq!(result.predictions.len(), 3);
+        assert!(result.predictions[0] < 100.0); // 100 미만으로 예측
+    }
+
+    #[test]
+    fn test_trend_analyzer_stable() {
+        let analyzer = TrendAnalyzer::new();
+        // 안정적인 값 (대칭 배치 → slope ≈ 0)
+        let values = vec![99.9, 100.1, 100.0, 100.1, 99.9, 100.0];
+        let result = analyzer.analyze(&values, "glucose", 0);
+        assert_eq!(result.direction, TrendDirection::Stable);
+        assert!(result.coefficient_of_variation < 1.0);
+    }
+
+    #[test]
+    fn test_trend_analyzer_insufficient() {
+        let analyzer = TrendAnalyzer::new();
+        let values = vec![100.0, 101.0]; // 2개 < 최소 3개
+        let result = analyzer.analyze(&values, "glucose", 0);
+        assert_eq!(result.direction, TrendDirection::Insufficient);
+        assert!(result.regression.is_none());
+    }
+
+    #[test]
+    fn test_trend_analyzer_worsening() {
+        let analyzer = TrendAnalyzer::new();
+        // 혈당 상승 추세 (lower is better → Worsening)
+        let values = vec![90.0, 100.0, 110.0, 120.0, 130.0];
+        let result = analyzer.analyze(&values, "glucose", 2);
+        assert_eq!(result.direction, TrendDirection::Worsening);
+        let reg = result.regression.as_ref().unwrap();
+        assert!(reg.slope > 0.0);
+        assert_eq!(result.prediction_intervals.len(), 2);
+        // 예측 구간은 예측값을 포함해야 함
+        assert!(result.prediction_intervals[0][0] <= result.predictions[0]);
+        assert!(result.prediction_intervals[0][1] >= result.predictions[0]);
+    }
+
+    #[test]
+    fn test_trend_analyzer_r_squared_perfect() {
+        let analyzer = TrendAnalyzer::new();
+        // 완벽한 선형 데이터
+        let values = vec![10.0, 20.0, 30.0, 40.0, 50.0];
+        let result = analyzer.analyze(&values, "vitamin_d", 1);
+        let reg = result.regression.as_ref().unwrap();
+        assert!((reg.r_squared - 1.0).abs() < 1e-10);
+        assert!((reg.slope - 10.0).abs() < 1e-10);
+        assert!((reg.intercept - 10.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_trend_confidence_interval() {
+        let analyzer = TrendAnalyzer::new();
+        let values = vec![100.0, 102.0, 98.0, 103.0, 101.0, 99.0, 104.0];
+        let result = analyzer.analyze(&values, "glucose", 1);
+        let reg = result.regression.as_ref().unwrap();
+        assert!(reg.slope_ci_95[0] <= reg.slope);
+        assert!(reg.slope_ci_95[1] >= reg.slope);
+        assert!(result.summary.contains("glucose"));
+    }
+
+    // ========================================================================
+    // Phase M 엣지 케이스 (+8건)
+    // ========================================================================
+
+    #[test]
+    fn test_inference_engine_unloaded_state() {
+        let engine = InferenceEngine::classifier();
+        assert!(!engine.is_loaded(), "초기 상태는 미로드");
+        assert_eq!(engine.model_type(), ModelType::FingerprintClassifier);
+    }
+
+    #[test]
+    fn test_inference_predict_without_loading_fails() {
+        let engine = InferenceEngine::classifier();
+        let result = engine.predict(&[0.5; 10]);
+        assert!(result.is_err(), "미로드 모델 추론은 실패");
+    }
+
+    #[test]
+    fn test_trend_analyzer_empty_values() {
+        let analyzer = TrendAnalyzer::new();
+        let values: Vec<f64> = vec![];
+        let result = analyzer.analyze(&values, "glucose", 0);
+        assert_eq!(result.direction, TrendDirection::Insufficient);
+    }
+
+    #[test]
+    fn test_trend_analyzer_single_value() {
+        let analyzer = TrendAnalyzer::new();
+        let result = analyzer.analyze(&[100.0], "glucose", 0);
+        assert_eq!(result.direction, TrendDirection::Insufficient);
+    }
+
+    #[test]
+    fn test_trend_analyzer_constant_values() {
+        let analyzer = TrendAnalyzer::new();
+        let values = vec![100.0; 10];
+        let result = analyzer.analyze(&values, "glucose", 1);
+        if let Some(reg) = result.regression.as_ref() {
+            assert!(
+                reg.slope.abs() < 1e-10,
+                "Constant values should have slope ~0"
+            );
+        }
+    }
+
+    #[test]
+    fn test_trend_analyzer_with_negative_values() {
+        let analyzer = TrendAnalyzer::new();
+        let values = vec![-10.0, -5.0, 0.0, 5.0, 10.0];
+        let result = analyzer.analyze(&values, "glucose", 1);
+        let reg = result.regression.as_ref().unwrap();
+        assert!(reg.slope > 0.0);
+    }
+
+    #[test]
+    fn test_trend_predictions_count_matches_horizon() {
+        let analyzer = TrendAnalyzer::new();
+        let values = vec![100.0, 105.0, 110.0, 115.0, 120.0];
+        let result = analyzer.analyze(&values, "glucose", 5);
+        assert_eq!(result.predictions.len(), 5);
+        assert_eq!(result.prediction_intervals.len(), 5);
+    }
+
+    #[test]
+    fn test_inference_engine_calibration_default() {
+        let engine = InferenceEngine::calibration();
+        assert_eq!(engine.model_type(), ModelType::Calibration);
+        assert!(!engine.is_loaded());
     }
 }

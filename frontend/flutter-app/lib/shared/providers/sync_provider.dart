@@ -3,16 +3,17 @@ import 'dart:math';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:logger/logger.dart';
 
 import 'package:manpasik/core/config/app_config.dart';
 import 'package:manpasik/core/network/offline_queue.dart';
 
-/// 동기화 상태
+/// Sync status.
 enum SyncStatus { idle, syncing, error, offline }
 
-/// 동기화 상태 데이터
+/// Sync state data.
 class SyncState {
   final SyncStatus status;
   final int pendingCount;
@@ -52,10 +53,9 @@ class SyncState {
       );
 }
 
-/// 자동 동기화 프로바이더
+/// Auto sync provider.
 ///
-/// connectivity_plus로 네트워크 상태 감시 →
-/// 재연결 시 OfflineQueue 일괄 전송
+/// Watches connectivity and flushes OfflineQueue on reconnection.
 final syncProvider =
     StateNotifierProvider<SyncNotifier, SyncState>((ref) => SyncNotifier());
 
@@ -77,26 +77,39 @@ class SyncNotifier extends StateNotifier<SyncState> {
   int _consecutiveFailures = 0;
 
   void _init() {
-    _connectivitySub = Connectivity().onConnectivityChanged.listen(_onConnectivityChanged);
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.linux) {
+      _log.w(
+          'Linux desktop: connectivity listener disabled (NetworkManager unavailable)');
+      _schedulePeriodicSync();
+      _updatePendingCount();
+      return;
+    }
+
+    _connectivitySub = Connectivity().onConnectivityChanged.listen(
+      _onConnectivityChanged,
+      onError: (Object error, StackTrace stackTrace) {
+        _log.w('Connectivity listener unavailable: $error');
+      },
+    );
     _schedulePeriodicSync();
     _updatePendingCount();
   }
 
-  /// Exponential backoff 기반 주기적 동기화 스케줄링
+  /// Schedules periodic sync with exponential backoff.
   void _schedulePeriodicSync() {
     _periodicSync?.cancel();
-    // 기본 5분, 실패 시 최대 30분까지 증가
     final backoffMinutes = min(5 * pow(2, _consecutiveFailures), 30).toInt();
-    _log.d('다음 동기화: ${backoffMinutes}분 후');
-    _periodicSync = Timer.periodic(Duration(minutes: backoffMinutes), (_) => syncAll());
+    _log.d('Next sync in ${backoffMinutes}m');
+    _periodicSync =
+        Timer.periodic(Duration(minutes: backoffMinutes), (_) => syncAll());
   }
 
   void _onConnectivityChanged(ConnectivityResult result) {
     if (result == ConnectivityResult.none) {
       state = state.copyWith(status: SyncStatus.offline);
-      _log.w('네트워크 끊김 — 오프라인 모드');
+      _log.w('Network offline - entering offline mode');
     } else {
-      _log.i('네트워크 복구 — 동기화 시작');
+      _log.i('Network restored - starting sync');
       syncAll();
     }
   }
@@ -105,7 +118,7 @@ class SyncNotifier extends StateNotifier<SyncState> {
     state = state.copyWith(pendingCount: OfflineQueue.instance.pendingCount);
   }
 
-  /// 전체 오프라인 큐 동기화
+  /// Syncs all pending offline queue requests.
   Future<void> syncAll() async {
     final queue = OfflineQueue.instance;
     if (queue.pendingCount == 0) {
@@ -137,9 +150,11 @@ class SyncNotifier extends StateNotifier<SyncState> {
         failed++;
         if (request.retryCount >= _maxRetries) {
           await queue.remove(key);
-          _log.e('최대 재시도 초과, 삭제: ${request.method} ${request.path}');
+          _log.e(
+              'Max retries exceeded, dropping request: ${request.method} ${request.path}');
         }
-        _log.w('동기화 실패 (${request.retryCount + 1}/$_maxRetries): ${request.path}');
+        _log.w(
+            'Sync failed (${request.retryCount + 1}/$_maxRetries): ${request.path}');
       }
     }
 
@@ -151,9 +166,9 @@ class SyncNotifier extends StateNotifier<SyncState> {
       pendingCount: queue.pendingCount,
     );
 
-    _log.i('동기화 완료: 성공=$synced, 실패=$failed, 대기=${queue.pendingCount}');
+    _log.i(
+        'Sync done: ok=$synced, fail=$failed, pending=${queue.pendingCount}');
 
-    // Exponential backoff 갱신
     if (failed > 0) {
       _consecutiveFailures = min(_consecutiveFailures + 1, 4);
       _schedulePeriodicSync();
@@ -162,16 +177,13 @@ class SyncNotifier extends StateNotifier<SyncState> {
       _schedulePeriodicSync();
     }
 
-    // 충돌 감지 시 hasConflicts 플래그 설정
     if (failed > 0 && queue.pendingCount > 0) {
       state = state.copyWith(hasConflicts: true);
     }
   }
 
-  /// 충돌 존재 여부 확인
   bool get hasConflicts => state.hasConflicts;
 
-  /// 충돌 해결 완료 처리
   void clearConflicts() {
     state = state.copyWith(hasConflicts: false);
   }
@@ -192,7 +204,6 @@ class SyncNotifier extends StateNotifier<SyncState> {
     }
   }
 
-  /// Dio 인스턴스에 인증 토큰 설정
   void setAuthToken(String token) {
     _dio.options.headers['Authorization'] = 'Bearer $token';
   }

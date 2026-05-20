@@ -9,10 +9,12 @@ import 'package:manpasik/features/auth/domain/auth_repository.dart';
 import 'package:manpasik/features/devices/data/device_repository_impl.dart';
 import 'package:manpasik/features/devices/data/device_repository_rest.dart';
 import 'package:manpasik/features/devices/domain/device_repository.dart';
+import 'package:manpasik/features/measurement/application/measurement_golden_path_orchestrator.dart';
 import 'package:manpasik/features/measurement/domain/measurement_repository.dart';
 import 'package:manpasik/features/user/domain/user_repository.dart';
 import 'package:manpasik/features/measurement/data/measurement_repository_impl.dart';
 import 'package:manpasik/features/measurement/data/measurement_repository_rest.dart';
+import 'package:manpasik/features/measurement/data/measurement_trace_sink_rest.dart';
 import 'package:manpasik/features/user/data/user_repository_impl.dart';
 import 'package:manpasik/features/user/data/user_repository_rest.dart';
 import 'package:manpasik/features/community/domain/community_repository.dart';
@@ -73,6 +75,15 @@ final measurementRepositoryProvider = Provider<MeasurementRepository>((ref) {
   );
 });
 
+/// Measure golden path trace sink.
+final measurementGoldenPathTraceSinkProvider =
+    Provider<MeasurementGoldenPathTraceSink>((ref) {
+  return MeasurementGoldenPathCompositeTraceSink([
+    MeasurementGoldenPathLogger.log,
+    MeasurementGoldenPathRestTraceSink(ref.watch(restClientProvider)).call,
+  ]).call;
+});
+
 /// User Repository Provider (프로필/구독)
 final userRepositoryProvider = Provider<UserRepository>((ref) {
   if (kIsWeb) {
@@ -88,20 +99,23 @@ final userRepositoryProvider = Provider<UserRepository>((ref) {
 // ── 화면용 데이터 Provider (gRPC/REST 자동 선택) ──
 
 /// 최근 측정 기록 (HomeScreen). userId 없으면 빈 결과.
-final measurementHistoryProvider = FutureProvider<MeasurementHistoryResult>((ref) async {
+final measurementHistoryProvider =
+    FutureProvider<MeasurementHistoryResult>((ref) async {
   final authState = ref.watch(authProvider);
   final userId = authState.userId;
-  
+
   // [DEMO MODE]
   if (authState.isDemo) {
     return MeasurementHistoryResult(
-      items: List.generate(10, (index) => MeasurementHistoryItem(
-        sessionId: 'mock-measure-$index',
-        measuredAt: DateTime.now().subtract(Duration(days: index)),
-        primaryValue: (85 + (index % 10)).toDouble(), // 85~94
-        cartridgeType: 'Focus',
-        unit: '점',
-      )),
+      items: List.generate(
+          10,
+          (index) => MeasurementHistoryItem(
+                sessionId: 'mock-measure-$index',
+                measuredAt: DateTime.now().subtract(Duration(days: index)),
+                primaryValue: (85 + (index % 10)).toDouble(), // 85~94
+                cartridgeType: 'Focus',
+                unit: '점',
+              )),
       totalCount: 56,
     );
   }
@@ -110,9 +124,16 @@ final measurementHistoryProvider = FutureProvider<MeasurementHistoryResult>((ref
     return const MeasurementHistoryResult(items: [], totalCount: 0);
   }
   try {
-    return await ref.read(measurementRepositoryProvider).getHistory(userId: userId, limit: 10);
-  } catch (_) {
-    return const MeasurementHistoryResult(items: [], totalCount: 0);
+    return await ref
+        .read(measurementRepositoryProvider)
+        .getHistory(userId: userId, limit: 10);
+  } catch (error) {
+    return MeasurementHistoryResult(
+      items: const [],
+      totalCount: 0,
+      isStale: true,
+      errorMessage: '측정 기록을 새로고침할 수 없습니다: $error',
+    );
   }
 });
 
@@ -144,13 +165,14 @@ final deviceListProvider = FutureProvider<List<DeviceItem>>((ref) async {
 });
 
 /// 연결된 디바이스 (모니터링용 - DataHub)
-final connectedDevicesProvider = FutureProvider<List<ConnectedDevice>>((ref) async {
+final connectedDevicesProvider =
+    FutureProvider<List<ConnectedDevice>>((ref) async {
   final authState = ref.watch(authProvider);
 
   // [DEMO MODE] - 10 Simulated Devices
   if (authState.isDemo) {
     await Future.delayed(const Duration(milliseconds: 500));
-    return [
+    return const [
       ConnectedDevice(
         id: 'gas-001',
         name: '거실 공기질 측정기',
@@ -168,8 +190,23 @@ final connectedDevicesProvider = FutureProvider<List<ConnectedDevice>>((ref) asy
         status: DeviceConnectionStatus.connected,
         batteryLevel: 90,
         signalStrength: 88,
-        currentValues: {'Temp': '24.5°C', 'Humidity': '45%', 'Light': '300 lux'},
-        latestReadings: [24.0, 24.1, 24.2, 24.5, 24.5, 24.4, 24.5, 24.6, 24.5, 24.5],
+        currentValues: {
+          'Temp': '24.5°C',
+          'Humidity': '45%',
+          'Light': '300 lux'
+        },
+        latestReadings: [
+          24.0,
+          24.1,
+          24.2,
+          24.5,
+          24.5,
+          24.4,
+          24.5,
+          24.6,
+          24.5,
+          24.5
+        ],
       ),
       ConnectedDevice(
         id: 'gas-002',
@@ -283,7 +320,8 @@ final userProfileProvider = FutureProvider<UserProfileInfo?>((ref) async {
 });
 
 /// 구독 정보 (SettingsScreen)
-final subscriptionInfoProvider = FutureProvider<SubscriptionInfoDto?>((ref) async {
+final subscriptionInfoProvider =
+    FutureProvider<SubscriptionInfoDto?>((ref) async {
   final userId = ref.watch(authProvider).userId;
   if (userId == null || userId.isEmpty) return null;
   try {
@@ -340,35 +378,42 @@ final dataHubRepositoryProvider = Provider<DataHubRepository>((ref) {
 // ── 화면용 비동기 데이터 Provider ──
 
 /// 커뮤니티 게시글 목록
-final communityPostsProvider = FutureProvider.family<List<CommunityPost>, PostCategory?>((ref, category) async {
+final communityPostsProvider =
+    FutureProvider.family<List<CommunityPost>, PostCategory?>(
+        (ref, category) async {
   final authState = ref.watch(authProvider);
 
   // [DEMO MODE]
   if (authState.isDemo) {
-    return List.generate(5, (index) => CommunityPost(
-      id: 'mock-post-$index',
-      authorId: 'user-$index',
-      authorName: '사용자 ${index + 1}',
-      title: '만파식 체험 후기 $index',
-      content: '오늘 만파식으로 측정한 결과가 아주 좋네요! 다들 건강 챙기세요. #건강 #만파식',
-      likeCount: 10 + index * 5,
-      commentCount: index,
-      isLikedByMe: index % 2 == 0,
-      isBookmarkedByMe: false,
-      createdAt: DateTime.now().subtract(Duration(hours: index)),
-      category: category ?? PostCategory.reviews,
-    ));
+    return List.generate(
+        5,
+        (index) => CommunityPost(
+              id: 'mock-post-$index',
+              authorId: 'user-$index',
+              authorName: '사용자 ${index + 1}',
+              title: '만파식 체험 후기 $index',
+              content: '오늘 만파식으로 측정한 결과가 아주 좋네요! 다들 건강 챙기세요. #건강 #만파식',
+              likeCount: 10 + index * 5,
+              commentCount: index,
+              isLikedByMe: index % 2 == 0,
+              isBookmarkedByMe: false,
+              createdAt: DateTime.now().subtract(Duration(hours: index)),
+              category: category ?? PostCategory.reviews,
+            ));
   }
 
   try {
-    return await ref.read(communityRepositoryProvider).getPosts(category: category);
+    return await ref
+        .read(communityRepositoryProvider)
+        .getPosts(category: category);
   } catch (_) {
     return [];
   }
 });
 
 /// 커뮤니티 건강 챌린지
-final healthChallengesProvider = FutureProvider<List<HealthChallenge>>((ref) async {
+final healthChallengesProvider =
+    FutureProvider<List<HealthChallenge>>((ref) async {
   final authState = ref.watch(authProvider);
 
   // [DEMO MODE]
@@ -403,7 +448,8 @@ final healthChallengesProvider = FutureProvider<List<HealthChallenge>>((ref) asy
 });
 
 /// 진료 예약 목록
-final reservationsProvider = FutureProvider<List<TelemedicineReservation>>((ref) async {
+final reservationsProvider =
+    FutureProvider<List<TelemedicineReservation>>((ref) async {
   try {
     return await ref.read(medicalRepositoryProvider).getReservations();
   } catch (_) {
@@ -430,7 +476,8 @@ final healthReportsProvider = FutureProvider<List<HealthReport>>((ref) async {
 });
 
 /// 카트리지 상품 목록
-final cartridgeProductsProvider = FutureProvider.family<List<CartridgeProduct>, String?>((ref, tier) async {
+final cartridgeProductsProvider =
+    FutureProvider.family<List<CartridgeProduct>, String?>((ref, tier) async {
   final authState = ref.watch(authProvider);
 
   // [DEMO MODE]
@@ -486,7 +533,8 @@ final cartridgeProductsProvider = FutureProvider.family<List<CartridgeProduct>, 
 });
 
 /// 구독 플랜 목록
-final subscriptionPlansProvider = FutureProvider<List<SubscriptionPlan>>((ref) async {
+final subscriptionPlansProvider =
+    FutureProvider<List<SubscriptionPlan>>((ref) async {
   final authState = ref.watch(authProvider);
 
   // [DEMO MODE]
@@ -528,7 +576,8 @@ final ordersProvider = FutureProvider<List<Order>>((ref) async {
 });
 
 /// 추천 의사 목록
-final recommendedDoctorsProvider = FutureProvider<List<DoctorInfo>>((ref) async {
+final recommendedDoctorsProvider =
+    FutureProvider<List<DoctorInfo>>((ref) async {
   try {
     return await ref.read(medicalRepositoryProvider).getRecommendedDoctors();
   } catch (_) {
@@ -551,9 +600,12 @@ final todayInsightProvider = FutureProvider<HealthInsight>((ref) async {
 });
 
 /// AI 코치 추천 목록
-final aiRecommendationsProvider = FutureProvider.family<List<Recommendation>, String>((ref, category) async {
+final aiRecommendationsProvider =
+    FutureProvider.family<List<Recommendation>, String>((ref, category) async {
   try {
-    return await ref.read(aiCoachRepositoryProvider).getRecommendations(category);
+    return await ref
+        .read(aiCoachRepositoryProvider)
+        .getRecommendations(category);
   } catch (_) {
     return [];
   }
@@ -569,18 +621,67 @@ final familyGroupsProvider = FutureProvider<List<FamilyGroup>>((ref) async {
 });
 
 /// 바이오마커 요약 목록 (DataHub)
-final biomarkerSummariesProvider = FutureProvider<List<BiomarkerSummary>>((ref) async {
+final biomarkerSummariesProvider =
+    FutureProvider<List<BiomarkerSummary>>((ref) async {
   final authState = ref.watch(authProvider);
 
   // [DEMO MODE]
   if (authState.isDemo) {
     return [
-      const BiomarkerSummary(biomarkerType: 'stress', displayName: '스트레스', latestValue: 45, unit: '점', referenceMin: 0, referenceMax: 60, totalMeasurements: 10, trend: 'stable'),
-      const BiomarkerSummary(biomarkerType: 'energy', displayName: '에너지', latestValue: 85, unit: '점', referenceMin: 60, referenceMax: 100, totalMeasurements: 10, trend: 'rising'),
-      const BiomarkerSummary(biomarkerType: 'hydration', displayName: '수분 균형', latestValue: 72, unit: '%', referenceMin: 70, referenceMax: 100, totalMeasurements: 10, trend: 'stable'),
-      const BiomarkerSummary(biomarkerType: 'sleep', displayName: '수면 질', latestValue: 65, unit: '점', referenceMin: 60, referenceMax: 90, totalMeasurements: 10, trend: 'falling'),
-      const BiomarkerSummary(biomarkerType: 'hrv', displayName: '심박 변이도', latestValue: 42, unit: 'ms', referenceMin: 30, referenceMax: 100, totalMeasurements: 10, trend: 'stable'),
-      const BiomarkerSummary(biomarkerType: 'focus', displayName: '집중력', latestValue: 88, unit: '점', referenceMin: 70, referenceMax: 100, totalMeasurements: 10, trend: 'rising'),
+      const BiomarkerSummary(
+          biomarkerType: 'stress',
+          displayName: '스트레스',
+          latestValue: 45,
+          unit: '점',
+          referenceMin: 0,
+          referenceMax: 60,
+          totalMeasurements: 10,
+          trend: 'stable'),
+      const BiomarkerSummary(
+          biomarkerType: 'energy',
+          displayName: '에너지',
+          latestValue: 85,
+          unit: '점',
+          referenceMin: 60,
+          referenceMax: 100,
+          totalMeasurements: 10,
+          trend: 'rising'),
+      const BiomarkerSummary(
+          biomarkerType: 'hydration',
+          displayName: '수분 균형',
+          latestValue: 72,
+          unit: '%',
+          referenceMin: 70,
+          referenceMax: 100,
+          totalMeasurements: 10,
+          trend: 'stable'),
+      const BiomarkerSummary(
+          biomarkerType: 'sleep',
+          displayName: '수면 질',
+          latestValue: 65,
+          unit: '점',
+          referenceMin: 60,
+          referenceMax: 90,
+          totalMeasurements: 10,
+          trend: 'falling'),
+      const BiomarkerSummary(
+          biomarkerType: 'hrv',
+          displayName: '심박 변이도',
+          latestValue: 42,
+          unit: 'ms',
+          referenceMin: 30,
+          referenceMax: 100,
+          totalMeasurements: 10,
+          trend: 'stable'),
+      const BiomarkerSummary(
+          biomarkerType: 'focus',
+          displayName: '집중력',
+          latestValue: 88,
+          unit: '점',
+          referenceMin: 70,
+          referenceMax: 100,
+          totalMeasurements: 10,
+          trend: 'rising'),
     ];
   }
 
@@ -610,7 +711,8 @@ final auditLogProvider = FutureProvider<Map<String, dynamic>>((ref) async {
 });
 
 /// 카트리지 종류 목록 (Encyclopedia)
-final cartridgeTypesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final cartridgeTypesProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   try {
     final resp = await ref.read(restClientProvider).listCartridgeTypes();
     final items = resp['types'] as List? ?? resp['items'] as List? ?? [];
@@ -622,9 +724,11 @@ final cartridgeTypesProvider = FutureProvider<List<Map<String, dynamic>>>((ref) 
 
 /// 챌린지 리더보드 (ChallengeScreen — C8)
 final challengeLeaderboardProvider =
-    FutureProvider.family<List<Map<String, dynamic>>, String>((ref, challengeId) async {
+    FutureProvider.family<List<Map<String, dynamic>>, String>(
+        (ref, challengeId) async {
   try {
-    final resp = await ref.read(restClientProvider).getChallengeLeaderboard(challengeId);
+    final resp =
+        await ref.read(restClientProvider).getChallengeLeaderboard(challengeId);
     final entries = resp['entries'] as List? ?? resp['items'] as List? ?? [];
     return entries.cast<Map<String, dynamic>>();
   } catch (_) {

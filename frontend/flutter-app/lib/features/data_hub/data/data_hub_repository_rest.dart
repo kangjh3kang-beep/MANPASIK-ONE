@@ -18,25 +18,25 @@ class DataHubRepositoryRest implements DataHubRepository {
     try {
       final res = await _client.getMeasurementHistory(userId, limit: 100);
       final measurements = res['measurements'] as List<dynamic>? ?? [];
-      return measurements
+      final points = measurements
           .map((m) {
             final map = m as Map<String, dynamic>;
-            final dt = map['measured_at'] != null
-                ? DateTime.tryParse(map['measured_at'] as String)
-                : null;
-            if (dt == null || dt.isBefore(from) || dt.isAfter(to)) return null;
-            final type = map['cartridge_type'] as String? ?? '';
-            if (biomarkerType.isNotEmpty && type != biomarkerType) return null;
-            return TrendDataPoint(
-              timestamp: dt,
-              value: (map['primary_value'] as num?)?.toDouble() ?? 0.0,
-              unit: map['unit'] as String? ?? '',
-              biomarkerType: type,
-              isWithinRange: map['is_within_range'] as bool? ?? true,
-            );
+            final point = _trendPointFromMeasurement(map);
+            if (point == null ||
+                point.timestamp.isBefore(from) ||
+                point.timestamp.isAfter(to)) {
+              return null;
+            }
+            if (biomarkerType.isNotEmpty &&
+                point.biomarkerType != biomarkerType) {
+              return null;
+            }
+            return point;
           })
           .whereType<TrendDataPoint>()
           .toList();
+      points.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      return points;
     } on DioException {
       return [];
     }
@@ -61,21 +61,26 @@ class DataHubRepositoryRest implements DataHubRepository {
           trend: 'insufficient',
         );
       }
-      final values = points.map((p) => p.value).toList();
-      values.sort();
-      final avg = values.reduce((a, b) => a + b) / values.length;
+      final orderedValues = points.map((p) => p.value).toList();
+      final sortedValues = [...orderedValues]..sort();
+      final latestPoint = points.last;
+      final avg =
+          orderedValues.reduce((a, b) => a + b) / orderedValues.length;
       return BiomarkerSummary(
         biomarkerType: biomarkerType,
         displayName: biomarkerType,
-        unit: points.first.unit,
-        latestValue: points.last.value,
+        unit: latestPoint.unit,
+        latestValue: latestPoint.value,
         averageValue: avg,
-        minValue: values.first,
-        maxValue: values.last,
+        minValue: sortedValues.first,
+        maxValue: sortedValues.last,
         referenceMin: 0,
         referenceMax: 200,
         totalMeasurements: points.length,
-        trend: _computeTrend(values),
+        trend: _computeTrend(orderedValues),
+        latestEvidenceStatus: latestPoint.evidenceStatus,
+        latestDiagnosticReady: latestPoint.diagnosticReady,
+        latestEvidenceGaps: latestPoint.evidenceGaps,
       );
     } on DioException {
       return BiomarkerSummary(
@@ -95,31 +100,40 @@ class DataHubRepositoryRest implements DataHubRepository {
     try {
       final res = await _client.getMeasurementHistory(userId, limit: 200);
       final measurements = res['measurements'] as List<dynamic>? ?? [];
-      final byType = <String, List<double>>{};
+      final pointsByType = <String, List<TrendDataPoint>>{};
       final unitByType = <String, String>{};
       for (final m in measurements) {
         final map = m as Map<String, dynamic>;
-        final type = map['cartridge_type'] as String? ?? '';
+        final point = _trendPointFromMeasurement(map);
+        if (point == null) continue;
+        final type = point.biomarkerType;
         if (type.isEmpty) continue;
-        byType.putIfAbsent(type, () => []);
-        byType[type]!.add((map['primary_value'] as num?)?.toDouble() ?? 0.0);
-        unitByType.putIfAbsent(type, () => map['unit'] as String? ?? '');
+        pointsByType.putIfAbsent(type, () => []).add(point);
+        unitByType.putIfAbsent(type, () => point.unit);
       }
-      return byType.entries.map((e) {
-        final values = e.value..sort();
-        final avg = values.reduce((a, b) => a + b) / values.length;
+      return pointsByType.entries.map((e) {
+        final points = e.value
+          ..sort((a, b) => a.timestamp.compareTo(b.timestamp));
+        final orderedValues = points.map((p) => p.value).toList();
+        final sortedValues = [...orderedValues]..sort();
+        final avg =
+            orderedValues.reduce((a, b) => a + b) / orderedValues.length;
+        final latestEvidence = points.last;
         return BiomarkerSummary(
           biomarkerType: e.key,
           displayName: e.key,
           unit: unitByType[e.key] ?? '',
-          latestValue: values.last,
+          latestValue: latestEvidence.value,
           averageValue: avg,
-          minValue: values.first,
-          maxValue: values.last,
+          minValue: sortedValues.first,
+          maxValue: sortedValues.last,
           referenceMin: 0,
           referenceMax: 200,
-          totalMeasurements: values.length,
-          trend: _computeTrend(values),
+          totalMeasurements: orderedValues.length,
+          trend: _computeTrend(orderedValues),
+          latestEvidenceStatus: latestEvidence.evidenceStatus,
+          latestDiagnosticReady: latestEvidence.diagnosticReady,
+          latestEvidenceGaps: latestEvidence.evidenceGaps,
         );
       }).toList();
     } on DioException {
@@ -136,10 +150,16 @@ class DataHubRepositoryRest implements DataHubRepository {
   }) async {
     try {
       final res = await _client.exportToFHIR(userId: userId);
+      final filePath = _stringField(
+        res,
+        'file_path',
+        'filePath',
+        fallback: _stringField(res, 'fhir_json', 'fhirJson'),
+      );
       return ExportResult(
-        filePath: res['file_path'] as String? ?? res['fhir_json'] as String? ?? '',
+        filePath: filePath,
         format: format,
-        recordCount: res['record_count'] as int? ?? 0,
+        recordCount: _intField(res, 'record_count', 'recordCount') ?? 0,
         exportedAt: DateTime.now(),
       );
     } on DioException {
@@ -156,21 +176,100 @@ class DataHubRepositoryRest implements DataHubRepository {
   Future<int> getTotalMeasurementCount() async {
     try {
       final res = await _client.getMeasurementHistory(userId, limit: 1);
-      return res['total_count'] as int? ?? 0;
+      return _intField(res, 'total_count', 'totalCount') ?? 0;
     } on DioException {
       return 0;
     }
   }
 
-  String _computeTrend(List<double> sortedValues) {
-    if (sortedValues.length < 3) return 'insufficient';
-    final halfIdx = sortedValues.length ~/ 2;
-    final firstHalf = sortedValues.sublist(0, halfIdx);
-    final secondHalf = sortedValues.sublist(halfIdx);
+  String _computeTrend(List<double> orderedValues) {
+    if (orderedValues.length < 3) return 'insufficient';
+    final halfIdx = orderedValues.length ~/ 2;
+    final firstHalf = orderedValues.sublist(0, halfIdx);
+    final secondHalf = orderedValues.sublist(halfIdx);
     final avgFirst = firstHalf.reduce((a, b) => a + b) / firstHalf.length;
     final avgSecond = secondHalf.reduce((a, b) => a + b) / secondHalf.length;
     final diff = avgSecond - avgFirst;
     if (diff.abs() < avgFirst * 0.05) return 'stable';
     return diff > 0 ? 'rising' : 'falling';
   }
+}
+
+TrendDataPoint? _trendPointFromMeasurement(Map<String, dynamic> map) {
+  final measuredAt = _stringField(map, 'measured_at', 'measuredAt');
+  final timestamp =
+      measuredAt.isNotEmpty ? DateTime.tryParse(measuredAt) : null;
+  if (timestamp == null) {
+    return null;
+  }
+  return TrendDataPoint(
+    timestamp: timestamp,
+    value: _numberField(map, 'primary_value', 'primaryValue') ?? 0.0,
+    unit: _stringField(map, 'unit', 'unit'),
+    biomarkerType: _stringField(map, 'cartridge_type', 'cartridgeType'),
+    isWithinRange: _boolField(
+      map,
+      'is_within_range',
+      'isWithinRange',
+      fallback: true,
+    ),
+    evidenceStatus: _stringField(
+      map,
+      'evidence_status',
+      'evidenceStatus',
+      fallback: 'unknown',
+    ),
+    diagnosticReady: _boolField(map, 'diagnostic_ready', 'diagnosticReady'),
+    evidenceGaps: _stringListField(map, 'evidence_gaps', 'evidenceGaps'),
+  );
+}
+
+String _stringField(
+  Map<String, dynamic> map,
+  String snakeKey,
+  String camelKey, {
+  String fallback = '',
+}) {
+  final value = map[snakeKey] ?? map[camelKey];
+  return value is String ? value : fallback;
+}
+
+double? _numberField(
+  Map<String, dynamic> map,
+  String snakeKey,
+  String camelKey,
+) {
+  final value = map[snakeKey] ?? map[camelKey];
+  return value is num ? value.toDouble() : null;
+}
+
+int? _intField(
+  Map<String, dynamic> map,
+  String snakeKey,
+  String camelKey,
+) {
+  final value = map[snakeKey] ?? map[camelKey];
+  return value is num ? value.toInt() : null;
+}
+
+bool _boolField(
+  Map<String, dynamic> map,
+  String snakeKey,
+  String camelKey, {
+  bool fallback = false,
+}) {
+  final value = map[snakeKey] ?? map[camelKey];
+  return value is bool ? value : fallback;
+}
+
+List<String> _stringListField(
+  Map<String, dynamic> map,
+  String snakeKey,
+  String camelKey,
+) {
+  final value = map[snakeKey] ?? map[camelKey];
+  if (value is! List) {
+    return const [];
+  }
+  return List.unmodifiable(value.whereType<String>());
 }

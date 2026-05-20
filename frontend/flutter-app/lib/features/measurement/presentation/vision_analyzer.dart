@@ -8,7 +8,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+
+// ───────────────────────────────────────────────────
+// VisionAnalyzerScreen — Sanggam Orbit 카트리지 비전 분석
+//
+// [Rule 4] app_theme → sanggam_theme
+// [Rule 4] AppTheme.sanggamGold ~8x → SanggamTheme.primary
+// [Rule 4] AppTheme.waveCyan 3x → SanggamTheme.jagaeCyan
+// [Rule 4] Colors.greenAccent 4x → SanggamTheme.jagaeCyan
+// [Rule 4] Colors.redAccent 2x → SanggamTheme.error
+// [Rule 4] Colors.orange 4x → SanggamTheme.primary
+// [Rule 4] Colors.grey → SanggamTheme.onSurfaceDim
+// [Rule 4] Card → 다크 테마 Container
+// [Rule 4] Theme.of(context) → SanggamTheme 상수
+// [Rule 4] theme.textTheme → 직접 TextStyle
+// [Rule 4] theme.scaffoldBackgroundColor → SanggamTheme.background
+// [Rule 4] withOpacity → withValues(alpha:)
+// ───────────────────────────────────────────────────
 
 // ─────────────────────────────────────────────
 // 1. 데이터 모델
@@ -52,7 +69,7 @@ class VisionAnalysisResult {
   /// 감지된 색상을 Color로 변환
   Color get dominantColor => dominantRgb.length >= 3
       ? Color.fromRGBO(dominantRgb[0], dominantRgb[1], dominantRgb[2], 1.0)
-      : Colors.grey;
+      : SanggamTheme.onSurfaceDim;
 }
 
 /// 비전 분석기 상태
@@ -220,7 +237,7 @@ class VisionRustBridge {
     final avgB = bSum ~/ count;
 
     // 간단한 색상 기반 카트리지 반응 판별 (Rust 로직과 동일)
-    bool detected = avgR > 30 || avgG > 30 || avgB > 30;
+    final detected = avgR > 30 || avgG > 30 || avgB > 30;
     String biomarker = '';
     double value = 0.0;
     double confidence = 0.0;
@@ -231,15 +248,15 @@ class VisionRustBridge {
         value = 4.0 + (avgR - 150) / 105.0 * 3.0;
         confidence = 0.85;
       } else if (avgR < 100 && avgG > 150 && avgB < 100) {
-        biomarker = 'Glucose';
+        biomarker = '포도당';
         value = 70.0 + (avgG - 150) / 105.0 * 130.0;
         confidence = 0.82;
       } else if (avgR < 100 && avgG < 100 && avgB > 150) {
-        biomarker = 'Protein';
+        biomarker = '단백질';
         value = (avgB - 150) / 105.0 * 30.0;
         confidence = 0.78;
       } else {
-        biomarker = 'General';
+        biomarker = '일반';
         value = (avgR + avgG + avgB) / (3.0 * 255.0) * 100.0;
         confidence = 0.6;
       }
@@ -522,13 +539,19 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
   Widget build(BuildContext context) {
     final state = ref.watch(visionAnalyzerProvider);
     final notifier = ref.read(visionAnalyzerProvider.notifier);
-    final theme = Theme.of(context);
 
     return Scaffold(
+      backgroundColor: SanggamTheme.background,
       appBar: AppBar(
-        title: const Text('카트리지 비전 분석'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text('카트리지 비전 분석', style: TextStyle(
+          color: SanggamTheme.primary,
+          fontWeight: FontWeight.bold,
+        )),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          tooltip: '뒤로 가기',
           onPressed: () {
             notifier.stopCamera();
             context.pop();
@@ -541,16 +564,17 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
               child: Center(
                 child: Text(
                   '${state.fps.toStringAsFixed(1)} fps',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: AppTheme.waveCyan,
+                  style: const TextStyle(
+                    color: SanggamTheme.jagaeCyan,
                     fontWeight: FontWeight.bold,
+                    fontSize: 12,
                   ),
                 ),
               ),
             ),
         ],
       ),
-      body: _buildBody(context, state, notifier, theme),
+      body: _buildBody(context, state, notifier),
     );
   }
 
@@ -558,33 +582,32 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
     BuildContext context,
     VisionAnalyzerState state,
     VisionAnalyzerNotifier notifier,
-    ThemeData theme,
   ) {
     switch (state.status) {
       case VisionAnalyzerStatus.idle:
       case VisionAnalyzerStatus.requestingPermission:
       case VisionAnalyzerStatus.initializing:
-        return _buildLoadingView(theme, state.status);
+        return _buildLoadingView(state.status);
 
       case VisionAnalyzerStatus.permissionDenied:
-        return _buildPermissionDeniedView(theme, notifier, isPermanent: false);
+        return _buildPermissionDeniedView(notifier, isPermanent: false);
 
       case VisionAnalyzerStatus.permissionPermanentlyDenied:
-        return _buildPermissionDeniedView(theme, notifier, isPermanent: true);
+        return _buildPermissionDeniedView(notifier, isPermanent: true);
 
       case VisionAnalyzerStatus.streaming:
-        return _buildStreamingView(state, notifier, theme);
+        return _buildStreamingView(state, notifier);
 
       case VisionAnalyzerStatus.completed:
-        return _buildCompletedView(state, theme);
+        return _buildCompletedView(state);
 
       case VisionAnalyzerStatus.error:
-        return _buildErrorView(state, notifier, theme);
+        return _buildErrorView(state, notifier);
     }
   }
 
   /// 로딩 뷰 (초기화 / 권한 요청 중)
-  Widget _buildLoadingView(ThemeData theme, VisionAnalyzerStatus status) {
+  Widget _buildLoadingView(VisionAnalyzerStatus status) {
     final message = switch (status) {
       VisionAnalyzerStatus.requestingPermission => '카메라 권한을 요청하는 중...',
       VisionAnalyzerStatus.initializing => '카메라를 초기화하는 중...',
@@ -595,9 +618,12 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircularProgressIndicator(color: AppTheme.sanggamGold),
+          const CircularProgressIndicator(color: SanggamTheme.primary),
           const SizedBox(height: 24),
-          Text(message, style: theme.textTheme.bodyLarge),
+          Text(message, style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+          )),
         ],
       ),
     );
@@ -605,7 +631,6 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
 
   /// 카메라 권한 거부 뷰
   Widget _buildPermissionDeniedView(
-    ThemeData theme,
     VisionAnalyzerNotifier notifier, {
     required bool isPermanent,
   }) {
@@ -618,12 +643,14 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
             Icon(
               Icons.camera_alt_outlined,
               size: 72,
-              color: Colors.grey.withValues(alpha: 0.5),
+              color: SanggamTheme.onSurfaceDim.withValues(alpha: 0.5),
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               '카메라 권한 필요',
-              style: theme.textTheme.titleLarge?.copyWith(
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -633,8 +660,9 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
                   ? '카메라 권한이 영구적으로 거부되었습니다.\n설정에서 직접 권한을 허용해주세요.'
                   : '카트리지 분석을 위해 카메라 접근 권한이 필요합니다.\n권한을 허용해주세요.',
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.textTheme.bodySmall?.color,
+              style: const TextStyle(
+                color: SanggamTheme.onSurfaceDim,
+                fontSize: 14,
               ),
             ),
             const SizedBox(height: 32),
@@ -644,7 +672,7 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
                 icon: const Icon(Icons.settings),
                 label: const Text('설정 열기'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.sanggamGold,
+                  backgroundColor: SanggamTheme.primary,
                   minimumSize: const Size(200, 48),
                 ),
               )
@@ -654,7 +682,7 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
                 icon: const Icon(Icons.camera_alt),
                 label: const Text('권한 다시 요청'),
                 style: FilledButton.styleFrom(
-                  backgroundColor: AppTheme.sanggamGold,
+                  backgroundColor: SanggamTheme.primary,
                   minimumSize: const Size(200, 48),
                 ),
               ),
@@ -673,11 +701,10 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
   Widget _buildStreamingView(
     VisionAnalyzerState state,
     VisionAnalyzerNotifier notifier,
-    ThemeData theme,
   ) {
     final controller = notifier.cameraController;
     if (controller == null || !controller.value.isInitialized) {
-      return _buildLoadingView(theme, VisionAnalyzerStatus.initializing);
+      return _buildLoadingView(VisionAnalyzerStatus.initializing);
     }
 
     return Stack(
@@ -701,7 +728,7 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
           top: 16,
           left: 16,
           right: 16,
-          child: _buildStatusBar(state, theme),
+          child: _buildStatusBar(state),
         ),
 
         // 하단 분석 결과 카드
@@ -710,14 +737,14 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
             bottom: 0,
             left: 0,
             right: 0,
-            child: _buildResultCard(state.latestResult!, notifier, theme),
+            child: _buildResultCard(state.latestResult!, notifier),
           ),
       ],
     );
   }
 
   /// 상단 상태 바
-  Widget _buildStatusBar(VisionAnalyzerState state, ThemeData theme) {
+  Widget _buildStatusBar(VisionAnalyzerState state) {
     final result = state.latestResult;
     final detected = result?.detected ?? false;
 
@@ -731,7 +758,7 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
         children: [
           Icon(
             detected ? Icons.check_circle : Icons.search,
-            color: detected ? Colors.greenAccent : AppTheme.sanggamGold,
+            color: detected ? SanggamTheme.jagaeCyan : SanggamTheme.primary,
             size: 20,
           ),
           const SizedBox(width: 8),
@@ -740,16 +767,17 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
               detected
                   ? '카트리지 감지됨 — ${result!.biomarker}'
                   : '카트리지를 카메라에 비춰주세요...',
-              style: theme.textTheme.bodySmall?.copyWith(
+              style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w500,
+                fontSize: 14,
               ),
             ),
           ),
           Text(
             '프레임: ${state.framesProcessed}',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.white70,
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.7),
               fontSize: 11,
             ),
           ),
@@ -762,12 +790,11 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
   Widget _buildResultCard(
     VisionAnalysisResult result,
     VisionAnalyzerNotifier notifier,
-    ThemeData theme,
   ) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: theme.scaffoldBackgroundColor.withValues(alpha: 0.95),
+        color: SanggamTheme.background.withValues(alpha: 0.95),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
@@ -806,15 +833,18 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
                                 ? '분석 중...'
                                 : result.biomarker
                             : '미감지',
-                        style: theme.textTheme.titleMedium?.copyWith(
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       if (result.detected)
                         Text(
                           '값: ${result.value.toStringAsFixed(2)}  |  신뢰도: ${result.confidencePercent}',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: AppTheme.waveCyan,
+                          style: const TextStyle(
+                            color: SanggamTheme.jagaeCyan,
+                            fontSize: 13,
                           ),
                         ),
                     ],
@@ -831,19 +861,20 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
                         CircularProgressIndicator(
                           value: result.confidence,
                           strokeWidth: 4,
-                          backgroundColor: Colors.grey.withValues(alpha: 0.2),
+                          backgroundColor: SanggamTheme.onSurfaceDim.withValues(alpha: 0.2),
                           valueColor: AlwaysStoppedAnimation<Color>(
                             result.confidence > 0.7
-                                ? Colors.greenAccent
+                                ? SanggamTheme.jagaeCyan
                                 : result.confidence > 0.4
-                                    ? AppTheme.sanggamGold
-                                    : Colors.redAccent,
+                                    ? SanggamTheme.primary
+                                    : SanggamTheme.error,
                           ),
                         ),
                         Center(
                           child: Text(
                             '${(result.confidence * 100).toInt()}',
-                            style: theme.textTheme.bodySmall?.copyWith(
+                            style: const TextStyle(
+                              color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -861,21 +892,22 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.orange.withValues(alpha: 0.15),
+                  color: SanggamTheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: Colors.orange.withValues(alpha: 0.3),
+                    color: SanggamTheme.primary.withValues(alpha: 0.3),
                   ),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.warning_amber, color: Colors.orange, size: 18),
+                    const Icon(Icons.warning_amber, color: SanggamTheme.primary, size: 18),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         result.warning,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: Colors.orange,
+                        style: const TextStyle(
+                          color: SanggamTheme.primary,
+                          fontSize: 12,
                         ),
                       ),
                     ),
@@ -894,7 +926,7 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
                   icon: const Icon(Icons.check),
                   label: const Text('분석 결과 확정'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.sanggamGold,
+                    backgroundColor: SanggamTheme.primary,
                     minimumSize: const Size.fromHeight(48),
                   ),
                 ),
@@ -907,7 +939,7 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
   }
 
   /// 완료 뷰
-  Widget _buildCompletedView(VisionAnalyzerState state, ThemeData theme) {
+  Widget _buildCompletedView(VisionAnalyzerState state) {
     final result = state.latestResult!;
 
     return Center(
@@ -919,30 +951,35 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
             Icon(
               Icons.check_circle_outline,
               size: 80,
-              color: Colors.greenAccent.withValues(alpha: 0.8),
+              color: SanggamTheme.jagaeCyan.withValues(alpha: 0.8),
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               '분석 완료',
-              style: theme.textTheme.headlineSmall?.copyWith(
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 16),
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    _buildResultRow(theme, '바이오마커', result.biomarker),
-                    const Divider(height: 20),
-                    _buildResultRow(theme, '측정값', result.value.toStringAsFixed(2)),
-                    const Divider(height: 20),
-                    _buildResultRow(theme, '신뢰도', result.confidencePercent),
-                    const Divider(height: 20),
-                    _buildResultRow(theme, '처리 프레임', '${state.framesProcessed}'),
-                  ],
-                ),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: SanggamTheme.surfaceVariant),
+              ),
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  _buildResultRow('바이오마커', result.biomarker),
+                  Divider(height: 20, color: SanggamTheme.surfaceVariant.withValues(alpha: 0.5)),
+                  _buildResultRow('측정값', result.value.toStringAsFixed(2)),
+                  Divider(height: 20, color: SanggamTheme.surfaceVariant.withValues(alpha: 0.5)),
+                  _buildResultRow('신뢰도', result.confidencePercent),
+                  Divider(height: 20, color: SanggamTheme.surfaceVariant.withValues(alpha: 0.5)),
+                  _buildResultRow('처리 프레임', '${state.framesProcessed}'),
+                ],
               ),
             ),
             const SizedBox(height: 24),
@@ -962,7 +999,7 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
                   icon: const Icon(Icons.done),
                   label: const Text('완료'),
                   style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.sanggamGold,
+                    backgroundColor: SanggamTheme.primary,
                   ),
                 ),
               ],
@@ -973,15 +1010,18 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
     );
   }
 
-  Widget _buildResultRow(ThemeData theme, String label, String value) {
+  Widget _buildResultRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: theme.textTheme.bodyMedium?.copyWith(
-          color: theme.textTheme.bodySmall?.color,
+        Text(label, style: const TextStyle(
+          color: SanggamTheme.onSurfaceDim,
+          fontSize: 14,
         )),
-        Text(value, style: theme.textTheme.bodyMedium?.copyWith(
+        Text(value, style: const TextStyle(
+          color: Colors.white,
           fontWeight: FontWeight.bold,
+          fontSize: 14,
         )),
       ],
     );
@@ -991,7 +1031,6 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
   Widget _buildErrorView(
     VisionAnalyzerState state,
     VisionAnalyzerNotifier notifier,
-    ThemeData theme,
   ) {
     return Center(
       child: Padding(
@@ -999,11 +1038,13 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
+            const Icon(Icons.error_outline, size: 64, color: SanggamTheme.error),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               '오류 발생',
-              style: theme.textTheme.titleLarge?.copyWith(
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1011,7 +1052,10 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
             Text(
               state.errorMessage ?? '알 수 없는 오류가 발생했습니다.',
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
+              style: const TextStyle(
+                color: SanggamTheme.onSurfaceDim,
+                fontSize: 14,
+              ),
             ),
             const SizedBox(height: 24),
             FilledButton.icon(
@@ -1019,7 +1063,7 @@ class _VisionAnalyzerScreenState extends ConsumerState<VisionAnalyzerScreen>
               icon: const Icon(Icons.refresh),
               label: const Text('다시 시도'),
               style: FilledButton.styleFrom(
-                backgroundColor: AppTheme.sanggamGold,
+                backgroundColor: SanggamTheme.primary,
               ),
             ),
           ],
@@ -1067,7 +1111,7 @@ class _RoiGuidePainter extends CustomPainter {
 
     // ROI 테두리
     final borderPaint = Paint()
-      ..color = detected ? Colors.greenAccent : AppTheme.sanggamGold
+      ..color = detected ? SanggamTheme.jagaeCyan : SanggamTheme.primary
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.5;
 
@@ -1078,7 +1122,7 @@ class _RoiGuidePainter extends CustomPainter {
 
     // 코너 액센트 (L자 형태)
     final cornerPaint = Paint()
-      ..color = detected ? Colors.greenAccent : AppTheme.sanggamGold
+      ..color = detected ? SanggamTheme.jagaeCyan : SanggamTheme.primary
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4
       ..strokeCap = StrokeCap.round;

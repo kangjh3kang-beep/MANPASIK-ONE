@@ -1,0 +1,15 @@
+{
+  "welcome": "Welcome to MPS Manpasik Multi-Measurement Universal POCT Platform.",
+  "disclaimer": "This information is intended as a supplementary medical advisory and does not replace medical diagnosis.",
+  "emergency": "Based on the consultation, immediate care may be required. Please consult a physician.",
+  "stages": {
+    "measure": "[1 Measure] Measuring in progress...",
+    "diagnose": "[2 Diagnose] Analyzing...",
+    "predict": "[3 Predict] Predictive model running...",
+    "prescribe": "[4 Prescribe] Specialist Agent recommends:",
+    "execute": "[5 Execute] Execute prescription",
+    "verify": "[6 Verify] Differential check complete",
+    "reward": "[7 Reward] Rewards issued",
+    "remeasure": "[8 Remeasure] Scheduling next measurement..."
+  }
+}

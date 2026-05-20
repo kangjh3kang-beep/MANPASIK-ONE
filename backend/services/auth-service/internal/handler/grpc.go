@@ -59,6 +59,7 @@ func (h *AuthHandler) Login(ctx context.Context, req *v1.LoginRequest) (*v1.Logi
 		RefreshToken: tokens.RefreshToken,
 		ExpiresIn:    tokens.ExpiresIn,
 		TokenType:    tokens.TokenType,
+		UserId:       tokens.UserID,
 	}, nil
 }
 
@@ -78,6 +79,7 @@ func (h *AuthHandler) RefreshToken(ctx context.Context, req *v1.RefreshTokenRequ
 		RefreshToken: tokens.RefreshToken,
 		ExpiresIn:    tokens.ExpiresIn,
 		TokenType:    tokens.TokenType,
+		UserId:       tokens.UserID,
 	}, nil
 }
 
@@ -113,12 +115,13 @@ func (h *AuthHandler) ValidateToken(ctx context.Context, req *v1.ValidateTokenRe
 }
 
 // SocialLogin은 소셜 로그인 RPC입니다.
+// OAuth Verifier가 등록된 제공자는 ProviderLogin으로 처리합니다.
 func (h *AuthHandler) SocialLogin(ctx context.Context, req *v1.SocialLoginRequest) (*v1.LoginResponse, error) {
-	if req == nil || req.IdToken == "" {
-		return nil, status.Error(codes.InvalidArgument, "id_token은 필수입니다")
+	if req == nil || (req.IdToken == "" && req.AccessToken == "") {
+		return nil, status.Error(codes.InvalidArgument, "id_token 또는 access_token은 필수입니다")
 	}
 
-	tokens, err := h.auth.SocialLogin(ctx, req.Provider.String(), req.IdToken, req.AccessToken)
+	tokens, _, err := h.auth.ProviderLogin(ctx, req.Provider.String(), req.IdToken, req.AccessToken)
 	if err != nil {
 		return nil, toGRPC(err)
 	}
@@ -128,6 +131,7 @@ func (h *AuthHandler) SocialLogin(ctx context.Context, req *v1.SocialLoginReques
 		RefreshToken: tokens.RefreshToken,
 		ExpiresIn:    tokens.ExpiresIn,
 		TokenType:    tokens.TokenType,
+		UserId:       tokens.UserID,
 	}, nil
 }
 

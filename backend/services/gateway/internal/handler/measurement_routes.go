@@ -1,15 +1,24 @@
 package handler
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
 	v1 "github.com/manpasik/backend/shared/gen/go/v1"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 // registerMeasurementRoutes는 측정/디바이스/카트리지/캘리브레이션 관련 REST 엔드포인트를 등록합니다.
 func (h *RestHandler) registerMeasurementRoutes(mux *http.ServeMux) {
 	// Measurement
 	mux.HandleFunc("POST /api/v1/measurements/sessions", h.handleStartSession)
+	mux.HandleFunc("POST /api/v1/measurements/process", h.handleProcessMeasurement)
+	mux.HandleFunc("POST /api/v1/measurements/trace-events", h.handleRecordMeasurementTraceEvent)
 	mux.HandleFunc("POST /api/v1/measurements/sessions/{sessionId}/end", h.handleEndSession)
 	mux.HandleFunc("GET /api/v1/measurements/history", h.handleGetMeasurementHistory)
 
@@ -51,6 +60,10 @@ func (h *RestHandler) registerMeasurementRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/measurements/{sessionId}/export", h.handleExportSingleMeasurement)
 	mux.HandleFunc("POST /api/v1/measurements/export/fhir", h.handleExportToFHIRObservations)
 
+	// Digital Twin (Phase 5)
+	mux.HandleFunc("POST /api/v1/measurements/digital-twin/sync", h.handleSyncDigitalTwin)
+	mux.HandleFunc("GET /api/v1/measurements/calibration-status", h.handleGetCalibrationStatusMeasurement)
+
 	// Device – OTA & status
 	mux.HandleFunc("POST /api/v1/devices/{deviceId}/ota", h.handleRequestOtaUpdate)
 	mux.HandleFunc("PUT /api/v1/devices/{deviceId}/status", h.handleUpdateDeviceStatus)
@@ -86,6 +99,182 @@ func (h *RestHandler) handleStartSession(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	writeProtoJSON(w, http.StatusCreated, resp)
+}
+
+func (h *RestHandler) handleProcessMeasurement(w http.ResponseWriter, r *http.Request) {
+	if h.measurement == nil {
+		writeError(w, http.StatusServiceUnavailable, "measurement service unavailable")
+		return
+	}
+	var body struct {
+		SessionID    string    `json:"session_id"`
+		RawChannels  []float64 `json:"raw_channels"`
+		Differential struct {
+			SDet       float64 `json:"s_det"`
+			SRef       float64 `json:"s_ref"`
+			Alpha      float64 `json:"alpha"`
+			SCorrected float64 `json:"s_corrected"`
+		} `json:"differential"`
+		EnvMeta struct {
+			TempC       float32 `json:"temp_c"`
+			HumidityPct float32 `json:"humidity_pct"`
+			PressureKpa float32 `json:"pressure_kpa"`
+		} `json:"env_meta"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	stream, err := h.measurement.StreamMeasurement(r.Context())
+	if err != nil {
+		writeError(w, http.StatusServiceUnavailable, err.Error())
+		return
+	}
+	if err := stream.Send(&v1.MeasurementData{
+		SessionId:   body.SessionID,
+		RawChannels: body.RawChannels,
+		Differential: &v1.DifferentialCorrection{
+			SDet:       body.Differential.SDet,
+			SRef:       body.Differential.SRef,
+			Alpha:      body.Differential.Alpha,
+			SCorrected: body.Differential.SCorrected,
+		},
+		EnvMeta: &v1.EnvironmentMeta{
+			TempC:       body.EnvMeta.TempC,
+			HumidityPct: body.EnvMeta.HumidityPct,
+			PressureKpa: body.EnvMeta.PressureKpa,
+		},
+		Timestamp: timestamppb.Now(),
+	}); err != nil {
+		writeError(w, http.StatusBadGateway, err.Error())
+		return
+	}
+	if err := stream.CloseSend(); err != nil {
+		writeError(w, http.StatusBadGateway, err.Error())
+		return
+	}
+	resp, err := stream.Recv()
+	if err != nil && err != io.EOF {
+		writeError(w, http.StatusBadGateway, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (h *RestHandler) handleRecordMeasurementTraceEvent(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		SchemaVersion     string           `json:"schema_version"`
+		Source            string           `json:"source"`
+		Route             string           `json:"route"`
+		Phase             string           `json:"phase"`
+		ElapsedMS         int64            `json:"elapsed_ms"`
+		OccurredAt        string           `json:"occurred_at"`
+		SessionID         string           `json:"session_id"`
+		CartridgeID       string           `json:"cartridge_id"`
+		EngineMode        string           `json:"engine_mode"`
+		Unit              string           `json:"unit"`
+		Confidence        float64          `json:"confidence"`
+		HasPrimaryValue   bool             `json:"has_primary_value"`
+		FailureReason     string           `json:"failure_reason"`
+		DiagnosticMessage string           `json:"diagnostic_message"`
+		PrimaryValue      *json.RawMessage `json:"primary_value"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	if body.PrimaryValue != nil {
+		writeError(w, http.StatusBadRequest, "primary_value must be redacted from remote trace events")
+		return
+	}
+	if body.Phase == "" {
+		writeError(w, http.StatusBadRequest, "phase is required")
+		return
+	}
+	if body.ElapsedMS < 0 {
+		writeError(w, http.StatusBadRequest, "elapsed_ms must be non-negative")
+		return
+	}
+	if body.OccurredAt == "" {
+		body.OccurredAt = time.Now().UTC().Format(time.RFC3339Nano)
+	}
+	if body.SchemaVersion == "" {
+		body.SchemaVersion = "measure_trace.v1"
+	}
+	if body.Source == "" {
+		body.Source = "unknown"
+	}
+
+	eventID := fmt.Sprintf("measure-trace-%d", time.Now().UTC().UnixNano())
+	auditStatus := "audit_intake_unavailable"
+	auditEntryID := ""
+	if h.auditRecorder != nil {
+		result, err := h.auditRecorder.RecordAuditEvent(r.Context(), auditRecordEvent{
+			AdminID:      "system:gateway",
+			Action:       "measure.trace." + body.Phase,
+			ResourceType: "measurement_trace",
+			ResourceID:   defaultString(body.SessionID, eventID),
+			Description:  "Measure golden path trace phase " + body.Phase,
+			IPAddress:    requestIP(r),
+			UserAgent:    r.UserAgent(),
+			OccurredAt:   body.OccurredAt,
+			Metadata: map[string]string{
+				"schema_version":     body.SchemaVersion,
+				"source":             body.Source,
+				"route":              body.Route,
+				"phase":              body.Phase,
+				"elapsed_ms":         strconv.FormatInt(body.ElapsedMS, 10),
+				"event_id":           eventID,
+				"session_id":         body.SessionID,
+				"cartridge_id":       body.CartridgeID,
+				"engine_mode":        body.EngineMode,
+				"unit":               body.Unit,
+				"confidence":         strconv.FormatFloat(body.Confidence, 'f', -1, 64),
+				"has_primary_value":  strconv.FormatBool(body.HasPrimaryValue),
+				"failure_reason":     body.FailureReason,
+				"diagnostic_message": body.DiagnosticMessage,
+				"occurred_at":        body.OccurredAt,
+			},
+		})
+		if err != nil {
+			auditStatus = "audit_persist_failed"
+		} else {
+			auditStatus = defaultString(result.Status, "persisted")
+			auditEntryID = result.EntryID
+		}
+	} else if h.audit != nil {
+		auditStatus = "audit_write_intake_unconfigured"
+	}
+
+	writeJSON(w, http.StatusAccepted, map[string]interface{}{
+		"accepted":       true,
+		"event_id":       eventID,
+		"sink":           "gateway.measurement_trace",
+		"audit_status":   auditStatus,
+		"audit_entry_id": auditEntryID,
+		"schema_version": body.SchemaVersion,
+		"source":         body.Source,
+		"phase":          body.Phase,
+		"session_id":     body.SessionID,
+		"occurred_at":    body.OccurredAt,
+	})
+}
+
+func requestIP(r *http.Request) string {
+	if forwarded := r.Header.Get("X-Forwarded-For"); forwarded != "" {
+		return strings.TrimSpace(strings.Split(forwarded, ",")[0])
+	}
+	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
+		return strings.TrimSpace(realIP)
+	}
+	return r.RemoteAddr
+}
+
+func defaultString(value, fallback string) string {
+	if value != "" {
+		return value
+	}
+	return fallback
 }
 
 func (h *RestHandler) handleEndSession(w http.ResponseWriter, r *http.Request) {
@@ -285,16 +474,16 @@ func (h *RestHandler) handleRegisterFactoryCalibration(w http.ResponseWriter, r 
 		return
 	}
 	var body struct {
-		DeviceID              string    `json:"device_id"`
-		CartridgeCategory     int32     `json:"cartridge_category"`
-		CartridgeTypeIndex    int32     `json:"cartridge_type_index"`
-		Alpha                 float64   `json:"alpha"`
-		ChannelOffsets        []float64 `json:"channel_offsets"`
-		ChannelGains          []float64 `json:"channel_gains"`
-		TempCoefficient       float64   `json:"temp_coefficient"`
-		HumidityCoefficient   float64   `json:"humidity_coefficient"`
-		ReferenceStandard     string    `json:"reference_standard"`
-		CalibratedBy          string    `json:"calibrated_by"`
+		DeviceID            string    `json:"device_id"`
+		CartridgeCategory   int32     `json:"cartridge_category"`
+		CartridgeTypeIndex  int32     `json:"cartridge_type_index"`
+		Alpha               float64   `json:"alpha"`
+		ChannelOffsets      []float64 `json:"channel_offsets"`
+		ChannelGains        []float64 `json:"channel_gains"`
+		TempCoefficient     float64   `json:"temp_coefficient"`
+		HumidityCoefficient float64   `json:"humidity_coefficient"`
+		ReferenceStandard   string    `json:"reference_standard"`
+		CalibratedBy        string    `json:"calibrated_by"`
 	}
 	if err := readJSON(r, &body); err != nil {
 		writeError(w, http.StatusBadRequest, "invalid request body")
@@ -715,6 +904,78 @@ func (h *RestHandler) handleExportToFHIRObservations(w http.ResponseWriter, r *h
 	})
 	if err != nil {
 		writeError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+// ── Digital Twin (Phase 5) ──
+
+func (h *RestHandler) handleSyncDigitalTwin(w http.ResponseWriter, r *http.Request) {
+	// H6 실패격리: digital-twin-service 우선, 없으면 measurement-service fallback
+	client := h.digitalTwin
+	if client == nil {
+		client = h.measurement
+	}
+	if client == nil {
+		writeError(w, http.StatusServiceUnavailable, "measurement service unavailable")
+		return
+	}
+	var body struct {
+		SessionID             string    `json:"session_id"`
+		UserID                string    `json:"user_id"`
+		DeviceID              string    `json:"device_id"`
+		Residuals             []float64 `json:"residuals"`
+		EWMAValue             float64   `json:"ewma_value"`
+		CUSUMPos              float64   `json:"cusum_pos"`
+		CUSUMNeg              float64   `json:"cusum_neg"`
+		HealthState           string    `json:"health_state"`
+		DriftScore            float64   `json:"drift_score"`
+		RemainingMeasurements int32     `json:"remaining_measurements"`
+		FingerprintVector     []float32 `json:"fingerprint_vector"`
+		FingerprintDim        int32     `json:"fingerprint_dim"`
+	}
+	if err := readJSON(r, &body); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+	resp, err := client.SyncDigitalTwin(r.Context(), &v1.SyncDigitalTwinRequest{
+		SessionId:             body.SessionID,
+		UserId:                body.UserID,
+		DeviceId:              body.DeviceID,
+		Residuals:             body.Residuals,
+		EwmaValue:             body.EWMAValue,
+		CusumPos:              body.CUSUMPos,
+		CusumNeg:              body.CUSUMNeg,
+		HealthState:           body.HealthState,
+		DriftScore:            body.DriftScore,
+		RemainingMeasurements: body.RemainingMeasurements,
+		FingerprintVector:     body.FingerprintVector,
+		FingerprintDim:        body.FingerprintDim,
+	})
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	writeProtoJSON(w, http.StatusOK, resp)
+}
+
+func (h *RestHandler) handleGetCalibrationStatusMeasurement(w http.ResponseWriter, r *http.Request) {
+	// H6 실패격리: digital-twin-service 우선, 없으면 measurement-service fallback
+	client := h.digitalTwin
+	if client == nil {
+		client = h.measurement
+	}
+	if client == nil {
+		writeError(w, http.StatusServiceUnavailable, "measurement service unavailable")
+		return
+	}
+	resp, err := client.GetCalibrationStatus(r.Context(), &v1.GetCalibrationStatusRequest{
+		SessionId: r.URL.Query().Get("session_id"),
+		DeviceId:  r.URL.Query().Get("device_id"),
+	})
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 	writeProtoJSON(w, http.StatusOK, resp)

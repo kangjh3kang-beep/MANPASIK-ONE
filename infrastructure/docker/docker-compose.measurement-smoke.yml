@@ -1,0 +1,29 @@
+# ManPaSik measurement-service container smoke.
+#
+# This compose file is intentionally narrow: it validates the container image,
+# runtime env, HTTP health, gRPC health, and MeasurementService lifecycle without
+# starting the full development dependency stack.
+
+services:
+  measurement-service:
+    build:
+      context: ../../backend
+      dockerfile: services/measurement-service/Dockerfile
+    image: manpasik/measurement-service:smoke
+    environment:
+      VERSION: compose-smoke
+      GRPC_PORT: ":50054"
+      HTTP_PORT: ":8080"
+      SHUTDOWN_TIMEOUT_SECONDS: "1"
+      TENANCY_ENFORCED: "false"
+      LOG_LEVEL: debug
+    ports:
+      - "127.0.0.1:${MANPASIK_MEASUREMENT_SMOKE_GRPC_PORT:-50054}:50054"
+      - "127.0.0.1:${MANPASIK_MEASUREMENT_SMOKE_HTTP_PORT:-18080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health | grep -q 'healthy'"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+

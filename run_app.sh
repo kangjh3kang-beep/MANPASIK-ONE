@@ -1,20 +1,20 @@
-
 #!/bin/bash
-# ManPaSik Flutter 앱 실행 스크립트
+# ManPaSik Flutter app launche
+set -euo pipefail
 
-echo "🚀 만파식(ManPaSik) Flutter 앱을 시작합니다..."
+echo "[ManPaSik] Starting Flutter app..."
 
-# 절대 경로 사용으로 더 안정적으로 이동
+# Use absolute paths for stable execution.
 PROJECT_ROOT="$HOME/Manpasik"
 FLUTTER_APP_DIR="$PROJECT_ROOT/frontend/flutter-app"
 
-# Flutter SDK 경로 설정 (WSL Native 설치 기준)
+# Flutter SDK path (WSL native install).
 FLUTTER_BIN="$HOME/flutter/bin/flutter"
 
 if [ ! -f "$FLUTTER_BIN" ]; then
-    echo "⚠️  '$FLUTTER_BIN' 을 찾을 수 없습니다. PATH에서 flutter를 찾습니다."
-    if ! command -v flutter &> /dev/null; then
-        echo "❌ 에러: flutter 명령어를 찾을 수 없습니다. SDK가 설치되었는지 확인해주세요."
+    echo "[WARN] $FLUTTER_BIN not found. Trying flutter from PATH."
+    if ! command -v flutter >/dev/null 2>&1; then
+        echo "[ERROR] flutter command not found. Please verify SDK install."
         exit 1
     else
         FLUTTER_BIN="flutter"
@@ -22,27 +22,154 @@ if [ ! -f "$FLUTTER_BIN" ]; then
 fi
 
 if [ -d "$FLUTTER_APP_DIR" ]; then
-    echo "📂 이동: $FLUTTER_APP_DIR"
+    echo "[INFO] cd $FLUTTER_APP_DIR"
     cd "$FLUTTER_APP_DIR"
 else
-    echo "❌ 에러: $FLUTTER_APP_DIR 디렉토리를 찾을 수 없습니다."
+    echo "[ERROR] Missing directory: $FLUTTER_APP_DIR"
     exit 1
 fi
 
 if [ ! -f "pubspec.yaml" ]; then
-    echo "❌ 에러: pubspec.yaml이 없습니다. 경로를 확인해주세요."
+    echo "[ERROR] pubspec.yaml not found."
     exit 1
 fi
 
-echo "✨ Flutter Linux 데스크톱 앱 빌드 및 실행 중..."
+configure_wsl_graphics_fallback() {
+    # Default on WSL: software rendering fallback for stability.
+    # Disable with: MANPASIK_WSL_SOFTWARE_RENDER=0 ./run_app.sh
+    if ! grep -qiE "(microsoft|wsl)" /proc/version 2>/dev/null; then
+        return 0
+    fi
+
+    local enable_fallback="${MANPASIK_WSL_SOFTWARE_RENDER:-1}"
+    if [ "$enable_fallback" != "1" ]; then
+        echo "  [INFO] WSL software fallback disabled (MANPASIK_WSL_SOFTWARE_RENDER=0)"
+        return 0
+    fi
+
+    export LIBGL_ALWAYS_SOFTWARE="${LIBGL_ALWAYS_SOFTWARE:-1}"
+    export GALLIUM_DRIVER="${GALLIUM_DRIVER:-llvmpipe}"
+    export MESA_LOADER_DRIVER_OVERRIDE="${MESA_LOADER_DRIVER_OVERRIDE:-llvmpipe}"
+    echo "  [INFO] WSL graphics fallback enabled (LIBGL_ALWAYS_SOFTWARE=1, llvmpipe)"
+}
+
+check_linux_prerequisites() {
+    if ! command -v xclip >/dev/null 2>&1; then
+        echo "  [WARN] xclip not installed: CEF clipboard can be limited."
+        echo "         Install: sudo apt-get update && sudo apt-get install -y xclip"
+    fi
+}
+
+ensure_webview_cef_linux_compat_sources() {
+    local linux_dir runner_dir file src dst link_target
+
+    linux_dir="$FLUTTER_APP_DIR/linux"
+    runner_dir="$linux_dir/runner"
+
+    if [ ! -d "$runner_dir" ]; then
+        return 0
+    fi
+
+    for file in main.cc my_application.cc; do
+        src="$runner_dir/$file"
+        dst="$linux_dir/$file"
+        link_target="runner/$file"
+
+        if [ ! -f "$src" ]; then
+            continue
+        fi
+
+        if [ -L "$dst" ]; then
+            if [ "$(readlink "$dst")" = "$link_target" ]; then
+                continue
+            fi
+            rm -f "$dst"
+        elif [ -e "$dst" ]; then
+            if cmp -s "$src" "$dst"; then
+                echo "  [INFO] webview_cef compat source already present: linux/$file"
+            else
+                cp -f "$src" "$dst"
+                echo "  [INFO] Synced webview_cef compat source: linux/$file (runner -> linux)"
+            fi
+            continue
+        fi
+
+        ln -s "$link_target" "$dst"
+        echo "  [INFO] Created webview_cef compat link: linux/$file -> $link_target"
+    done
+}
+
+prepare_webview_cef_linux() {
+    local pub_cache pkg_dir arch url version extracted_name prebuilt cef_di
+
+    pub_cache="$HOME/.pub-cache/hosted/pub.dev"
+    pkg_dir=$(ls -d "$pub_cache"/webview_cef-* 2>/dev/null | sort -V | tail -n 1 || true)
+
+    if [ -z "$pkg_dir" ]; then
+        echo "  [INFO] webview_cef package not found. Skipping CEF bootstrap."
+        return 0
+    fi
+
+    arch=$(uname -m)
+    if [ "$arch" = "aarch64" ]; then
+        url="https://cef-builds.spotifycdn.com/cef_binary_130.1.2%2Bg48f3ef6%2Bchromium-130.0.6723.44_linuxarm64.tar.bz2"
+        version="cef_binary_130.1.2%2Bg48f3ef6%2Bchromium-130.0.6723.44_linuxarm64.tar.bz2"
+        extracted_name="cef_binary_130.1.2+g48f3ef6+chromium-130.0.6723.44_linuxarm64"
+    else
+        url="https://cef-builds.spotifycdn.com/cef_binary_130.1.2%2Bg48f3ef6%2Bchromium-130.0.6723.44_linux64.tar.bz2"
+        version="cef_binary_130.1.2%2Bg48f3ef6%2Bchromium-130.0.6723.44_linux64.tar.bz2"
+        extracted_name="cef_binary_130.1.2+g48f3ef6+chromium-130.0.6723.44_linux64"
+    fi
+
+    prebuilt="$pkg_dir/linux/prebuilt.zip"
+    cef_dir="$pkg_dir/third/cef"
+
+    if [ -f "$cef_dir/cmake/FindCEF.cmake" ] && [ -f "$cef_dir/Release/libcef.so" ]; then
+        echo "  [INFO] webview_cef CEF binaries ready"
+        return 0
+    fi
+
+    if ! command -v curl >/dev/null 2>&1; then
+        echo "[ERROR] curl is required for automatic CEF bootstrap."
+        echo "        Install: sudo apt install curl"
+        exit 1
+    fi
+
+    echo "  [INFO] Preparing webview_cef CEF binaries (first run may be large download)."
+    mkdir -p "$pkg_dir/linux" "$pkg_dir/third"
+
+    if [ ! -s "$prebuilt" ]; then
+        curl -L --fail --retry 3 -o "$prebuilt" "$url"
+    fi
+
+    rm -rf "$cef_dir" "$pkg_dir/third/$extracted_name"
+    tar -xf "$prebuilt" -C "$pkg_dir/third"
+
+    if [ ! -d "$pkg_dir/third/$extracted_name" ]; then
+        echo "[ERROR] Failed to locate extracted CEF directory."
+        exit 1
+    fi
+
+    mv "$pkg_dir/third/$extracted_name" "$cef_dir"
+    printf "%s" "$version" > "$cef_dir/version.txt"
+    echo "  [INFO] webview_cef CEF binaries ready"
+}
+
+echo "[INFO] Launching Flutter Linux desktop app..."
 echo "----------------------------------------------------------------"
-echo "  [INFO] 앱 빌드를 시작합니다. 잠시만 기다려주세요..."
-echo "  [INFO] 초기 빌드는 1~3분 정도 소요될 수 있습니다. 멈춘 것이 아니니 기다려주세요!"
-echo "  [INFO] 빌드가 완료되면 GUI 창이 뜹니다."
+echo "  [INFO] Syncing dependencies..."
+"$FLUTTER_BIN" pub get >/dev/null
+echo "  [INFO] Starting build..."
+echo "  [INFO] Initial build can take 1-3 minutes."
+echo "  [INFO] GUI window will open after build completes."
+configure_wsl_graphics_fallback
+check_linux_prerequisites
+ensure_webview_cef_linux_compat_sources
+prepare_webview_cef_linux
 echo "----------------------------------------------------------------"
 
 "$FLUTTER_BIN" run -d linux
 
 echo "----------------------------------------------------------------"
-echo "✅ 앱 실행이 종료되었습니다."
+echo "[INFO] App run finished."
 echo "----------------------------------------------------------------"

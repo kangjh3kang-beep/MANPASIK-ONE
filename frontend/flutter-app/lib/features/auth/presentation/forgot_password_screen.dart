@@ -3,7 +3,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:manpasik/core/providers/grpc_provider.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+import 'package:manpasik/shared/widgets/cosmic_background.dart';
+import 'package:manpasik/shared/widgets/primary_button.dart';
+import 'package:manpasik/shared/widgets/sanggam_container.dart';
+
+// ───────────────────────────────────────────────────
+// ForgotPasswordScreen — Sanggam Orbit 비밀번호 재설정
+//
+// [Rule 4] AppBar 제거 → body 내 커스텀 헤더
+// [Rule 4] app_theme.dart → sanggam_theme.dart
+// [Rule 4] AppTheme.sanggamGold 2건 → SanggamTheme.primary
+// [Rule 4] theme.colorScheme.* 2건 → SanggamTheme 직접
+// [Rule 4] theme.textTheme.* 3건 → 직접 TextStyle
+// [Rule 4] FilledButton → PrimaryButton
+// [Rule 4] CosmicBackground + SanggamContainer 적용
+// ───────────────────────────────────────────────────
 
 /// 비밀번호 재설정 화면
 ///
@@ -12,10 +27,12 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
+class _ForgotPasswordScreenState
+    extends ConsumerState<ForgotPasswordScreen> {
   final _emailController = TextEditingController();
   final _codeController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -47,14 +64,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('인증 코드가 이메일로 발송되었습니다.')),
+          const SnackBar(
+              content: Text('인증 코드가 이메일로 발송되었습니다.')),
         );
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('발송 실패: ${e.toString().length > 50 ? '서버 연결을 확인해주세요.' : e}')),
+          SnackBar(
+              content: Text(
+                  '발송 실패: ${e.toString().length > 50 ? '서버 연결을 확인해주세요.' : e}')),
         );
       }
     }
@@ -62,7 +82,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   void _verifyCode() {
     if (!_formKey.currentState!.validate()) return;
-    // 프런트엔드 검증 (백엔드 코드 검증 API 추가 시 연동 예정)
     setState(() => _step = 2);
   }
 
@@ -99,83 +118,119 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('비밀번호 재설정'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // 단계 인디케이터
-                _buildStepIndicator(theme),
-                const SizedBox(height: 32),
-
-                // 단계별 안내 텍스트
-                Text(
-                  _stepTitle,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
+      backgroundColor: Colors.transparent,
+      body: CosmicBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              // 헤더: 뒤로가기 + 타이틀
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: SizedBox(
+                  height: 48,
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back,
+                            color: Colors.white),
+                        tooltip: '뒤로 가기',
+                        onPressed: () => context.pop(),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        '비밀번호 재설정',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  _stepDescription,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+              ),
+
+              // 폼 영역
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: SanggamContainer(
+                    borderRadius: 24,
+                    borderWidth: 1.0,
+                    borderColor: SanggamTheme.primary
+                        .withValues(alpha: 0.3),
+                    blurSigma: 16,
+                    jagaeOpacity: 0.05,
+                    padding: const EdgeInsets.all(24),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.stretch,
+                        children: [
+                          // 단계 인디케이터
+                          _buildStepIndicator(),
+                          const SizedBox(height: 32),
+
+                          // 단계별 안내 텍스트
+                          Text(
+                            _stepTitle,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _stepDescription,
+                            style: const TextStyle(
+                              color: SanggamTheme.onSurfaceDim,
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+
+                          // 단계별 입력 필드
+                          if (_step == 0) _buildEmailStep(),
+                          if (_step == 1) _buildCodeStep(),
+                          if (_step == 2) _buildPasswordStep(),
+                          const SizedBox(height: 24),
+
+                          // 액션 버튼
+                          PrimaryButton(
+                            text: _stepButtonText,
+                            isLoading: _isLoading,
+                            onPressed: _onSubmit,
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ),
-                const SizedBox(height: 24),
-
-                // 단계별 입력 필드
-                if (_step == 0) _buildEmailStep(theme),
-                if (_step == 1) _buildCodeStep(theme),
-                if (_step == 2) _buildPasswordStep(theme),
-                const SizedBox(height: 24),
-
-                // 액션 버튼
-                FilledButton(
-                  onPressed: _isLoading ? null : _onSubmit,
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                    backgroundColor: AppTheme.sanggamGold,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 20, height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                        )
-                      : Text(_stepButtonText),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  String get _stepTitle => ['이메일 확인', '인증코드 입력', '새 비밀번호 설정'][_step];
+  String get _stepTitle =>
+      ['이메일 확인', '인증코드 입력', '새 비밀번호 설정'][_step];
   String get _stepDescription => [
-    '가입 시 사용한 이메일 주소를 입력해주세요.',
-    '이메일로 발송된 6자리 인증코드를 입력해주세요.',
-    '새로운 비밀번호를 설정해주세요.',
-  ][_step];
-  String get _stepButtonText => ['인증코드 발송', '코드 확인', '비밀번호 변경'][_step];
+        '가입 시 사용한 이메일 주소를 입력해주세요.',
+        '이메일로 발송된 6자리 인증코드를 입력해주세요.',
+        '새로운 비밀번호를 설정해주세요.',
+      ][_step];
+  String get _stepButtonText =>
+      ['인증코드 발송', '코드 확인', '비밀번호 변경'][_step];
 
-  VoidCallback get _onSubmit => [_sendResetCode, _verifyCode, _resetPassword][_step];
+  VoidCallback get _onSubmit =>
+      [_sendResetCode, _verifyCode, _resetPassword][_step];
 
-  Widget _buildStepIndicator(ThemeData theme) {
+  Widget _buildStepIndicator() {
     return Row(
       children: List.generate(3, (i) {
         final isActive = i <= _step;
@@ -184,7 +239,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             height: 4,
             margin: EdgeInsets.only(right: i < 2 ? 8 : 0),
             decoration: BoxDecoration(
-              color: isActive ? AppTheme.sanggamGold : theme.colorScheme.outlineVariant,
+              color: isActive
+                  ? SanggamTheme.primary
+                  : SanggamTheme.onSurfaceDim
+                      .withValues(alpha: 0.3),
               borderRadius: BorderRadius.circular(2),
             ),
           ),
@@ -193,14 +251,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     );
   }
 
-  Widget _buildEmailStep(ThemeData theme) {
+  Widget _buildEmailStep() {
     return TextFormField(
       controller: _emailController,
       keyboardType: TextInputType.emailAddress,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: '이메일',
         hintText: 'example@email.com',
-        prefixIcon: Icon(Icons.email_outlined),
+        prefixIcon: const Icon(Icons.email_outlined),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
       validator: (v) {
         if (v == null || v.isEmpty) return '이메일을 입력해주세요.';
@@ -210,15 +271,18 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     );
   }
 
-  Widget _buildCodeStep(ThemeData theme) {
+  Widget _buildCodeStep() {
     return TextFormField(
       controller: _codeController,
       keyboardType: TextInputType.number,
       maxLength: 6,
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: '인증코드',
         hintText: '6자리 코드 입력',
-        prefixIcon: Icon(Icons.lock_outlined),
+        prefixIcon: const Icon(Icons.lock_outlined),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
       validator: (v) {
         if (v == null || v.isEmpty) return '인증코드를 입력해주세요.';
@@ -228,7 +292,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     );
   }
 
-  Widget _buildPasswordStep(ThemeData theme) {
+  Widget _buildPasswordStep() {
     return Column(
       children: [
         TextFormField(
@@ -239,8 +303,15 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             hintText: '8자 이상, 대소문자/숫자/특수문자 포함',
             prefixIcon: const Icon(Icons.lock_outline),
             suffixIcon: IconButton(
-              icon: Icon(_obscurePassword ? Icons.visibility_off : Icons.visibility),
-              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+              tooltip: '비밀번호 표시/숨김',
+              icon: Icon(_obscurePassword
+                  ? Icons.visibility_off
+                  : Icons.visibility),
+              onPressed: () => setState(
+                  () => _obscurePassword = !_obscurePassword),
+            ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
           ),
           validator: (v) {
@@ -253,12 +324,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         TextFormField(
           controller: _confirmController,
           obscureText: true,
-          decoration: const InputDecoration(
+          decoration: InputDecoration(
             labelText: '비밀번호 확인',
-            prefixIcon: Icon(Icons.lock_outline),
+            prefixIcon: const Icon(Icons.lock_outline),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
           ),
           validator: (v) {
-            if (v != _passwordController.text) return '비밀번호가 일치하지 않습니다.';
+            if (v != _passwordController.text) {
+              return '비밀번호가 일치하지 않습니다.';
+            }
             return null;
           },
         ),

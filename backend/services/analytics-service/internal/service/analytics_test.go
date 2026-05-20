@@ -2,6 +2,7 @@ package service_test
 
 import (
 	"context"
+	"strings"
 	"testing"
 
 	"github.com/manpasik/backend/services/analytics-service/internal/repository/memory"
@@ -135,7 +136,6 @@ func TestGetUserAnalytics_WithEvents(t *testing.T) {
 	if len(analytics.TopEventTypes) == 0 {
 		t.Fatal("TopEventTypes가 비어 있으면 안 됨")
 	}
-	// page_view가 2회로 가장 많으므로 첫 번째여야 함
 	if analytics.TopEventTypes[0] != "page_view" {
 		t.Fatalf("TopEventTypes[0] 불일치: got %s, want page_view", analytics.TopEventTypes[0])
 	}
@@ -146,7 +146,7 @@ func TestListRecentEvents(t *testing.T) {
 	ctx := context.Background()
 
 	for i := 0; i < 5; i++ {
-		_, err := svc.TrackEvent(ctx, "user-recent", "event_type", nil)
+		_, err := svc.TrackEvent(ctx, "user-recent", "page_view", nil)
 		if err != nil {
 			t.Fatalf("이벤트 기록 실패: %v", err)
 		}
@@ -166,10 +166,9 @@ func TestListRecentEvents_DefaultLimit(t *testing.T) {
 	ctx := context.Background()
 
 	for i := 0; i < 3; i++ {
-		svc.TrackEvent(ctx, "user-default", "test_event", nil)
+		svc.TrackEvent(ctx, "user-default", "page_view", nil)
 	}
 
-	// limit <= 0 이면 기본값 50 사용
 	events, err := svc.ListRecentEvents(ctx, 0)
 	if err != nil {
 		t.Fatalf("최근 이벤트 조회 실패: %v", err)
@@ -228,5 +227,134 @@ func TestTrackEvent_WithProperties(t *testing.T) {
 	}
 	if events[0].Properties["device"] != "mobile" {
 		t.Fatalf("Properties[device] 불일치: got %s", events[0].Properties["device"])
+	}
+}
+
+// ============================================================================
+// Phase B 신규 테스트
+// ============================================================================
+
+func TestTrackEvent_InvalidType(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	_, err := svc.TrackEvent(ctx, "user-1", "unknown_event_type", nil)
+	if err == nil {
+		t.Fatal("허용되지 않은 이벤트 타입에 에러가 반환되어야 함")
+	}
+}
+
+func TestTrackEvent_CustomType(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	// custom. 접두사는 항상 허용
+	id, err := svc.TrackEvent(ctx, "user-1", "custom.my_special_event", nil)
+	if err != nil {
+		t.Fatalf("custom. 이벤트 기록 실패: %v", err)
+	}
+	if id == "" {
+		t.Fatal("이벤트 ID가 비어 있음")
+	}
+}
+
+func TestTrackEvent_PropertyValidation(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	// 빈 키 테스트
+	propsWithEmptyKey := map[string]string{
+		"":       "value",
+		"  ":     "value",
+		"valid":  "ok",
+	}
+	_, err := svc.TrackEvent(ctx, "user-1", "page_view", propsWithEmptyKey)
+	if err == nil {
+		t.Fatal("빈 속성 키에 에러가 반환되어야 함")
+	}
+
+	// 과대 값 테스트
+	longValue := strings.Repeat("x", 501)
+	propsWithLongValue := map[string]string{
+		"key": longValue,
+	}
+	_, err = svc.TrackEvent(ctx, "user-1", "page_view", propsWithLongValue)
+	if err == nil {
+		t.Fatal("과대 속성 값에 에러가 반환되어야 함")
+	}
+}
+
+func TestGetUserRetention(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	// 이벤트 기록 (오늘 이벤트)
+	for i := 0; i < 3; i++ {
+		svc.TrackEvent(ctx, "user-ret", "page_view", nil)
+	}
+
+	retention, err := svc.GetUserRetention(ctx, "user-ret", 7)
+	if err != nil {
+		t.Fatalf("유지율 조회 실패: %v", err)
+	}
+	if retention.UserID != "user-ret" {
+		t.Fatalf("UserID 불일치: got %s", retention.UserID)
+	}
+	if retention.Days != 7 {
+		t.Fatalf("Days 불일치: got %d", retention.Days)
+	}
+	// 오늘 이벤트가 있으므로 ActiveDays >= 1
+	if retention.ActiveDays < 1 {
+		t.Fatalf("ActiveDays가 1 이상이어야 함: got %d", retention.ActiveDays)
+	}
+	if retention.RetentionRate <= 0 {
+		t.Fatalf("RetentionRate가 0 초과여야 함: got %f", retention.RetentionRate)
+	}
+}
+
+func TestGetEventFunnel(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	// 순서대로 이벤트 기록
+	svc.TrackEvent(ctx, "user-funnel", "page_view", nil)
+	svc.TrackEvent(ctx, "user-funnel", "button_click", nil)
+	// purchase는 기록하지 않음
+
+	funnel, err := svc.GetEventFunnel(ctx, "user-funnel", []string{"page_view", "button_click", "purchase"})
+	if err != nil {
+		t.Fatalf("퍼널 분석 실패: %v", err)
+	}
+	if len(funnel) != 3 {
+		t.Fatalf("퍼널 단계 수 불일치: got %d, want 3", len(funnel))
+	}
+	if !funnel[0].Completed {
+		t.Fatal("page_view 단계가 완료되어야 함")
+	}
+	if !funnel[1].Completed {
+		t.Fatal("button_click 단계가 완료되어야 함")
+	}
+	if funnel[2].Completed {
+		t.Fatal("purchase 단계가 미완료여야 함")
+	}
+}
+
+func TestTopEventTypes_Sorting(t *testing.T) {
+	eventsByType := map[string]int{
+		"page_view":    10,
+		"button_click": 5,
+		"purchase":     15,
+		"login":        3,
+	}
+
+	top := service.TopEventTypes(eventsByType, 3)
+	if len(top) != 3 {
+		t.Fatalf("Top 3 결과 수 불일치: got %d", len(top))
+	}
+	if top[0] != "purchase" {
+		t.Fatalf("Top 1이 purchase여야 함: got %s", top[0])
+	}
+	if top[1] != "page_view" {
+		t.Fatalf("Top 2가 page_view여야 함: got %s", top[1])
 	}
 }

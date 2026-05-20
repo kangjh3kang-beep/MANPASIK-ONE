@@ -1,0 +1,44 @@
+syntax = "proto3";
+package manpasik.measurement.v2;
+option go_package = "manpasik/backend/services/measurement/protos";
+
+// 마스터플랜 v2.0 기준 896차원 핑거프린트 최적화 데이터 파이프라인
+service MeasurementService {
+    rpc SyncMeasurementOfflinePrior(MeasurementPayload) returns (SyncResult);
+    rpc StreamMeasurement(stream WaveformChunk) returns (InferenceResult);
+}
+
+message MeasurementPayload {
+    string cartridge_id = 1;
+    string user_id = 2;
+    int64 timestamp = 3;
+    
+    // 차동측정 계산 계수
+    double alpha_used = 4;
+    
+    // 896차원 배열
+    repeated double fingerprint_896 = 5;
+    
+    // CRDT LWW 동기화용 타임스탬프 등
+    uint64 crdt_hlc_timestamp = 6;
+    
+    // 무결성 검증을 위한 해시 체인
+    string hash_chain = 7;
+}
+
+message SyncResult {
+    bool success = 1;
+    string message = 2;
+}
+
+message WaveformChunk {
+    int32 sequence_num = 1;
+    double s_detection = 2;
+    double s_reference = 3;
+}
+
+message InferenceResult {
+    double quantification = 1;
+    double anomaly_score = 2;
+    string pccp_model_id = 3; // 사용 처리된 인가 모델
+}

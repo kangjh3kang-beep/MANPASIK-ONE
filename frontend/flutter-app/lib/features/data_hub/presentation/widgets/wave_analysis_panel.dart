@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/features/data_hub/presentation/widgets/ornate_gold_frame.dart';
 
-class WaveAnalysisPanel extends StatelessWidget {
+// ───────────────────────────────────────────────────
+// WaveAnalysisPanel — Sanggam Orbit 파형 분석 패널
+//
+// [Rule 4] app_theme → sanggam_theme
+// [Rule 4] AppTheme.sanggamGold 2x → SanggamTheme.primary
+// [Rule 4] Theme.of(context).textTheme → 직접 TextStyle
+// [Rule 4] withOpacity → withValues(alpha:)
+// [Rule 4] Colors.white10 → SanggamTheme.surfaceVariant
+// ───────────────────────────────────────────────────
+
+class WaveAnalysisPanel
+    extends StatelessWidget {
   final String title;
   final Widget child;
   final Widget? footer;
   final double? width;
   final double? height;
   final bool isActive;
+  final EdgeInsets? contentPadding;
 
   const WaveAnalysisPanel({
     super.key,
@@ -18,6 +30,7 @@ class WaveAnalysisPanel extends StatelessWidget {
     this.width,
     this.height,
     this.isActive = false,
+    this.contentPadding,
   });
 
   @override
@@ -26,18 +39,22 @@ class WaveAnalysisPanel extends StatelessWidget {
       width: width,
       height: height,
       isActive: isActive,
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 20), // Adjust for frame
+      padding: contentPadding ??
+          const EdgeInsets.fromLTRB(
+              20, 24, 20, 20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
-          // Header Center Aligned per design reference
+          // Header Center Aligned
           Center(
             child: Column(
               children: [
                 Text(
                   title.toUpperCase(),
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppTheme.sanggamGold, 
+                  style: const TextStyle(
+                    color:
+                        SanggamTheme.primary,
                     fontSize: 10,
                     letterSpacing: 1.5,
                     fontWeight: FontWeight.bold,
@@ -47,21 +64,25 @@ class WaveAnalysisPanel extends StatelessWidget {
                 Container(
                   width: 30,
                   height: 1,
-                  color: AppTheme.sanggamGold.withOpacity(0.5),
-                )
+                  color: SanggamTheme.primary
+                      .withValues(alpha: 0.5),
+                ),
               ],
             ),
           ),
           const SizedBox(height: 16),
-          
+
           // Content
           Expanded(child: child),
-          
+
           // Footer
           if (footer != null) ...[
             const SizedBox(height: 12),
-            // Decorative Footer Line (Dashed or styled)
-            Container(height: 1, color: Colors.white10), 
+            Container(
+              height: 1,
+              color: SanggamTheme
+                  .surfaceVariant,
+            ),
             const SizedBox(height: 8),
             footer!,
           ],

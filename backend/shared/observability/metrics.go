@@ -2,6 +2,7 @@ package observability
 
 import (
 	"net/http"
+	"sort"
 	"strconv"
 	"sync"
 	"time"
@@ -56,6 +57,73 @@ func (m *Metrics) GetStats() map[string]interface{} {
 		"total_errors":   totalErrs,
 		"methods":        m.requestCount,
 	}
+}
+
+// MetricsSnapshot 은 Metrics 의 현재 상태를 외부 모듈(예: canary 어댑터) 이
+// 사용할 수 있는 형태로 노출.
+//
+// 누적값 기준이며, 슬라이딩 윈도우가 필요하면 외부에서 주기적으로
+// 새 인스턴스를 생성하여 사용 (현재 Metrics 는 reset 미지원).
+type MetricsSnapshot struct {
+	TotalRequests int64
+	TotalErrors   int64
+	ErrorRate     float64       // 0~1
+	LatencyP50    time.Duration
+	LatencyP99    time.Duration
+	UptimeSeconds float64
+}
+
+// Snapshot 은 모든 메서드의 통계를 한 번에 집계하여 반환.
+//
+// LatencyP99 는 정렬 기반 백분위 (선형 보간 없음). 데이터 0 건이면 0.
+func (m *Metrics) Snapshot() MetricsSnapshot {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	var totalReqs, totalErrs int64
+	var allDurations []time.Duration
+	for _, count := range m.requestCount {
+		totalReqs += count
+	}
+	for _, count := range m.errorCount {
+		totalErrs += count
+	}
+	for _, durs := range m.requestDuration {
+		allDurations = append(allDurations, durs...)
+	}
+
+	snap := MetricsSnapshot{
+		TotalRequests: totalReqs,
+		TotalErrors:   totalErrs,
+		UptimeSeconds: time.Since(m.startTime).Seconds(),
+	}
+	if totalReqs > 0 {
+		snap.ErrorRate = float64(totalErrs) / float64(totalReqs)
+	}
+	if len(allDurations) > 0 {
+		sort.Slice(allDurations, func(i, j int) bool {
+			return allDurations[i] < allDurations[j]
+		})
+		snap.LatencyP50 = percentileDuration(allDurations, 50)
+		snap.LatencyP99 = percentileDuration(allDurations, 99)
+	}
+	return snap
+}
+
+// percentileDuration 은 정렬된 durations 에서 p 번째 백분위 반환 (p: 0~100).
+func percentileDuration(sortedDurations []time.Duration, p int) time.Duration {
+	n := len(sortedDurations)
+	if n == 0 {
+		return 0
+	}
+	if p <= 0 {
+		return sortedDurations[0]
+	}
+	if p >= 100 {
+		return sortedDurations[n-1]
+	}
+	idx := (p * (n - 1)) / 100
+	return sortedDurations[idx]
 }
 
 // PrometheusHandler returns metrics in Prometheus format

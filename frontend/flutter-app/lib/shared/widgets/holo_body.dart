@@ -94,6 +94,14 @@ class _HoloBodyState extends State<HoloBody> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    // SECURITY/UI FIX: GoRouter's ShellRoute keeps screens alive in an IndexedStack.
+    // However, native WebViews (CEF/Iframe) often ignore Flutter's 'Offstage' clipping
+    // and can overlap/stack if multiple tabs have holograms (e.g. Home & Data).
+    // By checking TickerMode, we forcefully unmount the WebView when the tab is inactive!
+    if (!TickerMode.of(context)) {
+      return SizedBox(width: widget.width, height: widget.height);
+    }
+
     return SizedBox(
       width: widget.width,
       height: widget.height,
@@ -423,8 +431,8 @@ class _HoloV22Painter extends CustomPainter {
     final paint = Paint()
       ..shader = RadialGradient(
         colors: [
-          _cyan.withValues(alpha: 0.08),
-          _cyanDark.withValues(alpha: 0.04),
+          _cyan.withOpacity(0.08),
+          _cyanDark.withOpacity(0.04),
           Colors.transparent,
         ],
         stops: const [0.0, 0.5, 1.0],
@@ -453,12 +461,12 @@ class _HoloV22Painter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            _cyan.withValues(alpha: 0.03),
-            _cyan.withValues(alpha: 0.07),
-            _cyan.withValues(alpha: 0.14),
-            _cyan.withValues(alpha: 0.12),
-            _cyan.withValues(alpha: 0.05),
-            _cyan.withValues(alpha: 0.02),
+            _cyan.withOpacity(0.03),
+            _cyan.withOpacity(0.07),
+            _cyan.withOpacity(0.14),
+            _cyan.withOpacity(0.12),
+            _cyan.withOpacity(0.05),
+            _cyan.withOpacity(0.02),
           ],
           stops: const [0.0, 0.20, 0.42, 0.55, 0.75, 1.0],
         ).createShader(bounds)
@@ -486,10 +494,10 @@ class _HoloV22Painter extends CustomPainter {
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
             colors: [
-              _cyan.withValues(alpha: 0.18),
-              _cyan.withValues(alpha: 0.01),
-              _cyan.withValues(alpha: 0.01),
-              _cyan.withValues(alpha: 0.18),
+              _cyan.withOpacity(0.18),
+              _cyan.withOpacity(0.01),
+              _cyan.withOpacity(0.01),
+              _cyan.withOpacity(0.18),
             ],
             stops: const [0.0, 0.30, 0.70, 1.0],
           ).createShader(stripRect)
@@ -506,8 +514,8 @@ class _HoloV22Painter extends CustomPainter {
       Paint()
         ..shader = RadialGradient(
           colors: [
-            _cyan.withValues(alpha: 0.06),
-            _cyan.withValues(alpha: 0.02),
+            _cyan.withOpacity(0.06),
+            _cyan.withOpacity(0.02),
             Colors.transparent,
           ],
           stops: const [0.0, 0.4, 1.0],
@@ -543,9 +551,9 @@ class _HoloV22Painter extends CustomPainter {
           end: Alignment.bottomCenter,
           colors: [
             Colors.transparent,
-            _cyanBright.withValues(alpha: 0.10),
-            _white.withValues(alpha: 0.15),
-            _cyanBright.withValues(alpha: 0.10),
+            _cyanBright.withOpacity(0.10),
+            _white.withOpacity(0.15),
+            _cyanBright.withOpacity(0.10),
             Colors.transparent,
           ],
         ).createShader(scanRect)
@@ -563,8 +571,8 @@ class _HoloV22Painter extends CustomPainter {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            _cyan.withValues(alpha: 0.05),
-            _cyan.withValues(alpha: 0.02),
+            _cyan.withOpacity(0.05),
+            _cyan.withOpacity(0.02),
             Colors.transparent,
           ],
           stops: const [0.0, 0.35, 1.0],
@@ -601,7 +609,7 @@ class _HoloV22Painter extends CustomPainter {
         ..strokeWidth = sw
         ..color = Color.lerp(
             _cyan, _cyanBright, scanInfluence)!
-            .withValues(alpha: alpha)
+            .withOpacity(alpha)
         ..blendMode = BlendMode.plus;
 
       canvas.drawLine(
@@ -617,14 +625,14 @@ class _HoloV22Painter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 0.3
-        ..color = _cyan.withValues(alpha: 0.08)
+        ..color = _cyan.withOpacity(0.08)
         ..blendMode = BlendMode.plus,
     );
 
     final musclePaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.5
-      ..color = _cyan.withValues(alpha: 0.10)
+      ..color = _cyan.withOpacity(0.10)
       ..blendMode = BlendMode.plus;
 
     for (final side in [-1.0, 1.0]) {
@@ -661,7 +669,7 @@ class _HoloV22Painter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 5.0
-          ..color = _cyan.withValues(alpha: 0.18)
+          ..color = _cyan.withOpacity(0.18)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0)
           ..blendMode = BlendMode.plus);
 
@@ -671,7 +679,7 @@ class _HoloV22Painter extends CustomPainter {
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = 0.8
-          ..color = _cyan.withValues(alpha: 0.70)
+          ..color = _cyan.withOpacity(0.70)
           ..blendMode = BlendMode.plus);
   }
 
@@ -697,8 +705,8 @@ class _HoloV22Painter extends CustomPainter {
       Paint()
         ..shader = RadialGradient(
           colors: [
-            _cyanBright.withValues(alpha: 0.18),
-            _cyan.withValues(alpha: 0.08),
+            _cyanBright.withOpacity(0.18),
+            _cyan.withOpacity(0.08),
             Colors.transparent,
           ],
           stops: const [0.0, 0.45, 1.0],
@@ -720,11 +728,11 @@ class _HoloV22Painter extends CustomPainter {
           end: Alignment.centerRight,
           colors: [
             Colors.transparent,
-            _cyan.withValues(alpha: 0.12),
-            _cyanBright.withValues(alpha: 0.45),
-            _white.withValues(alpha: 0.50),
-            _cyanBright.withValues(alpha: 0.45),
-            _cyan.withValues(alpha: 0.12),
+            _cyan.withOpacity(0.12),
+            _cyanBright.withOpacity(0.45),
+            _white.withOpacity(0.50),
+            _cyanBright.withOpacity(0.45),
+            _cyan.withOpacity(0.12),
             Colors.transparent,
           ],
           stops: const [0.0, 0.10, 0.35, 0.5, 0.65, 0.90, 1.0],
@@ -750,10 +758,10 @@ class _HoloV22Painter extends CustomPainter {
       final alpha = (0.25 + life * 0.35).clamp(0.0, 0.6);
 
       // Soft outer glow
-      softSparkPaint.color = _cyan.withValues(alpha: alpha * 0.4);
+      softSparkPaint.color = _cyan.withOpacity(alpha * 0.4);
       canvas.drawCircle(Offset(x, sparkY), sparkR * 3.5, softSparkPaint);
       // Bright core
-      dotPaint.color = _cyanBright.withValues(alpha: alpha);
+      dotPaint.color = _cyanBright.withOpacity(alpha);
       canvas.drawCircle(Offset(x, sparkY), sparkR, dotPaint);
     }
 
@@ -770,7 +778,7 @@ class _HoloV22Painter extends CustomPainter {
           final driftY = math.sin(phase * math.pi) * fs * 0.015;
           final eAlpha = (1.0 - phase) * 0.4;
           final eR = fs * (0.002 + 0.003 * (1.0 - phase));
-          edgePaint.color = _cyanBright.withValues(alpha: eAlpha);
+          edgePaint.color = _cyanBright.withOpacity(eAlpha);
           canvas.drawCircle(
             Offset(edgeX + scatter, scanScreenY + driftY),
             eR,

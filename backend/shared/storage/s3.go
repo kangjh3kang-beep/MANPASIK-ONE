@@ -12,6 +12,46 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
 
+// FileStorage는 파일 저장소 인터페이스입니다 (H1 모듈 독립성).
+type FileStorage interface {
+	Upload(ctx context.Context, path string, reader io.Reader, size int64, contentType string) error
+	Download(ctx context.Context, path string) (io.ReadCloser, error)
+	Delete(ctx context.Context, path string) error
+	GetPresignedURL(ctx context.Context, path string, expiry time.Duration) (string, error)
+	Exists(ctx context.Context, path string) (bool, error)
+	Health(ctx context.Context) error
+}
+
+// NoopStorage는 실제 저장소 없이 에러를 반환하는 폴백 구현입니다.
+type NoopStorage struct{}
+
+// NewNoopStorage는 NoopStorage를 생성합니다.
+func NewNoopStorage() *NoopStorage { return &NoopStorage{} }
+
+func (n *NoopStorage) Upload(_ context.Context, _ string, _ io.Reader, _ int64, _ string) error {
+	return fmt.Errorf("파일 저장소가 설정되지 않았습니다")
+}
+
+func (n *NoopStorage) Download(_ context.Context, _ string) (io.ReadCloser, error) {
+	return nil, fmt.Errorf("파일 저장소가 설정되지 않았습니다")
+}
+
+func (n *NoopStorage) Delete(_ context.Context, _ string) error {
+	return fmt.Errorf("파일 저장소가 설정되지 않았습니다")
+}
+
+func (n *NoopStorage) GetPresignedURL(_ context.Context, _ string, _ time.Duration) (string, error) {
+	return "", fmt.Errorf("파일 저장소가 설정되지 않았습니다")
+}
+
+func (n *NoopStorage) Exists(_ context.Context, _ string) (bool, error) {
+	return false, nil
+}
+
+func (n *NoopStorage) Health(_ context.Context) error {
+	return fmt.Errorf("파일 저장소가 설정되지 않았습니다")
+}
+
 // S3Client wraps MinIO client for S3-compatible storage.
 type S3Client struct {
 	client *minio.Client

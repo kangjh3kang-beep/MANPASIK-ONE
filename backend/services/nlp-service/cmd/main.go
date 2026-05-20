@@ -10,14 +10,20 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/manpasik/backend/services/nlp-service/internal/classifier"
 	"github.com/manpasik/backend/services/nlp-service/internal/repository/memory"
+	"github.com/manpasik/backend/services/nlp-service/internal/repository/postgres"
 	"github.com/manpasik/backend/services/nlp-service/internal/service"
+	"github.com/manpasik/backend/shared/config"
 )
 
 const serviceName = "nlp-service"
@@ -28,10 +34,56 @@ func main() {
 		httpPort = ":8080"
 	}
 
-	log.Printf("[%s] Starting...", serviceName)
+	cfg := config.LoadFromEnv(serviceName)
+	log.Printf("[%s] Starting v%s...", serviceName, cfg.Version)
 
-	repo := memory.NewNLPRepository()
+	var repo service.NLPRepository
+
+	if _, dbHostSet := os.LookupEnv("DB_HOST"); dbHostSet && cfg.DB.Host != "" && cfg.DB.DBName != "" {
+		connCtx, connCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		pool, poolErr := pgxpool.New(connCtx, cfg.DB.DSN())
+		connCancel()
+		if poolErr != nil {
+			log.Printf("[%s] DB connection failed, using memory: %v", serviceName, poolErr)
+			repo = memory.NewNLPRepository()
+		} else {
+			pingCtx, pingCancel := context.WithTimeout(context.Background(), 3*time.Second)
+			if pingErr := pool.Ping(pingCtx); pingErr != nil {
+				pingCancel()
+				pool.Close()
+				log.Printf("[%s] DB ping failed, using memory: %v", serviceName, pingErr)
+				repo = memory.NewNLPRepository()
+			} else {
+				pingCancel()
+				defer pool.Close()
+				log.Printf("[%s] Connected to PostgreSQL", serviceName)
+				repo = postgres.NewNLPRepository(pool)
+			}
+		}
+	} else {
+		repo = memory.NewNLPRepository()
+	}
+
 	svc := service.NewNLPService(repo)
+
+	// OpenAI 인텐트 분류기: NLP_API_KEY 환경변수 기반
+	if apiKey := os.Getenv("NLP_API_KEY"); apiKey != "" {
+		model := os.Getenv("NLP_MODEL")
+		if model == "" {
+			model = "gpt-4o-mini"
+		}
+		baseURL := os.Getenv("NLP_BASE_URL")
+		cls := classifier.NewOpenAIClassifier(classifier.OpenAIConfig{
+			APIKey:  apiKey,
+			Model:   model,
+			BaseURL: baseURL,
+		})
+		svc.SetIntentClassifier(cls)
+		log.Printf("[%s] OpenAI 인텐트 분류기 활성화 (model=%s)", serviceName, model)
+	} else {
+		log.Printf("[%s] NLP_API_KEY 미설정, 키워드 기반 분류 사용", serviceName)
+	}
+
 	_ = svc
 
 	mux := http.NewServeMux()

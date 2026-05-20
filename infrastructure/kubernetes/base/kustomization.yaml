@@ -34,4 +34,17 @@ resources:
   - services/admin-service.yaml
   - services/telemedicine-service.yaml
   - services/vision-service.yaml
+  - services/audit-service.yaml
+  - services/digital-twin-service.yaml
+  - services/assistant-service.yaml
+  - services/concept-service.yaml
+  - services/cartridge-store-service.yaml
+  - services/data-platform-service.yaml
+  - services/voice-profile-service.yaml
+  - services/analytics-service.yaml
+  - services/emergency-service.yaml
+  - services/iot-gateway-service.yaml
+  - services/marketplace-service.yaml
+  - services/nlp-service.yaml
   - ingress.yaml
+  - network-policy.yaml

@@ -167,6 +167,7 @@ class _PassVerificationWebViewState extends State<PassVerificationWebView> {
         title: const Text('본인인증'),
         leading: IconButton(
           icon: const Icon(Icons.close),
+          tooltip: '닫기',
           onPressed: () => Navigator.pop(context, null),
         ),
       ),

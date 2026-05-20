@@ -28,6 +28,7 @@ import (
 	"github.com/manpasik/backend/services/translation-service/internal/repository/memory"
 	"github.com/manpasik/backend/services/translation-service/internal/repository/postgres"
 	"github.com/manpasik/backend/services/translation-service/internal/service"
+	"github.com/manpasik/backend/services/translation-service/internal/translator"
 	"github.com/manpasik/backend/shared/config"
 	v1 "github.com/manpasik/backend/shared/gen/go/v1"
 	"github.com/manpasik/backend/shared/middleware"
@@ -95,6 +96,14 @@ func main() {
 
 	translationSvc := service.NewTranslationService(logger, translationRepo, usageRepo)
 
+	// Google Translate 클라이언트 설정 (환경변수 기반)
+	if apiKey := os.Getenv("GOOGLE_TRANSLATE_API_KEY"); apiKey != "" {
+		translationSvc.SetTranslator(&translatorAdapter{inner: translator.NewGoogleTranslator(apiKey)})
+		log.Printf("[%s] Google Translate 활성화", serviceName)
+	} else {
+		log.Printf("[%s] 외부 번역기 미설정, 내부 사전+시뮬레이션 모드", serviceName)
+	}
+
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			middleware.RequestIDInterceptor(),
@@ -151,4 +160,13 @@ func main() {
 	}
 	<-ctx.Done()
 	log.Printf("[%s] Shutdown complete", serviceName)
+}
+
+// translatorAdapter는 translator.GoogleTranslator를 service.Translator로 래핑합니다.
+type translatorAdapter struct {
+	inner *translator.GoogleTranslator
+}
+
+func (a *translatorAdapter) Translate(ctx context.Context, text, sourceLang, targetLang string) (string, error) {
+	return a.inner.Translate(ctx, text, sourceLang, targetLang)
 }

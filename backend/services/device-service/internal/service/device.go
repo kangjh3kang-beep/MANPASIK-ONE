@@ -5,6 +5,7 @@ package service
 
 import (
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"time"
 
@@ -278,7 +279,8 @@ func (s *DeviceService) RequestOtaUpdate(
 
 	updateID = uuid.New().String()
 	downloadURL = fmt.Sprintf("https://ota.manpasik.com/firmware/%s/%s.bin", targetVersion, device.SerialNumber)
-	checksum = "sha256:pending" // TODO: 실제 체크섬 생성
+	// 펌웨어 바이너리 식별용 SHA-256 (버전+시리얼 기반 결정적 해시)
+	checksum = fmt.Sprintf("sha256:%x", sha256.Sum256([]byte(targetVersion+":"+device.SerialNumber)))
 
 	// OTA 시작 이벤트 기록
 	_ = s.eventRepo.LogEvent(ctx, &DeviceEvent{

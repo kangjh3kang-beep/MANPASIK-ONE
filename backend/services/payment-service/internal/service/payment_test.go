@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"go.uber.org/zap"
@@ -27,6 +28,15 @@ func (r *fakePayRepo) Create(_ context.Context, p *Payment) error {
 
 func (r *fakePayRepo) GetByID(_ context.Context, id string) (*Payment, error) {
 	return r.payments[id], nil
+}
+
+func (r *fakePayRepo) GetByOrderID(_ context.Context, orderID string) (*Payment, error) {
+	for _, p := range r.payments {
+		if p.OrderID == orderID {
+			return p, nil
+		}
+	}
+	return nil, nil
 }
 
 func (r *fakePayRepo) ListByUserID(_ context.Context, userID string, limit, offset int32) ([]*Payment, int32, error) {
@@ -224,5 +234,294 @@ func TestRefundPayment_NotCompleted(t *testing.T) {
 	_, _, err := svc.RefundPayment(ctx, p.ID, 0, "미완료 결제 환불")
 	if err == nil {
 		t.Error("미완료 결제 환불이 성공했습니다")
+	}
+}
+
+// =============================================================================
+// Phase F 테스트 보강
+// =============================================================================
+
+func TestGetPayment_NotFound(t *testing.T) {
+	svc := newTestPaymentService()
+	_, err := svc.GetPayment(context.Background(), "nonexistent-id")
+	if err == nil {
+		t.Error("존재하지 않는 결제에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestListPayments_DefaultLimit(t *testing.T) {
+	svc := newTestPaymentService()
+	ctx := context.Background()
+
+	_, _ = svc.CreatePayment(ctx, "user-dl", "order-1", "", PaymentTypeOneTime, 10000, "card")
+
+	payments, total, err := svc.ListPayments(ctx, "user-dl", 0, 0)
+	if err != nil {
+		t.Fatalf("ListPayments 실패: %v", err)
+	}
+	if total != 1 {
+		t.Errorf("total: got %d, want 1", total)
+	}
+	if len(payments) != 1 {
+		t.Errorf("len: got %d, want 1", len(payments))
+	}
+}
+
+func TestCreatePayment_SubscriptionType(t *testing.T) {
+	svc := newTestPaymentService()
+	ctx := context.Background()
+
+	p, err := svc.CreatePayment(ctx, "user-1", "", "sub-1", PaymentTypeSubscription, 19900, "card")
+	if err != nil {
+		t.Fatalf("구독 결제 생성 실패: %v", err)
+	}
+	if p.PaymentType != PaymentTypeSubscription {
+		t.Errorf("PaymentType: got %d, want %d", p.PaymentType, PaymentTypeSubscription)
+	}
+	if p.SubscriptionID != "sub-1" {
+		t.Errorf("SubscriptionID: got %s, want sub-1", p.SubscriptionID)
+	}
+}
+
+func TestConfirmPayment_NotFound(t *testing.T) {
+	svc := newTestPaymentService()
+	ctx := context.Background()
+
+	_, err := svc.ConfirmPayment(ctx, "nonexistent", "pg-tx-1", "toss", "")
+	if err == nil {
+		t.Error("존재하지 않는 결제 확인에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestRefundPayment_AlreadyRefunded(t *testing.T) {
+	svc := newTestPaymentService()
+	ctx := context.Background()
+
+	p, _ := svc.CreatePayment(ctx, "user-1", "order-1", "", PaymentTypeOneTime, 29000, "card")
+	_, _ = svc.ConfirmPayment(ctx, p.ID, "pg-tx-1", "toss", "")
+	_, _, _ = svc.RefundPayment(ctx, p.ID, 0, "전액 환불")
+
+	_, _, err := svc.RefundPayment(ctx, p.ID, 0, "재환불")
+	if err == nil {
+		t.Error("이미 환불된 결제의 재환불에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestRefundPayment_NotFound(t *testing.T) {
+	svc := newTestPaymentService()
+	ctx := context.Background()
+
+	_, _, err := svc.RefundPayment(ctx, "nonexistent", 0, "없는 결제")
+	if err == nil {
+		t.Error("존재하지 않는 결제 환불에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestCreatePayment_NegativeAmount(t *testing.T) {
+	svc := newTestPaymentService()
+	ctx := context.Background()
+
+	_, err := svc.CreatePayment(ctx, "user-1", "order-1", "", PaymentTypeOneTime, -5000, "card")
+	if err == nil {
+		t.Error("음수 금액 결제에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestSetEventPublisher(t *testing.T) {
+	svc := newTestPaymentService()
+	// nil 설정 후에도 기본 동작 정상
+	svc.SetEventPublisher(nil)
+
+	ctx := context.Background()
+	p, err := svc.CreatePayment(ctx, "user-1", "order-1", "", PaymentTypeOneTime, 10000, "card")
+	if err != nil {
+		t.Fatalf("결제 생성 실패: %v", err)
+	}
+	_, err = svc.ConfirmPayment(ctx, p.ID, "tx", "toss", "")
+	if err != nil {
+		t.Fatalf("결제 확인 실패: %v", err)
+	}
+}
+
+func TestSetPaymentGateway(t *testing.T) {
+	svc := newTestPaymentService()
+	// nil 설정 후에도 기본 동작 정상
+	svc.SetPaymentGateway(nil)
+
+	ctx := context.Background()
+	p, err := svc.CreatePayment(ctx, "user-1", "order-1", "", PaymentTypeOneTime, 10000, "card")
+	if err != nil {
+		t.Fatalf("결제 생성 실패: %v", err)
+	}
+	_, err = svc.ConfirmPayment(ctx, p.ID, "tx", "toss", "")
+	if err != nil {
+		t.Fatalf("결제 확인 실패: %v", err)
+	}
+}
+
+// =============================================================================
+// Mock PG Gateway & Event Publisher
+// =============================================================================
+
+type mockPGGateway struct {
+	shouldFail bool
+}
+
+func (m *mockPGGateway) Confirm(_ context.Context, paymentKey, orderId string, amountKRW int32) (string, error) {
+	if m.shouldFail {
+		return "", fmt.Errorf("PG 승인 거부")
+	}
+	return "pg-tx-" + paymentKey, nil
+}
+
+func (m *mockPGGateway) Cancel(_ context.Context, paymentKey, reason string) error {
+	if m.shouldFail {
+		return fmt.Errorf("PG 취소 실패")
+	}
+	return nil
+}
+
+type mockEventPublisher struct {
+	completedCount int
+	failedCount    int
+	refundedCount  int
+}
+
+func (m *mockEventPublisher) PublishPaymentCompleted(_ context.Context, event *PaymentCompletedEvent) error {
+	m.completedCount++
+	return nil
+}
+
+func (m *mockEventPublisher) PublishPaymentFailed(_ context.Context, event *PaymentFailedEvent) error {
+	m.failedCount++
+	return nil
+}
+
+func (m *mockEventPublisher) PublishPaymentRefunded(_ context.Context, event *PaymentRefundedEvent) error {
+	m.refundedCount++
+	return nil
+}
+
+func TestConfirmPayment_WithPGGateway(t *testing.T) {
+	svc := newTestPaymentService()
+	pg := &mockPGGateway{}
+	svc.SetPaymentGateway(pg)
+	ctx := context.Background()
+
+	p, _ := svc.CreatePayment(ctx, "user-pg", "order-pg", "", PaymentTypeOneTime, 50000, "card")
+
+	confirmed, err := svc.ConfirmPayment(ctx, p.ID, "", "toss", "pay-key-123")
+	if err != nil {
+		t.Fatalf("PG ConfirmPayment 실패: %v", err)
+	}
+	if confirmed.PgTransactionID != "pg-tx-pay-key-123" {
+		t.Errorf("PG TX ID: got %s, want pg-tx-pay-key-123", confirmed.PgTransactionID)
+	}
+	if confirmed.PgProvider != "toss" {
+		t.Errorf("PG Provider: got %s, want toss", confirmed.PgProvider)
+	}
+}
+
+func TestConfirmPayment_PGGatewayFail(t *testing.T) {
+	svc := newTestPaymentService()
+	pg := &mockPGGateway{shouldFail: true}
+	ep := &mockEventPublisher{}
+	svc.SetPaymentGateway(pg)
+	svc.SetEventPublisher(ep)
+	ctx := context.Background()
+
+	p, _ := svc.CreatePayment(ctx, "user-pgf", "order-pgf", "", PaymentTypeOneTime, 50000, "card")
+
+	_, err := svc.ConfirmPayment(ctx, p.ID, "", "toss", "pay-key-fail")
+	if err == nil {
+		t.Fatal("PG 승인 실패 시 에러가 반환되어야 합니다")
+	}
+	if ep.failedCount != 1 {
+		t.Errorf("실패 이벤트 발행 횟수: got %d, want 1", ep.failedCount)
+	}
+}
+
+func TestConfirmPayment_WithEventPublisher(t *testing.T) {
+	svc := newTestPaymentService()
+	ep := &mockEventPublisher{}
+	svc.SetEventPublisher(ep)
+	ctx := context.Background()
+
+	p, _ := svc.CreatePayment(ctx, "user-ep", "order-ep", "", PaymentTypeSubscription, 19900, "card")
+	_, err := svc.ConfirmPayment(ctx, p.ID, "pg-tx-ep", "toss", "")
+	if err != nil {
+		t.Fatalf("ConfirmPayment 실패: %v", err)
+	}
+	if ep.completedCount != 1 {
+		t.Errorf("완료 이벤트 발행 횟수: got %d, want 1", ep.completedCount)
+	}
+}
+
+func TestRefundPayment_WithEventPublisher(t *testing.T) {
+	svc := newTestPaymentService()
+	ep := &mockEventPublisher{}
+	svc.SetEventPublisher(ep)
+	ctx := context.Background()
+
+	p, _ := svc.CreatePayment(ctx, "user-ref-ep", "order-ref", "", PaymentTypeOneTime, 30000, "card")
+	_, _ = svc.ConfirmPayment(ctx, p.ID, "pg-tx-ref", "toss", "")
+
+	_, _, err := svc.RefundPayment(ctx, p.ID, 0, "환불 이벤트 테스트")
+	if err != nil {
+		t.Fatalf("RefundPayment 실패: %v", err)
+	}
+	if ep.refundedCount != 1 {
+		t.Errorf("환불 이벤트 발행 횟수: got %d, want 1", ep.refundedCount)
+	}
+}
+
+func TestRefundPayment_WithPGGateway(t *testing.T) {
+	svc := newTestPaymentService()
+	pg := &mockPGGateway{}
+	svc.SetPaymentGateway(pg)
+	ctx := context.Background()
+
+	p, _ := svc.CreatePayment(ctx, "user-refpg", "order-refpg", "", PaymentTypeOneTime, 30000, "card")
+	_, _ = svc.ConfirmPayment(ctx, p.ID, "", "toss", "pay-key-ref")
+
+	_, _, err := svc.RefundPayment(ctx, p.ID, 0, "PG 환불 테스트")
+	if err != nil {
+		t.Fatalf("PG RefundPayment 실패: %v", err)
+	}
+}
+
+func TestRefundPayment_PGCancelFail(t *testing.T) {
+	svc := newTestPaymentService()
+	pg := &mockPGGateway{shouldFail: true}
+	svc.SetPaymentGateway(pg)
+	ctx := context.Background()
+
+	p, _ := svc.CreatePayment(ctx, "user-refpgf", "order-refpgf", "", PaymentTypeOneTime, 30000, "card")
+	// PG 없이 결제 확인 (pgGateway 설정 전에 confirm, 또는 paymentKey 없이)
+	svc.SetPaymentGateway(nil)
+	_, _ = svc.ConfirmPayment(ctx, p.ID, "pg-tx-cancel-test", "toss", "")
+	svc.SetPaymentGateway(pg)
+
+	_, _, err := svc.RefundPayment(ctx, p.ID, 0, "PG 취소 실패 테스트")
+	if err == nil {
+		t.Fatal("PG 취소 실패 시 에러가 반환되어야 합니다")
+	}
+}
+
+func TestConfirmPayment_DefaultProvider(t *testing.T) {
+	svc := newTestPaymentService()
+	pg := &mockPGGateway{}
+	svc.SetPaymentGateway(pg)
+	ctx := context.Background()
+
+	p, _ := svc.CreatePayment(ctx, "user-def-prov", "order-dp", "", PaymentTypeOneTime, 10000, "card")
+
+	// pgProvider를 빈 문자열로 → 기본 "toss"
+	confirmed, err := svc.ConfirmPayment(ctx, p.ID, "", "", "pay-key-dp")
+	if err != nil {
+		t.Fatalf("ConfirmPayment 실패: %v", err)
+	}
+	if confirmed.PgProvider != "toss" {
+		t.Errorf("기본 PgProvider: got %s, want toss", confirmed.PgProvider)
 	}
 }

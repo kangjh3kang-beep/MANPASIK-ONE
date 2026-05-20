@@ -2,12 +2,23 @@ package service_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/manpasik/backend/services/translation-service/internal/repository/memory"
 	"github.com/manpasik/backend/services/translation-service/internal/service"
 	"go.uber.org/zap"
 )
+
+// mockTranslator는 외부 번역 API 모의 구현입니다.
+type mockTranslator struct {
+	result string
+	err    error
+}
+
+func (m *mockTranslator) Translate(_ context.Context, _, _, _ string) (string, error) {
+	return m.result, m.err
+}
 
 func setupTranslationService() *service.TranslationService {
 	logger := zap.NewNop()
@@ -203,6 +214,93 @@ func TestGetTranslationUsage(t *testing.T) {
 	}
 	if usage.MonthlyLimit <= 0 {
 		t.Fatal("월간 한도가 설정되어야 합니다")
+	}
+}
+
+// =============================================================================
+// Phase C-1: 외부 번역기 통합 테스트
+// =============================================================================
+
+func TestTranslateText_외부번역기_성공(t *testing.T) {
+	svc := setupTranslationService()
+	svc.SetTranslator(&mockTranslator{result: "blood pressure measurement", err: nil})
+	ctx := context.Background()
+
+	translated, _, confidence, _, err := svc.TranslateText(ctx, "혈압 측정", "", "en", "", "user-1")
+	if err != nil {
+		t.Fatalf("TranslateText 실패: %v", err)
+	}
+	if translated != "blood pressure measurement" {
+		t.Errorf("번역 결과 예상 'blood pressure measurement', 실제: '%s'", translated)
+	}
+	if confidence < 0.96 {
+		t.Errorf("외부 번역 신뢰도 예상 >= 0.96, 실제: %f", confidence)
+	}
+}
+
+func TestTranslateText_외부번역기_의료(t *testing.T) {
+	svc := setupTranslationService()
+	svc.SetTranslator(&mockTranslator{result: "blood pressure", err: nil})
+	ctx := context.Background()
+
+	_, _, confidence, _, err := svc.TranslateText(ctx, "혈압", "", "en", "medical", "user-1")
+	if err != nil {
+		t.Fatalf("TranslateText 실패: %v", err)
+	}
+	if confidence < 0.98 {
+		t.Errorf("외부+의료 신뢰도 예상 >= 0.98, 실제: %f", confidence)
+	}
+}
+
+func TestTranslateText_외부번역기_실패_내부폴백(t *testing.T) {
+	svc := setupTranslationService()
+	svc.SetTranslator(&mockTranslator{result: "", err: fmt.Errorf("API 오류")})
+	ctx := context.Background()
+
+	translated, _, confidence, _, err := svc.TranslateText(ctx, "혈압", "ko", "en", "", "user-1")
+	if err != nil {
+		t.Fatalf("폴백 번역도 실패: %v", err)
+	}
+	// 폴백은 내부 의료사전을 사용
+	if translated != "blood pressure" {
+		t.Errorf("폴백 번역 예상 'blood pressure', 실제: '%s'", translated)
+	}
+	if confidence != 0.92 {
+		t.Errorf("폴백 신뢰도 예상 0.92, 실제: %f", confidence)
+	}
+}
+
+func TestTranslateText_외부번역기_빈결과_내부폴백(t *testing.T) {
+	svc := setupTranslationService()
+	svc.SetTranslator(&mockTranslator{result: "", err: nil})
+	ctx := context.Background()
+
+	translated, _, _, _, err := svc.TranslateText(ctx, "혈압", "ko", "en", "", "user-1")
+	if err != nil {
+		t.Fatalf("빈 결과 폴백 실패: %v", err)
+	}
+	// 빈 결과도 폴백 사용
+	if translated != "blood pressure" {
+		t.Errorf("빈 결과 폴백 예상 'blood pressure', 실제: '%s'", translated)
+	}
+}
+
+func TestTranslateRealtime_성공(t *testing.T) {
+	svc := setupTranslationService()
+	ctx := context.Background()
+
+	translated, _, confidence, latencyMs, err := svc.TranslateRealtime(ctx, "혈압", "ko", "en", "medical", "session-1", true)
+	if err != nil {
+		t.Fatalf("TranslateRealtime 실패: %v", err)
+	}
+	if translated == "" {
+		t.Fatal("번역 결과가 비어 있습니다")
+	}
+	if confidence <= 0 {
+		t.Fatalf("신뢰도 0 이하: %f", confidence)
+	}
+	if latencyMs < 0 {
+		t.Fatalf("지연시간 음수: %d", latencyMs)
 	}
 }
 

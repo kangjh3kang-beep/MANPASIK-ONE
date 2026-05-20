@@ -9,24 +9,30 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sync/atomic"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"github.com/manpasik/backend/services/auth-service/internal/oauth"
 	apperrors "github.com/manpasik/backend/shared/errors"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // AuthService는 인증 서비스의 비즈니스 로직입니다.
+//
+// jwtSecret 은 atomic.Pointer 로 보관되어 런타임 중 SetJWTSecret 으로 핫리로드
+// 가능 (Vault 시크릿 회전 대응). 토큰 서명/검증 시 항상 최신 값 사용.
 type AuthService struct {
-	logger     *zap.Logger
-	userRepo   UserRepository
-	tokenRepo  TokenRepository
-	jwtSecret  []byte
-	accessTTL  time.Duration
-	refreshTTL time.Duration
-	issuer     string
+	logger         *zap.Logger
+	userRepo       UserRepository
+	tokenRepo      TokenRepository
+	jwtSecret      atomic.Pointer[[]byte]
+	accessTTL      time.Duration
+	refreshTTL     time.Duration
+	issuer         string
+	oauthVerifiers map[string]oauth.OAuthVerifier
 }
 
 // UserRepository는 사용자 데이터 저장소 인터페이스입니다.
@@ -63,6 +69,7 @@ type TokenPair struct {
 	RefreshToken string
 	ExpiresIn    int64 // Access Token 만료까지 남은 초
 	TokenType    string
+	UserID       string
 }
 
 // CustomClaims는 JWT 커스텀 클레임입니다.
@@ -82,15 +89,39 @@ func NewAuthService(
 	accessTTL, refreshTTL time.Duration,
 	issuer string,
 ) *AuthService {
-	return &AuthService{
+	s := &AuthService{
 		logger:     logger,
 		userRepo:   userRepo,
 		tokenRepo:  tokenRepo,
-		jwtSecret:  []byte(jwtSecret),
 		accessTTL:  accessTTL,
 		refreshTTL: refreshTTL,
 		issuer:     issuer,
 	}
+	secret := []byte(jwtSecret)
+	s.jwtSecret.Store(&secret)
+	return s
+}
+
+// SetJWTSecret 은 런타임 중 JWT 서명 키를 교체합니다 (Vault 회전 대응).
+//
+// 호출 시점 이후 발급되는 새 토큰은 새 키로 서명되며, 검증 시에도 새 키로
+// 처리됨. 기존 발급된 토큰은 만료 시까지는 검증 실패할 수 있으므로
+// 호출 전에 grace period 또는 token rotation 정책을 함께 운영해야 함.
+func (s *AuthService) SetJWTSecret(newSecret string) {
+	if newSecret == "" {
+		return
+	}
+	secret := []byte(newSecret)
+	s.jwtSecret.Store(&secret)
+}
+
+// loadJWTSecret 은 atomic.Pointer 에서 현재 시크릿을 읽어 반환.
+func (s *AuthService) loadJWTSecret() []byte {
+	p := s.jwtSecret.Load()
+	if p == nil {
+		return nil
+	}
+	return *p
 }
 
 // Register는 새 사용자를 등록합니다.
@@ -219,7 +250,7 @@ func (s *AuthService) generateTokenPair(ctx context.Context, user *User) (*Token
 	}
 
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessClaims)
-	accessTokenStr, err := accessToken.SignedString(s.jwtSecret)
+	accessTokenStr, err := accessToken.SignedString(s.loadJWTSecret())
 	if err != nil {
 		s.logger.Error("Access Token 서명 실패", zap.Error(err))
 		return nil, apperrors.New(apperrors.ErrInternal, "토큰 생성에 실패했습니다")
@@ -241,7 +272,7 @@ func (s *AuthService) generateTokenPair(ctx context.Context, user *User) (*Token
 	}
 
 	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
-	refreshTokenStr, err := refreshToken.SignedString(s.jwtSecret)
+	refreshTokenStr, err := refreshToken.SignedString(s.loadJWTSecret())
 	if err != nil {
 		s.logger.Error("Refresh Token 서명 실패", zap.Error(err))
 		return nil, apperrors.New(apperrors.ErrInternal, "토큰 생성에 실패했습니다")
@@ -258,6 +289,7 @@ func (s *AuthService) generateTokenPair(ctx context.Context, user *User) (*Token
 		RefreshToken: refreshTokenStr,
 		ExpiresIn:    int64(s.accessTTL.Seconds()),
 		TokenType:    "Bearer",
+		UserID:       user.ID,
 	}, nil
 }
 
@@ -268,7 +300,7 @@ func (s *AuthService) parseToken(tokenStr string) (*CustomClaims, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("예상하지 못한 서명 알고리즘: %v", t.Header["alg"])
 		}
-		return s.jwtSecret, nil
+		return s.loadJWTSecret(), nil
 	})
 	if err != nil {
 		return nil, err
@@ -480,6 +512,84 @@ func GenerateSecureRandom(length int) (string, error) {
 		return "", err
 	}
 	return base64.URLEncoding.EncodeToString(bytes), nil
+}
+
+// SetOAuthVerifiers는 OAuth 제공자별 토큰 검증기를 설정합니다.
+func (s *AuthService) SetOAuthVerifiers(verifiers map[string]oauth.OAuthVerifier) {
+	s.oauthVerifiers = verifiers
+}
+
+// ProviderLogin은 OAuth 제공자 토큰을 검증하고 JWT를 발급합니다.
+// 등록된 검증기가 없으면 기존 SocialLogin으로 폴백합니다.
+func (s *AuthService) ProviderLogin(ctx context.Context, provider, idToken, accessToken string) (*TokenPair, *User, error) {
+	if provider == "" {
+		return nil, nil, apperrors.New(apperrors.ErrInvalidInput, "provider는 필수입니다")
+	}
+	if idToken == "" && accessToken == "" {
+		return nil, nil, apperrors.New(apperrors.ErrInvalidInput, "토큰은 필수입니다")
+	}
+
+	// 등록된 검증기 조회
+	verifier, ok := s.oauthVerifiers[provider]
+	if !ok {
+		// 폴백: 기존 SocialLogin 방식
+		tokenPair, err := s.SocialLogin(ctx, provider, idToken, accessToken)
+		if err != nil {
+			return nil, nil, err
+		}
+		return tokenPair, nil, nil
+	}
+
+	// OAuth 토큰 검증
+	userInfo, err := verifier.VerifyToken(ctx, idToken, accessToken)
+	if err != nil {
+		s.logger.Error("OAuth 토큰 검증 실패",
+			zap.String("provider", provider),
+			zap.Error(err),
+		)
+		return nil, nil, apperrors.New(apperrors.ErrUnauthorized, fmt.Sprintf("%s 인증에 실패했습니다", provider))
+	}
+
+	// 이메일로 기존 사용자 조회
+	user, err := s.userRepo.GetByEmail(ctx, userInfo.Email)
+	if err != nil || user == nil {
+		// 신규 사용자 자동 가입
+		hashedPw, _ := bcrypt.GenerateFromPassword([]byte(uuid.New().String()), 10)
+		displayName := userInfo.DisplayName
+		if displayName == "" {
+			displayName = provider + " 사용자"
+		}
+		user = &User{
+			ID:             uuid.New().String(),
+			Email:          userInfo.Email,
+			HashedPassword: string(hashedPw),
+			DisplayName:    displayName,
+			Role:           "user",
+			IsActive:       true,
+			CreatedAt:      time.Now().UTC(),
+			UpdatedAt:      time.Now().UTC(),
+		}
+		if createErr := s.userRepo.Create(ctx, user); createErr != nil {
+			s.logger.Error("OAuth 사용자 생성 실패", zap.Error(createErr))
+			return nil, nil, apperrors.New(apperrors.ErrInternal, "사용자 생성 실패")
+		}
+		s.logger.Info("OAuth 신규 가입",
+			zap.String("provider", provider),
+			zap.String("user_id", user.ID),
+		)
+	}
+
+	// JWT 토큰 쌍 발급
+	tokenPair, err := s.generateTokenPair(ctx, user)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	s.logger.Info("OAuth 로그인 성공",
+		zap.String("provider", provider),
+		zap.String("user_id", user.ID),
+	)
+	return tokenPair, user, nil
 }
 
 func min(a, b int) int {

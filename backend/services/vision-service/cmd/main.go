@@ -24,9 +24,13 @@ import (
 	"net/http"
 
 	"github.com/manpasik/backend/services/vision-service/internal/handler"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/manpasik/backend/services/vision-service/internal/repository/memory"
+	"github.com/manpasik/backend/services/vision-service/internal/repository/postgres"
 	"github.com/manpasik/backend/services/vision-service/internal/service"
+	"github.com/manpasik/backend/services/vision-service/internal/vision"
 	"github.com/manpasik/backend/shared/config"
+	v1 "github.com/manpasik/backend/shared/gen/go/v1"
 	"github.com/manpasik/backend/shared/middleware"
 	"github.com/manpasik/backend/shared/observability"
 	"go.uber.org/zap"
@@ -52,15 +56,48 @@ func main() {
 
 	log.Printf("[%s] Starting v%s...", serviceName, cfg.Version)
 
-	// FoodAnalysisRepository: 인메모리 (향후 PostgreSQL 추가)
-	analysisRepo := memory.NewFoodAnalysisRepository()
+	// FoodAnalysisRepository: DB 스위치 (PostgreSQL / 인메모리)
+	var analysisRepo service.FoodAnalysisRepository
+
+	if _, dbHostSet := os.LookupEnv("DB_HOST"); dbHostSet && cfg.DB.Host != "" && cfg.DB.DBName != "" {
+		connCtx, connCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		pool, poolErr := pgxpool.New(connCtx, cfg.DB.DSN())
+		connCancel()
+		if poolErr != nil {
+			log.Printf("[%s] DB connection failed, using memory: %v", serviceName, poolErr)
+			analysisRepo = memory.NewFoodAnalysisRepository()
+		} else {
+			pingCtx, pingCancel := context.WithTimeout(context.Background(), 3*time.Second)
+			if pingErr := pool.Ping(pingCtx); pingErr != nil {
+				pingCancel()
+				pool.Close()
+				log.Printf("[%s] DB ping failed, using memory: %v", serviceName, pingErr)
+				analysisRepo = memory.NewFoodAnalysisRepository()
+			} else {
+				pingCancel()
+				defer pool.Close()
+				log.Printf("[%s] Connected to PostgreSQL", serviceName)
+				analysisRepo = postgres.NewFoodAnalysisRepository(pool)
+			}
+		}
+	} else {
+		analysisRepo = memory.NewFoodAnalysisRepository()
+	}
 
 	visionSvc := service.NewVisionService(logger, analysisRepo)
-	// TODO: 실제 AI Vision Analyzer 설정 (TFLite/Cloud Vision)
-	// visionSvc.SetAnalyzer(analyzer)
 
-	// 핸들러 생성 (Proto 확장 후 gRPC 등록 활성화)
-	_ = handler.NewVisionHandler(visionSvc, logger)
+	// OpenAI Vision Analyzer 설정 (환경변수 기반)
+	if apiKey := os.Getenv("VISION_API_KEY"); apiKey != "" {
+		model := os.Getenv("VISION_MODEL")
+		baseURL := os.Getenv("VISION_BASE_URL")
+		analyzer := vision.NewOpenAIVisionAnalyzer(apiKey, model, baseURL)
+		visionSvc.SetAnalyzer(&visionAnalyzerAdapter{inner: analyzer})
+		log.Printf("[%s] OpenAI Vision Analyzer 활성화 (model=%s)", serviceName, model)
+	} else {
+		log.Printf("[%s] Vision Analyzer 미설정, fallback 모드", serviceName)
+	}
+
+	visionHandler := handler.NewVisionHandler(visionSvc, logger)
 
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
@@ -73,8 +110,7 @@ func main() {
 	healthpb.RegisterHealthServer(grpcServer, healthServer)
 	healthServer.SetServingStatus(serviceName, healthpb.HealthCheckResponse_SERVING)
 
-	// TODO: Proto 확장 후 활성화
-	// v1.RegisterVisionServiceServer(grpcServer, visionHandler)
+	v1.RegisterVisionServiceServer(grpcServer, visionHandler)
 
 	reflection.Register(grpcServer)
 
@@ -123,4 +159,31 @@ func main() {
 	}
 	<-ctx.Done()
 	log.Printf("[%s] Shutdown complete", serviceName)
+}
+
+// visionAnalyzerAdapter는 vision.OpenAIVisionAnalyzer를 service.VisionAnalyzer로 래핑합니다.
+type visionAnalyzerAdapter struct {
+	inner *vision.OpenAIVisionAnalyzer
+}
+
+func (a *visionAnalyzerAdapter) AnalyzeFood(ctx context.Context, imageURL string) ([]service.FoodItem, error) {
+	results, err := a.inner.AnalyzeFood(ctx, imageURL)
+	if err != nil {
+		return nil, err
+	}
+	items := make([]service.FoodItem, len(results))
+	for i, r := range results {
+		nutrients := make([]service.NutrientInfo, len(r.Nutrients))
+		for j, n := range r.Nutrients {
+			nutrients[j] = service.NutrientInfo{Name: n.Name, Amount: n.Amount, Unit: n.Unit, DV: n.DV}
+		}
+		items[i] = service.FoodItem{
+			Name:        r.Name,
+			Confidence:  r.Confidence,
+			CalorieKcal: r.CalorieKcal,
+			PortionG:    r.PortionG,
+			Nutrients:   nutrients,
+		}
+	}
+	return items, nil
 }

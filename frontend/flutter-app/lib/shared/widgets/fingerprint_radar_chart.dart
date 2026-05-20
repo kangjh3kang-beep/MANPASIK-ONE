@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import 'package:manpasik/features/measurement/domain/fingerprint_analyzer.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 
 /// 생체 핑거프린트 레이더 차트 (C2)
 ///
@@ -20,21 +20,26 @@ class FingerprintRadarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     if (clusters.isEmpty) {
       return SizedBox(
         height: height,
-        child: const Center(child: Text('핑거프린트 데이터 없음')),
+        child: const Center(
+          child: Text(
+            '핑거프린트 데이터 없음',
+            style: TextStyle(color: SanggamTheme.onSurfaceDim),
+          ),
+        ),
       );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           '생체 핑거프린트',
-          style: theme.textTheme.titleSmall?.copyWith(
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -46,8 +51,8 @@ class FingerprintRadarChart extends StatelessWidget {
               radarTouchData: RadarTouchData(enabled: true),
               dataSets: [
                 RadarDataSet(
-                  fillColor: AppTheme.sanggamGold.withOpacity(0.2),
-                  borderColor: AppTheme.sanggamGold,
+                  fillColor: SanggamTheme.primary.withValues(alpha: 0.2),
+                  borderColor: SanggamTheme.primary,
                   borderWidth: 2,
                   entryRadius: 3,
                   dataEntries: clusters
@@ -56,8 +61,8 @@ class FingerprintRadarChart extends StatelessWidget {
                 ),
                 // 이상치 오버레이
                 RadarDataSet(
-                  fillColor: AppTheme.dancheongRed.withOpacity(0.1),
-                  borderColor: AppTheme.dancheongRed.withOpacity(0.6),
+                  fillColor: SanggamTheme.error.withValues(alpha: 0.1),
+                  borderColor: SanggamTheme.error.withValues(alpha: 0.6),
                   borderWidth: 1,
                   entryRadius: 2,
                   dataEntries: clusters
@@ -67,22 +72,24 @@ class FingerprintRadarChart extends StatelessWidget {
               ],
               radarBackgroundColor: Colors.transparent,
               borderData: FlBorderData(show: false),
-              radarBorderData:
-                  BorderSide(color: theme.colorScheme.outlineVariant, width: 1),
+              radarBorderData: BorderSide(
+                color: SanggamTheme.surfaceVariant.withValues(alpha: 0.5),
+                width: 1,
+              ),
               titlePositionPercentageOffset: 0.2,
-              titleTextStyle: theme.textTheme.bodySmall!.copyWith(
+              titleTextStyle: const TextStyle(
                 fontSize: 10,
-                color: theme.colorScheme.onSurfaceVariant,
+                color: SanggamTheme.onSurfaceDim,
               ),
               getTitle: (index, angle) =>
                   RadarChartTitle(text: clusters[index].name),
               tickCount: 4,
-              ticksTextStyle: theme.textTheme.bodySmall!.copyWith(
+              ticksTextStyle: TextStyle(
                 fontSize: 8,
-                color: theme.colorScheme.onSurfaceVariant.withOpacity(0.5),
+                color: SanggamTheme.onSurfaceDim.withValues(alpha: 0.5),
               ),
               tickBorderData: BorderSide(
-                color: theme.colorScheme.outlineVariant.withOpacity(0.3),
+                color: SanggamTheme.surfaceVariant.withValues(alpha: 0.3),
               ),
             ),
             duration: const Duration(milliseconds: 300),
@@ -90,12 +97,12 @@ class FingerprintRadarChart extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         // 범례
-        Row(
+        const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _LegendItem(color: AppTheme.sanggamGold, label: '측정값'),
-            const SizedBox(width: 16),
-            _LegendItem(color: AppTheme.dancheongRed, label: '이상치 점수'),
+            _LegendItem(color: SanggamTheme.primary, label: '측정값'),
+            SizedBox(width: 16),
+            _LegendItem(color: SanggamTheme.error, label: '이상치 점수'),
           ],
         ),
       ],
@@ -117,7 +124,7 @@ class _LegendItem extends StatelessWidget {
           width: 12,
           height: 12,
           decoration: BoxDecoration(
-            color: color.withOpacity(0.3),
+            color: color.withValues(alpha: 0.3),
             border: Border.all(color: color, width: 2),
             borderRadius: BorderRadius.circular(3),
           ),
@@ -125,7 +132,10 @@ class _LegendItem extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall,
+          style: const TextStyle(
+            color: SanggamTheme.onSurfaceDim,
+            fontSize: 12,
+          ),
         ),
       ],
     );

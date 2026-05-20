@@ -2,11 +2,13 @@ package service_test
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 
 	"github.com/manpasik/backend/services/telemedicine-service/internal/repository/memory"
 	"github.com/manpasik/backend/services/telemedicine-service/internal/service"
+	"github.com/manpasik/backend/services/telemedicine-service/internal/webrtc"
 	"go.uber.org/zap"
 )
 
@@ -302,5 +304,152 @@ func TestEndToEnd_ConsultationFlow(t *testing.T) {
 	}
 	if list[0].Rating != 5.0 {
 		t.Fatalf("목록 내 평점 불일치: got %f, want 5.0", list[0].Rating)
+	}
+}
+
+// ============================================================================
+// WebRTC Provider 통합 테스트
+// ============================================================================
+
+// mockWebRTCProvider는 테스트용 WebRTC 제공자입니다.
+type mockWebRTCProvider struct {
+	createRoomErr    error
+	generateTokenErr error
+	endRoomErr       error
+	roomInfo         *webrtc.RoomInfo
+	tokenInfo        *webrtc.TokenInfo
+}
+
+func (m *mockWebRTCProvider) CreateRoom(_ context.Context, consultationID string) (*webrtc.RoomInfo, error) {
+	if m.createRoomErr != nil {
+		return nil, m.createRoomErr
+	}
+	if m.roomInfo != nil {
+		return m.roomInfo, nil
+	}
+	return &webrtc.RoomInfo{
+		RoomID:  "mock-" + consultationID,
+		RoomURL: "https://meet.manpasik.com/mock/" + consultationID,
+	}, nil
+}
+
+func (m *mockWebRTCProvider) GenerateToken(_ context.Context, roomID, userID string, _ webrtc.TokenRole) (*webrtc.TokenInfo, error) {
+	if m.generateTokenErr != nil {
+		return nil, m.generateTokenErr
+	}
+	if m.tokenInfo != nil {
+		return m.tokenInfo, nil
+	}
+	return &webrtc.TokenInfo{
+		Token:     "mock-token-" + userID,
+		ChannelID: roomID,
+		UID:       userID,
+	}, nil
+}
+
+func (m *mockWebRTCProvider) EndRoom(_ context.Context, _ string) error {
+	return m.endRoomErr
+}
+
+func (m *mockWebRTCProvider) ProviderName() string {
+	return "mock"
+}
+
+func TestStartVideoSession_WithWebRTCProvider(t *testing.T) {
+	svc := setupTestService()
+	svc.SetWebRTCProvider(&mockWebRTCProvider{})
+	ctx := context.Background()
+
+	consultation, _ := svc.CreateConsultation(ctx, "patient-webrtc", service.SpecialtyGeneral, "증상", "설명")
+
+	session, err := svc.StartVideoSession(ctx, consultation.ID, "patient-webrtc")
+	if err != nil {
+		t.Fatalf("비디오 세션 시작 실패: %v", err)
+	}
+	if !strings.Contains(session.RoomURL, "mock") {
+		t.Errorf("RoomURL에 mock 제공자 URL이 포함되어야 합니다: got %s", session.RoomURL)
+	}
+	if session.Token != "mock-token-patient-webrtc" {
+		t.Errorf("Token = %q, want %q", session.Token, "mock-token-patient-webrtc")
+	}
+}
+
+func TestStartVideoSession_WithNoopProvider(t *testing.T) {
+	svc := setupTestService()
+	svc.SetWebRTCProvider(webrtc.NewNoopProvider())
+	ctx := context.Background()
+
+	consultation, _ := svc.CreateConsultation(ctx, "patient-noop", service.SpecialtyGeneral, "증상", "설명")
+
+	session, err := svc.StartVideoSession(ctx, consultation.ID, "patient-noop")
+	if err != nil {
+		t.Fatalf("비디오 세션 시작 실패: %v", err)
+	}
+	if !strings.Contains(session.RoomURL, "noop") {
+		t.Errorf("RoomURL에 noop이 포함되어야 합니다: got %s", session.RoomURL)
+	}
+	if session.Token != "noop-token-patient-noop" {
+		t.Errorf("Token = %q, want %q", session.Token, "noop-token-patient-noop")
+	}
+}
+
+func TestStartVideoSession_ProviderCreateRoomFallback(t *testing.T) {
+	svc := setupTestService()
+	svc.SetWebRTCProvider(&mockWebRTCProvider{
+		createRoomErr: fmt.Errorf("API 연결 실패"),
+	})
+	ctx := context.Background()
+
+	consultation, _ := svc.CreateConsultation(ctx, "patient-fallback", service.SpecialtyGeneral, "증상", "설명")
+
+	session, err := svc.StartVideoSession(ctx, consultation.ID, "patient-fallback")
+	if err != nil {
+		t.Fatalf("폴백 시 비디오 세션이 성공해야 합니다: %v", err)
+	}
+	// 폴백 URL은 mock이 아닌 기본 UUID 형식
+	if strings.Contains(session.RoomURL, "mock") {
+		t.Errorf("폴백 시 mock URL이 아니어야 합니다: got %s", session.RoomURL)
+	}
+	if !strings.HasPrefix(session.RoomURL, "https://meet.manpasik.com/") {
+		t.Errorf("폴백 URL 형식 불일치: got %s", session.RoomURL)
+	}
+}
+
+func TestStartVideoSession_ProviderTokenFallback(t *testing.T) {
+	svc := setupTestService()
+	svc.SetWebRTCProvider(&mockWebRTCProvider{
+		generateTokenErr: fmt.Errorf("토큰 발급 실패"),
+	})
+	ctx := context.Background()
+
+	consultation, _ := svc.CreateConsultation(ctx, "patient-token-fb", service.SpecialtyGeneral, "증상", "설명")
+
+	session, err := svc.StartVideoSession(ctx, consultation.ID, "patient-token-fb")
+	if err != nil {
+		t.Fatalf("토큰 폴백 시 비디오 세션이 성공해야 합니다: %v", err)
+	}
+	// 방 URL은 mock 제공자 것이지만 토큰은 UUID 폴백
+	if !strings.Contains(session.RoomURL, "mock") {
+		t.Errorf("방 URL은 mock 것이어야 합니다: got %s", session.RoomURL)
+	}
+	if strings.HasPrefix(session.Token, "mock-token-") {
+		t.Errorf("토큰 폴백 시 mock 토큰이 아니어야 합니다: got %s", session.Token)
+	}
+}
+
+func TestEndVideoSession_WithWebRTCProvider(t *testing.T) {
+	svc := setupTestService()
+	svc.SetWebRTCProvider(&mockWebRTCProvider{})
+	ctx := context.Background()
+
+	consultation, _ := svc.CreateConsultation(ctx, "patient-end-rtc", service.SpecialtyGeneral, "증상", "설명")
+	session, _ := svc.StartVideoSession(ctx, consultation.ID, "patient-end-rtc")
+
+	ended, err := svc.EndVideoSession(ctx, session.ID, consultation.ID, "진료 소견", "진단명")
+	if err != nil {
+		t.Fatalf("비디오 세션 종료 실패: %v", err)
+	}
+	if ended.Status != service.SessionEnded {
+		t.Fatalf("세션 Status 불일치: got %d, want %d", ended.Status, service.SessionEnded)
 	}
 }

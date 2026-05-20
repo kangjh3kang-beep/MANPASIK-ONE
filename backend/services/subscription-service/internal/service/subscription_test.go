@@ -336,3 +336,238 @@ func TestListSubscriptionPlans(t *testing.T) {
 		t.Errorf("Clinical 가격: got %d, want 59900", planList[3].MonthlyPriceKRW)
 	}
 }
+
+// =============================================================================
+// Phase F 테스트 보강: 카트리지 접근 제어 + 엣지 케이스
+// =============================================================================
+
+func TestCheckCartridgeAccess_FreeGlucose(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+	svc.CreateSubscription(ctx, "user-free", TierFree)
+
+	// Free: HealthBiomarker Glucose (cat=1, type=1) = LIMITED (일 3회)
+	result := svc.CheckCartridgeAccess(ctx, "user-free", 1, 1)
+	if !result.Allowed {
+		t.Fatal("Free 티어에서 Glucose는 Limited로 접근 가능해야 함")
+	}
+	if result.AccessLevel != AccessLimited {
+		t.Errorf("AccessLevel: got %s, want %s", result.AccessLevel, AccessLimited)
+	}
+	if result.RemainingDaily != 3 {
+		t.Errorf("RemainingDaily: got %d, want 3", result.RemainingDaily)
+	}
+}
+
+func TestCheckCartridgeAccess_FreeRestricted(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+	svc.CreateSubscription(ctx, "user-free2", TierFree)
+
+	// Free: Environmental (cat=2) = RESTRICTED (글로벌 기본값 적용)
+	result := svc.CheckCartridgeAccess(ctx, "user-free2", 2, 1)
+	if result.Allowed {
+		t.Fatal("Free 티어에서 Environmental은 접근 불가해야 함")
+	}
+	if result.AccessLevel != AccessRestricted {
+		t.Errorf("AccessLevel: got %s, want %s", result.AccessLevel, AccessRestricted)
+	}
+}
+
+func TestCheckCartridgeAccess_BasicIncluded(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+	svc.CreateSubscription(ctx, "user-basic", TierBasic)
+
+	// Basic: HealthBiomarker 전체 (cat=1) = INCLUDED
+	result := svc.CheckCartridgeAccess(ctx, "user-basic", 1, 5)
+	if !result.Allowed {
+		t.Fatal("Basic 티어에서 HealthBiomarker는 접근 가능해야 함")
+	}
+	if result.AccessLevel != AccessIncluded {
+		t.Errorf("AccessLevel: got %s, want %s", result.AccessLevel, AccessIncluded)
+	}
+	if result.RemainingDaily != -1 {
+		t.Errorf("RemainingDaily: got %d, want -1 (무제한)", result.RemainingDaily)
+	}
+}
+
+func TestCheckCartridgeAccess_BasicAddOn(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+	svc.CreateSubscription(ctx, "user-basic2", TierBasic)
+
+	// Basic: Environmental (cat=2) = ADD_ON
+	result := svc.CheckCartridgeAccess(ctx, "user-basic2", 2, 1)
+	if result.Allowed {
+		t.Fatal("Basic 티어에서 Environmental은 ADD_ON (구매 필요)")
+	}
+	if result.AccessLevel != AccessAddOn {
+		t.Errorf("AccessLevel: got %s, want %s", result.AccessLevel, AccessAddOn)
+	}
+}
+
+func TestCheckCartridgeAccess_ProIncluded(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+	svc.CreateSubscription(ctx, "user-pro", TierPro)
+
+	// Pro: Environmental (cat=2) = INCLUDED
+	result := svc.CheckCartridgeAccess(ctx, "user-pro", 2, 1)
+	if !result.Allowed {
+		t.Fatal("Pro 티어에서 Environmental은 접근 가능해야 함")
+	}
+	if result.AccessLevel != AccessIncluded {
+		t.Errorf("AccessLevel: got %s, want %s", result.AccessLevel, AccessIncluded)
+	}
+}
+
+func TestCheckCartridgeAccess_ClinicalAll(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+	svc.CreateSubscription(ctx, "user-clin", TierClinical)
+
+	// Clinical: 글로벌 기본값 = INCLUDED
+	result := svc.CheckCartridgeAccess(ctx, "user-clin", 5, 1)
+	if !result.Allowed {
+		t.Fatal("Clinical 티어에서 모든 카트리지 접근 가능해야 함")
+	}
+	if result.AccessLevel != AccessIncluded {
+		t.Errorf("AccessLevel: got %s, want %s", result.AccessLevel, AccessIncluded)
+	}
+}
+
+func TestCheckCartridgeAccess_NoSubscription(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+
+	result := svc.CheckCartridgeAccess(ctx, "no-user", 1, 1)
+	if result.Allowed {
+		t.Fatal("구독 없는 사용자는 접근 불가해야 함")
+	}
+}
+
+func TestListAccessibleCartridges_Free(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+	svc.CreateSubscription(ctx, "user-list-free", TierFree)
+
+	entries := svc.ListAccessibleCartridges(ctx, "user-list-free")
+	if len(entries) == 0 {
+		t.Fatal("카트리지 목록이 비어있으면 안 됨")
+	}
+
+	// Free: Glucose는 Limited
+	var glucoseEntry *CartridgeAccessEntry
+	for _, e := range entries {
+		if e.CategoryCode == 1 && e.TypeIndex == 1 {
+			glucoseEntry = e
+			break
+		}
+	}
+	if glucoseEntry == nil {
+		t.Fatal("Glucose 카트리지가 목록에 없음")
+	}
+	if glucoseEntry.AccessLevel != AccessLimited {
+		t.Errorf("Free Glucose AccessLevel: got %s, want %s", glucoseEntry.AccessLevel, AccessLimited)
+	}
+}
+
+func TestListAccessibleCartridges_Clinical(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+	svc.CreateSubscription(ctx, "user-list-clin", TierClinical)
+
+	entries := svc.ListAccessibleCartridges(ctx, "user-list-clin")
+	includedCount := 0
+	for _, e := range entries {
+		if e.AccessLevel == AccessIncluded {
+			includedCount++
+		}
+	}
+	// Clinical은 대부분 INCLUDED
+	if includedCount < 10 {
+		t.Errorf("Clinical 포함 카트리지가 10개 이상이어야 함: got %d", includedCount)
+	}
+}
+
+func TestGetSubscription_EmptyUserID(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+	_, err := svc.GetSubscription(ctx, "")
+	if err == nil {
+		t.Fatal("빈 user_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestUpdateSubscription_NotFound(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+	_, err := svc.UpdateSubscription(ctx, "non-existent", TierPro)
+	if err == nil {
+		t.Fatal("존재하지 않는 구독 업데이트가 성공했습니다")
+	}
+}
+
+func TestCancelSubscription_NotFound(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+	_, err := svc.CancelSubscription(ctx, "non-existent", "이유")
+	if err == nil {
+		t.Fatal("존재하지 않는 구독 해지가 성공했습니다")
+	}
+}
+
+func TestCreateSubscription_Clinical(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+
+	sub, err := svc.CreateSubscription(ctx, "user-clin", TierClinical)
+	if err != nil {
+		t.Fatalf("CreateSubscription Clinical 실패: %v", err)
+	}
+	if sub.Tier != TierClinical {
+		t.Errorf("티어: got %d, want %d", sub.Tier, TierClinical)
+	}
+	if !sub.TelemedicineEnabled {
+		t.Error("Clinical 티어는 화상진료가 활성화되어야 합니다")
+	}
+	if sub.MaxDevices != 10 {
+		t.Errorf("MaxDevices: got %d, want 10", sub.MaxDevices)
+	}
+	if sub.MonthlyPriceKRW != 59900 {
+		t.Errorf("MonthlyPriceKRW: got %d, want 59900", sub.MonthlyPriceKRW)
+	}
+}
+
+func TestUpdateSubscription_CancelledSubscription(t *testing.T) {
+	svc, _, _ := newTestService()
+	ctx := context.Background()
+
+	svc.CreateSubscription(ctx, "user-canup", TierBasic)
+	svc.CancelSubscription(ctx, "user-canup", "test")
+
+	_, err := svc.UpdateSubscription(ctx, "user-canup", TierPro)
+	if err == nil {
+		t.Fatal("해지된 구독의 업그레이드가 허용되었습니다")
+	}
+}
+
+func TestTierToString(t *testing.T) {
+	tests := []struct {
+		tier SubscriptionTier
+		want string
+	}{
+		{TierFree, "free"},
+		{TierBasic, "basic"},
+		{TierPro, "pro"},
+		{TierClinical, "clinical"},
+		{SubscriptionTier(99), "unknown"},
+	}
+	for _, tt := range tests {
+		got := tierToString(tt.tier)
+		if got != tt.want {
+			t.Errorf("tierToString(%d) = %s, want %s", tt.tier, got, tt.want)
+		}
+	}
+}

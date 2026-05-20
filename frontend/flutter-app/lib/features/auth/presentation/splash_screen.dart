@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-
-import 'package:manpasik/shared/providers/auth_provider.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
-import 'package:manpasik/shared/widgets/wave_ripple_painter.dart';
-import 'package:manpasik/shared/widgets/cosmic_background.dart';
 import 'package:lottie/lottie.dart';
+
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+import 'package:manpasik/shared/providers/auth_provider.dart';
+import 'package:manpasik/shared/widgets/cosmic_background.dart';
+import 'package:manpasik/shared/widgets/wave_ripple_painter.dart';
+
+// ───────────────────────────────────────────────────
+// SplashScreen — Sanggam Orbit 스플래시
+//
+// [Rule 4] AppTheme.waveCyan → SanggamTheme.jagaeCyan
+// [Rule 4] AppTheme.sanggamGold → SanggamTheme.primary
+// [Rule 4] withOpacity 6건 → withValues(alpha:)
+// [Rule 4] theme.textTheme.* → 직접 TextStyle
+// ───────────────────────────────────────────────────
 
 /// 스플래시 화면
 ///
@@ -49,10 +58,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _initializeApp() async {
-    // 인증 상태 확인
     await ref.read(authProvider.notifier).checkAuthStatus();
-
-    // 최소 스플래시 표시 시간
     await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
@@ -74,8 +80,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       body: CosmicBackground(
         child: SizedBox(
@@ -92,8 +96,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       painter: WaveRipplePainter(
                         animationValue: _waveController.value,
                         rippleCount: 6,
-                        primaryColor: AppTheme.waveCyan.withOpacity(0.5),
-                        secondaryColor: AppTheme.sanggamGold.withOpacity(0.3),
+                        primaryColor:
+                            SanggamTheme.jagaeCyan.withValues(alpha: 0.5),
+                        secondaryColor:
+                            SanggamTheme.primary.withValues(alpha: 0.3),
                       ),
                     );
                   },
@@ -111,11 +117,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         width: 120,
                         height: 120,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.1),
+                          color: Colors.white.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(32),
                           border: Border.all(
-                            color: AppTheme.sanggamGold.withOpacity(0.3),
-                            width: 1,
+                            color: SanggamTheme.primary
+                                .withValues(alpha: 0.3),
                           ),
                         ),
                         child: const Icon(
@@ -125,11 +131,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         ),
                       ),
                       const SizedBox(height: 32),
-                      // 브랜드명 (BRAND_GUIDELINE 준수)
-                      Text(
+                      // 브랜드명
+                      const Text(
                         'MANPASIK',
-                        style: theme.textTheme.headlineLarge?.copyWith(
-                          color: AppTheme.sanggamGold,
+                        style: TextStyle(
+                          color: SanggamTheme.primary,
+                          fontSize: 32,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 4,
                         ),
@@ -137,8 +144,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       const SizedBox(height: 8),
                       Text(
                         '초정밀 차동 계측 시스템',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white.withOpacity(0.7),
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.7),
+                          fontSize: 16,
                         ),
                       ),
                       const SizedBox(height: 64),
@@ -149,9 +157,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         child: Lottie.asset(
                           'assets/lottie/logo_intro.json',
                           repeat: true,
-                          errorBuilder: (_, __, ___) => CircularProgressIndicator(
+                          errorBuilder: (_, __, ___) =>
+                              CircularProgressIndicator(
                             strokeWidth: 2.5,
-                            color: AppTheme.sanggamGold.withOpacity(0.6),
+                            color: SanggamTheme.primary
+                                .withValues(alpha: 0.6),
                           ),
                         ),
                       ),
@@ -166,4 +176,3 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     );
   }
 }
-

@@ -1,0 +1,104 @@
+syntax = "proto3";
+
+package manpasik.api.v1;
+option go_package = "github.com/kangjh3kang/manpasik/go-backend/proto/api_v1";
+
+// =========================================================================
+// ManPaSik v2.4.3 gRPC API 스키마
+// 오프라인 측정 우선 + Context/Checkup/Diagnostics 동기화 제공
+// =========================================================================
+
+// 1. 측정 데이터 수집
+service MeasurementService {
+    // 측정 완료된 데이터를 중앙(클라우드)으로 오프라인 벌크 동기화 (CRDT)
+    rpc SyncMeasurements (SyncMeasurementsRequest) returns (SyncMeasurementsResponse);
+    
+    // v2.1: 패키지 종합 검진 결과 수집
+    rpc SubmitCheckupSession (SubmitCheckupRequest) returns (SubmitCheckupResponse);
+}
+
+// 2. 유기적 연동 + 모바일 상태 보강 (Context Engine)
+service ContextService {
+    // v2.2: 사용자 상태를 분석하여 컨텍스트 카드 스트림 내려줌
+    rpc GetContextCards (ContextRequest) returns (stream ContextCardResponse);
+}
+
+// 3. 자가검증 파이프라인 수집기
+service DiagnosticService {
+    // v2.3: 시스템 통합 건강 점수(L1~L6) 및 HwAlert 레포팅
+    rpc ReportSystemHealth (HealthReportRequest) returns (HealthReportResponse);
+    
+    // v2.4: 자가치유 결과 기록 (원격 에스컬레이션 티켓 연계용)
+    rpc ReportHealingEvent (HealingEventRequest) returns (HealingEventResponse);
+}
+
+// ===================== 메시지 정의 =====================
+
+message SyncMeasurementsRequest {
+    repeated MeasurementRecord records = 1;
+}
+
+message SyncMeasurementsResponse {
+    int32 synced_count = 1;
+    repeated string failed_ids = 2;
+}
+
+message MeasurementRecord {
+    string id = 1;                    // Flutter clientLocalId
+    string device_mac = 2;            // 기기 MAC
+    int64 timestamp = 3;              // 밀리초 타임스탬프
+    repeated double diff_signal = 4;  // 16채널 차동 시그널
+    repeated double fingerprint = 5;  // 896차원 AI 확장 피처
+    int32 health_score = 6;           // 통합 건강 점수
+    string risk_label = 7;            // 위험도 ("Normal" 상속)
+}
+
+message SubmitCheckupRequest {
+    string session_id = 1;
+    string user_id = 2;
+    string package_type = 3; // "Quick", "Standard", etc.
+    repeated MeasurementRecord results = 4;
+}
+
+message SubmitCheckupResponse {
+    bool success = 1;
+    double composite_score = 2;
+}
+
+message ContextRequest {
+    string user_id = 1;
+    int32 requested_cards = 2;
+}
+
+message ContextCardResponse {
+    string card_id = 1;
+    string type = 2; // "Nutrition", "HabitNudge"
+    string title = 3;
+    string body = 4;
+    int32 priority = 5;
+}
+
+message HealthReportRequest {
+    string device_id = 1;
+    double overall_score = 2;
+    double hw_score = 3;
+    double rust_score = 4;
+    int64 timestamp = 5;
+}
+
+message HealthReportResponse {
+    bool requires_service_ticket = 1;
+    string ticket_id = 2;
+}
+
+message HealingEventRequest {
+    string device_id = 1;
+    string layer = 2;
+    string strategy = 3;
+    bool success = 4;
+    int64 timestamp = 5;
+}
+
+message HealingEventResponse {
+    bool ack = 1;
+}

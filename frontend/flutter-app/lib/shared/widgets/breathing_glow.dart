@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 
 class BreathingGlow extends StatefulWidget {
   final Widget child;
@@ -45,7 +45,7 @@ class _BreathingGlowState extends State<BreathingGlow> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
-    final color = widget.glowColor ?? AppTheme.sanggamGold;
+    final color = widget.glowColor ?? SanggamTheme.primary;
 
     return Stack(
       alignment: Alignment.center,
@@ -59,12 +59,12 @@ class _BreathingGlowState extends State<BreathingGlow> with SingleTickerProvider
                 scale: _scale.value,
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20), // Match HoloGlassCard
-                    color: Colors.transparent, // Important: No solid color
+                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.transparent,
                     boxShadow: [
                       BoxShadow(
-                        color: color.withOpacity(_opacity.value),
-                        blurRadius: 30, // Softer, wider diffusion
+                        color: color.withValues(alpha: _opacity.value),
+                        blurRadius: 30,
                         spreadRadius: 5,
                       ),
                     ],

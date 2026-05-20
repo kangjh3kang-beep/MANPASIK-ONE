@@ -263,11 +263,16 @@ func (h *RestHandler) handleGetSystemStats(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *RestHandler) handleGetAuditLog(w http.ResponseWriter, r *http.Request) {
-	if h.admin == nil {
+	// H6 실패격리: audit-service 우선, 없으면 admin-service fallback
+	client := h.audit
+	if client == nil {
+		client = h.admin
+	}
+	if client == nil {
 		writeError(w, http.StatusServiceUnavailable, "admin service unavailable")
 		return
 	}
-	resp, err := h.admin.GetAuditLog(r.Context(), &v1.GetAuditLogRequest{
+	resp, err := client.GetAuditLog(r.Context(), &v1.GetAuditLogRequest{
 		Limit:  queryInt(r, "limit", 50),
 		Offset: queryInt(r, "offset", 0),
 	})
@@ -279,11 +284,16 @@ func (h *RestHandler) handleGetAuditLog(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *RestHandler) handleGetAuditLogDetails(w http.ResponseWriter, r *http.Request) {
-	if h.admin == nil {
+	// H6 실패격리: audit-service 우선, 없으면 admin-service fallback
+	client := h.audit
+	if client == nil {
+		client = h.admin
+	}
+	if client == nil {
 		writeError(w, http.StatusServiceUnavailable, "admin service unavailable")
 		return
 	}
-	resp, err := h.admin.GetAuditLogDetails(r.Context(), &v1.GetAuditLogDetailsRequest{
+	resp, err := client.GetAuditLogDetails(r.Context(), &v1.GetAuditLogDetailsRequest{
 		Limit:   queryInt(r, "limit", 50),
 		Offset:  queryInt(r, "offset", 0),
 		AdminId: r.URL.Query().Get("admin_id"),

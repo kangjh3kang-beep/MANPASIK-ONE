@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/manpasik/backend/services/telemedicine-service/internal/webrtc"
 	apperrors "github.com/manpasik/backend/shared/errors"
 	"go.uber.org/zap"
 )
@@ -124,10 +125,16 @@ type VideoSessionRepository interface {
 
 // TelemedicineService는 원격진료 서비스 핵심 로직입니다.
 type TelemedicineService struct {
-	log         *zap.Logger
-	consultRepo ConsultationRepository
-	doctorRepo  DoctorRepository
-	sessionRepo VideoSessionRepository
+	log            *zap.Logger
+	consultRepo    ConsultationRepository
+	doctorRepo     DoctorRepository
+	sessionRepo    VideoSessionRepository
+	webrtcProvider webrtc.Provider
+}
+
+// SetWebRTCProvider는 외부 WebRTC 제공자를 설정합니다.
+func (s *TelemedicineService) SetWebRTCProvider(p webrtc.Provider) {
+	s.webrtcProvider = p
 }
 
 // NewTelemedicineService는 TelemedicineService를 생성합니다.
@@ -223,12 +230,14 @@ func (s *TelemedicineService) StartVideoSession(ctx context.Context, consultatio
 		return nil, err
 	}
 
-	roomID := uuid.New().String()
+	// WebRTC 제공자를 통해 방/토큰 생성
+	roomURL, token := s.createRoomAndToken(ctx, consultationID, userID)
+
 	session := &VideoSession{
 		ID:             uuid.New().String(),
 		ConsultationID: consultationID,
-		RoomURL:        fmt.Sprintf("https://meet.manpasik.com/%s", roomID),
-		Token:          uuid.New().String(),
+		RoomURL:        roomURL,
+		Token:          token,
 		Status:         SessionConnected,
 		StartedAt:      time.Now(),
 	}
@@ -247,9 +256,48 @@ func (s *TelemedicineService) StartVideoSession(ctx context.Context, consultatio
 	s.log.Info("비디오 세션 시작",
 		zap.String("session_id", session.ID),
 		zap.String("consultation_id", consultationID),
+		zap.String("provider", s.getProviderName()),
 	)
 
 	return session, nil
+}
+
+// createRoomAndToken은 WebRTC 제공자를 통해 방과 토큰을 생성합니다.
+// 제공자가 없거나 실패하면 기존 UUID 기반 폴백을 사용합니다.
+func (s *TelemedicineService) createRoomAndToken(ctx context.Context, consultationID, userID string) (string, string) {
+	if s.webrtcProvider == nil {
+		roomID := uuid.New().String()
+		return fmt.Sprintf("https://meet.manpasik.com/%s", roomID), uuid.New().String()
+	}
+
+	room, err := s.webrtcProvider.CreateRoom(ctx, consultationID)
+	if err != nil {
+		s.log.Warn("WebRTC 방 생성 실패, 폴백 사용",
+			zap.Error(err),
+			zap.String("provider", s.webrtcProvider.ProviderName()),
+		)
+		roomID := uuid.New().String()
+		return fmt.Sprintf("https://meet.manpasik.com/%s", roomID), uuid.New().String()
+	}
+
+	tokenInfo, err := s.webrtcProvider.GenerateToken(ctx, room.RoomID, userID, webrtc.RolePatient)
+	if err != nil {
+		s.log.Warn("WebRTC 토큰 발급 실패, 폴백 사용",
+			zap.Error(err),
+			zap.String("provider", s.webrtcProvider.ProviderName()),
+		)
+		return room.RoomURL, uuid.New().String()
+	}
+
+	return room.RoomURL, tokenInfo.Token
+}
+
+// getProviderName은 현재 WebRTC 제공자 이름을 반환합니다.
+func (s *TelemedicineService) getProviderName() string {
+	if s.webrtcProvider == nil {
+		return "fallback"
+	}
+	return s.webrtcProvider.ProviderName()
 }
 
 // EndVideoSession은 비디오 세션을 종료합니다.
@@ -286,6 +334,13 @@ func (s *TelemedicineService) EndVideoSession(ctx context.Context, sessionID, co
 				consultation.DurationMinutes = int(now.Sub(consultation.StartedAt).Minutes())
 			}
 			s.consultRepo.Update(ctx, consultation)
+		}
+	}
+
+	// WebRTC 제공자에게 방 종료 알림
+	if s.webrtcProvider != nil {
+		if endErr := s.webrtcProvider.EndRoom(ctx, session.ConsultationID); endErr != nil {
+			s.log.Warn("WebRTC 방 종료 실패", zap.Error(endErr))
 		}
 	}
 

@@ -11,6 +11,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -31,6 +32,7 @@ import (
 	v1 "github.com/manpasik/backend/shared/gen/go/v1"
 	"github.com/manpasik/backend/shared/middleware"
 	"github.com/manpasik/backend/shared/observability"
+	"github.com/manpasik/backend/shared/tenancy"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -100,12 +102,72 @@ func main() {
 		notiSvc.SetPushSender(fcmClient)
 		log.Printf("[%s] FCM 푸시 전송기 활성화", serviceName)
 	} else {
-		notiSvc.SetPushSender(push.NewNoopPushSender())
-		log.Printf("[%s] FCM 미설정, No-op 푸시 전송기 사용", serviceName)
+		notiSvc.SetPushSender(push.NewLogPushSender())
+		log.Printf("[%s] FCM 미설정, 로그 기반 푸시 전송기 사용 (H6 실패격리)", serviceName)
 	}
 
 	// 이메일 전송기: 향후 SMTP 설정 시 활성화
 	notiSvc.SetEmailSender(push.NewNoopEmailSender())
+
+	// Kafka 이벤트 소비자: 결제·측정·디바이스 이벤트 수신 → 자동 알림 생성
+	if _, kafkaBrokersSet := os.LookupEnv("KAFKA_BROKERS"); kafkaBrokersSet && len(cfg.Kafka.Brokers) > 0 {
+		eventBus, kafkaErr := events.NewKafkaEventBus(events.KafkaAdapterConfig{
+			Brokers:     cfg.Kafka.Brokers,
+			GroupID:     serviceName,
+			TopicPrefix: "manpasik.",
+		})
+		if kafkaErr != nil {
+			log.Printf("[%s] Kafka 연결 실패, 이벤트 구독 비활성화: %v", serviceName, kafkaErr)
+		} else {
+			defer eventBus.Close()
+
+			// 결제 완료 → 결제 완료 알림
+			eventBus.Subscribe(events.EventPaymentCompleted, func(ctx context.Context, evt events.Event) error {
+				userID, _ := evt.Payload["user_id"].(string)
+				if userID == "" {
+					return nil
+				}
+				amount, _ := evt.Payload["amount_krw"].(float64)
+				_, _ = notiSvc.SendNotification(ctx, userID,
+					service.TypeSystem, service.ChannelPush, service.PriorityNormal,
+					"결제 완료", fmt.Sprintf("₩%d 결제가 완료되었습니다.", int(amount)), "")
+				return nil
+			})
+
+			// 측정 완료 → 결과 알림
+			eventBus.Subscribe(events.EventMeasurementCompleted, func(ctx context.Context, evt events.Event) error {
+				userID, _ := evt.Payload["user_id"].(string)
+				if userID == "" {
+					return nil
+				}
+				_, _ = notiSvc.SendNotification(ctx, userID,
+					service.TypeMeasurement, service.ChannelPush, service.PriorityNormal,
+					"측정 완료", "측정 결과가 준비되었습니다. 확인해 보세요.", "")
+				return nil
+			})
+
+			// 건강 알림 트리거 → 긴급 알림
+			eventBus.Subscribe(events.EventHealthAlertTriggered, func(ctx context.Context, evt events.Event) error {
+				userID, _ := evt.Payload["user_id"].(string)
+				if userID == "" {
+					return nil
+				}
+				msg, _ := evt.Payload["message"].(string)
+				if msg == "" {
+					msg = "건강 수치에 이상이 감지되었습니다."
+				}
+				_, _ = notiSvc.SendNotification(ctx, userID,
+					service.TypeHealthAlert, service.ChannelPush, service.PriorityHigh,
+					"건강 알림", msg, "")
+				return nil
+			})
+
+			go eventBus.StartConsuming(context.Background())
+			log.Printf("[%s] Kafka 이벤트 소비자 시작 (payment.completed, measurement.completed, health_alert.triggered)", serviceName)
+		}
+	} else {
+		log.Printf("[%s] Kafka 미설정, 이벤트 구독 비활성화", serviceName)
+	}
 
 	// ConfigWatcher: FCM 설정 변경 시 핫리로드
 	configWatcher := events.NewEventBusConfigWatcher(events.NewEventBus())
@@ -123,12 +185,18 @@ func main() {
 	})
 	defer configWatcher.Close()
 
-	grpcServer := grpc.NewServer(
+	tenancyEngine := tenancy.NewPolicyEngine(tenancy.NewMemoryMembershipStore())
+	serverOpts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			middleware.RequestIDInterceptor(),
 			observability.UnaryServerInterceptor(metrics),
 		),
-	)
+	}
+	serverOpts = append(serverOpts, tenancy.MaybeServerOptions(tenancyEngine, nil)...)
+	if tenancy.EnforcedFromEnv() {
+		log.Printf("[%s] 멀티테넌트 RBAC 인터셉터 활성화", serviceName)
+	}
+	grpcServer := grpc.NewServer(serverOpts...)
 
 	healthServer := health.NewServer()
 	healthpb.RegisterHealthServer(grpcServer, healthServer)

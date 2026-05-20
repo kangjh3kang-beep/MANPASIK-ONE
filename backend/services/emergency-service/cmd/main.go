@@ -10,15 +10,21 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/manpasik/backend/services/emergency-service/internal/handler"
+	"github.com/manpasik/backend/services/emergency-service/internal/notifier"
 	"github.com/manpasik/backend/services/emergency-service/internal/repository/memory"
+	"github.com/manpasik/backend/services/emergency-service/internal/repository/postgres"
 	"github.com/manpasik/backend/services/emergency-service/internal/service"
+	"github.com/manpasik/backend/shared/config"
 )
 
 const serviceName = "emergency-service"
@@ -29,13 +35,50 @@ func main() {
 		httpPort = ":8080"
 	}
 
-	log.Printf("[%s] Starting...", serviceName)
+	cfg := config.LoadFromEnv(serviceName)
+	log.Printf("[%s] Starting v%s...", serviceName, cfg.Version)
 
-	// 인메모리 저장소 초기화
-	repo := memory.NewEmergencyRepository()
+	var repo service.EmergencyRepository
 
-	// 서비스 레이어 초기화
+	if _, dbHostSet := os.LookupEnv("DB_HOST"); dbHostSet && cfg.DB.Host != "" && cfg.DB.DBName != "" {
+		connCtx, connCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		pool, poolErr := pgxpool.New(connCtx, cfg.DB.DSN())
+		connCancel()
+		if poolErr != nil {
+			log.Printf("[%s] DB connection failed, using memory: %v", serviceName, poolErr)
+			repo = memory.NewEmergencyRepository()
+		} else {
+			pingCtx, pingCancel := context.WithTimeout(context.Background(), 3*time.Second)
+			if pingErr := pool.Ping(pingCtx); pingErr != nil {
+				pingCancel()
+				pool.Close()
+				log.Printf("[%s] DB ping failed, using memory: %v", serviceName, pingErr)
+				repo = memory.NewEmergencyRepository()
+			} else {
+				pingCancel()
+				defer pool.Close()
+				log.Printf("[%s] Connected to PostgreSQL", serviceName)
+				repo = postgres.NewEmergencyRepository(pool)
+			}
+		}
+	} else {
+		repo = memory.NewEmergencyRepository()
+	}
+
 	svc := service.NewEmergencyService(repo)
+
+	// 119 응급 알림 제공자 초기화
+	if apiKey := os.Getenv("EMERGENCY_119_API_KEY"); apiKey != "" {
+		baseURL := os.Getenv("EMERGENCY_119_BASE_URL")
+		n := notifier.NewDispatch119Notifier(notifier.Dispatch119Config{
+			BaseURL: baseURL,
+			APIKey:  apiKey,
+		})
+		svc.SetEmergencyNotifier(n)
+		log.Printf("[%s] 119 응급 알림 제공자 활성화", serviceName)
+	} else {
+		log.Printf("[%s] 119 응급 알림 미설정, 로그만 기록", serviceName)
+	}
 
 	// HTTP 핸들러 초기화
 	h := handler.NewEmergencyHandler(svc)

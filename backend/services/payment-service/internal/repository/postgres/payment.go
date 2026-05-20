@@ -70,6 +70,33 @@ func (r *PaymentRepository) GetByID(ctx context.Context, id string) (*service.Pa
 	return &p, nil
 }
 
+// GetByOrderID는 주문 ID로 결제를 조회합니다.
+func (r *PaymentRepository) GetByOrderID(ctx context.Context, orderID string) (*service.Payment, error) {
+	const q = `SELECT id, user_id, order_id, amount, type, status,
+		COALESCE(pg_tx_id, ''), COALESCE(description, ''), created_at, updated_at
+		FROM payments WHERE order_id = $1 LIMIT 1`
+
+	var p service.Payment
+	var amount int64
+	var payType, payStatus string
+	err := r.pool.QueryRow(ctx, q, orderID).Scan(
+		&p.ID, &p.UserID, &p.OrderID, &amount,
+		&payType, &payStatus,
+		&p.PgTransactionID, &p.PaymentMethod,
+		&p.CreatedAt, &p.CompletedAt,
+	)
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	p.AmountKRW = int32(amount)
+	p.PaymentType = reversePaymentType(payType)
+	p.Status = reversePaymentStatus(payStatus)
+	return &p, nil
+}
+
 // ListByUserID는 사용자의 결제 이력을 조회합니다.
 func (r *PaymentRepository) ListByUserID(ctx context.Context, userID string, limit, offset int32) ([]*service.Payment, int32, error) {
 	var total int32

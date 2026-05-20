@@ -3,6 +3,7 @@ package memory
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"github.com/manpasik/backend/services/iot-gateway-service/internal/service"
@@ -60,6 +61,25 @@ func (r *IoTRepository) GetDevice(_ context.Context, deviceID string) (*service.
 	return &cp, nil
 }
 
+// UpdateDevice는 디바이스 정보를 갱신합니다.
+func (r *IoTRepository) UpdateDevice(_ context.Context, device *service.IoTDevice) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.devices[device.DeviceID]; !ok {
+		return errors.New("device not found")
+	}
+	cp := *device
+	if device.Metadata != nil {
+		cp.Metadata = make(map[string]string, len(device.Metadata))
+		for k, v := range device.Metadata {
+			cp.Metadata[k] = v
+		}
+	}
+	r.devices[device.DeviceID] = &cp
+	return nil
+}
+
 // SendCommand는 명령을 저장합니다.
 func (r *IoTRepository) SendCommand(_ context.Context, cmd *service.IoTCommand) error {
 	r.mu.Lock()
@@ -81,6 +101,37 @@ func (r *IoTRepository) GetCommand(_ context.Context, commandID string) (*servic
 	}
 	cp := *c
 	return &cp, nil
+}
+
+// UpdateCommand는 명령 정보를 갱신합니다.
+func (r *IoTRepository) UpdateCommand(_ context.Context, cmd *service.IoTCommand) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	if _, ok := r.commands[cmd.ID]; !ok {
+		return errors.New("command not found")
+	}
+	cp := *cmd
+	r.commands[cmd.ID] = &cp
+	return nil
+}
+
+// ListCommandsByDevice는 디바이스의 명령 목록을 조회합니다.
+func (r *IoTRepository) ListCommandsByDevice(_ context.Context, deviceID string, limit int) ([]*service.IoTCommand, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var result []*service.IoTCommand
+	for _, c := range r.commands {
+		if c.DeviceID == deviceID {
+			cp := *c
+			result = append(result, &cp)
+		}
+	}
+	if limit > 0 && len(result) > limit {
+		result = result[:limit]
+	}
+	return result, nil
 }
 
 // ReceiveData는 수신 데이터를 저장합니다.

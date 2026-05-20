@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 
 /// 생체 핑거프린트 히트맵 (C2)
 ///
@@ -18,21 +18,26 @@ class FingerprintHeatmap extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     if (grid.isEmpty) {
       return SizedBox(
         height: height,
-        child: const Center(child: Text('히트맵 데이터 없음')),
+        child: const Center(
+          child: Text(
+            '히트맵 데이터 없음',
+            style: TextStyle(color: SanggamTheme.onSurfaceDim),
+          ),
+        ),
       );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           '스펙트럼 히트맵',
-          style: theme.textTheme.titleSmall?.copyWith(
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 14,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -53,7 +58,10 @@ class FingerprintHeatmap extends StatelessWidget {
           height: 16,
           child: Row(
             children: [
-              Text('낮음', style: theme.textTheme.bodySmall),
+              const Text(
+                '낮음',
+                style: TextStyle(color: SanggamTheme.onSurfaceDim, fontSize: 12),
+              ),
               const SizedBox(width: 4),
               Expanded(
                 child: Container(
@@ -75,7 +83,10 @@ class FingerprintHeatmap extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 4),
-              Text('높음', style: theme.textTheme.bodySmall),
+              const Text(
+                '높음',
+                style: TextStyle(color: SanggamTheme.onSurfaceDim, fontSize: 12),
+              ),
             ],
           ),
         ),

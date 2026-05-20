@@ -78,3 +78,10 @@ func (r *FoodAnalysisRepository) Update(_ context.Context, analysis *service.Foo
 	r.store[analysis.ID] = analysis
 	return nil
 }
+
+func (r *FoodAnalysisRepository) Delete(_ context.Context, id string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	delete(r.store, id)
+	return nil
+}

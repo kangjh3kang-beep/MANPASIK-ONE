@@ -2,7 +2,9 @@
 // - FakeAuthRepository를 이용한 로그인/회원가입/게스트/로그아웃 시나리오
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:manpasik/core/network/tenant_interceptor.dart';
 import 'package:manpasik/shared/providers/auth_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../helpers/fake_repositories.dart';
 
 void main() {
@@ -10,6 +12,7 @@ void main() {
   late AuthNotifier notifier;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
     fakeRepo = FakeAuthRepository();
     notifier = AuthNotifier(fakeRepo);
   });
@@ -32,6 +35,7 @@ void main() {
       expect(notifier.state.email, 'user@manpasik.com');
       expect(notifier.state.accessToken, isNotNull);
       expect(notifier.state.refreshToken, isNotNull);
+      expect(await TenantInterceptor.getActiveUser(), 'test-user-id');
     });
 
     // 잘못된 비밀번호로 로그인 실패
@@ -62,6 +66,7 @@ void main() {
       expect(notifier.state.isAuthenticated, isTrue);
       expect(notifier.state.email, 'new@manpasik.com');
       expect(notifier.state.displayName, '새 사용자');
+      expect(await TenantInterceptor.getActiveUser(), 'test-user-id');
     });
 
     // 회원가입 실패 시나리오 (빈 displayName)
@@ -77,27 +82,31 @@ void main() {
     });
 
     // 게스트 로그인
-    test('게스트 로그인 시 guest 정보로 인증 상태가 된다', () {
-      notifier.loginAsGuest();
+    test('게스트 로그인 시 guest 정보로 인증 상태가 된다', () async {
+      await notifier.loginAsGuest();
 
       expect(notifier.state.isAuthenticated, isTrue);
       expect(notifier.state.userId, 'guest-user');
       expect(notifier.state.email, 'guest@example.com');
       expect(notifier.state.displayName, 'Guest');
       expect(notifier.state.accessToken, 'guest-token');
+      expect(await TenantInterceptor.getActiveUser(), 'guest-user');
     });
 
     // 로그아웃
     test('로그아웃 시 미인증 상태로 초기화된다', () async {
       // 먼저 로그인
       await notifier.login('user@manpasik.com', 'Password1234');
+      await TenantInterceptor.setActiveTenant('tenant-a');
       expect(notifier.state.isAuthenticated, isTrue);
 
       // 로그아웃
-      notifier.logout();
+      await notifier.logout();
       expect(notifier.state.isAuthenticated, isFalse);
       expect(notifier.state.userId, isNull);
       expect(notifier.state.accessToken, isNull);
+      expect(await TenantInterceptor.getActiveUser(), isNull);
+      expect(await TenantInterceptor.getActiveTenant(), isNull);
     });
 
     // 로그인 → 게스트 → 로그아웃 순차 시나리오
@@ -105,23 +114,73 @@ void main() {
       await notifier.login('user@manpasik.com', 'Password1234');
       expect(notifier.state.email, 'user@manpasik.com');
 
-      notifier.logout();
+      await notifier.logout();
       expect(notifier.state.isAuthenticated, isFalse);
 
-      notifier.loginAsGuest();
+      await notifier.loginAsGuest();
       expect(notifier.state.userId, 'guest-user');
+      expect(await TenantInterceptor.getActiveUser(), 'guest-user');
     });
 
     // checkAuthStatus 호출 시 미인증 상태 확인
     // (FakeAuthRepository.isAuthenticated()는 항상 false 반환)
     test('checkAuthStatus 호출 시 미인증으로 초기화된다', () async {
       // 먼저 게스트로 로그인
-      notifier.loginAsGuest();
+      await notifier.loginAsGuest();
       expect(notifier.state.isAuthenticated, isTrue);
+      expect(await TenantInterceptor.getActiveUser(), 'guest-user');
 
       await notifier.checkAuthStatus();
       // FakeAuthRepository.isAuthenticated()가 false이므로 초기화됨
       expect(notifier.state.isAuthenticated, isFalse);
+      expect(await TenantInterceptor.getActiveUser(), isNull);
+    });
+
+    // ====== Phase F 추가 테스트 ======
+
+    test('데모 로그인 시 isDemo가 true여야 한다', () async {
+      await notifier.loginAsDemo();
+      expect(notifier.state.isAuthenticated, isTrue);
+      expect(notifier.state.userId, 'demo-user-id');
+      expect(notifier.state.email, 'demo@manpasik.com');
+      expect(notifier.state.isDemo, isTrue);
+      expect(notifier.isDemo, isTrue);
+      expect(await TenantInterceptor.getActiveUser(), 'demo-user-id');
+    });
+
+    test('게스트 사용자는 isDemo가 false여야 한다', () async {
+      await notifier.loginAsGuest();
+      expect(notifier.state.isDemo, isFalse);
+    });
+
+    test('socialLogin은 restClient 없으면 실패해야 한다', () async {
+      final result = await notifier.socialLogin('google', 'token');
+      expect(result, isFalse);
+      expect(notifier.state.isAuthenticated, isFalse);
+    });
+
+    test('로그인 성공 시 role 기본값은 user', () async {
+      final result = await notifier.login('user@manpasik.com', 'Password1234');
+      expect(result, isTrue);
+      expect(notifier.state.role, 'user');
+    });
+
+    test('로그인 성공 후 displayName은 이메일 앞부분', () async {
+      await notifier.login('john@manpasik.com', 'Password1234');
+      expect(notifier.state.displayName, 'john');
+    });
+
+    test('데모 → 로그아웃 → 일반 로그인 전환', () async {
+      await notifier.loginAsDemo();
+      expect(notifier.state.isDemo, isTrue);
+
+      await notifier.logout();
+      expect(notifier.state.isAuthenticated, isFalse);
+
+      await notifier.login('real@manpasik.com', 'Password1234');
+      expect(notifier.state.isAuthenticated, isTrue);
+      expect(notifier.state.isDemo, isFalse);
+      expect(await TenantInterceptor.getActiveUser(), 'test-user-id');
     });
   });
 }

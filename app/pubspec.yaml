@@ -1,0 +1,37 @@
+name: manpasik_app
+description: ManPaSik (萬波息) POCT Core Flutter Application
+version: 1.4.2+1
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # State Management
+  flutter_riverpod: ^2.4.9
+  freezed_annotation: ^2.4.1
+  # Routing
+  go_router: ^12.1.1
+  # Rust FFI Bridge
+  flutter_rust_bridge: ^2.0.0
+  # UI/UX & Graphics
+  fl_chart: ^0.65.0
+  # Local Database (CRDT Cache)
+  isar: ^3.1.0
+  isar_flutter_libs: ^3.1.0
+  path_provider: ^2.1.2
+  # gRPC Networking
+  grpc: any
+  protobuf: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  build_runner: ^2.4.7
+  freezed: ^2.4.1
+  isar_generator: ^3.1.0
+
+flutter:
+  uses-material-design: true

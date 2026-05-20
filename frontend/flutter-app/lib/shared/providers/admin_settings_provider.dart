@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grpc/grpc.dart';
 import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/core/services/auth_interceptor.dart';
-import 'package:manpasik/generated/manpasik.pb.dart';
 import 'package:manpasik/generated/manpasik.pbgrpc.dart';
 import 'package:manpasik/shared/providers/auth_provider.dart';
 
@@ -100,7 +99,8 @@ class AdminSettingsNotifier extends StateNotifier<AdminSettingsState> {
   /// 설정 목록 로드
   Future<void> loadConfigs({String? category}) async {
     final cat = category ?? state.selectedCategory;
-    state = state.copyWith(isLoading: true, errorMessage: null, selectedCategory: cat);
+    state = state.copyWith(
+        isLoading: true, errorMessage: null, selectedCategory: cat);
     try {
       final response = await _client.listSystemConfigs(
         ListSystemConfigsRequest(
@@ -138,14 +138,16 @@ class AdminSettingsNotifier extends StateNotifier<AdminSettingsState> {
   }
 
   /// 설정 값 유효성 검증
-  Future<ValidateConfigValueResponse> validateValue(String key, String value) async {
+  Future<ValidateConfigValueResponse> validateValue(
+      String key, String value) async {
     return _client.validateConfigValue(
       ValidateConfigValueRequest(key: key, value: value),
     );
   }
 
   /// 설정 값 저장
-  Future<bool> saveConfig(String key, String value, {String? description}) async {
+  Future<bool> saveConfig(String key, String value,
+      {String? description}) async {
     try {
       // 먼저 유효성 검증
       final validation = await validateValue(key, value);

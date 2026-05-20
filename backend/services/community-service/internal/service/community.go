@@ -132,6 +132,7 @@ type ChallengeRepository interface {
 type PostSearchIndexer interface {
 	IndexPost(ctx context.Context, post *Post) error
 	DeletePost(ctx context.Context, postID string) error
+	SearchPosts(ctx context.Context, query string, limit int) ([]string, error) // 게시글 ID 목록 반환
 }
 
 // ============================================================================
@@ -629,4 +630,38 @@ func (s *CommunityService) UpdateChallengeProgress(ctx context.Context, challeng
 	)
 
 	return newProgress, targetValue, newRank, nil
+}
+
+// SearchPosts는 게시글 전문 검색을 수행합니다 (Elasticsearch).
+func (s *CommunityService) SearchPosts(ctx context.Context, query string, limit int) ([]*Post, error) {
+	if query == "" {
+		return nil, nil
+	}
+	if limit <= 0 {
+		limit = 20
+	}
+
+	// SearchIndexer가 nil이면 PostRepo에서 최근 게시글 반환 (폴백)
+	if s.searchIndexer == nil {
+		posts, _, err := s.postRepo.FindAll(ctx, 0, int32(limit), 0)
+		return posts, err
+	}
+
+	postIDs, err := s.searchIndexer.SearchPosts(ctx, query, limit)
+	if err != nil {
+		s.logger.Warn("검색 인덱스 조회 실패, PostRepo 폴백", zap.Error(err))
+		posts, _, repoErr := s.postRepo.FindAll(ctx, 0, int32(limit), 0)
+		return posts, repoErr
+	}
+
+	// PostID로 게시글 조회
+	var posts []*Post
+	for _, id := range postIDs {
+		post, getErr := s.postRepo.FindByID(ctx, id)
+		if getErr != nil || post == nil {
+			continue
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
 }

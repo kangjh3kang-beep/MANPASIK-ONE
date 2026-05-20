@@ -1,7 +1,20 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+
+// ───────────────────────────────────────────────────
+// VitalSignsHud — Sanggam Orbit 생체 신호 HUD
+//
+// [Rule 4] app_theme → sanggam_theme
+// [Rule 4] AppTheme.sanggamGold → SanggamTheme.primary
+// [Rule 4] Color(0xFF00E676) 5x → SanggamTheme.jagaeCyan
+// [Rule 4] Colors.redAccent 4x → SanggamTheme.error
+// [Rule 4] Colors.orange 3x → SanggamTheme.primary
+// [Rule 4] Color(0xFF29B6F6) 3x → SanggamTheme.jagaeCyan
+// [Rule 4] Color(0xFFFFCA28) → SanggamTheme.primary
+// [Rule 4] withOpacity → withValues(alpha:)
+// ───────────────────────────────────────────────────
 
 /// 화상 진료 중 생체 신호 HUD 오버레이
 ///
@@ -81,10 +94,10 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.6),
+                color: Colors.black.withValues(alpha: 0.6),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
-                  color: _heartRateColor(_heartRate).withOpacity(0.5),
+                  color: _heartRateColor(_heartRate).withValues(alpha: 0.5),
                   width: 1,
                 ),
               ),
@@ -105,10 +118,10 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
                   const SizedBox(width: 2),
                   Text(
                     'bpm',
-                    style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 10),
+                    style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10),
                   ),
                   const SizedBox(width: 8),
-                  Icon(Icons.expand_less, size: 14, color: Colors.white.withOpacity(0.4)),
+                  Icon(Icons.expand_less, size: 14, color: Colors.white.withValues(alpha: 0.4)),
                 ],
               ),
             ),
@@ -127,9 +140,9 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
         margin: const EdgeInsets.symmetric(horizontal: 12),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.75),
+          color: Colors.black.withValues(alpha: 0.75),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppTheme.sanggamGold.withOpacity(0.3), width: 0.5),
+          border: Border.all(color: SanggamTheme.primary.withValues(alpha: 0.3), width: 0.5),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -141,13 +154,13 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
                   width: 6,
                   height: 6,
                   decoration: const BoxDecoration(
-                    color: Color(0xFF00E676),
+                    color: SanggamTheme.jagaeCyan,
                     shape: BoxShape.circle,
                   ),
                 ),
                 const SizedBox(width: 6),
                 const Text(
-                  'VITAL SIGNS',
+                  '생체신호',
                   style: TextStyle(
                     color: Colors.white54,
                     fontSize: 10,
@@ -156,7 +169,7 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
                   ),
                 ),
                 const Spacer(),
-                Icon(Icons.expand_more, size: 14, color: Colors.white.withOpacity(0.4)),
+                Icon(Icons.expand_more, size: 14, color: Colors.white.withValues(alpha: 0.4)),
               ],
             ),
             const SizedBox(height: 10),
@@ -189,7 +202,7 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
                   label: '혈압',
                   value: _bloodPressure,
                   unit: 'mmHg',
-                  color: const Color(0xFF29B6F6),
+                  color: SanggamTheme.jagaeCyan,
                 )),
                 const SizedBox(width: 8),
                 Expanded(child: _buildVitalTile(
@@ -221,9 +234,9 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withOpacity(0.15)),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
@@ -233,7 +246,7 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
               builder: (_, __) => Icon(
                 icon,
                 size: 16,
-                color: color.withOpacity(0.6 + _pulseController.value * 0.4),
+                color: color.withValues(alpha: 0.6 + _pulseController.value * 0.4),
               ),
             )
           else
@@ -245,7 +258,7 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
               children: [
                 Text(
                   label,
-                  style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 9),
+                  style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 9),
                 ),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.baseline,
@@ -263,7 +276,7 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
                     const SizedBox(width: 2),
                     Text(
                       unit,
-                      style: TextStyle(color: Colors.white.withOpacity(0.3), fontSize: 9),
+                      style: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 9),
                     ),
                   ],
                 ),
@@ -288,9 +301,9 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: stressColor.withOpacity(0.08),
+        color: stressColor.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: stressColor.withOpacity(0.15)),
+        border: Border.all(color: stressColor.withValues(alpha: 0.15)),
       ),
       child: Row(
         children: [
@@ -299,7 +312,7 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('스트레스', style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 9)),
+              Text('스트레스', style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 9)),
               Text(
                 '$_stressLevel ($stressLabel)',
                 style: TextStyle(color: stressColor, fontSize: 14, fontWeight: FontWeight.w700),
@@ -313,7 +326,7 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: _stressLevel / 100,
-                backgroundColor: Colors.white.withOpacity(0.1),
+                backgroundColor: Colors.white.withValues(alpha: 0.1),
                 valueColor: AlwaysStoppedAnimation(stressColor),
                 minHeight: 6,
               ),
@@ -327,28 +340,28 @@ class _VitalSignsHudState extends State<VitalSignsHud> with SingleTickerProvider
   // ── 색상 헬퍼 ──
 
   Color _heartRateColor(int bpm) {
-    if (bpm < 60) return const Color(0xFF29B6F6); // 서맥 — 파랑
-    if (bpm <= 100) return const Color(0xFF00E676); // 정상 — 녹색
-    return Colors.redAccent; // 빈맥 — 빨강
+    if (bpm < 60) return SanggamTheme.jagaeCyan; // 서맥
+    if (bpm <= 100) return SanggamTheme.jagaeCyan; // 정상
+    return SanggamTheme.error; // 빈맥
   }
 
   Color _spo2Color(int spo2) {
-    if (spo2 >= 95) return const Color(0xFF00E676);
-    if (spo2 >= 90) return Colors.orange;
-    return Colors.redAccent;
+    if (spo2 >= 95) return SanggamTheme.jagaeCyan;
+    if (spo2 >= 90) return SanggamTheme.primary;
+    return SanggamTheme.error;
   }
 
   Color _temperatureColor(double temp) {
-    if (temp >= 36.1 && temp <= 37.2) return const Color(0xFF00E676);
-    if (temp > 37.2 && temp <= 38.0) return Colors.orange;
-    if (temp > 38.0) return Colors.redAccent;
-    return const Color(0xFF29B6F6); // 저체온
+    if (temp >= 36.1 && temp <= 37.2) return SanggamTheme.jagaeCyan;
+    if (temp > 37.2 && temp <= 38.0) return SanggamTheme.primary;
+    if (temp > 38.0) return SanggamTheme.error;
+    return SanggamTheme.jagaeCyan; // 저체온
   }
 
   Color _stressColor(int level) {
-    if (level < 30) return const Color(0xFF00E676);
-    if (level < 50) return const Color(0xFFFFCA28);
-    if (level < 70) return Colors.orange;
-    return Colors.redAccent;
+    if (level < 30) return SanggamTheme.jagaeCyan;
+    if (level < 50) return SanggamTheme.primary;
+    if (level < 70) return SanggamTheme.primary;
+    return SanggamTheme.error;
   }
 }

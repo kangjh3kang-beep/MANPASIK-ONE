@@ -1,6 +1,5 @@
-/// 데이터 허브 도메인 모델 및 리포지토리
-///
-/// 측정 데이터 통합 관리, 트렌드 분석, 데이터 내보내기
+// 데이터 허브 도메인 모델 및 리포지토리.
+// 측정 데이터 통합 관리, 트렌드 분석, 데이터 내보내기.
 
 /// 바이오마커 트렌드 데이터 포인트
 class TrendDataPoint {
@@ -9,6 +8,9 @@ class TrendDataPoint {
   final String unit;
   final String biomarkerType;
   final bool isWithinRange;
+  final String evidenceStatus;
+  final bool diagnosticReady;
+  final List<String> evidenceGaps;
 
   const TrendDataPoint({
     required this.timestamp,
@@ -16,6 +18,9 @@ class TrendDataPoint {
     required this.unit,
     required this.biomarkerType,
     required this.isWithinRange,
+    this.evidenceStatus = 'unknown',
+    this.diagnosticReady = false,
+    this.evidenceGaps = const [],
   });
 }
 
@@ -32,6 +37,9 @@ class BiomarkerSummary {
   final double referenceMax;
   final int totalMeasurements;
   final String trend; // 'rising', 'falling', 'stable', 'insufficient'
+  final String latestEvidenceStatus;
+  final bool latestDiagnosticReady;
+  final List<String> latestEvidenceGaps;
 
   const BiomarkerSummary({
     required this.biomarkerType,
@@ -45,6 +53,9 @@ class BiomarkerSummary {
     required this.referenceMax,
     required this.totalMeasurements,
     required this.trend,
+    this.latestEvidenceStatus = 'unknown',
+    this.latestDiagnosticReady = false,
+    this.latestEvidenceGaps = const [],
   });
 }
 

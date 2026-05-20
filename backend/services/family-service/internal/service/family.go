@@ -23,6 +23,24 @@ const (
 	RoleElderly             // 어르신 (보호 대상)
 )
 
+// String 은 FamilyRole 의 사람 친화 표현 (tenancy 동기화 등에 사용).
+func (r FamilyRole) String() string {
+	switch r {
+	case RoleOwner:
+		return "owner"
+	case RoleGuardian:
+		return "guardian"
+	case RoleMember:
+		return "member"
+	case RoleChild:
+		return "child"
+	case RoleElderly:
+		return "elderly"
+	default:
+		return "unknown"
+	}
+}
+
 // InvitationStatus는 초대 상태입니다.
 type InvitationStatus int
 
@@ -123,6 +141,23 @@ type SharingPreferencesRepository interface {
 	FindByUserIDAndGroupID(ctx context.Context, userID, groupID string) (*SharingPreferences, error)
 }
 
+// TenancySync 는 family-service 의 그룹/멤버 변경을 tenancy 영속 store 에
+// 자동 반영하는 어댑터.
+//
+// family-service 는 도메인별 (가족 공유 데이터, 알림 등) 로직을 담당하고,
+// tenancy 는 권한/멤버십 격리를 담당. 두 개념이 분리되어 있으므로 동기화
+// 어댑터로 교차 도메인 일관성 유지.
+type TenancySync interface {
+	// OnGroupCreated: 그룹 생성 시 owner 를 tenancy.MembershipOwner 로 등록.
+	OnGroupCreated(ctx context.Context, groupID, ownerUserID string) error
+	// OnMemberAdded: 멤버 가입 시 tenancy.Member 등록 (역할은 family role 에서 변환).
+	OnMemberAdded(ctx context.Context, groupID, userID, familyRole string) error
+	// OnMemberRemoved: 멤버 제거 시 tenancy 멤버십도 제거.
+	OnMemberRemoved(ctx context.Context, groupID, userID string) error
+	// OnMemberRoleChanged: 역할 변경 시 tenancy 측 역할도 동기화.
+	OnMemberRoleChanged(ctx context.Context, groupID, userID, newFamilyRole string) error
+}
+
 // FamilyService는 가족 서비스 핵심 로직입니다.
 type FamilyService struct {
 	log         *zap.Logger
@@ -130,6 +165,7 @@ type FamilyService struct {
 	memberRepo  FamilyMemberRepository
 	inviteRepo  InvitationRepository
 	sharingRepo SharingPreferencesRepository
+	tenancySync TenancySync // 옵션 — 미설정 시 동기화 안 함
 }
 
 // NewFamilyService는 FamilyService를 생성합니다.
@@ -141,6 +177,14 @@ func NewFamilyService(log *zap.Logger, groupRepo FamilyGroupRepository, memberRe
 		inviteRepo:  inviteRepo,
 		sharingRepo: sharingRepo,
 	}
+}
+
+// SetTenancySync 는 tenancy 동기화 어댑터 등록.
+//
+// 운영 환경에서는 main.go 에서 호출. 미설정 시 family-service 는 기존대로
+// 동작 (tenancy 미연동).
+func (s *FamilyService) SetTenancySync(sync TenancySync) {
+	s.tenancySync = sync
 }
 
 // CreateFamilyGroup은 가족 그룹을 생성합니다.
@@ -173,6 +217,16 @@ func (s *FamilyService) CreateFamilyGroup(ctx context.Context, ownerUserID, grou
 	}
 	if err := s.memberRepo.Save(ctx, owner); err != nil {
 		return nil, fmt.Errorf("Owner 멤버 등록 실패: %w", err)
+	}
+
+	// Tenancy 동기화 (옵션): 그룹 ID 를 tenant ID 로, owner 를 owner 역할로 등록.
+	// 실패는 family-service 핵심 로직과 격리 — 로그만 남기고 진행.
+	if s.tenancySync != nil {
+		if err := s.tenancySync.OnGroupCreated(ctx, group.ID, ownerUserID); err != nil {
+			s.log.Warn("tenancy 동기화 실패 (그룹 생성)",
+				zap.String("group_id", group.ID),
+				zap.Error(err))
+		}
 	}
 
 	s.log.Info("가족 그룹 생성",
@@ -300,6 +354,16 @@ func (s *FamilyService) RespondToInvitation(ctx context.Context, invitationID, u
 			return "", "", fmt.Errorf("멤버 등록 실패: %w", err)
 		}
 
+		// Tenancy 동기화 (옵션): family role → tenancy role 변환 후 등록.
+		if s.tenancySync != nil {
+			if err := s.tenancySync.OnMemberAdded(ctx, invitation.GroupID, userID, invitation.Role.String()); err != nil {
+				s.log.Warn("tenancy 동기화 실패 (멤버 추가)",
+					zap.String("group_id", invitation.GroupID),
+					zap.String("user_id", userID),
+					zap.Error(err))
+			}
+		}
+
 		return invitation.GroupID, "초대를 수락했습니다", nil
 	}
 
@@ -325,7 +389,20 @@ func (s *FamilyService) RemoveMember(ctx context.Context, groupID, userID string
 		return fmt.Errorf("그룹 Owner는 탈퇴할 수 없습니다. 그룹을 삭제하세요")
 	}
 
-	return s.memberRepo.Remove(ctx, userID, groupID)
+	if err := s.memberRepo.Remove(ctx, userID, groupID); err != nil {
+		return err
+	}
+
+	// Tenancy 동기화 (옵션)
+	if s.tenancySync != nil {
+		if err := s.tenancySync.OnMemberRemoved(ctx, groupID, userID); err != nil {
+			s.log.Warn("tenancy 동기화 실패 (멤버 제거)",
+				zap.String("group_id", groupID),
+				zap.String("user_id", userID),
+				zap.Error(err))
+		}
+	}
+	return nil
 }
 
 // UpdateMemberRole은 멤버 역할을 변경합니다.
@@ -342,6 +419,15 @@ func (s *FamilyService) UpdateMemberRole(ctx context.Context, groupID, userID st
 	member.Role = newRole
 	if err := s.memberRepo.Save(ctx, member); err != nil {
 		return nil, err
+	}
+
+	if s.tenancySync != nil {
+		if err := s.tenancySync.OnMemberRoleChanged(ctx, groupID, userID, newRole.String()); err != nil {
+			s.log.Warn("tenancy 동기화 실패 (역할 변경)",
+				zap.String("group_id", groupID),
+				zap.String("user_id", userID),
+				zap.Error(err))
+		}
 	}
 
 	return member, nil

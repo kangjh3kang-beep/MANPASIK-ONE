@@ -1,11 +1,72 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:manpasik/core/providers/grpc_provider.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+import 'package:manpasik/shared/widgets/sanggam_container.dart';
+
+// ───────────────────────────────────────────────────
+// NoticeScreen — Sanggam Orbit 공지사항
+//
+// [Rule 4] +sanggam_theme.dart + sanggam_container.dart
+// [Rule 4] AppBar → body 내 커스텀 헤더
+// [Rule 4] Theme.of(context) 1x 제거
+// [Rule 4] ThemeData 파라미터 1x 제거
+// [Rule 4] theme.textTheme.* ~3x → 직접 TextStyle
+// [Rule 4] theme.colorScheme.* ~3x → SanggamTheme 상수
+// [Rule 4] Colors.blue → SanggamTheme.jagaeCyan
+// [Rule 4] Colors.orange → SanggamTheme.primary
+// [Rule 4] Colors.red → SanggamTheme.error
+// [Rule 4] Colors.green → SanggamTheme.jagaeCyan
+// [Rule 4] Colors.purple → SanggamTheme.jagaeMagenta
+// [Rule 4] Colors.grey → SanggamTheme.onSurfaceDim
+// [Rule 4] withOpacity → withValues(alpha:)
+// [Rule 4] Card → SanggamContainer
+// [Rule 4] Scaffold 배경 → SanggamTheme.background
+// [Rule 2] spacing 6→8
+// ───────────────────────────────────────────────────
+
 /// 공지사항 화면
-class NoticeScreen extends StatelessWidget {
+class NoticeScreen extends ConsumerStatefulWidget {
   const NoticeScreen({super.key});
 
-  static final _notices = [
+  @override
+  ConsumerState<NoticeScreen> createState() => _NoticeScreenState();
+}
+
+class _NoticeScreenState extends ConsumerState<NoticeScreen> {
+  List<_NoticeItem> _notices = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadNotices();
+  }
+
+  Future<void> _loadNotices() async {
+    try {
+      final rest = ref.read(restClientProvider);
+      final data = await rest.listNotices();
+      final rawItems = data['notices'] as List? ?? [];
+      setState(() {
+        _notices = rawItems
+            .map((e) => _NoticeItem.fromMap(e as Map<String, dynamic>))
+            .toList();
+        _isLoading = false;
+      });
+    } on DioException {
+      // Fallback to default notices on API failure
+      setState(() {
+        _notices = _defaultNotices;
+        _isLoading = false;
+      });
+    }
+  }
+
+  static final _defaultNotices = [
     _NoticeItem(
       title: 'ManPaSik v1.2.0 업데이트 안내',
       category: '업데이트',
@@ -22,100 +83,158 @@ class NoticeScreen extends StatelessWidget {
       category: '정책',
       date: '2026-02-10',
       content: '개인정보 처리방침이 일부 변경되었습니다. '
-          '주요 변경 사항은 건강 데이터 처리 범위와 제3자 제공 관련 내용입니다. '
-          '자세한 내용은 설정 > 개인정보처리방침에서 확인하실 수 있습니다.',
+          '주요 변경 사항은 건강 데이터 처리 범위와 제3자 제공 관련 내용입니다.',
       isImportant: true,
-    ),
-    _NoticeItem(
-      title: '서버 정기 점검 안내 (2/20 03:00~05:00)',
-      category: '점검',
-      date: '2026-02-08',
-      content: '서비스 안정성 향상을 위한 정기 점검이 진행됩니다.\n'
-          '점검 시간: 2026년 2월 20일 03:00 ~ 05:00 (KST)\n'
-          '점검 중에는 측정 및 데이터 동기화가 일시 중단됩니다.',
-      isImportant: false,
-    ),
-    _NoticeItem(
-      title: '건강 챌린지 시즌 2 오픈!',
-      category: '이벤트',
-      date: '2026-02-01',
-      content: '커뮤니티 건강 챌린지 시즌 2가 시작되었습니다. '
-          '30일 혈당 관리 챌린지에 참여하고 특별 뱃지를 획득하세요!',
-      isImportant: false,
-    ),
-    _NoticeItem(
-      title: '신규 카트리지 출시 - 비타민D, 코르티솔',
-      category: '상품',
-      date: '2026-01-25',
-      content: 'Premium/Professional 등급의 새로운 카트리지가 출시되었습니다:\n'
-          '- 비타민D (25(OH)D): 골밀도 및 면역 관련 지표\n'
-          '- 코르티솔: 스트레스 호르몬 수치 측정',
-      isImportant: false,
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('공지사항'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
+      backgroundColor:
+          SanggamTheme.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 헤더
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white),
+                    tooltip: '뒤로 가기',
+                    onPressed: () =>
+                        context.pop(),
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      '공지사항',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 본문
+            Expanded(
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                          color: SanggamTheme.primary))
+                  : _notices.isEmpty
+                      ? const Center(
+                          child: Text('공지사항이 없습니다.',
+                              style: TextStyle(
+                                  color: SanggamTheme.onSurfaceDim)))
+                      : ListView.builder(
+                          padding: const EdgeInsets.all(16),
+                          itemCount: _notices.length,
+                          itemBuilder: (_, index) =>
+                              _buildNoticeCard(_notices[index]),
+                        ),
+            ),
+          ],
         ),
-      ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: _notices.length,
-        itemBuilder: (context, index) => _buildNoticeCard(theme, _notices[index]),
       ),
     );
   }
 
-  Widget _buildNoticeCard(ThemeData theme, _NoticeItem notice) {
+  Widget _buildNoticeCard(
+      _NoticeItem notice) {
     final catColor = switch (notice.category) {
-      '업데이트' => Colors.blue,
-      '정책' => Colors.orange,
-      '점검' => Colors.red,
-      '이벤트' => Colors.green,
-      '상품' => Colors.purple,
-      _ => Colors.grey,
+      '업데이트' => SanggamTheme.jagaeCyan,
+      '정책' => SanggamTheme.primary,
+      '점검' => SanggamTheme.error,
+      '이벤트' => SanggamTheme.jagaeCyan,
+      '상품' => SanggamTheme.jagaeMagenta,
+      _ => SanggamTheme.onSurfaceDim,
     };
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ExpansionTile(
-        leading: notice.isImportant
-            ? Icon(Icons.campaign, color: theme.colorScheme.error)
-            : Icon(Icons.article_outlined, color: theme.colorScheme.outline),
-        title: Text(
-          notice.title,
-          style: theme.textTheme.titleSmall?.copyWith(
-            fontWeight: notice.isImportant ? FontWeight.bold : FontWeight.normal,
+    return Padding(
+      padding:
+          const EdgeInsets.only(bottom: 8),
+      child: SanggamContainer(
+        borderRadius: 16,
+        padding: EdgeInsets.zero,
+        child: Theme(
+          data: ThemeData.dark().copyWith(
+            dividerColor:
+                SanggamTheme.surfaceVariant,
           ),
-        ),
-        subtitle: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
-              decoration: BoxDecoration(
-                color: catColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
+          child: ExpansionTile(
+            leading: notice.isImportant
+                ? const Icon(Icons.campaign,
+                    color: SanggamTheme.error)
+                : const Icon(
+                    Icons.article_outlined,
+                    color: SanggamTheme
+                        .onSurfaceDim),
+            title: Text(
+              notice.title,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: notice.isImportant
+                    ? FontWeight.bold
+                    : FontWeight.normal,
               ),
-              child: Text(notice.category, style: TextStyle(fontSize: 10, color: catColor)),
             ),
-            const SizedBox(width: 8),
-            Text(notice.date, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.outline)),
-          ],
-        ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Text(notice.content, style: theme.textTheme.bodyMedium),
+            subtitle: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets
+                      .symmetric(
+                      horizontal: 8,
+                      vertical: 2),
+                  decoration: BoxDecoration(
+                    color: catColor.withValues(
+                        alpha: 0.1),
+                    borderRadius:
+                        BorderRadius.circular(
+                            8),
+                  ),
+                  child: Text(
+                      notice.category,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: catColor,
+                      )),
+                ),
+                const SizedBox(width: 8),
+                Text(notice.date,
+                    style: const TextStyle(
+                      color: SanggamTheme
+                          .onSurfaceDim,
+                      fontSize: 12,
+                    )),
+              ],
+            ),
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.fromLTRB(
+                        16, 0, 16, 16),
+                child: Text(notice.content,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                    )),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -131,4 +250,14 @@ class _NoticeItem {
     required this.content,
     required this.isImportant,
   });
+
+  factory _NoticeItem.fromMap(Map<String, dynamic> m) {
+    return _NoticeItem(
+      title: (m['title'] ?? '') as String,
+      category: (m['category'] ?? '') as String,
+      date: (m['date'] ?? m['created_at'] ?? '') as String,
+      content: (m['content'] ?? '') as String,
+      isImportant: (m['is_important'] as bool?) ?? false,
+    );
+  }
 }

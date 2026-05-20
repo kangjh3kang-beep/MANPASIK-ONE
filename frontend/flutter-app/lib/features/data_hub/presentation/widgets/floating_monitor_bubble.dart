@@ -3,10 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/features/data_hub/presentation/providers/monitor_bubble_provider.dart';
 import 'package:manpasik/features/data_hub/presentation/providers/monitoring_providers.dart';
 import 'package:manpasik/features/data_hub/presentation/widgets/mini_device_card.dart';
+
+// ───────────────────────────────────────────────────
+// FloatingMonitorBubble — Sanggam Orbit 모니터 버블
+//
+// [Rule 4] app_theme → sanggam_theme
+// [Rule 4] Theme.of(context) isDark 분기 제거 (항상 다크)
+// [Rule 4] AppTheme.sanggamGold ~7x → SanggamTheme.primary
+// [Rule 4] Colors.redAccent ~8x → SanggamTheme.error
+// [Rule 4] Color(0xFF00E676) → SanggamTheme.jagaeCyan
+// [Rule 4] Color(0xFF1B2640/050B14) → SanggamTheme 상수
+// ───────────────────────────────────────────────────
 
 /// Floating Monitor Bubble — 모든 셸 페이지에 표시되는 리더기 현황 오버레이
 ///
@@ -14,19 +25,22 @@ import 'package:manpasik/features/data_hub/presentation/widgets/mini_device_card
 ///   1. Compact Bubble (56x56) — 연결 수 + 경고 뱃지
 ///   2. Mini Dashboard (280x340) — 기기 카드 횡스크롤 + 요약
 ///   3. "전체 보기" → /data/monitoring (기존 HoloGlobe 화면)
-class FloatingMonitorBubble extends ConsumerStatefulWidget {
+class FloatingMonitorBubble
+    extends ConsumerStatefulWidget {
   const FloatingMonitorBubble({super.key});
 
   @override
-  ConsumerState<FloatingMonitorBubble> createState() => _FloatingMonitorBubbleState();
+  ConsumerState<FloatingMonitorBubble>
+      createState() =>
+          _FloatingMonitorBubbleState();
 }
 
-class _FloatingMonitorBubbleState extends ConsumerState<FloatingMonitorBubble>
+class _FloatingMonitorBubbleState
+    extends ConsumerState<FloatingMonitorBubble>
     with SingleTickerProviderStateMixin {
   late AnimationController _breatheController;
 
-  // Bubble position — defaults to bottom-right above GlassDock
-  double _bubbleX = -1; // sentinel: not initialized
+  double _bubbleX = -1;
   double _bubbleY = -1;
   bool _dragging = false;
 
@@ -49,42 +63,67 @@ class _FloatingMonitorBubbleState extends ConsumerState<FloatingMonitorBubble>
     super.dispose();
   }
 
-  void _initPosition(BoxConstraints constraints) {
+  void _initPosition(
+      BoxConstraints constraints) {
     if (_bubbleX < 0) {
-      _bubbleX = constraints.maxWidth - _bubbleSize - 16;
-      _bubbleY = constraints.maxHeight - _bubbleSize - 100; // above dock
+      _bubbleX = constraints.maxWidth -
+          _bubbleSize -
+          16;
+      _bubbleY = constraints.maxHeight -
+          _bubbleSize -
+          100;
     }
   }
 
-  void _snapToEdge(BoxConstraints constraints) {
-    final centerX = _bubbleX + _bubbleSize / 2;
+  void _snapToEdge(
+      BoxConstraints constraints) {
+    final centerX =
+        _bubbleX + _bubbleSize / 2;
     final halfW = constraints.maxWidth / 2;
-    // Snap to nearest horizontal edge
-    _bubbleX = centerX < halfW ? 12 : constraints.maxWidth - _bubbleSize - 12;
-    // Clamp vertical
-    _bubbleY = _bubbleY.clamp(60, constraints.maxHeight - _bubbleSize - 90);
+    _bubbleX = centerX < halfW
+        ? 12
+        : constraints.maxWidth -
+            _bubbleSize -
+            12;
+    _bubbleY = _bubbleY.clamp(60,
+        constraints.maxHeight - _bubbleSize - 90);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isExpanded = ref.watch(monitorBubbleExpandedProvider);
-    final counts = ref.watch(connectedCountProvider);
-    final alerts = ref.watch(deviceAlertCountProvider);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isExpanded = ref
+        .watch(monitorBubbleExpandedProvider);
+    final counts =
+        ref.watch(connectedCountProvider);
+    final alerts =
+        ref.watch(deviceAlertCountProvider);
 
-    // Hide on monitoring page itself
-    final location = GoRouterState.of(context).matchedLocation;
-    if (location == '/data/monitoring') return const SizedBox.shrink();
+    final location =
+        GoRouterState.of(context)
+            .matchedLocation;
+    if (location == '/data/monitoring') {
+      return const SizedBox.shrink();
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
         _initPosition(constraints);
 
-        // Panel position: near bubble but clamped to screen
-        double panelX = _bubbleX - _panelWidth + _bubbleSize;
-        double panelY = _bubbleY - _panelHeight - 8;
-        panelX = panelX.clamp(8, constraints.maxWidth - _panelWidth - 8);
-        panelY = panelY.clamp(60, constraints.maxHeight - _panelHeight - 90);
+        double panelX = _bubbleX -
+            _panelWidth +
+            _bubbleSize;
+        double panelY =
+            _bubbleY - _panelHeight - 8;
+        panelX = panelX.clamp(
+            8,
+            constraints.maxWidth -
+                _panelWidth -
+                8);
+        panelY = panelY.clamp(
+            60,
+            constraints.maxHeight -
+                _panelHeight -
+                90);
 
         return Stack(
           children: [
@@ -92,51 +131,97 @@ class _FloatingMonitorBubbleState extends ConsumerState<FloatingMonitorBubble>
             if (isExpanded)
               Positioned.fill(
                 child: GestureDetector(
-                  onTap: () => ref.read(monitorBubbleExpandedProvider.notifier).state = false,
-                  child: Container(color: Colors.black.withValues(alpha: 0.3)),
+                  onTap: () => ref
+                      .read(
+                          monitorBubbleExpandedProvider
+                              .notifier)
+                      .state = false,
+                  child: Container(
+                      color: Colors.black
+                          .withValues(
+                              alpha: 0.3)),
                 ),
               ),
 
             // Mini Dashboard Panel
             if (isExpanded)
               AnimatedPositioned(
-                duration: const Duration(milliseconds: 250),
+                duration: const Duration(
+                    milliseconds: 250),
                 curve: Curves.easeOutCubic,
                 left: panelX,
                 top: panelY,
-                child: _buildMiniDashboard(isDark),
+                child: _buildMiniDashboard(),
               ),
 
             // Compact Bubble
             AnimatedPositioned(
-              duration: _dragging ? Duration.zero : const Duration(milliseconds: 300),
+              duration: _dragging
+                  ? Duration.zero
+                  : const Duration(
+                      milliseconds: 300),
               curve: Curves.easeOutCubic,
               left: _bubbleX,
               top: _bubbleY,
-              child: GestureDetector(
-                onTap: () {
-                  ref.read(monitorBubbleExpandedProvider.notifier).state = !isExpanded;
-                },
-                onPanStart: (_) => setState(() => _dragging = true),
-                onPanUpdate: (d) {
-                  setState(() {
-                    _bubbleX += d.delta.dx;
-                    _bubbleY += d.delta.dy;
-                    _bubbleX = _bubbleX.clamp(0, constraints.maxWidth - _bubbleSize);
-                    _bubbleY = _bubbleY.clamp(60, constraints.maxHeight - _bubbleSize - 20);
-                  });
-                },
-                onPanEnd: (_) {
-                  setState(() {
-                    _dragging = false;
-                    _snapToEdge(constraints);
-                  });
-                  // Close panel on drag
-                  if (isExpanded) {
-                    ref.read(monitorBubbleExpandedProvider.notifier).state = false;
-                  }
-                },
-                child: _buildCompactBubble(isDark, counts, alerts),
+              child: Tooltip(
+                message: '디바이스 모니터',
+                child: MouseRegion(
+                  cursor: _dragging
+                      ? SystemMouseCursors
+                          .grabbing
+                      : SystemMouseCursors
+                          .grab,
+                  child: GestureDetector(
+                    onTap: () {
+                      ref
+                          .read(
+                              monitorBubbleExpandedProvider
+                                  .notifier)
+                          .state = !isExpanded;
+                    },
+                    onPanStart: (_) =>
+                        setState(() =>
+                            _dragging = true),
+                    onPanUpdate: (d) {
+                      setState(() {
+                        _bubbleX +=
+                            d.delta.dx;
+                        _bubbleY +=
+                            d.delta.dy;
+                        _bubbleX =
+                            _bubbleX.clamp(
+                                0,
+                                constraints
+                                        .maxWidth -
+                                    _bubbleSize);
+                        _bubbleY =
+                            _bubbleY.clamp(
+                                60,
+                                constraints
+                                        .maxHeight -
+                                    _bubbleSize -
+                                    20);
+                      });
+                    },
+                    onPanEnd: (_) {
+                      setState(() {
+                        _dragging = false;
+                        _snapToEdge(
+                            constraints);
+                      });
+                      if (isExpanded) {
+                        ref
+                            .read(
+                                monitorBubbleExpandedProvider
+                                    .notifier)
+                            .state = false;
+                      }
+                    },
+                    child:
+                        _buildCompactBubble(
+                            counts, alerts),
+                  ),
+                ),
               ),
             ),
           ],
@@ -147,15 +232,16 @@ class _FloatingMonitorBubbleState extends ConsumerState<FloatingMonitorBubble>
 
   /// Compact Bubble (56x56 원형)
   Widget _buildCompactBubble(
-    bool isDark,
     ({int connected, int total}) counts,
     int alerts,
   ) {
     return AnimatedBuilder(
       animation: _breatheController,
       builder: (context, child) {
-        final glowOpacity = 0.15 + _breatheController.value * 0.2;
-        final scale = 1.0 + _breatheController.value * 0.02;
+        final glowOpacity = 0.15 +
+            _breatheController.value * 0.2;
+        final scale = 1.0 +
+            _breatheController.value * 0.02;
 
         return Transform.scale(
           scale: scale,
@@ -166,8 +252,13 @@ class _FloatingMonitorBubbleState extends ConsumerState<FloatingMonitorBubble>
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: (alerts > 0 ? Colors.redAccent : AppTheme.sanggamGold)
-                      .withValues(alpha: glowOpacity),
+                  color: (alerts > 0
+                          ? SanggamTheme.error
+                          : SanggamTheme
+                              .primary)
+                      .withValues(
+                          alpha:
+                              glowOpacity),
                   blurRadius: 20,
                   spreadRadius: 2,
                 ),
@@ -175,46 +266,61 @@ class _FloatingMonitorBubbleState extends ConsumerState<FloatingMonitorBubble>
             ),
             child: ClipOval(
               child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                filter: ImageFilter.blur(
+                    sigmaX: 12, sigmaY: 12),
                 child: Container(
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: isDark
-                          ? [
-                              const Color(0xFF1B2640).withValues(alpha: 0.6),
-                              const Color(0xFF050B14).withValues(alpha: 0.8),
-                            ]
-                          : [
-                              Colors.white.withValues(alpha: 0.8),
-                              Colors.white.withValues(alpha: 0.5),
-                            ],
+                      begin:
+                          Alignment.topLeft,
+                      end: Alignment
+                          .bottomRight,
+                      colors: [
+                        SanggamTheme
+                            .surfaceVariant
+                            .withValues(
+                                alpha: 0.6),
+                        SanggamTheme
+                            .background
+                            .withValues(
+                                alpha: 0.8),
+                      ],
                     ),
                     border: Border.all(
-                      color: (alerts > 0 ? Colors.redAccent : AppTheme.sanggamGold)
-                          .withValues(alpha: 0.5),
+                      color: (alerts > 0
+                              ? SanggamTheme
+                                  .error
+                              : SanggamTheme
+                                  .primary)
+                          .withValues(
+                              alpha: 0.5),
                       width: 1.2,
                     ),
                   ),
                   child: Stack(
-                    alignment: Alignment.center,
+                    alignment:
+                        Alignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.sensors,
                         size: 22,
-                        color: isDark ? AppTheme.sanggamGold : const Color(0xFF004D40),
+                        color: SanggamTheme
+                            .primary,
                       ),
                       // Connected count badge
                       Positioned(
                         bottom: 6,
                         child: Text(
                           '${counts.connected}/${counts.total}',
-                          style: TextStyle(
+                          style:
+                              const TextStyle(
                             fontSize: 8,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white70 : Colors.black54,
+                            fontWeight:
+                                FontWeight
+                                    .bold,
+                            color: SanggamTheme
+                                .onSurfaceDim,
                           ),
                         ),
                       ),
@@ -226,17 +332,25 @@ class _FloatingMonitorBubbleState extends ConsumerState<FloatingMonitorBubble>
                           child: Container(
                             width: 16,
                             height: 16,
-                            decoration: const BoxDecoration(
-                              color: Colors.redAccent,
-                              shape: BoxShape.circle,
+                            decoration:
+                                const BoxDecoration(
+                              color:
+                                  SanggamTheme
+                                      .error,
+                              shape: BoxShape
+                                  .circle,
                             ),
                             child: Center(
                               child: Text(
                                 '$alerts',
-                                style: const TextStyle(
-                                  color: Colors.white,
+                                style:
+                                    const TextStyle(
+                                  color: Colors
+                                      .white,
                                   fontSize: 9,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight:
+                                      FontWeight
+                                          .bold,
                                 ),
                               ),
                             ),
@@ -254,42 +368,45 @@ class _FloatingMonitorBubbleState extends ConsumerState<FloatingMonitorBubble>
   }
 
   /// Mini Dashboard (280x360 패널)
-  Widget _buildMiniDashboard(bool isDark) {
-    final devicesAsync = ref.watch(pollingConnectedDevicesProvider);
-    final counts = ref.watch(connectedCountProvider);
-    final alerts = ref.watch(deviceAlertCountProvider);
+  Widget _buildMiniDashboard() {
+    final devicesAsync = ref
+        .watch(pollingConnectedDevicesProvider);
+    final counts =
+        ref.watch(connectedCountProvider);
+    final alerts =
+        ref.watch(deviceAlertCountProvider);
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
+      borderRadius:
+          BorderRadius.circular(20),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+        filter: ImageFilter.blur(
+            sigmaX: 20, sigmaY: 20),
         child: Container(
           width: _panelWidth,
           height: _panelHeight,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius:
+                BorderRadius.circular(20),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: isDark
-                  ? [
-                      const Color(0xFF1B2640).withValues(alpha: 0.5),
-                      const Color(0xFF050B14).withValues(alpha: 0.7),
-                    ]
-                  : [
-                      Colors.white.withValues(alpha: 0.85),
-                      Colors.white.withValues(alpha: 0.6),
-                    ],
+              colors: [
+                SanggamTheme.surfaceVariant
+                    .withValues(alpha: 0.5),
+                SanggamTheme.background
+                    .withValues(alpha: 0.7),
+              ],
             ),
             border: Border.all(
-              color: isDark
-                  ? AppTheme.sanggamGold.withValues(alpha: 0.3)
-                  : Colors.black.withValues(alpha: 0.08),
+              color: SanggamTheme.primary
+                  .withValues(alpha: 0.3),
               width: 0.8,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.1),
+                color: Colors.black
+                    .withValues(alpha: 0.4),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -299,34 +416,49 @@ class _FloatingMonitorBubbleState extends ConsumerState<FloatingMonitorBubble>
             children: [
               // Header
               Padding(
-                padding: const EdgeInsets.fromLTRB(16, 14, 12, 8),
+                padding:
+                    const EdgeInsets.fromLTRB(
+                        16, 14, 12, 8),
                 child: Row(
                   children: [
                     Container(
                       width: 8,
                       height: 8,
-                      decoration: BoxDecoration(
-                        color: alerts > 0 ? Colors.redAccent : const Color(0xFF00E676),
-                        shape: BoxShape.circle,
+                      decoration:
+                          BoxDecoration(
+                        color: alerts > 0
+                            ? SanggamTheme
+                                .error
+                            : SanggamTheme
+                                .jagaeCyan,
+                        shape:
+                            BoxShape.circle,
                       ),
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'DEVICE STATUS',
+                      '디바이스 상태',
                       style: TextStyle(
-                        color: isDark ? Colors.white54 : Colors.black45,
+                        color: SanggamTheme
+                            .onSurfaceDim
+                            .withValues(
+                                alpha: 0.8),
                         fontSize: 10,
-                        fontWeight: FontWeight.w600,
+                        fontWeight:
+                            FontWeight.w600,
                         letterSpacing: 1.5,
                       ),
                     ),
                     const Spacer(),
                     Text(
                       '${counts.connected}/${counts.total} 연결',
-                      style: TextStyle(
-                        color: isDark ? AppTheme.sanggamGold : const Color(0xFF004D40),
+                      style:
+                          const TextStyle(
+                        color: SanggamTheme
+                            .primary,
                         fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        fontWeight:
+                            FontWeight.bold,
                       ),
                     ),
                   ],
@@ -337,25 +469,62 @@ class _FloatingMonitorBubbleState extends ConsumerState<FloatingMonitorBubble>
               if (alerts > 0)
                 GestureDetector(
                   onTap: () {
-                    ref.read(monitorBubbleExpandedProvider.notifier).state = false;
-                    context.push('/data/monitoring');
+                    ref
+                        .read(
+                            monitorBubbleExpandedProvider
+                                .notifier)
+                        .state = false;
+                    context.push(
+                        '/data/monitoring');
                   },
                   child: Container(
                     width: double.infinity,
-                    margin: const EdgeInsets.symmetric(horizontal: 12),
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.redAccent.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.redAccent.withValues(alpha: 0.3)),
+                    margin: const EdgeInsets
+                        .symmetric(
+                        horizontal: 12),
+                    padding: const EdgeInsets
+                        .symmetric(
+                        horizontal: 10,
+                        vertical: 6),
+                    decoration:
+                        BoxDecoration(
+                      color: SanggamTheme
+                          .error
+                          .withValues(
+                              alpha: 0.1),
+                      borderRadius:
+                          BorderRadius
+                              .circular(8),
+                      border: Border.all(
+                          color: SanggamTheme
+                              .error
+                              .withValues(
+                                  alpha:
+                                      0.3)),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.warning_amber_rounded, size: 14, color: Colors.redAccent),
-                        const SizedBox(width: 6),
+                        const Icon(
+                          Icons
+                              .warning_amber_rounded,
+                          size: 14,
+                          color: SanggamTheme
+                              .error,
+                        ),
+                        const SizedBox(
+                            width: 6),
                         Text(
                           '$alerts개 기기 주의 필요',
-                          style: const TextStyle(color: Colors.redAccent, fontSize: 11, fontWeight: FontWeight.w600),
+                          style:
+                              const TextStyle(
+                            color:
+                                SanggamTheme
+                                    .error,
+                            fontSize: 11,
+                            fontWeight:
+                                FontWeight
+                                    .w600,
+                          ),
                         ),
                       ],
                     ),
@@ -368,41 +537,69 @@ class _FloatingMonitorBubbleState extends ConsumerState<FloatingMonitorBubble>
                 child: devicesAsync.when(
                   data: (devices) {
                     if (devices.isEmpty) {
-                      return Center(
+                      return const Center(
                         child: Text(
                           '등록된 기기가 없습니다',
                           style: TextStyle(
-                            color: isDark ? Colors.white38 : Colors.black38,
+                            color: SanggamTheme
+                                .onSurfaceDim,
                             fontSize: 12,
                           ),
                         ),
                       );
                     }
                     return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      itemCount: devices.length,
-                      itemBuilder: (_, i) => MiniDeviceCard(
+                      scrollDirection:
+                          Axis.horizontal,
+                      padding:
+                          const EdgeInsets
+                              .symmetric(
+                              horizontal:
+                                  12),
+                      itemCount:
+                          devices.length,
+                      itemBuilder: (_, i) =>
+                          MiniDeviceCard(
                         device: devices[i],
                         onTap: () {
-                          ref.read(selectedDeviceIdProvider.notifier).state = devices[i].id;
-                          ref.read(monitorBubbleExpandedProvider.notifier).state = false;
-                          context.push('/data/monitoring');
+                          ref
+                              .read(selectedDeviceIdProvider
+                                  .notifier)
+                              .state = devices[i]
+                              .id;
+                          ref
+                              .read(
+                                  monitorBubbleExpandedProvider
+                                      .notifier)
+                              .state = false;
+                          context.push(
+                              '/data/monitoring');
                         },
                       ),
                     );
                   },
-                  loading: () => const Center(
+                  loading: () =>
+                      const Center(
                     child: SizedBox(
                       width: 24,
                       height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.sanggamGold),
+                      child:
+                          CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: SanggamTheme
+                            .primary,
+                      ),
                     ),
                   ),
-                  error: (_, __) => Center(
+                  error: (_, __) =>
+                      const Center(
                     child: Text(
                       '데이터 로드 실패',
-                      style: TextStyle(color: isDark ? Colors.white38 : Colors.black38, fontSize: 12),
+                      style: TextStyle(
+                        color: SanggamTheme
+                            .onSurfaceDim,
+                        fontSize: 12,
+                      ),
                     ),
                   ),
                 ),
@@ -410,37 +607,60 @@ class _FloatingMonitorBubbleState extends ConsumerState<FloatingMonitorBubble>
 
               // Footer: "전체 보기" button
               Padding(
-                padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                padding:
+                    const EdgeInsets.fromLTRB(
+                        12, 4, 12, 12),
                 child: SizedBox(
                   width: double.infinity,
                   height: 36,
                   child: TextButton(
                     onPressed: () {
-                      ref.read(monitorBubbleExpandedProvider.notifier).state = false;
-                      context.push('/data/monitoring');
+                      ref
+                          .read(
+                              monitorBubbleExpandedProvider
+                                  .notifier)
+                          .state = false;
+                      context.push(
+                          '/data/monitoring');
                     },
-                    style: TextButton.styleFrom(
-                      backgroundColor: isDark
-                          ? AppTheme.sanggamGold.withValues(alpha: 0.12)
-                          : const Color(0xFF004D40).withValues(alpha: 0.08),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    style:
+                        TextButton.styleFrom(
+                      backgroundColor:
+                          SanggamTheme.primary
+                              .withValues(
+                                  alpha:
+                                      0.12),
+                      shape:
+                          RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius
+                                .circular(
+                                    10),
+                      ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    child: const Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .center,
                       children: [
                         Text(
-                          '전체 현황 보기',
+                          '전체 리더기 현황보기',
                           style: TextStyle(
-                            color: isDark ? AppTheme.sanggamGold : const Color(0xFF004D40),
+                            color:
+                                SanggamTheme
+                                    .primary,
                             fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                            fontWeight:
+                                FontWeight
+                                    .w600,
                           ),
                         ),
-                        const SizedBox(width: 4),
+                        SizedBox(width: 4),
                         Icon(
                           Icons.open_in_new,
                           size: 14,
-                          color: isDark ? AppTheme.sanggamGold : const Color(0xFF004D40),
+                          color: SanggamTheme
+                              .primary,
                         ),
                       ],
                     ),

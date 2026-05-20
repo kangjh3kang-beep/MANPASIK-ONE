@@ -31,6 +31,7 @@ import (
 	v1 "github.com/manpasik/backend/shared/gen/go/v1"
 	"github.com/manpasik/backend/shared/middleware"
 	"github.com/manpasik/backend/shared/observability"
+	"github.com/manpasik/backend/shared/tenancy"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -99,12 +100,23 @@ func main() {
 
 	familySvc := service.NewFamilyService(logger, groupRepo, memberRepo, inviteRepo, sharingRepo)
 
-	grpcServer := grpc.NewServer(
+	// Tenancy 멤버십 store + family-service 동기화 어댑터 (Phase AE-2).
+	// family-service 는 group/member 변경을 tenancy.MembershipStore 로 자동 미러링.
+	tenancyMemStore := tenancy.NewMemoryMembershipStore()
+	familySvc.SetTenancySync(service.NewTenancySyncAdapter(tenancyMemStore))
+
+	tenancyEngine := tenancy.NewPolicyEngine(tenancyMemStore)
+	serverOpts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			middleware.RequestIDInterceptor(),
 			observability.UnaryServerInterceptor(metrics),
 		),
-	)
+	}
+	serverOpts = append(serverOpts, tenancy.MaybeServerOptions(tenancyEngine, nil)...)
+	if tenancy.EnforcedFromEnv() {
+		log.Printf("[%s] 멀티테넌트 RBAC 인터셉터 활성화", serviceName)
+	}
+	grpcServer := grpc.NewServer(serverOpts...)
 
 	healthServer := health.NewServer()
 	healthpb.RegisterHealthServer(grpcServer, healthServer)

@@ -24,8 +24,10 @@ import (
 	"github.com/manpasik/backend/services/telemedicine-service/internal/repository/memory"
 	"github.com/manpasik/backend/services/telemedicine-service/internal/repository/postgres"
 	"github.com/manpasik/backend/services/telemedicine-service/internal/service"
+	"github.com/manpasik/backend/services/telemedicine-service/internal/webrtc"
 	"github.com/manpasik/backend/shared/config"
 	v1 "github.com/manpasik/backend/shared/gen/go/v1"
+	"github.com/manpasik/backend/shared/tenancy"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -88,7 +90,33 @@ func main() {
 
 	teleSvc := service.NewTelemedicineService(logger, consultationRepo, doctorRepo, videoSessionRepo)
 
-	grpcServer := grpc.NewServer()
+	// WebRTC 제공자 초기화: AGORA_APP_ID 환경변수 설정 시 Agora 사용
+	if appID := os.Getenv("AGORA_APP_ID"); appID != "" {
+		appCert := os.Getenv("AGORA_APP_CERT")
+		customerID := os.Getenv("AGORA_CUSTOMER_ID")
+		secret := os.Getenv("AGORA_SECRET")
+		baseURL := os.Getenv("AGORA_BASE_URL")
+		provider := webrtc.NewAgoraProvider(webrtc.AgoraConfig{
+			AppID:      appID,
+			AppCert:    appCert,
+			CustomerID: customerID,
+			Secret:     secret,
+			BaseURL:    baseURL,
+		})
+		teleSvc.SetWebRTCProvider(provider)
+		log.Printf("[%s] Agora WebRTC 제공자 활성화", serviceName)
+	} else {
+		log.Printf("[%s] WebRTC 제공자 미설정, 폴백 사용", serviceName)
+	}
+
+	// 멀티테넌트 RBAC: TENANCY_ENFORCED=true 시에만 테넌시 인터셉터 활성화 (점진 도입).
+	tenancyEngine := tenancy.NewPolicyEngine(tenancy.NewMemoryMembershipStore())
+	serverOpts := tenancy.MaybeServerOptions(tenancyEngine, nil)
+	if len(serverOpts) > 0 {
+		log.Printf("[%s] 멀티테넌트 RBAC 인터셉터 활성화", serviceName)
+	}
+
+	grpcServer := grpc.NewServer(serverOpts...)
 
 	healthServer := health.NewServer()
 	healthpb.RegisterHealthServer(grpcServer, healthServer)

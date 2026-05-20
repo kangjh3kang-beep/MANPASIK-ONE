@@ -4,6 +4,21 @@ import 'package:go_router/go_router.dart';
 
 import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/shared/providers/auth_provider.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+
+// ───────────────────────────────────────────────────
+// NotificationScreen — Sanggam Orbit 알림 센터
+//
+// [Rule 4] AppBar → body 내 커스텀 헤더 + TabBar
+// [Rule 4] sanggam_theme.dart import 추가
+// [Rule 4] Theme.of(context) 2x 제거
+// [Rule 4] theme.colorScheme.* ~8x → SanggamTheme 직접
+// [Rule 4] theme.textTheme.* ~4x → 직접 TextStyle
+// [Rule 4] withOpacity 2x → withValues(alpha:)
+// [Rule 4] Colors.red → SanggamTheme.error
+// [Rule 4] Scaffold 배경 → SanggamTheme.background
+// [Rule 2] h:12→16
+// ───────────────────────────────────────────────────
 
 /// 알림 목록 데이터
 class NotificationItem {
@@ -25,7 +40,8 @@ class NotificationItem {
 }
 
 /// 알림 목록 Provider
-final notificationsListProvider = FutureProvider<List<NotificationItem>>((ref) async {
+final notificationsListProvider =
+    FutureProvider<List<NotificationItem>>((ref) async {
   final userId = ref.watch(authProvider).userId;
   if (userId == null || userId.isEmpty) return [];
   try {
@@ -35,13 +51,18 @@ final notificationsListProvider = FutureProvider<List<NotificationItem>>((ref) a
     return list.map((n) {
       final m = n as Map<String, dynamic>;
       return NotificationItem(
-        id: m['id'] as String? ?? m['notification_id'] as String? ?? '',
+        id: m['id'] as String? ??
+            m['notification_id'] as String? ??
+            '',
         title: m['title'] as String? ?? '',
-        body: m['body'] as String? ?? m['message'] as String? ?? '',
+        body: m['body'] as String? ??
+            m['message'] as String? ??
+            '',
         type: m['type'] as String? ?? '',
         isRead: m['is_read'] as bool? ?? false,
         createdAt: m['created_at'] != null
-            ? DateTime.tryParse(m['created_at'] as String) ?? DateTime.now()
+            ? DateTime.tryParse(m['created_at'] as String) ??
+                DateTime.now()
             : DateTime.now(),
       );
     }).toList();
@@ -64,74 +85,124 @@ class NotificationScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final notiAsync = ref.watch(notificationsListProvider);
 
     return DefaultTabController(
       length: 4,
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text('알림'),
-          centerTitle: true,
-          bottom: TabBar(
-            isScrollable: false,
-            labelColor: theme.colorScheme.primary,
-            unselectedLabelColor: theme.colorScheme.onSurfaceVariant,
-            indicatorColor: theme.colorScheme.primary,
-            tabs: const [
-              Tab(text: '전체'),
-              Tab(text: '건강'),
-              Tab(text: '시스템'),
-              Tab(text: '가족'),
-            ],
-          ),
-        ),
-        body: notiAsync.when(
-          data: (notifications) {
-            return TabBarView(
-              children: List.generate(4, (tabIndex) {
-                final filter = _tabFilters[tabIndex];
-                final filtered = filter == null
-                    ? notifications
-                    : notifications.where((n) {
-                        final types = filter.split(',');
-                        return types.contains(n.type);
-                      }).toList();
-
-                if (filtered.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.notifications_off_outlined, size: 48, color: theme.colorScheme.outline),
-                        const SizedBox(height: 12),
-                        Text(
-                          '알림이 없습니다',
-                          style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                        ),
-                      ],
+        backgroundColor: SanggamTheme.background,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // 헤더: 뒤로가기 + 타이틀
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 8),
+                child: Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.arrow_back,
+                          color: Colors.white),
+                      tooltip: '뒤로 가기',
+                      onPressed: () => context.pop(),
                     ),
-                  );
-                }
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        '알림',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // 탭바
+              const TabBar(
+                isScrollable: false,
+                labelColor: SanggamTheme.primary,
+                unselectedLabelColor: SanggamTheme.onSurfaceDim,
+                indicatorColor: SanggamTheme.primary,
+                dividerColor: Colors.transparent,
+                tabs: [
+                  Tab(text: '전체'),
+                  Tab(text: '건강'),
+                  Tab(text: '시스템'),
+                  Tab(text: '가족'),
+                ],
+              ),
+              // 탭 뷰
+              Expanded(
+                child: notiAsync.when(
+                  data: (notifications) {
+                    return TabBarView(
+                      children:
+                          List.generate(4, (tabIndex) {
+                        final filter = _tabFilters[tabIndex];
+                        final filtered = filter == null
+                            ? notifications
+                            : notifications.where((n) {
+                                final types = filter.split(',');
+                                return types.contains(n.type);
+                              }).toList();
 
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    ref.invalidate(notificationsListProvider);
-                    ref.invalidate(unreadNotificationCountProvider);
+                        if (filtered.isEmpty) {
+                          return Center(
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                    Icons
+                                        .notifications_off_outlined,
+                                    size: 48,
+                                    color: SanggamTheme
+                                        .onSurfaceDim),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  '알림이 없습니다',
+                                  style: TextStyle(
+                                    color: SanggamTheme
+                                        .onSurfaceDim,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return RefreshIndicator(
+                          onRefresh: () async {
+                            ref.invalidate(
+                                notificationsListProvider);
+                            ref.invalidate(
+                                unreadNotificationCountProvider);
+                          },
+                          child: ListView.builder(
+                            itemCount: filtered.length,
+                            itemBuilder: (context, index) =>
+                                _NotificationTile(
+                                    noti: filtered[index]),
+                          ),
+                        );
+                      }),
+                    );
                   },
-                  child: ListView.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (context, index) {
-                      return _NotificationTile(noti: filtered[index]);
-                    },
+                  loading: () => const Center(
+                      child: CircularProgressIndicator()),
+                  error: (_, __) => const Center(
+                    child: Text('알림을 불러올 수 없습니다',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        )),
                   ),
-                );
-              }),
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (_, __) => Center(
-            child: Text('알림을 불러올 수 없습니다', style: theme.textTheme.bodyLarge),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -145,7 +216,6 @@ class _NotificationTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
     final icon = switch (noti.type) {
       'measurement' => Icons.query_stats,
       'health_alert' => Icons.warning_amber,
@@ -155,32 +225,43 @@ class _NotificationTile extends ConsumerWidget {
       _ => Icons.notifications,
     };
     final iconColor = switch (noti.type) {
-      'health_alert' => Colors.red,
-      'measurement' => theme.colorScheme.primary,
-      _ => theme.colorScheme.secondary,
+      'health_alert' => SanggamTheme.error,
+      'measurement' => SanggamTheme.primary,
+      _ => SanggamTheme.jagaeCyan,
     };
 
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: iconColor.withOpacity(0.1),
+        backgroundColor: iconColor.withValues(alpha: 0.1),
         child: Icon(icon, color: iconColor, size: 20),
       ),
       title: Text(
         noti.title,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          fontWeight: noti.isRead ? FontWeight.normal : FontWeight.bold,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight:
+              noti.isRead ? FontWeight.normal : FontWeight.bold,
         ),
       ),
-      subtitle: Text(noti.body, maxLines: 2, overflow: TextOverflow.ellipsis),
+      subtitle: Text(noti.body,
+          maxLines: 2, overflow: TextOverflow.ellipsis),
       trailing: Text(
         _formatTime(noti.createdAt),
-        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.outline),
+        style: const TextStyle(
+          color: SanggamTheme.onSurfaceDim,
+          fontSize: 12,
+        ),
       ),
-      tileColor: noti.isRead ? null : theme.colorScheme.primaryContainer.withOpacity(0.1),
+      tileColor: noti.isRead
+          ? null
+          : SanggamTheme.surfaceVariant.withValues(alpha: 0.1),
       onTap: () async {
         if (!noti.isRead) {
           try {
-            await ref.read(restClientProvider).markNotificationAsRead(noti.id);
+            await ref
+                .read(restClientProvider)
+                .markNotificationAsRead(noti.id);
             ref.invalidate(notificationsListProvider);
             ref.invalidate(unreadNotificationCountProvider);
           } catch (_) {}

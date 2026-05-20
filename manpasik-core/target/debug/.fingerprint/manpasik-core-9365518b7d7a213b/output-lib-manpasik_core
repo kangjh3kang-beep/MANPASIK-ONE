@@ -1,0 +1,63 @@
+
+thread 'rustc' (595643) panicked at /rustc-dev/254b59607d4417e9dffbc307138ae5c86280fe4c/library/alloc/src/vec/mod.rs:2796:36:
+slice index starts at 28 but ends at 26
+stack backtrace:
+   0:     0x7513818aae73 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::hac1d885928ba8582
+   1:     0x751382010508 - core::fmt::write::h83ebb4d32483be9e
+   2:     0x7513834b4cf6 - std::io::Write::write_fmt::ha6a1d6c1ea64b2d0
+   3:     0x751381878515 - std::panicking::default_hook::{{closure}}::h8e9c4d1276f0925f
+   4:     0x751381878343 - std::panicking::default_hook::h2b2078d38b534dfb
+   5:     0x751380906dc7 - std[5414f88c956f4157]::panicking::update_hook::<alloc[cfeb9a527306e1a7]::boxed::Box<rustc_driver_impl[faaaf75c5cd7107d]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x751381878842 - std::panicking::panic_with_hook::h39b739724e701bfd
+   7:     0x7513818785d8 - std::panicking::panic_handler::{{closure}}::he540c4833054e458
+   8:     0x7513818725d9 - std::sys::backtrace::__rust_end_short_backtrace::hfa179d89deec8aed
+   9:     0x75138185364d - __rustc[d131491b17107b07]::rust_begin_unwind
+  10:     0x75137eb2384c - core::panicking::panic_fmt::ha564519d657d9c46
+  11:     0x75138032e4a0 - core::slice::index::slice_index_fail::do_panic::runtime::h3b498bdbaa786b28
+  12:     0x75137e0f7ca8 - core::slice::index::slice_index_fail::hbd24f17dd87e846d
+  13:     0x75138094e9fb - <rustc_errors[a9b607d50df66408]::styled_buffer::StyledBuffer>::replace
+  14:     0x7513834ca100 - <rustc_errors[a9b607d50df66408]::emitter::HumanEmitter>::emit_messages_default_inner::{closure#0}
+  15:     0x7513834bcdc7 - <rustc_errors[a9b607d50df66408]::emitter::HumanEmitter as rustc_errors[a9b607d50df66408]::emitter::Emitter>::emit_diagnostic
+  16:     0x7513834bb3fe - <rustc_errors[a9b607d50df66408]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x7513834ba67c - <rustc_errors[a9b607d50df66408]::json::JsonEmitter as rustc_errors[a9b607d50df66408]::emitter::Emitter>::emit_diagnostic
+  18:     0x7513834b900a - <rustc_errors[a9b607d50df66408]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x7513834b6a83 - rustc_interface[fc4a506f334ac7d7]::callbacks::track_diagnostic::<core[fcada436b717a91e]::option::Option<rustc_span[33462961a54fbf32]::ErrorGuaranteed>>
+  20:     0x7513834b5afc - <rustc_errors[a9b607d50df66408]::DiagCtxtInner>::emit_diagnostic
+  21:     0x7513834b59ad - <rustc_errors[a9b607d50df66408]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x7513834b5168 - <rustc_span[33462961a54fbf32]::ErrorGuaranteed as rustc_errors[a9b607d50df66408]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x75137e9bedbd - rustc_borrowck[2fe067adddab32d]::borrowck_check_region_constraints
+  24:     0x75138343d05e - <rustc_borrowck[2fe067adddab32d]::root_cx::BorrowCheckRootCtxt>::do_mir_borrowck
+  25:     0x751382302baa - rustc_borrowck[2fe067adddab32d]::mir_borrowck
+  26:     0x751382302a19 - rustc_query_impl[be389dff05f49d2d]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[be389dff05f49d2d]::query_impl::mir_borrowck::dynamic_query::{closure#2}::{closure#0}, rustc_middle[9ef750b7bb32b8b9]::query::erase::Erased<[u8; 8usize]>>
+  27:     0x75138233e07d - rustc_query_system[b2747550527e7849]::query::plumbing::try_execute_query::<rustc_query_impl[be389dff05f49d2d]::DynamicConfig<rustc_data_structures[f905cb25ec31ff7c]::vec_cache::VecCache<rustc_span[33462961a54fbf32]::def_id::LocalDefId, rustc_middle[9ef750b7bb32b8b9]::query::erase::Erased<[u8; 8usize]>, rustc_query_system[b2747550527e7849]::dep_graph::graph::DepNodeIndex>, false, false, false>, rustc_query_impl[be389dff05f49d2d]::plumbing::QueryCtxt, true>
+  28:     0x751382331a92 - rustc_query_impl[be389dff05f49d2d]::query_impl::mir_borrowck::get_query_incr::__rust_end_short_backtrace
+  29:     0x7513823000b7 - <rustc_middle[9ef750b7bb32b8b9]::ty::context::TyCtxt>::par_hir_body_owners::<rustc_interface[fc4a506f334ac7d7]::passes::run_required_analyses::{closure#1}::{closure#0}>::{closure#0}
+  30:     0x7513822fdb26 - rustc_interface[fc4a506f334ac7d7]::passes::analysis
+  31:     0x7513822fcfb3 - rustc_query_impl[be389dff05f49d2d]::plumbing::__rust_begin_short_backtrace::<rustc_query_impl[be389dff05f49d2d]::query_impl::analysis::dynamic_query::{closure#2}::{closure#0}, rustc_middle[9ef750b7bb32b8b9]::query::erase::Erased<[u8; 0usize]>>
+  32:     0x7513834dd4c2 - rustc_query_system[b2747550527e7849]::query::plumbing::try_execute_query::<rustc_query_impl[be389dff05f49d2d]::DynamicConfig<rustc_query_system[b2747550527e7849]::query::caches::SingleCache<rustc_middle[9ef750b7bb32b8b9]::query::erase::Erased<[u8; 0usize]>>, false, false, false>, rustc_query_impl[be389dff05f49d2d]::plumbing::QueryCtxt, true>
+  33:     0x7513834dccbf - rustc_query_impl[be389dff05f49d2d]::query_impl::analysis::get_query_incr::__rust_end_short_backtrace
+  34:     0x75138335f213 - <rustc_interface[fc4a506f334ac7d7]::passes::create_and_enter_global_ctxt<core[fcada436b717a91e]::option::Option<rustc_interface[fc4a506f334ac7d7]::queries::Linker>, rustc_driver_impl[faaaf75c5cd7107d]::run_compiler::{closure#0}::{closure#2}>::{closure#2} as core[fcada436b717a91e]::ops::function::FnOnce<(&rustc_session[c2edea43106fece4]::session::Session, rustc_middle[9ef750b7bb32b8b9]::ty::context::CurrentGcx, alloc[cfeb9a527306e1a7]::sync::Arc<rustc_data_structures[f905cb25ec31ff7c]::jobserver::Proxy>, &std[5414f88c956f4157]::sync::once_lock::OnceLock<rustc_middle[9ef750b7bb32b8b9]::ty::context::GlobalCtxt>, &rustc_data_structures[f905cb25ec31ff7c]::sync::worker_local::WorkerLocal<rustc_middle[9ef750b7bb32b8b9]::arena::Arena>, &rustc_data_structures[f905cb25ec31ff7c]::sync::worker_local::WorkerLocal<rustc_hir[51e6b31522dd2ac2]::Arena>, rustc_driver_impl[faaaf75c5cd7107d]::run_compiler::{closure#0}::{closure#2})>>::call_once::{shim:vtable#0}
+  35:     0x7513831f1e05 - rustc_interface[fc4a506f334ac7d7]::interface::run_compiler::<(), rustc_driver_impl[faaaf75c5cd7107d]::run_compiler::{closure#0}>::{closure#1}
+  36:     0x75138315890a - std[5414f88c956f4157]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[fc4a506f334ac7d7]::util::run_in_thread_with_globals<rustc_interface[fc4a506f334ac7d7]::util::run_in_thread_pool_with_globals<rustc_interface[fc4a506f334ac7d7]::interface::run_compiler<(), rustc_driver_impl[faaaf75c5cd7107d]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  37:     0x7513831586dd - <std[5414f88c956f4157]::thread::lifecycle::spawn_unchecked<rustc_interface[fc4a506f334ac7d7]::util::run_in_thread_with_globals<rustc_interface[fc4a506f334ac7d7]::util::run_in_thread_pool_with_globals<rustc_interface[fc4a506f334ac7d7]::interface::run_compiler<(), rustc_driver_impl[faaaf75c5cd7107d]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[fcada436b717a91e]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  38:     0x75138315bcf8 - std::sys::thread::unix::Thread::new::thread_start::h45cc87bb053add0f
+  39:     0x75137ca9caa4 - <unknown>
+  40:     0x75137cb29c6c - <unknown>
+  41:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. this is a bug.
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.93.0 (254b59607 2026-01-19) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: --crate-type lib -C embed-bitcode=no -C debuginfo=2 -C incremental=[REDACTED]
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [mir_borrowck] borrow-checking `healing::orchestrator::<impl at src/healing/orchestrator.rs:46:1: 46:29>::heal`
+#1 [analysis] running analysis passes on crate `manpasik_core`
+end of query stack
+{"$message_type":"diagnostic","message":"aborting due to 1 previous error","code":null,"level":"error","spans":[],"children":[],"rendered":"\u001b[1m\u001b[91merror\u001b[0m\u001b[1m: aborting due to 1 previous error\u001b[0m\n\n"}
+{"$message_type":"diagnostic","message":"For more information about this error, try `rustc --explain E0507`.","code":null,"level":"failure-note","spans":[],"children":[],"rendered":"\u001b[1mFor more information about this error, try `rustc --explain E0507`.\u001b[0m\n"}

@@ -7,6 +7,11 @@ data:
   ENVIRONMENT: "staging"
   LOG_LEVEL: "info"
   DB_SSLMODE: "require"
+  # Staging: 테넌시 활성 (production 직전 검증)
+  TENANCY_ENFORCED: "true"
+  OTLP_HTTP_ENDPOINT: "http://otel-collector.manpasik-ops-staging.svc.cluster.local:4318/v1/traces"
+  OTLP_GRPC_ENDPOINT: "otel-collector.manpasik-ops-staging.svc.cluster.local:4317"
+  BACKUP_RETENTION_DAYS: "14"
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress

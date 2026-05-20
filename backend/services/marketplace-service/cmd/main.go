@@ -11,15 +11,20 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/manpasik/backend/services/marketplace-service/internal/repository/memory"
+	"github.com/manpasik/backend/services/marketplace-service/internal/repository/postgres"
 	"github.com/manpasik/backend/services/marketplace-service/internal/service"
+	"github.com/manpasik/backend/shared/config"
 )
 
 const serviceName = "marketplace-service"
@@ -30,14 +35,46 @@ func main() {
 		httpPort = ":8080"
 	}
 
-	log.Printf("[%s] Starting...", serviceName)
+	cfg := config.LoadFromEnv(serviceName)
+	log.Printf("[%s] Starting v%s...", serviceName, cfg.Version)
 
-	// 인메모리 저장소 초기화
-	productRepo := memory.NewProductRepository()
-	partnerRepo := memory.NewPartnerRepository()
-	statsRepo := memory.NewStatsRepository()
+	var productRepo service.ProductRepository
+	var partnerRepo service.PartnerRepository
+	var statsRepo service.StatsRepository
 
-	// 서비스 레이어 초기화
+	if _, dbHostSet := os.LookupEnv("DB_HOST"); dbHostSet && cfg.DB.Host != "" && cfg.DB.DBName != "" {
+		connCtx, connCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		pool, poolErr := pgxpool.New(connCtx, cfg.DB.DSN())
+		connCancel()
+		if poolErr != nil {
+			log.Printf("[%s] DB connection failed, using memory: %v", serviceName, poolErr)
+			productRepo = memory.NewProductRepository()
+			partnerRepo = memory.NewPartnerRepository()
+			statsRepo = memory.NewStatsRepository()
+		} else {
+			pingCtx, pingCancel := context.WithTimeout(context.Background(), 3*time.Second)
+			if pingErr := pool.Ping(pingCtx); pingErr != nil {
+				pingCancel()
+				pool.Close()
+				log.Printf("[%s] DB ping failed, using memory: %v", serviceName, pingErr)
+				productRepo = memory.NewProductRepository()
+				partnerRepo = memory.NewPartnerRepository()
+				statsRepo = memory.NewStatsRepository()
+			} else {
+				pingCancel()
+				defer pool.Close()
+				log.Printf("[%s] Connected to PostgreSQL", serviceName)
+				productRepo = postgres.NewProductRepository(pool)
+				partnerRepo = postgres.NewPartnerRepository(pool)
+				statsRepo = postgres.NewStatsRepository(pool)
+			}
+		}
+	} else {
+		productRepo = memory.NewProductRepository()
+		partnerRepo = memory.NewPartnerRepository()
+		statsRepo = memory.NewStatsRepository()
+	}
+
 	svc := service.NewMarketplaceService(productRepo, partnerRepo, statsRepo)
 
 	// HTTP 라우터

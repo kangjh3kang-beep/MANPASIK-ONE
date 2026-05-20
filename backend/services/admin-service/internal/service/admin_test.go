@@ -848,3 +848,244 @@ func TestEndToEnd_AdminFlow(t *testing.T) {
 		t.Errorf("E2E: 반환된 사용자 수: got %d, want >= 1", len(users))
 	}
 }
+
+// ============================================================================
+// Phase F 테스트 보강
+// ============================================================================
+
+func TestGetAdmin_EmptyID(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	_, err := svc.GetAdmin(context.Background(), "")
+	if err == nil {
+		t.Error("빈 admin_id에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestDeactivateAdmin_EmptyID(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	_, _, err := svc.DeactivateAdmin(context.Background(), "", "admin-1", "비활성화")
+	if err == nil {
+		t.Error("빈 admin_id에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestGetRevenueStats(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	ctx := context.Background()
+
+	stats, err := svc.GetRevenueStats(ctx, "monthly", "", "")
+	if err != nil {
+		t.Fatalf("GetRevenueStats 실패: %v", err)
+	}
+	if stats.TotalRevenueKRW <= 0 {
+		t.Errorf("TotalRevenueKRW: got %d, want > 0", stats.TotalRevenueKRW)
+	}
+	if len(stats.Periods) != 3 {
+		t.Errorf("Periods: got %d, want 3", len(stats.Periods))
+	}
+	if stats.RevenueByTier == nil {
+		t.Error("RevenueByTier가 nil입니다")
+	}
+}
+
+func TestGetInventoryStats(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	ctx := context.Background()
+
+	stats, err := svc.GetInventoryStats(ctx, 0)
+	if err != nil {
+		t.Fatalf("GetInventoryStats 실패: %v", err)
+	}
+	if stats.TotalProducts < 1 {
+		t.Errorf("TotalProducts: got %d, want >= 1", stats.TotalProducts)
+	}
+	if len(stats.Items) < 1 {
+		t.Errorf("Items: got %d, want >= 1", len(stats.Items))
+	}
+}
+
+func TestGetInventoryStats_CategoryFilter(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	ctx := context.Background()
+
+	stats, err := svc.GetInventoryStats(ctx, 2)
+	if err != nil {
+		t.Fatalf("GetInventoryStats(카테고리 필터) 실패: %v", err)
+	}
+	for _, item := range stats.Items {
+		if item.Category != 2 {
+			t.Errorf("필터링된 항목의 카테고리: got %d, want 2", item.Category)
+		}
+	}
+}
+
+func TestSetSystemConfig_EmptyKey(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	_, err := svc.SetSystemConfig(context.Background(), "", "value", "desc", "admin-1")
+	if err == nil {
+		t.Error("빈 key에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestGetSystemConfig_NotFound(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	_, err := svc.GetSystemConfig(context.Background(), "nonexistent_key")
+	if err == nil {
+		t.Error("존재하지 않는 설정에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestListAdmins_RoleFilter(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	ctx := context.Background()
+
+	_, _ = svc.CreateAdmin(ctx, "user-rf1", "rf1@test.com", "관리자", service.RoleAdmin, "creator-1")
+	_, _ = svc.CreateAdmin(ctx, "user-rf2", "rf2@test.com", "지원", service.RoleSupport, "creator-1")
+	_, _ = svc.CreateAdmin(ctx, "user-rf3", "rf3@test.com", "관리자2", service.RoleAdmin, "creator-1")
+
+	admins, total, err := svc.ListAdmins(ctx, service.RoleAdmin, false, 10, 0)
+	if err != nil {
+		t.Fatalf("ListAdmins(RoleAdmin) 실패: %v", err)
+	}
+	if total != 2 {
+		t.Errorf("Admin 역할 수: got %d, want 2", total)
+	}
+	if len(admins) != 2 {
+		t.Errorf("반환 수: got %d, want 2", len(admins))
+	}
+}
+
+func TestUpdateAdminRole_EmptyID(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	_, err := svc.UpdateAdminRole(context.Background(), "", service.RoleAdmin, "updater")
+	if err == nil {
+		t.Error("빈 admin_id에 에러가 반환되어야 합니다")
+	}
+}
+
+// ============================================================================
+// Phase H: 규제 준수 테스트
+// ============================================================================
+
+func TestGetCompliance_All(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	ctx := context.Background()
+
+	overview, err := svc.GetCompliance(ctx, "")
+	if err != nil {
+		t.Fatalf("GetCompliance 실패: %v", err)
+	}
+	if overview.TotalItems < 10 {
+		t.Errorf("TotalItems=%d, want >= 10", overview.TotalItems)
+	}
+	if overview.Compliant+overview.Partial+overview.NonCompliant != overview.TotalItems {
+		t.Error("상태 합계가 전체와 일치하지 않습니다")
+	}
+	if overview.ComplianceRate <= 0 || overview.ComplianceRate > 1 {
+		t.Errorf("ComplianceRate=%f, want 0..1", overview.ComplianceRate)
+	}
+	if overview.CheckedAt.IsZero() {
+		t.Error("CheckedAt가 zero입니다")
+	}
+}
+
+func TestGetCompliance_FilterByFramework(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	ctx := context.Background()
+
+	gdpr, err := svc.GetCompliance(ctx, "GDPR")
+	if err != nil {
+		t.Fatalf("GetCompliance(GDPR) 실패: %v", err)
+	}
+	if gdpr.TotalItems < 5 {
+		t.Errorf("GDPR items=%d, want >= 5", gdpr.TotalItems)
+	}
+	for _, item := range gdpr.Items {
+		if item.Framework != "GDPR" {
+			t.Errorf("필터링 실패: got framework=%s", item.Framework)
+		}
+	}
+}
+
+func TestGetCompliance_UnknownFramework(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	ctx := context.Background()
+
+	overview, err := svc.GetCompliance(ctx, "UNKNOWN")
+	if err != nil {
+		t.Fatalf("GetCompliance(UNKNOWN) 실패: %v", err)
+	}
+	if overview.TotalItems != 0 {
+		t.Errorf("TotalItems=%d, want 0", overview.TotalItems)
+	}
+}
+
+func TestProcessDeletionRequest_Success(t *testing.T) {
+	svc, _, auditRepo, _, _ := newTestService()
+	ctx := context.Background()
+
+	req, err := svc.ProcessDeletionRequest(ctx, "admin-1", "user-to-delete", "사용자 탈퇴 요청", nil)
+	if err != nil {
+		t.Fatalf("ProcessDeletionRequest 실패: %v", err)
+	}
+	if req.RequestID == "" {
+		t.Error("RequestID가 비어 있습니다")
+	}
+	if req.UserID != "user-to-delete" {
+		t.Errorf("UserID=%s, want user-to-delete", req.UserID)
+	}
+	if req.RequestedBy != "admin-1" {
+		t.Errorf("RequestedBy=%s, want admin-1", req.RequestedBy)
+	}
+
+	// 감사 로그 확인
+	hasDeleteLog := false
+	for _, entry := range auditRepo.entries {
+		if entry.ResourceType == "user_data" && entry.ResourceID == "user-to-delete" {
+			hasDeleteLog = true
+		}
+	}
+	if !hasDeleteLog {
+		t.Error("삭제 요청에 대한 감사 로그가 없습니다")
+	}
+}
+
+func TestProcessDeletionRequest_MissingAdminID(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	_, err := svc.ProcessDeletionRequest(context.Background(), "", "user-1", "탈퇴", nil)
+	if err == nil {
+		t.Error("빈 admin_id에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestProcessDeletionRequest_MissingUserID(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	_, err := svc.ProcessDeletionRequest(context.Background(), "admin-1", "", "탈퇴", nil)
+	if err == nil {
+		t.Error("빈 user_id에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestProcessDeletionRequest_MissingReason(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	_, err := svc.ProcessDeletionRequest(context.Background(), "admin-1", "user-1", "", nil)
+	if err == nil {
+		t.Error("빈 reason에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestGetRetentionPolicies(t *testing.T) {
+	svc, _, _, _, _ := newTestService()
+	policies := svc.GetRetentionPolicies(context.Background())
+	if len(policies) < 5 {
+		t.Errorf("policies=%d, want >= 5", len(policies))
+	}
+	for _, p := range policies {
+		if p.DataType == "" {
+			t.Error("DataType이 비어 있습니다")
+		}
+		if p.LegalBasis == "" {
+			t.Error("LegalBasis가 비어 있습니다")
+		}
+	}
+}

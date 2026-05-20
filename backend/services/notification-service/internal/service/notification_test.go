@@ -3,6 +3,7 @@ package service_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/manpasik/backend/services/notification-service/internal/repository/memory"
 	"github.com/manpasik/backend/services/notification-service/internal/service"
@@ -417,5 +418,326 @@ func TestEndToEnd_NotificationFlow(t *testing.T) {
 	count, _ := svc.MarkAllAsRead(ctx, "user-e2e")
 	if count != 2 {
 		t.Fatalf("전체 읽음 처리 수 불일치: got %d, want 2 (이미 1개 읽음)", count)
+	}
+}
+
+// =============================================================================
+// Phase F 테스트 보강: 엣지 케이스
+// =============================================================================
+
+func TestMarkAsRead_EmptyID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	err := svc.MarkAsRead(ctx, "")
+	if err == nil {
+		t.Fatal("빈 ID에 에러가 반환되어야 함")
+	}
+}
+
+func TestMarkAllAsRead_EmptyUserID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, err := svc.MarkAllAsRead(ctx, "")
+	if err == nil {
+		t.Fatal("빈 user_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestGetUnreadCount_EmptyUserID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, _, err := svc.GetUnreadCount(ctx, "")
+	if err == nil {
+		t.Fatal("빈 user_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestListNotifications_EmptyUserID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, _, _, err := svc.ListNotifications(ctx, "", service.TypeUnknown, false, 10, 0)
+	if err == nil {
+		t.Fatal("빈 user_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestUpdatePreferences_NilPref(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, err := svc.UpdatePreferences(ctx, nil)
+	if err == nil {
+		t.Fatal("nil 설정에 에러가 반환되어야 함")
+	}
+}
+
+func TestUpdatePreferences_EmptyUserID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	pref := &service.NotificationPreferences{UserID: ""}
+	_, err := svc.UpdatePreferences(ctx, pref)
+	if err == nil {
+		t.Fatal("빈 user_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestSendNotification_HighPriorityAutoChannel(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	// 사용자 설정: push 활성화
+	pref := &service.NotificationPreferences{
+		UserID:       "user-hpac",
+		PushEnabled:  true,
+		InAppEnabled: true,
+		Language:     "ko",
+	}
+	svc.UpdatePreferences(ctx, pref)
+
+	// ChannelUnknown + PriorityHigh → push가 선택되어야 함
+	noti, err := svc.SendNotification(ctx, "user-hpac", service.TypeHealthAlert, service.ChannelUnknown, service.PriorityHigh, "긴급", "내용", "")
+	if err != nil {
+		t.Fatalf("발송 실패: %v", err)
+	}
+	if noti.Channel != service.ChannelPush {
+		t.Fatalf("High priority + push 활성화 시 push 채널이어야 함: got %d", noti.Channel)
+	}
+}
+
+func TestSendNotification_DefaultPriority(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	noti, err := svc.SendNotification(ctx, "user-dp", service.TypeSystem, service.ChannelInApp, service.PriorityUnknown, "제목", "내용", "")
+	if err != nil {
+		t.Fatalf("발송 실패: %v", err)
+	}
+	if noti.Priority != service.PriorityNormal {
+		t.Fatalf("기본 우선순위가 Normal이어야 함: got %d", noti.Priority)
+	}
+}
+
+func TestGetPreferences_EmptyUserID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	_, err := svc.GetPreferences(ctx, "")
+	if err == nil {
+		t.Fatal("빈 user_id에 에러가 반환되어야 함")
+	}
+}
+
+func TestListNotifications_DefaultLimit(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	for i := 0; i < 3; i++ {
+		svc.SendNotification(ctx, "user-dl", service.TypeSystem, service.ChannelInApp, service.PriorityNormal, "제목", "내용", "")
+	}
+
+	// limit=0이면 기본값(20) 적용
+	notis, total, _, err := svc.ListNotifications(ctx, "user-dl", service.TypeUnknown, false, 0, 0)
+	if err != nil {
+		t.Fatalf("목록 조회 실패: %v", err)
+	}
+	if total != 3 {
+		t.Fatalf("총 개수 불일치: got %d, want 3", total)
+	}
+	if len(notis) != 3 {
+		t.Fatalf("반환 개수 불일치: got %d, want 3", len(notis))
+	}
+}
+
+func TestSendFromTemplate_EmptyUserID(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+	err := svc.SendFromTemplate(ctx, "", "prescription_created", "김의사")
+	if err == nil {
+		t.Fatal("빈 user_id에 에러가 반환되어야 함")
+	}
+}
+
+// =============================================================================
+// Phase F 테스트 보강: 에스컬레이션 서비스
+// =============================================================================
+
+func setupTestEscalationService() (*service.EscalationService, *service.NotificationService) {
+	notiSvc := setupTestService()
+	logger := zap.NewNop()
+	escSvc := service.NewEscalationService(logger, notiSvc)
+	return escSvc, notiSvc
+}
+
+func TestTriggerEscalation_Success(t *testing.T) {
+	escSvc, notiSvc := setupTestEscalationService()
+	// 빠른 테스트를 위해 딜레이를 최소화
+	escSvc.SetConfig(service.EscalationConfig{
+		Stage2Delay: 24 * time.Hour,
+		Stage3Delay: 24 * time.Hour,
+		Stage4Delay: 24 * time.Hour,
+	})
+
+	ctx := context.Background()
+	event, err := escSvc.TriggerEscalation(ctx, "user-esc1", "health_critical", "m-123", "350 mg/dL")
+	if err != nil {
+		t.Fatalf("에스컬레이션 시작 실패: %v", err)
+	}
+	if event.ID == "" {
+		t.Fatal("이벤트 ID가 비어있음")
+	}
+	if event.Stage != service.StageInAppAlert {
+		t.Fatalf("초기 스테이지 불일치: got %d, want %d", event.Stage, service.StageInAppAlert)
+	}
+	if event.UserID != "user-esc1" {
+		t.Fatalf("UserID 불일치: got %s", event.UserID)
+	}
+
+	// Stage1에서 인앱 알림이 발송되었는지 확인
+	notis, total, _, _ := notiSvc.ListNotifications(ctx, "user-esc1", service.TypeUnknown, false, 10, 0)
+	if total != 1 {
+		t.Fatalf("Stage1 알림 수 불일치: got %d, want 1", total)
+	}
+	if notis[0].Priority != service.PriorityUrgent {
+		t.Fatalf("긴급 알림 우선순위 불일치: got %d", notis[0].Priority)
+	}
+}
+
+func TestTriggerEscalation_EmptyUserID(t *testing.T) {
+	escSvc, _ := setupTestEscalationService()
+	ctx := context.Background()
+	_, err := escSvc.TriggerEscalation(ctx, "", "health_critical", "m-1", "350")
+	if err == nil {
+		t.Fatal("빈 userID에 에러가 반환되어야 함")
+	}
+}
+
+func TestTriggerEscalation_EmptyAlertType(t *testing.T) {
+	escSvc, _ := setupTestEscalationService()
+	ctx := context.Background()
+	_, err := escSvc.TriggerEscalation(ctx, "user-1", "", "m-1", "350")
+	if err == nil {
+		t.Fatal("빈 alertType에 에러가 반환되어야 함")
+	}
+}
+
+func TestAcknowledgeEscalation_Success(t *testing.T) {
+	escSvc, _ := setupTestEscalationService()
+	escSvc.SetConfig(service.EscalationConfig{
+		Stage2Delay: 24 * time.Hour,
+		Stage3Delay: 24 * time.Hour,
+		Stage4Delay: 24 * time.Hour,
+	})
+
+	ctx := context.Background()
+	event, _ := escSvc.TriggerEscalation(ctx, "user-ack", "fall_detected", "", "")
+
+	err := escSvc.AcknowledgeEscalation(ctx, event.ID, "user")
+	if err != nil {
+		t.Fatalf("에스컬레이션 해제 실패: %v", err)
+	}
+
+	// 해제 후 active 목록에서 제거되어야 함
+	active := escSvc.GetActiveEscalations("user-ack")
+	if len(active) != 0 {
+		t.Fatalf("해제 후 활성 에스컬레이션이 남아있음: got %d", len(active))
+	}
+}
+
+func TestAcknowledgeEscalation_NotFound(t *testing.T) {
+	escSvc, _ := setupTestEscalationService()
+	ctx := context.Background()
+	err := escSvc.AcknowledgeEscalation(ctx, "nonexistent-id", "user")
+	if err == nil {
+		t.Fatal("존재하지 않는 이벤트에 에러가 반환되어야 함")
+	}
+}
+
+func TestGetActiveEscalations(t *testing.T) {
+	escSvc, _ := setupTestEscalationService()
+	escSvc.SetConfig(service.EscalationConfig{
+		Stage2Delay: 24 * time.Hour,
+		Stage3Delay: 24 * time.Hour,
+		Stage4Delay: 24 * time.Hour,
+	})
+
+	ctx := context.Background()
+	escSvc.TriggerEscalation(ctx, "user-multi", "health_critical", "m-1", "400")
+	escSvc.TriggerEscalation(ctx, "user-multi", "fall_detected", "", "")
+	escSvc.TriggerEscalation(ctx, "user-other", "no_response", "", "")
+
+	active := escSvc.GetActiveEscalations("user-multi")
+	if len(active) != 2 {
+		t.Fatalf("활성 에스컬레이션 수 불일치: got %d, want 2", len(active))
+	}
+
+	activeOther := escSvc.GetActiveEscalations("user-other")
+	if len(activeOther) != 1 {
+		t.Fatalf("다른 사용자 활성 에스컬레이션 수 불일치: got %d, want 1", len(activeOther))
+	}
+}
+
+func TestSetGuardians(t *testing.T) {
+	escSvc, notiSvc := setupTestEscalationService()
+	escSvc.SetConfig(service.EscalationConfig{
+		Stage2Delay: 10 * time.Millisecond,
+		Stage3Delay: 24 * time.Hour,
+		Stage4Delay: 24 * time.Hour,
+	})
+
+	// 보호자 설정
+	escSvc.SetGuardians("user-guard", []string{"guardian-1", "guardian-2"})
+
+	ctx := context.Background()
+	escSvc.TriggerEscalation(ctx, "user-guard", "health_critical", "m-1", "400")
+
+	// Stage2 비동기 실행 대기
+	time.Sleep(100 * time.Millisecond)
+
+	// 보호자들에게 알림이 전송되었는지 확인
+	g1Notis, g1Total, _, _ := notiSvc.ListNotifications(ctx, "guardian-1", service.TypeUnknown, false, 10, 0)
+	if g1Total < 1 {
+		t.Fatalf("보호자1에게 알림이 전송되어야 함: got %d", g1Total)
+	}
+	_ = g1Notis
+
+	g2Notis, g2Total, _, _ := notiSvc.ListNotifications(ctx, "guardian-2", service.TypeUnknown, false, 10, 0)
+	if g2Total < 1 {
+		t.Fatalf("보호자2에게 알림이 전송되어야 함: got %d", g2Total)
+	}
+	_ = g2Notis
+}
+
+func TestEscalationConfig_Default(t *testing.T) {
+	cfg := service.DefaultEscalationConfig
+	if cfg.Stage2Delay != 3*time.Minute {
+		t.Fatalf("Stage2Delay 기본값 불일치: got %v, want 3m", cfg.Stage2Delay)
+	}
+	if cfg.Stage3Delay != 3*time.Minute {
+		t.Fatalf("Stage3Delay 기본값 불일치: got %v, want 3m", cfg.Stage3Delay)
+	}
+	if cfg.Stage4Delay != 4*time.Minute {
+		t.Fatalf("Stage4Delay 기본값 불일치: got %v, want 4m", cfg.Stage4Delay)
+	}
+}
+
+func TestEscalationStageConstants(t *testing.T) {
+	if service.StageNone != 0 {
+		t.Fatalf("StageNone = %d, want 0", service.StageNone)
+	}
+	if service.StageInAppAlert != 1 {
+		t.Fatalf("StageInAppAlert = %d, want 1", service.StageInAppAlert)
+	}
+	if service.StageGuardianPush != 2 {
+		t.Fatalf("StageGuardianPush = %d, want 2", service.StageGuardianPush)
+	}
+	if service.StageAIVoiceCall != 3 {
+		t.Fatalf("StageAIVoiceCall = %d, want 3", service.StageAIVoiceCall)
+	}
+	if service.StageEmergencyCall != 4 {
+		t.Fatalf("StageEmergencyCall = %d, want 4", service.StageEmergencyCall)
+	}
+	if service.StageResolved != 5 {
+		t.Fatalf("StageResolved = %d, want 5", service.StageResolved)
+	}
+	if service.StageCancelled != 6 {
+		t.Fatalf("StageCancelled = %d, want 6", service.StageCancelled)
 	}
 }

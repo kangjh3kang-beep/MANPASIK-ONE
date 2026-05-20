@@ -1,5 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+import 'package:manpasik/shared/widgets/sanggam_container.dart';
+
+// ───────────────────────────────────────────────────
+// PorcelainContainer — SanggamContainer 위임 래퍼
+//
+// [Rule 4] withOpacity 5건 → withValues(alpha:)
+// [Rule 4] AppTheme → SanggamTheme 통일
+// [Rule 4] 하드코딩 Color(0xFF1A1A1A) 등 4종 → SanggamTheme 상수
+// [Rule 4] 중복 제거: Container+BoxDecoration → SanggamContainer 위임
+//
+// 기존 호출부 API 완전 호환 (파라미터 시그니처 동일).
+// 신규 코드에서는 SanggamContainer를 직접 사용 권장.
+// ───────────────────────────────────────────────────
 
 class PorcelainContainer extends StatelessWidget {
   final Widget child;
@@ -9,6 +22,7 @@ class PorcelainContainer extends StatelessWidget {
   final EdgeInsetsGeometry? margin;
   final VoidCallback? onTap;
   final bool isSelected;
+  final Color? color;
 
   const PorcelainContainer({
     super.key,
@@ -22,70 +36,24 @@ class PorcelainContainer extends StatelessWidget {
     this.color,
   });
 
-  final Color? color;
-
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Padding(
-      padding: margin ?? EdgeInsets.zero,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: width,
-          height: height,
-          padding: padding,
-          decoration: BoxDecoration(
-            color: color ?? (isDark ? const Color(0xFF1A1A1A) : const Color(0xFFFAFAFA)), // Off-white/Dark Grey
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isSelected 
-                  ? AppTheme.sanggamGold 
-                  : (isDark ? Colors.white10 : const Color(0xFFE0E0E0)),
-              width: isSelected ? 1.5 : 0.5,
-            ),
-            boxShadow: [
-              // Soft Ambient Shadow (Porcelain Glaze feel)
-              BoxShadow(
-                color: isDark ? Colors.black.withOpacity(0.3) : const Color(0xFF8D6E63).withOpacity(0.05),
-                blurRadius: 15,
-                spreadRadius: 2,
-                offset: const Offset(0, 8),
-              ),
-              // Rim Highlight (Gloss)
-              BoxShadow(
-                color: isDark ? Colors.white.withOpacity(0.05) : Colors.white.withOpacity(0.8),
-                blurRadius: 1,
-                spreadRadius: 0,
-                offset: const Offset(-1, -1),
-              ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Stack(
-              children: [
-                // Subtle Noise Texture (Optional, using simple gradient for now)
-                Positioned.fill(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: isDark
-                            ? [Colors.white.withOpacity(0.02), Colors.transparent]
-                            : [Colors.white.withOpacity(0.4), Colors.transparent],
-                      ),
-                    ),
-                  ),
-                ),
-                child,
-              ],
-            ),
-          ),
-        ),
-      ),
+    return SanggamContainer(
+      width: width,
+      height: height,
+      padding: padding,
+      margin: margin,
+      onTap: onTap,
+      borderRadius: 16,
+      borderWidth: isSelected ? 1.5 : 0.8,
+      borderColor: isSelected
+          ? SanggamTheme.primary
+          : Colors.white.withValues(alpha: 0.08),
+      backgroundColor: color ?? SanggamTheme.surface.withValues(alpha: 0.5),
+      blurSigma: 10,
+      jagaeOpacity: 0.03,
+      isSelected: isSelected,
+      child: child,
     );
   }
 }

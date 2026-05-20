@@ -2,16 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:manpasik/core/providers/grpc_provider.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/features/market/domain/market_repository.dart';
-import 'package:manpasik/features/market/presentation/widgets/general_market_tab.dart'; // Import Added
+import 'package:manpasik/features/market/presentation/widgets/general_market_tab.dart';
 import 'package:manpasik/features/market/presentation/widgets/market_product_card.dart';
 import 'package:manpasik/shared/widgets/animate_fade_in_up.dart';
 import 'package:manpasik/shared/widgets/breathing_glow.dart';
-import 'package:manpasik/shared/widgets/jagae_pattern.dart';
 import 'package:manpasik/features/data_hub/presentation/widgets/ornate_gold_frame.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
 
-/// 카트리지 마켓 화면 (Korean Futuristic Ver.)
+// ───────────────────────────────────────────────────
+// MarketScreen — Sanggam Orbit 카트리지 마켓
+//
+// [Rule 4] _backgroundColor/_goldColor 필드 → SanggamTheme.*
+// [Rule 4] Theme(data:...) 래핑 제거 (항상 dark)
+// [Rule 4] AppTheme.sanggamGold 6건 → SanggamTheme.primary
+// [Rule 4] withOpacity ~15건 → withValues(alpha:)
+// [Rule 4] jagae_pattern, app_theme 미사용 import 제거
+// [Rule 4] 하드코딩 Color(0xFF...) 4건 → SanggamTheme 상수
+// [Rule 2] spacing 20→16, 12→16, 4→8, borderRadius 12→16, h:44→48
+// ───────────────────────────────────────────────────
+
 class MarketScreen extends ConsumerStatefulWidget {
   const MarketScreen({super.key});
 
@@ -24,56 +34,87 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
   final _couponController = TextEditingController();
   bool _isAnnual = false;
 
-  // Premium Dark Color Palette
-  final Color _backgroundColor = const Color(0xFF0A0E21); // Midnight Blue
-  final Color _goldColor = const Color(0xFFD4AF37); // Sanggam Gold
-
   @override
   Widget build(BuildContext context) {
-    // Override Theme to Dark Mode for this screen only to match "NanoBanana Pro" aesthetic
-    return Theme(
-      data: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: _backgroundColor,
-        colorScheme: ColorScheme.dark(
-          primary: _goldColor,
-          surface: const Color(0xFF1A1F35),
-        ),
-      ),
-      child: DefaultTabController(
-        length: 2,
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          body: NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              return [
-                _buildSliverAppBar(innerBoxIsScrolled),
-              ];
-            },
-            body: Builder(
-              builder: (context) {
-                return TabBarView(
-                  children: [
-                    // Tab 1: Cartridge Market (Existing)
-                    CustomScrollView(
-                      key: const PageStorageKey('cartridge_market'),
-                      physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-                      slivers: [
-                        // Removed SliverOverlapInjector due to stability issues
-                        const SliverPadding(padding: EdgeInsets.only(top: 120)), // Safe manual padding
-                        SliverToBoxAdapter(child: _buildTierFilter()),
-                        SliverToBoxAdapter(child: _buildSubscriptionBanner()),
-                        SliverToBoxAdapter(child: _buildCouponSection()),
-                        _buildProductGrid(),
-                        const SliverPadding(padding: EdgeInsets.only(bottom: 24)),
-                      ],
-                    ),
-                    // Tab 2: General Market (New)
-                    const GeneralMarketTab(),
-                  ],
-                );
-              },
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          children: [
+            // 1. Deep Cosmic Background Gradient
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: const Alignment(-0.8, -0.6),
+                    radius: 1.5,
+                    colors: [
+                      SanggamTheme.surfaceVariant,
+                      SanggamTheme.background,
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+            // 2. Ambient Gold Glow
+            Positioned(
+              top: 150,
+              right: -100,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color:
+                          SanggamTheme.primary.withValues(alpha: 0.15),
+                      blurRadius: 100,
+                      spreadRadius: 50,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Main Scrollable Content
+            NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                return [
+                  _buildSliverAppBar(innerBoxIsScrolled),
+                ];
+              },
+              body: Builder(
+                builder: (context) {
+                  return TabBarView(
+                    children: [
+                      // Tab 1: Cartridge Market
+                      CustomScrollView(
+                        key: const PageStorageKey('cartridge_market'),
+                        physics: const BouncingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics()),
+                        slivers: [
+                          const SliverPadding(
+                              padding: EdgeInsets.only(top: 120)),
+                          SliverToBoxAdapter(
+                              child: _buildTierFilter()),
+                          SliverToBoxAdapter(
+                              child: _buildSubscriptionBanner()),
+                          SliverToBoxAdapter(
+                              child: _buildCouponSection()),
+                          _buildProductGrid(),
+                          const SliverPadding(
+                              padding: EdgeInsets.only(bottom: 24)),
+                        ],
+                      ),
+                      // Tab 2: General Market
+                      const GeneralMarketTab(),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -85,15 +126,16 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       floating: true,
       pinned: true,
       forceElevated: innerBoxIsScrolled,
-      backgroundColor: _backgroundColor,
+      backgroundColor: SanggamTheme.background,
       flexibleSpace: FlexibleSpaceBar(
-        titlePadding: const EdgeInsets.only(left: 16, bottom: 48), // Adjusted for TabBar
-        title: Text(
-          'Market',
+        titlePadding: const EdgeInsets.only(left: 16, bottom: 48),
+        title: const Text(
+          '마켓',
           style: TextStyle(
-            color: _goldColor,
+            color: SanggamTheme.primary,
             fontWeight: FontWeight.bold,
-            letterSpacing: 1.2,
+            letterSpacing: 2.0,
+            fontSize: 28,
           ),
         ),
         background: Container(
@@ -102,8 +144,8 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                _backgroundColor.withOpacity(0.8),
-                _backgroundColor,
+                SanggamTheme.background.withValues(alpha: 0.8),
+                SanggamTheme.background,
               ],
             ),
           ),
@@ -111,38 +153,45 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
             alignment: Alignment.centerRight,
             child: Opacity(
               opacity: 0.2,
-              child: Icon(Icons.shopping_bag_outlined, size: 100, color: _goldColor),
+              child: Icon(Icons.shopping_bag_outlined,
+                  size: 100, color: SanggamTheme.primary),
             ),
           ),
         ),
       ),
-      bottom: TabBar(
-        indicatorColor: _goldColor,
-        labelColor: _goldColor,
-        unselectedLabelColor: Colors.white60,
+      bottom: const TabBar(
+        indicatorColor: SanggamTheme.primary,
+        labelColor: SanggamTheme.primary,
+        unselectedLabelColor: SanggamTheme.onSurfaceDim,
         indicatorWeight: 3,
-        tabs: const [
-          Tab(text: "바이오 카트리지"),
-          Tab(text: "헬스 리빙"),
+        tabs: [
+          Tab(text: '바이오 카트리지'),
+          Tab(text: '헬스 리빙'),
         ],
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.menu_book_outlined, color: Colors.white70),
+          icon: Icon(Icons.menu_book_outlined,
+              color: Colors.white.withValues(alpha: 0.7)),
           tooltip: '카트리지 도감',
           onPressed: () => context.push('/market/encyclopedia'),
         ),
         IconButton(
-          icon: const Icon(Icons.receipt_long_outlined, color: Colors.white70),
+          icon: Icon(Icons.receipt_long_outlined,
+              color: Colors.white.withValues(alpha: 0.7)),
           tooltip: '주문 내역',
           onPressed: () => context.push('/market/orders'),
         ),
         IconButton(
-          icon: const Icon(Icons.search, color: Colors.white70),
+          icon: Icon(Icons.search,
+              color: Colors.white.withValues(alpha: 0.7)),
+          tooltip: '검색',
           onPressed: () {},
         ),
         IconButton(
-          icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white70),
+          icon: Icon(Icons.shopping_cart_outlined,
+              color: Colors.white.withValues(alpha: 0.7)),
+          tooltip: '장바구니',
           onPressed: () => context.push('/market/cart'),
         ),
       ],
@@ -152,14 +201,14 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
   Widget _buildTierFilter() {
     final tiers = {
       'all': '전체',
-      'Basic': 'Basic',
-      'Standard': 'Standard',
-      'Premium': 'Premium',
-      'Professional': 'Professional',
+      'Basic': '베이직',
+      'Standard': '스탠다드',
+      'Premium': '프리미엄',
+      'Professional': '프로페셔널',
     };
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+      padding: const EdgeInsets.all(16),
       child: Row(
         children: tiers.entries.map((entry) {
           final isSelected = _selectedTier == entry.key;
@@ -168,15 +217,24 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
             child: ChoiceChip(
               label: Text(entry.value),
               selected: isSelected,
-              onSelected: (selected) => setState(() => _selectedTier = entry.key),
-              selectedColor: _goldColor.withOpacity(0.2),
-              backgroundColor: Colors.white.withOpacity(0.05),
+              onSelected: (selected) =>
+                  setState(() => _selectedTier = entry.key),
+              selectedColor:
+                  SanggamTheme.primary.withValues(alpha: 0.2),
+              backgroundColor:
+                  Colors.white.withValues(alpha: 0.05),
               labelStyle: TextStyle(
-                color: isSelected ? _goldColor : Colors.white60,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected
+                    ? SanggamTheme.primary
+                    : SanggamTheme.onSurfaceDim,
+                fontWeight: isSelected
+                    ? FontWeight.bold
+                    : FontWeight.normal,
               ),
               side: BorderSide(
-                color: isSelected ? _goldColor : Colors.white12,
+                color: isSelected
+                    ? SanggamTheme.primary
+                    : Colors.white.withValues(alpha: 0.12),
               ),
             ),
           );
@@ -197,13 +255,15 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: Colors.white.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppTheme.sanggamGold, width: 1),
+                      border: Border.all(
+                          color: SanggamTheme.primary, width: 1),
                     ),
-                    child: const Icon(Icons.percent, color: AppTheme.sanggamGold, size: 24),
+                    child: const Icon(Icons.percent,
+                        color: SanggamTheme.primary, size: 24),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -212,55 +272,89 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
                       children: [
                         const Text(
                           '정기 구독 멤버십',
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 8),
                         Text(
-                          _isAnnual ? '연간 구독 시 30% 할인 + 무료 배송' : '최대 20% 할인 + 무료 배송',
-                          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 12),
+                          _isAnnual
+                              ? '연간 구독 시 30% 할인 + 무료 배송'
+                              : '최대 20% 할인 + 무료 배송',
+                          style: TextStyle(
+                              color:
+                                  Colors.white.withValues(alpha: 0.8),
+                              fontSize: 12),
                         ),
                       ],
                     ),
                   ),
-                  const Icon(Icons.arrow_forward_ios, color: AppTheme.sanggamGold, size: 16),
+                  const Icon(Icons.arrow_forward_ios,
+                      color: SanggamTheme.primary, size: 16),
                 ],
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               // 연간/월간 토글
               Row(
                 children: [
                   Expanded(
-                    child: GestureDetector(
+                    child: _buildToggle(
+                      label: '월간',
+                      isActive: !_isAnnual,
                       onTap: () => setState(() => _isAnnual = false),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          color: !_isAnnual ? AppTheme.sanggamGold.withOpacity(0.2) : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: !_isAnnual ? AppTheme.sanggamGold : Colors.white24),
-                        ),
-                        child: Text('월간', textAlign: TextAlign.center, style: TextStyle(color: !_isAnnual ? AppTheme.sanggamGold : Colors.white60, fontWeight: !_isAnnual ? FontWeight.bold : FontWeight.normal, fontSize: 13)),
-                      ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: GestureDetector(
+                    child: _buildToggle(
+                      label: '연간 (-30%)',
+                      isActive: _isAnnual,
                       onTap: () => setState(() => _isAnnual = true),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: BoxDecoration(
-                          color: _isAnnual ? AppTheme.sanggamGold.withOpacity(0.2) : Colors.transparent,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: _isAnnual ? AppTheme.sanggamGold : Colors.white24),
-                        ),
-                        child: Text('연간 (-30%)', textAlign: TextAlign.center, style: TextStyle(color: _isAnnual ? AppTheme.sanggamGold : Colors.white60, fontWeight: _isAnnual ? FontWeight.bold : FontWeight.normal, fontSize: 13)),
-                      ),
                     ),
                   ),
                 ],
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToggle({
+    required String label,
+    required bool isActive,
+    required VoidCallback onTap,
+  }) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            color: isActive
+                ? SanggamTheme.primary.withValues(alpha: 0.2)
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isActive
+                  ? SanggamTheme.primary
+                  : Colors.white.withValues(alpha: 0.24),
+            ),
+          ),
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: isActive
+                  ? SanggamTheme.primary
+                  : SanggamTheme.onSurfaceDim,
+              fontWeight:
+                  isActive ? FontWeight.bold : FontWeight.normal,
+              fontSize: 13,
+            ),
           ),
         ),
       ),
@@ -275,31 +369,55 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
           Expanded(
             child: TextField(
               controller: _couponController,
-              style: const TextStyle(color: Colors.white, fontSize: 14),
+              style: const TextStyle(
+                  color: Colors.white, fontSize: 14),
               decoration: InputDecoration(
                 hintText: '쿠폰 코드 입력',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
-                prefixIcon: Icon(Icons.confirmation_number_outlined, color: _goldColor.withOpacity(0.6), size: 20),
+                hintStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.4)),
+                prefixIcon: Icon(Icons.confirmation_number_outlined,
+                    color: SanggamTheme.primary
+                        .withValues(alpha: 0.6),
+                    size: 20),
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.05),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
-                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: _goldColor)),
+                fillColor: Colors.white.withValues(alpha: 0.05),
+                contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16, vertical: 8),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                        color:
+                            Colors.white.withValues(alpha: 0.1))),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(
+                        color:
+                            Colors.white.withValues(alpha: 0.1))),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                        color: SanggamTheme.primary)),
               ),
             ),
           ),
           const SizedBox(width: 8),
           SizedBox(
-            height: 44,
+            height: 48,
             child: FilledButton(
               onPressed: () {
                 if (_couponController.text.trim().isNotEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('쿠폰 "${_couponController.text.trim()}" 적용됨')));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              '쿠폰 "${_couponController.text.trim()}" 적용됨')));
                   _couponController.clear();
                 }
               },
-              style: FilledButton.styleFrom(backgroundColor: _goldColor, foregroundColor: Colors.black, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              style: FilledButton.styleFrom(
+                  backgroundColor: SanggamTheme.primary,
+                  foregroundColor: SanggamTheme.background,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16))),
               child: const Text('적용'),
             ),
           ),
@@ -315,15 +433,15 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
     return productsAsync.when(
       data: (products) {
         if (products.isEmpty) {
-          // Fallback to mock data for demo if empty
           return _buildFallbackGrid();
         }
         return SliverPadding(
           padding: const EdgeInsets.all(16),
           sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.7,
+            gridDelegate:
+                const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 280,
+              childAspectRatio: 0.8,
               crossAxisSpacing: 16,
               mainAxisSpacing: 16,
             ),
@@ -331,8 +449,9 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
               (context, index) {
                 return AnimateFadeInUp(
                   duration: const Duration(milliseconds: 600),
-                  delay: Duration(milliseconds: index * 50), // Staggered Effect
-                  child: MarketProductCard(product: products[index]),
+                  delay: Duration(milliseconds: index * 50),
+                  child:
+                      MarketProductCard(product: products[index]),
                 );
               },
               childCount: products.length,
@@ -340,7 +459,8 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
           ),
         );
       },
-      loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
+      loading: () => const SliverToBoxAdapter(
+          child: Center(child: CircularProgressIndicator())),
       error: (_, __) => _buildFallbackGrid(),
     );
   }
@@ -357,8 +477,8 @@ class _MarketScreenState extends ConsumerState<MarketScreen> {
       padding: const EdgeInsets.all(16),
       sliver: SliverGrid(
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-          maxCrossAxisExtent: 220,
-          childAspectRatio: 0.7,
+          maxCrossAxisExtent: 280,
+          childAspectRatio: 0.72,
           crossAxisSpacing: 16,
           mainAxisSpacing: 16,
         ),

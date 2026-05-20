@@ -6,16 +6,24 @@
    ═══════════════════════════════════════════════ */
 
 :root {
-  --background: #0A192F;
+  --background: #050B18;
   --foreground: #FAFAFA;
-  --deep-sea: #0A192F;
-  --ink-black: #000000;
+  --deep-sea: #050B18;
+  --ink-black: #020408;
   --sanggam-gold: #D4AF37;
-  --wave-cyan: #64FFDA;
+  --sanggam-gold-glow: rgba(212, 175, 55, 0.4);
+  --wave-cyan: #00F2FF;
+  --wave-cyan-glow: rgba(0, 242, 255, 0.3);
   --celadon-teal: #00897B;
-  --dancheong-red: #D32F2F;
-  --hanji-white: #FAFAFA;
-  --glass-navy: rgba(10, 25, 47, 0.6);
+  --dancheong-red: #FF3D00;
+  --hanji-white: #FDFCF8;
+  --glass-navy: rgba(5, 11, 24, 0.4);
+  --jagae-iridescent: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.05) 0%,
+      rgba(0, 242, 255, 0.05) 25%,
+      rgba(212, 175, 55, 0.05) 50%,
+      rgba(255, 61, 0, 0.05) 75%,
+      rgba(255, 255, 255, 0.05) 100%);
 }
 
 @theme inline {
@@ -74,42 +82,185 @@ h6 {
     inset 0 1px 0 rgba(212, 175, 55, 0.2);
 }
 
-/* ═══ Sanggam Button ═══ */
+/* ═══ Sanggam Premium Card (자개 + 상감 + 입체) ═══ */
+.premium-card {
+  position: relative;
+  background: var(--glass-navy);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 20px;
+  padding: 24px;
+  overflow: hidden;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow:
+    0 10px 40px -10px rgba(0, 0, 0, 0.5),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.premium-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/images/premium/premium_jagae_iridescent_button_texture_1771749140880.png');
+  background-size: cover;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.5s ease;
+}
+
+.premium-card:hover::before {
+  opacity: 0.3;
+}
+
+.premium-card:hover {
+  transform: translateY(-8px) scale(1.01);
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow:
+    0 20px 60px -15px rgba(0, 0, 0, 0.7),
+    0 0 30px -10px var(--sanggam-gold-glow);
+}
+
+/* ═══ Sanggam Button (Hybrid High-Res) ═══ */
 .sanggam-btn {
-  padding: 12px 24px;
-  border-radius: 8px;
+  position: relative;
+  padding: 12px 28px;
+  border-radius: 12px;
   background: rgba(212, 175, 55, 0.1);
-  border: 1px solid var(--sanggam-gold);
+  border: 1px solid rgba(212, 175, 55, 0.5);
   color: var(--sanggam-gold);
+  font-family: var(--font-serif);
   font-weight: 700;
   letter-spacing: 0.05em;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   cursor: pointer;
+  overflow: hidden;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-.sanggam-btn:hover {
-  background: var(--sanggam-gold);
-  color: var(--ink-black);
-  box-shadow: 0 0 24px rgba(212, 175, 55, 0.3);
+.sanggam-btn-gold {
+  background-image: url('/images/premium/premium_glossy_gold_button_texture_1771749127373.png');
+  background-size: cover;
+  background-position: center;
+  color: #000;
+  border: none;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
-/* ═══ Wave Animation (파동 효과) ═══ */
-@keyframes wave-pulse {
+.sanggam-btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.4);
+  filter: brightness(1.1);
+}
 
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(1);
+.sanggam-btn-jagae {
+  background-image: url('/images/premium/premium_jagae_iridescent_button_texture_1771749140880.png');
+  background-size: cover;
+  background-position: center;
+  color: var(--hanji-white);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sanggam-btn-jagae:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+  filter: contrast(1.1);
+}
+
+/* ═══ Golden Globe Animation ═══ */
+@keyframes globe-rotate {
+  from {
+    transform: rotateY(0deg);
   }
 
-  50% {
-    opacity: 0.8;
-    transform: scale(1.02);
+  to {
+    transform: rotateY(360deg);
   }
 }
 
-.wave-animate {
-  animation: wave-pulse 3s ease-in-out infinite;
+.globe-container {
+  perspective: 1500px;
+  width: 300px;
+  height: 300px;
+  position: relative;
+  margin: 0 auto;
+}
+
+.golden-globe {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #FFD700 0%, #D4AF37 40%, #8B4513 100%);
+  box-shadow:
+    inset -20px -20px 60px rgba(0, 0, 0, 0.8),
+    inset 20px 20px 60px rgba(255, 255, 255, 0.3),
+    0 0 80px var(--sanggam-gold-glow);
+  transform-style: preserve-3d;
+  animation: globe-rotate 20s linear infinite;
+}
+
+.globe-wire {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(255, 215, 0, 0.1);
+  border-radius: 50%;
+}
+
+.wire-h {
+  transform: rotateX(90deg);
+}
+
+.wire-v {
+  transform: rotateY(90deg);
+}
+
+/* ═══ Data Flow (데이터 스트리밍 효과) ═══ */
+.data-flow {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--wave-cyan), transparent);
+  width: 100px;
+  animation: flow 2s linear infinite;
+}
+
+@keyframes flow {
+  from {
+    left: -100px;
+  }
+
+  to {
+    left: 100%;
+  }
+}
+
+/* ═══ Shimmer Effect ═══ */
+.shimmer-text {
+  background: linear-gradient(90deg,
+      var(--sanggam-gold) 0%,
+      #fff 50%,
+      var(--sanggam-gold) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 3s linear infinite;
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
 }
 
 /* ═══ Wave Ripple (동심원 파동) ═══ */
@@ -129,10 +280,6 @@ h6 {
   }
 }
 
-.wave-ripple-animate {
-  animation: wave-ripple 3s ease-out infinite;
-}
-
 /* ═══ Breathing Animation (호흡 효과) ═══ */
 @keyframes breathing {
 
@@ -150,42 +297,6 @@ h6 {
 
 .breathing-animate {
   animation: breathing 4s ease-in-out infinite;
-}
-
-/* ═══ Sanggam Glow Line (상감 금선 식별) ═══ */
-@keyframes glow-line {
-  0% {
-    background-position: -200% center;
-  }
-
-  100% {
-    background-position: 200% center;
-  }
-}
-
-.sanggam-glow-line {
-  height: 1px;
-  background: linear-gradient(90deg,
-      transparent 0%,
-      var(--sanggam-gold) 50%,
-      transparent 100%);
-  background-size: 200% 100%;
-  animation: glow-line 3s ease-in-out infinite;
-  opacity: 0.6;
-}
-
-/* ═══ Wave Ripple Background Layer ═══ */
-.wave-ripple-bg {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  animation: wave-ripple 3s ease-out infinite;
-  pointer-events: none;
-  z-index: 0;
 }
 
 /* ═══ Data Label ═══ */

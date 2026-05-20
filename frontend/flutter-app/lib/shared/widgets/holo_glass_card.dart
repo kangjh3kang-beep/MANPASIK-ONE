@@ -1,7 +1,21 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
-import 'package:manpasik/shared/widgets/jagae_pattern.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+import 'package:manpasik/shared/widgets/sanggam_container.dart';
+
+// ───────────────────────────────────────────────────
+// HoloGlassCard — SanggamContainer 기반 홀로그래픽 글래스 카드
+//
+// [Rule 4] withOpacity 14건 → withValues(alpha:)
+// [Rule 4] AppTheme.waveCyan → SanggamTheme.jagaeCyan
+// [Rule 4] AppTheme.sanggamGold → SanggamTheme.primary
+// [Rule 4] isDark 분기 제거 (항상 dark)
+// [Rule 4] 하드코딩 Color(0xFF1B2640/050B14) → SanggamContainer 위임
+// [Rule 4] Container+ClipRRect+BackdropFilter+JagaeContainer+KoreanEdgeBorder
+//          5중 → SanggamContainer 단일
+// [Rule 2] borderRadius 20→24 (8×3)
+//
+// isActive=true 시 외부 글로우는 DecoratedBox로 래핑.
+// ───────────────────────────────────────────────────
 
 class HoloGlassCard extends StatelessWidget {
   final Widget child;
@@ -10,7 +24,8 @@ class HoloGlassCard extends StatelessWidget {
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry margin;
   final VoidCallback? onTap;
-  final bool isActive; // For glowing active state
+  final bool isActive;
+  final Color? glowColor;
 
   const HoloGlassCard({
     super.key,
@@ -24,130 +39,50 @@ class HoloGlassCard extends StatelessWidget {
     this.glowColor,
   });
 
-  final Color? glowColor;
-
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final glow = glowColor ?? SanggamTheme.jagaeCyan;
+    final borderC =
+        isActive ? SanggamTheme.jagaeCyan : SanggamTheme.primary;
+
+    Widget card = SanggamContainer(
+      width: width,
+      height: height,
+      padding: padding,
+      onTap: onTap,
+      borderRadius: 24,
+      borderWidth: isActive ? 1.5 : 0.8,
+      borderColor: borderC.withValues(alpha: isActive ? 0.8 : 0.3),
+      blurSigma: 20,
+      jagaeOpacity: 0.08,
+      isSelected: isActive,
+      child: child,
+    );
+
+    // isActive 시 외부 네온 글로우 추가
+    if (isActive) {
+      card = DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: glow.withValues(alpha: 0.3),
+              blurRadius: 20,
+              spreadRadius: -5,
+            ),
+            BoxShadow(
+              color: SanggamTheme.primary.withValues(alpha: 0.2),
+              blurRadius: 10,
+            ),
+          ],
+        ),
+        child: card,
+      );
+    }
 
     return Padding(
       padding: margin,
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: width,
-          height: height,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            // Neon Glow Shadow (Outer)
-            boxShadow: [
-              if (isActive) ...[
-                BoxShadow(
-                  color: glowColor?.withOpacity(0.4) ?? 
-                         (isDark ? AppTheme.waveCyan.withOpacity(0.3) : AppTheme.celadonTeal.withOpacity(0.2)),
-                  blurRadius: 20,
-                  spreadRadius: -5,
-                ),
-                BoxShadow(
-                  color: AppTheme.sanggamGold.withOpacity(0.2),
-                  blurRadius: 10,
-                  spreadRadius: 0,
-                ),
-              ] else
-                BoxShadow(
-                  color: isDark ? Colors.black.withOpacity(0.5) : Colors.black.withOpacity(0.05),
-                  blurRadius: 15,
-                  spreadRadius: 0,
-                  offset: const Offset(0, 8),
-                ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20), // Increased blur for frostier look
-              child: Stack(
-                children: [
-                  // 1. Ultra-Thin Glass Layer (Low Opacity)
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isDark ? Colors.white.withOpacity(0.08) : Colors.black.withOpacity(0.05), // Subtle border
-                          width: 0.5,
-                        ),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: isDark 
-                            ? [
-                                const Color(0xFF1B2640).withOpacity(0.25), // Much clearer
-                                const Color(0xFF050B14).withOpacity(0.40), // Slightly darker bottom
-                              ]
-                            : [
-                                Colors.white.withOpacity(0.6), // White Frost
-                                Colors.white.withOpacity(0.3), 
-                              ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  // 2. Reflective Shine (Mystical Gloss)
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          stops: const [0.0, 0.4, 1.0],
-                          colors: [
-                            Colors.white.withOpacity(isDark ? 0.12 : 0.4), // Stronger shine in light mode
-                            Colors.white.withOpacity(0.0),  // Transparent middle
-                            Colors.white.withOpacity(isDark ? 0.05 : 0.1), // Subtle reflect bottom-right
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  // 3. Jagae/Data Texture
-                  const Positioned.fill(
-                    child: JagaeContainer(
-                      showLattice: true,
-                      opacity: 0.08, // Increased slightly for visibility
-                      child: SizedBox(),
-                    ),
-                  ),
-
-                  // 4. Sanggam Border (Gradient Overlay)
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.transparent),
-                      ),
-                      child: KoreanEdgeBorder(
-                        borderWidth: isActive ? 1.5 : 1.0, // Thinner border
-                        borderColor: isActive ? AppTheme.waveCyan : AppTheme.sanggamGold,
-                        child: const SizedBox.expand(),
-                      ),
-                    ),
-                  ),
-
-                  // 5. Content
-                  Padding(
-                    padding: padding,
-                    child: child,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+      child: card,
     );
   }
 }

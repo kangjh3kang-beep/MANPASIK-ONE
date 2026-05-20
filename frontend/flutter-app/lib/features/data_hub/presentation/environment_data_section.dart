@@ -1,7 +1,21 @@
 import 'package:flutter/material.dart';
 
 import 'package:manpasik/core/services/public_data_service.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+
+// ───────────────────────────────────────────────────
+// EnvironmentDataSection — Sanggam Orbit 환경 데이터 섹션
+//
+// [Rule 4] app_theme → sanggam_theme
+// [Rule 4] AppTheme.dancheongRed 2x → SanggamTheme.error
+// [Rule 4] Theme.of(context).textTheme → 직접 TextStyle
+// [Rule 4] theme.colorScheme.onSurfaceVariant → SanggamTheme.onSurfaceDim
+// [Rule 4] Card → 다크 테마 Container
+// [Rule 4] Colors.green → SanggamTheme.jagaeCyan
+// [Rule 4] Colors.orange → SanggamTheme.primary
+// [Rule 4] Colors.blue → SanggamTheme.jagaeCyan
+// [Rule 4] withOpacity → withValues(alpha:)
+// ───────────────────────────────────────────────────
 
 /// 환경 데이터 섹션 위젯 (C4)
 ///
@@ -49,13 +63,16 @@ class _EnvironmentDataSectionState extends State<EnvironmentDataSection> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     if (_loading) {
-      return const Card(
-        child: Padding(
-          padding: EdgeInsets.all(24),
-          child: Center(child: CircularProgressIndicator()),
+      return Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: SanggamTheme.surfaceVariant),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: const Center(
+          child: CircularProgressIndicator(color: SanggamTheme.primary),
         ),
       );
     }
@@ -63,9 +80,11 @@ class _EnvironmentDataSectionState extends State<EnvironmentDataSection> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           '환경 데이터',
-          style: theme.textTheme.titleMedium?.copyWith(
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -74,67 +93,78 @@ class _EnvironmentDataSectionState extends State<EnvironmentDataSection> {
         // 날씨 + 대기질
         Row(
           children: [
-            Expanded(child: _buildWeatherCard(theme)),
+            Expanded(child: _buildWeatherCard()),
             const SizedBox(width: 12),
-            Expanded(child: _buildAirQualityCard(theme)),
+            Expanded(child: _buildAirQualityCard()),
           ],
         ),
 
         // 질병 경보
         if (_alerts.isNotEmpty) ...[
           const SizedBox(height: 12),
-          ..._alerts.map((a) => _buildAlertCard(theme, a)),
+          ..._alerts.map((a) => _buildAlertCard(a)),
         ],
       ],
     );
   }
 
-  Widget _buildWeatherCard(ThemeData theme) {
+  Widget _buildWeatherCard() {
     if (_weather == null) return const SizedBox.shrink();
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.wb_sunny_rounded, size: 18),
-                const SizedBox(width: 4),
-                Text('날씨', style: theme.textTheme.bodySmall),
-              ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: SanggamTheme.surfaceVariant),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.wb_sunny_rounded, size: 18,
+                  color: SanggamTheme.primary),
+              SizedBox(width: 4),
+              Text('날씨', style: TextStyle(
+                color: SanggamTheme.onSurfaceDim,
+                fontSize: 12,
+              )),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${_weather!.temperature.toStringAsFixed(1)}°C',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(height: 8),
-            Text(
-              '${_weather!.temperature.toStringAsFixed(1)}°C',
-              style: theme.textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
+          ),
+          Text(
+            '${_weather!.condition} | 체감 ${_weather!.feelsLike.toStringAsFixed(1)}°C',
+            style: const TextStyle(
+              color: SanggamTheme.onSurfaceDim,
+              fontSize: 12,
             ),
-            Text(
-              '${_weather!.condition} | 체감 ${_weather!.feelsLike.toStringAsFixed(1)}°C',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+          ),
+          Text(
+            '습도 ${_weather!.humidity}% | UV ${_weather!.uvIndex}',
+            style: const TextStyle(
+              color: SanggamTheme.onSurfaceDim,
+              fontSize: 11,
             ),
-            Text(
-              '습도 ${_weather!.humidity}% | UV ${_weather!.uvIndex}',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontSize: 11,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildAirQualityCard(ThemeData theme) {
+  Widget _buildAirQualityCard() {
     if (_airQuality == null) return const SizedBox.shrink();
     final gradeColor = switch (_airQuality!.grade) {
-      AirQualityGrade.good => Colors.green,
-      AirQualityGrade.moderate => Colors.orange,
-      _ => AppTheme.dancheongRed,
+      AirQualityGrade.good => SanggamTheme.jagaeCyan,
+      AirQualityGrade.moderate => SanggamTheme.primary,
+      _ => SanggamTheme.error,
     };
     final gradeLabel = switch (_airQuality!.grade) {
       AirQualityGrade.good => '좋음',
@@ -145,66 +175,88 @@ class _EnvironmentDataSectionState extends State<EnvironmentDataSection> {
       AirQualityGrade.hazardous => '위험',
     };
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.air_rounded, size: 18),
-                const SizedBox(width: 4),
-                Text('대기질', style: theme.textTheme.bodySmall),
-              ],
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: SanggamTheme.surfaceVariant),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.air_rounded, size: 18,
+                  color: SanggamTheme.jagaeCyan),
+              SizedBox(width: 4),
+              Text('대기질', style: TextStyle(
+                color: SanggamTheme.onSurfaceDim,
+                fontSize: 12,
+              )),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(
+              color: gradeColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
             ),
-            const SizedBox(height: 8),
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              decoration: BoxDecoration(
-                color: gradeColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                gradeLabel,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: gradeColor,
-                  fontWeight: FontWeight.bold,
-                ),
+            child: Text(
+              gradeLabel,
+              style: TextStyle(
+                color: gradeColor,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 4),
-            Text(
-              'PM10: ${_airQuality!.pm10}㎍ | PM2.5: ${_airQuality!.pm25}㎍',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontSize: 11,
-              ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'PM10: ${_airQuality!.pm10}㎍ | PM2.5: ${_airQuality!.pm25}㎍',
+            style: const TextStyle(
+              color: SanggamTheme.onSurfaceDim,
+              fontSize: 11,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildAlertCard(ThemeData theme, DiseaseAlert alert) {
+  Widget _buildAlertCard(DiseaseAlert alert) {
     final color = switch (alert.severity) {
-      AlertSeverity.info => Colors.blue,
-      AlertSeverity.caution => Colors.orange,
-      AlertSeverity.warning => AppTheme.dancheongRed,
+      AlertSeverity.info => SanggamTheme.jagaeCyan,
+      AlertSeverity.caution => SanggamTheme.primary,
+      AlertSeverity.warning => SanggamTheme.error,
       AlertSeverity.critical => const Color(0xFF8B0000),
     };
 
-    return Card(
-      color: color.withOpacity(0.05),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: color.withValues(alpha: 0.2),
+        ),
+      ),
       child: ListTile(
         leading: Icon(Icons.warning_amber_rounded, color: color),
         title: Text(alert.title,
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(fontWeight: FontWeight.bold)),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            )),
         subtitle: Text(alert.description,
-            style: theme.textTheme.bodySmall, maxLines: 2),
+            style: const TextStyle(
+              color: SanggamTheme.onSurfaceDim,
+              fontSize: 12,
+            ),
+            maxLines: 2),
         dense: true,
       ),
     );

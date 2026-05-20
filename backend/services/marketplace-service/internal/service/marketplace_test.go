@@ -211,3 +211,285 @@ func TestUpdateProduct_NotFound(t *testing.T) {
 		t.Fatal("존재하지 않는 상품에 에러가 반환되어야 함")
 	}
 }
+
+// ============================================================================
+// Phase B 신규 테스트
+// ============================================================================
+
+func TestRegisterPartner_DefaultPending(t *testing.T) {
+	productRepo := memory.NewProductRepository()
+	partnerRepo := memory.NewPartnerRepository()
+	statsRepo := memory.NewStatsRepository()
+	svc := service.NewMarketplaceService(productRepo, partnerRepo, statsRepo)
+	ctx := context.Background()
+
+	partner := &service.Partner{
+		Name:         "신규파트너",
+		ContactEmail: "new@partner.com",
+	}
+	id, err := svc.RegisterPartner(ctx, partner)
+	if err != nil {
+		t.Fatalf("등록 실패: %v", err)
+	}
+
+	// 파트너 상태 확인
+	found, _ := partnerRepo.FindByID(ctx, id)
+	if found == nil {
+		t.Fatal("등록된 파트너를 찾을 수 없음")
+	}
+	if found.Status != "pending" {
+		t.Fatalf("신규 파트너 상태가 pending이어야 함: got %s", found.Status)
+	}
+}
+
+func TestApprovePartner_Success(t *testing.T) {
+	productRepo := memory.NewProductRepository()
+	partnerRepo := memory.NewPartnerRepository()
+	statsRepo := memory.NewStatsRepository()
+	svc := service.NewMarketplaceService(productRepo, partnerRepo, statsRepo)
+	ctx := context.Background()
+
+	// pending 파트너 등록
+	partner := &service.Partner{Name: "테스트", ContactEmail: "t@t.com"}
+	id, _ := svc.RegisterPartner(ctx, partner)
+
+	// 승인
+	err := svc.ApprovePartner(ctx, id, "admin-1")
+	if err != nil {
+		t.Fatalf("승인 실패: %v", err)
+	}
+
+	found, _ := partnerRepo.FindByID(ctx, id)
+	if found.Status != "active" {
+		t.Fatalf("승인 후 상태가 active여야 함: got %s", found.Status)
+	}
+}
+
+func TestApprovePartner_AlreadyActive(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	// partner-001은 시드 데이터에서 이미 active
+	err := svc.ApprovePartner(ctx, "partner-001", "admin-1")
+	if err == nil {
+		t.Fatal("이미 active인 파트너 승인에 에러가 반환되어야 함")
+	}
+}
+
+func TestCreateProduct_InvalidPrice(t *testing.T) {
+	svc := setupTestService()
+	ctx := context.Background()
+
+	product := &service.PartnerProduct{
+		PartnerID: "partner-001",
+		Name:      "테스트 상품",
+		Price:     0, // 가격 0
+		Category:  "device",
+	}
+	_, err := svc.CreateProduct(ctx, product)
+	if err == nil {
+		t.Fatal("가격 0인 상품에 에러가 반환되어야 함")
+	}
+
+	product.Price = -1000
+	_, err = svc.CreateProduct(ctx, product)
+	if err == nil {
+		t.Fatal("음수 가격인 상품에 에러가 반환되어야 함")
+	}
+}
+
+func TestCreateProduct_PartnerNotActive(t *testing.T) {
+	productRepo := memory.NewProductRepository()
+	partnerRepo := memory.NewPartnerRepository()
+	statsRepo := memory.NewStatsRepository()
+	svc := service.NewMarketplaceService(productRepo, partnerRepo, statsRepo)
+	ctx := context.Background()
+
+	// pending 파트너 등록
+	partner := &service.Partner{Name: "미승인파트너", ContactEmail: "p@t.com"}
+	id, _ := svc.RegisterPartner(ctx, partner)
+
+	product := &service.PartnerProduct{
+		PartnerID: id,
+		Name:      "신규 상품",
+		Price:     50000,
+		Category:  "device",
+	}
+	_, err := svc.CreateProduct(ctx, product)
+	if err == nil {
+		t.Fatal("pending 파트너로 상품 생성 시 에러가 반환되어야 함")
+	}
+}
+
+func TestCalculateCommission(t *testing.T) {
+	svc := setupTestService()
+
+	tests := []struct {
+		category string
+		price    float64
+		expected float64
+	}{
+		{"cartridge", 100000, 15000},
+		{"device", 100000, 10000},
+		{"accessory", 100000, 20000},
+		{"subscription", 100000, 25000},
+		{"service", 100000, 20000},
+	}
+
+	for _, tt := range tests {
+		product := &service.PartnerProduct{
+			Category: tt.category,
+			Price:    tt.price,
+		}
+		commission := svc.CalculateCommission(product)
+		if commission != tt.expected {
+			t.Errorf("카테고리 %s 수수료 불일치: got %.0f, want %.0f", tt.category, commission, tt.expected)
+		}
+	}
+}
+
+// =============================================================================
+// Phase F 테스트 보강
+// =============================================================================
+
+func TestSuspendPartner_Success(t *testing.T) {
+	productRepo := memory.NewProductRepository()
+	partnerRepo := memory.NewPartnerRepository()
+	statsRepo := memory.NewStatsRepository()
+	svc := service.NewMarketplaceService(productRepo, partnerRepo, statsRepo)
+	ctx := context.Background()
+
+	// pending → active → suspended
+	partner := &service.Partner{Name: "중지대상", ContactEmail: "s@t.com"}
+	id, _ := svc.RegisterPartner(ctx, partner)
+	_ = svc.ApprovePartner(ctx, id, "admin-1")
+
+	err := svc.SuspendPartner(ctx, id, "규정 위반")
+	if err != nil {
+		t.Fatalf("SuspendPartner 실패: %v", err)
+	}
+	found, _ := partnerRepo.FindByID(ctx, id)
+	if found.Status != "suspended" {
+		t.Errorf("상태: got %s, want suspended", found.Status)
+	}
+}
+
+func TestSuspendPartner_AlreadySuspended(t *testing.T) {
+	productRepo := memory.NewProductRepository()
+	partnerRepo := memory.NewPartnerRepository()
+	statsRepo := memory.NewStatsRepository()
+	svc := service.NewMarketplaceService(productRepo, partnerRepo, statsRepo)
+	ctx := context.Background()
+
+	partner := &service.Partner{Name: "이미중지", ContactEmail: "s2@t.com"}
+	id, _ := svc.RegisterPartner(ctx, partner)
+	_ = svc.ApprovePartner(ctx, id, "admin-1")
+	_ = svc.SuspendPartner(ctx, id, "첫 중지")
+
+	err := svc.SuspendPartner(ctx, id, "재중지")
+	if err == nil {
+		t.Error("이미 suspended인 파트너 재중지에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestSuspendPartner_PendingPartner(t *testing.T) {
+	productRepo := memory.NewProductRepository()
+	partnerRepo := memory.NewPartnerRepository()
+	statsRepo := memory.NewStatsRepository()
+	svc := service.NewMarketplaceService(productRepo, partnerRepo, statsRepo)
+	ctx := context.Background()
+
+	partner := &service.Partner{Name: "미승인파트너", ContactEmail: "p@t.com"}
+	id, _ := svc.RegisterPartner(ctx, partner)
+
+	err := svc.SuspendPartner(ctx, id, "미승인 중지")
+	if err == nil {
+		t.Error("pending 파트너 중지에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestCreateProduct_Success(t *testing.T) {
+	productRepo := memory.NewProductRepository()
+	partnerRepo := memory.NewPartnerRepository()
+	statsRepo := memory.NewStatsRepository()
+	svc := service.NewMarketplaceService(productRepo, partnerRepo, statsRepo)
+	ctx := context.Background()
+
+	partner := &service.Partner{Name: "활성파트너", ContactEmail: "a@t.com"}
+	id, _ := svc.RegisterPartner(ctx, partner)
+	_ = svc.ApprovePartner(ctx, id, "admin-1")
+
+	product := &service.PartnerProduct{
+		PartnerID: id,
+		Name:      "새로운 혈당계",
+		Price:     89000,
+		Category:  "device",
+	}
+	created, err := svc.CreateProduct(ctx, product)
+	if err != nil {
+		t.Fatalf("CreateProduct 실패: %v", err)
+	}
+	if !created.IsActive {
+		t.Error("생성된 상품은 활성 상태여야 합니다")
+	}
+}
+
+func TestCreateProduct_InvalidCategory(t *testing.T) {
+	productRepo := memory.NewProductRepository()
+	partnerRepo := memory.NewPartnerRepository()
+	statsRepo := memory.NewStatsRepository()
+	svc := service.NewMarketplaceService(productRepo, partnerRepo, statsRepo)
+	ctx := context.Background()
+
+	partner := &service.Partner{Name: "카테고리파트너", ContactEmail: "c@t.com"}
+	id, _ := svc.RegisterPartner(ctx, partner)
+	_ = svc.ApprovePartner(ctx, id, "admin-1")
+
+	product := &service.PartnerProduct{
+		PartnerID: id,
+		Name:      "잘못된카테고리상품",
+		Price:     10000,
+		Category:  "invalid_category",
+	}
+	_, err := svc.CreateProduct(ctx, product)
+	if err == nil {
+		t.Error("잘못된 카테고리에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestCalculateCommission_NilProduct(t *testing.T) {
+	svc := setupTestService()
+	commission := svc.CalculateCommission(nil)
+	if commission != 0 {
+		t.Errorf("nil 상품 수수료: got %.0f, want 0", commission)
+	}
+}
+
+func TestCalculateCommission_UnknownCategory(t *testing.T) {
+	svc := setupTestService()
+	product := &service.PartnerProduct{
+		Category: "unknown",
+		Price:    100000,
+	}
+	commission := svc.CalculateCommission(product)
+	// 기본 수수료율 20%
+	if commission != 20000 {
+		t.Errorf("미지 카테고리 수수료: got %.0f, want 20000", commission)
+	}
+}
+
+func TestApprovePartner_EmptyID(t *testing.T) {
+	svc := setupTestService()
+	err := svc.ApprovePartner(context.Background(), "", "admin-1")
+	if err == nil {
+		t.Error("빈 partner_id에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestSuspendPartner_EmptyID(t *testing.T) {
+	svc := setupTestService()
+	err := svc.SuspendPartner(context.Background(), "", "이유")
+	if err == nil {
+		t.Error("빈 partner_id에 에러가 반환되어야 합니다")
+	}
+}

@@ -3,7 +3,26 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:manpasik/core/providers/grpc_provider.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+import 'package:manpasik/shared/utils/navigation_utils.dart';
+import 'package:manpasik/shared/widgets/sanggam_container.dart';
+
+// ───────────────────────────────────────────────────
+// PrescriptionDetailScreen — Sanggam Orbit 처방전 상세
+//
+// [Rule 4] app_theme.dart → sanggam_theme.dart
+// [Rule 4] AppBar → body 내 커스텀 헤더
+// [Rule 4] Theme.of(context) 2x + ThemeData 파라미터/필드 5x 제거
+// [Rule 4] theme.textTheme.* ~12x → 직접 TextStyle
+// [Rule 4] theme.colorScheme.* ~2x → SanggamTheme 상수
+// [Rule 4] AppTheme.sanggamGold 3x → SanggamTheme.primary
+// [Rule 4] Colors.green 2x → SanggamTheme.jagaeCyan
+// [Rule 4] Colors.orange 2x → SanggamTheme.primary
+// [Rule 4] Colors.blue 2x → SanggamTheme.jagaeCyan
+// [Rule 4] Card 4x → SanggamContainer / ListTile
+// [Rule 4] Scaffold 배경 → SanggamTheme.background
+// [Rule 2] vertical:2→8
+// ───────────────────────────────────────────────────
 
 /// 처방전 상세 화면
 class PrescriptionDetailScreen extends ConsumerWidget {
@@ -13,122 +32,220 @@ class PrescriptionDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('처방전 상세'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+      backgroundColor: SanggamTheme.background,
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 처방전 헤더
-            Card(
-              color: AppTheme.sanggamGold.withValues(alpha:0.1),
-              child: Padding(
+            // 헤더
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    tooltip: '뒤로 가기',
+                    onPressed: () => context.popOrHome(),
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      '처방전 상세',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 본문
+            Expanded(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.receipt_long, color: AppTheme.sanggamGold),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text('처방전 #${prescriptionId.length > 8 ? prescriptionId.substring(0, 8) : prescriptionId}',
-                              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                        ),
-                        Chip(
-                          label: const Text('유효', style: TextStyle(fontSize: 11, color: Colors.white)),
-                          backgroundColor: Colors.green,
-                          side: BorderSide.none,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                      ],
+                    // 처방전 헤더
+                    SanggamContainer(
+                      borderRadius: 16,
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Icon(Icons.receipt_long,
+                                  color: SanggamTheme.primary),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '처방전 #${prescriptionId.length > 8 ? prescriptionId.substring(0, 8) : prescriptionId}',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: SanggamTheme.jagaeCyan,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Text(
+                                  '유효',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: SanggamTheme.background,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            '발급일: 2026-02-15',
+                            style: TextStyle(
+                              color: SanggamTheme.onSurfaceDim,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const Text(
+                            '유효기간: 2026-02-22까지',
+                            style: TextStyle(
+                              color: SanggamTheme.onSurfaceDim,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const Text(
+                            '담당의: 김건강 전문의 (내과)',
+                            style: TextStyle(
+                              color: SanggamTheme.onSurfaceDim,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // 처방 약품 리스트
+                    const Text(
+                      '처방 약품',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     const SizedBox(height: 8),
-                    Text('발급일: 2026-02-15', style: theme.textTheme.bodySmall),
-                    Text('유효기간: 2026-02-22까지', style: theme.textTheme.bodySmall),
-                    Text('담당의: 김건강 전문의 (내과)', style: theme.textTheme.bodySmall),
+                    _buildMedicineCard('메트포르민 500mg', '1일 2회, 식후 30분', '30일분',
+                        Icons.medication),
+                    _buildMedicineCard('아토르바스타틴 10mg', '1일 1회, 취침 전', '30일분',
+                        Icons.medication_liquid),
+                    _buildMedicineCard('오메가3 1000mg', '1일 1회, 식사와 함께', '30일분',
+                        Icons.local_pharmacy),
+                    const SizedBox(height: 16),
+
+                    // 주의사항
+                    SanggamContainer(
+                      borderRadius: 16,
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.warning_amber,
+                                  size: 20, color: SanggamTheme.primary),
+                              SizedBox(width: 8),
+                              Text(
+                                '복약 주의사항',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          _buildWarningItem('메트포르민 복용 중 과음을 삼가세요.'),
+                          _buildWarningItem(
+                              '근육통이 지속되면 아토르바스타틴 복용을 중단하고 의사에게 알리세요.'),
+                          _buildWarningItem('처방 약품을 임의로 중단하지 마세요.'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // 약국 전송 버튼
+                    FilledButton.icon(
+                      onPressed: () => _showPharmacySearchSheet(context, ref),
+                      icon: const Icon(Icons.local_pharmacy),
+                      label: const Text('약국으로 처방전 전송'),
+                      style: FilledButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                        backgroundColor: SanggamTheme.primary,
+                        foregroundColor: SanggamTheme.background,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // 처방→마켓 연계: 카트리지 구매
+                    OutlinedButton.icon(
+                      onPressed: () => context.push('/market/cartridge'),
+                      icon: const Icon(Icons.shopping_cart_outlined),
+                      label: const Text('검사 카트리지 구매'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                        side: BorderSide(
+                          color: SanggamTheme.jagaeCyan.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: () => _showReminderDialog(context),
+                      icon: const Icon(Icons.alarm),
+                      label: const Text('복약 리마인더 설정'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                              content: Text('처방전 PDF를 다운로드 중입니다...')),
+                        );
+                        Future.delayed(const Duration(seconds: 1), () {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text('처방전 PDF가 다운로드되었습니다.')),
+                            );
+                          }
+                        });
+                      },
+                      icon: const Icon(Icons.picture_as_pdf),
+                      label: const Text('처방전 PDF 다운로드'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-
-            // 처방 약품 리스트
-            Text('처방 약품', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            _buildMedicineCard(theme, '메트포르민 500mg', '1일 2회, 식후 30분', '30일분', Icons.medication),
-            _buildMedicineCard(theme, '아토르바스타틴 10mg', '1일 1회, 취침 전', '30일분', Icons.medication_liquid),
-            _buildMedicineCard(theme, '오메가3 1000mg', '1일 1회, 식사와 함께', '30일분', Icons.local_pharmacy),
-            const SizedBox(height: 16),
-
-            // 주의사항
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.warning_amber, size: 20, color: Colors.orange),
-                        const SizedBox(width: 8),
-                        Text('복약 주의사항', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    _buildWarningItem(theme, '메트포르민 복용 중 과음을 삼가세요.'),
-                    _buildWarningItem(theme, '근육통이 지속되면 아토르바스타틴 복용을 중단하고 의사에게 알리세요.'),
-                    _buildWarningItem(theme, '처방 약품을 임의로 중단하지 마세요.'),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // 약국 전송 버튼
-            FilledButton.icon(
-              onPressed: () => _showPharmacySearchSheet(context, theme, ref),
-              icon: const Icon(Icons.local_pharmacy),
-              label: const Text('약국으로 처방전 전송'),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(48),
-                backgroundColor: AppTheme.sanggamGold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: () => _showReminderDialog(context),
-              icon: const Icon(Icons.alarm),
-              label: const Text('복약 리마인더 설정'),
-              style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('처방전 PDF를 다운로드 중입니다...')),
-                );
-                // PDF 생성: printing + pdf 패키지 설치 후 실제 구현
-                Future.delayed(const Duration(seconds: 1), () {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('처방전 PDF가 다운로드되었습니다.')),
-                    );
-                  }
-                });
-              },
-              icon: const Icon(Icons.picture_as_pdf),
-              label: const Text('처방전 PDF 다운로드'),
-              style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(48)),
             ),
           ],
         ),
@@ -136,41 +253,63 @@ class PrescriptionDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildMedicineCard(ThemeData theme, String name, String dosage, String duration, IconData icon) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
+  Widget _buildMedicineCard(
+      String name, String dosage, String duration, IconData icon) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.blue.withValues(alpha:0.1),
-          child: Icon(icon, color: Colors.blue, size: 20),
+        tileColor: SanggamTheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
-        title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+        leading: CircleAvatar(
+          backgroundColor: SanggamTheme.jagaeCyan.withValues(alpha: 0.1),
+          child: Icon(icon, color: SanggamTheme.jagaeCyan, size: 20),
+        ),
+        title: Text(
+          name,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(dosage, style: theme.textTheme.bodySmall),
-            Text(duration, style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
+            Text(
+              dosage,
+              style: const TextStyle(
+                color: SanggamTheme.onSurfaceDim,
+                fontSize: 12,
+              ),
+            ),
+            Text(
+              duration,
+              style: const TextStyle(
+                color: SanggamTheme.onSurfaceDim,
+                fontSize: 12,
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  void _showPharmacySearchSheet(BuildContext context, ThemeData theme, WidgetRef ref) {
+  void _showPharmacySearchSheet(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (ctx) => _PharmacySearchSheet(
         prescriptionId: prescriptionId,
-        theme: theme,
         parentContext: context,
       ),
     );
   }
 
   void _showReminderDialog(BuildContext context) {
-    TimeOfDay morningTime = const TimeOfDay(hour: 8, minute: 0);
-    TimeOfDay eveningTime = const TimeOfDay(hour: 20, minute: 0);
+    const morningTime = TimeOfDay(hour: 8, minute: 0);
+    const eveningTime = TimeOfDay(hour: 20, minute: 0);
 
     showDialog(
       context: context,
@@ -183,25 +322,33 @@ class PrescriptionDetailScreen extends ConsumerWidget {
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.wb_sunny_outlined),
               title: const Text('오전 알림'),
-              subtitle: Text('${morningTime.hour}:${morningTime.minute.toString().padLeft(2, '0')}'),
+              subtitle: Text(
+                  '${morningTime.hour}:${morningTime.minute.toString().padLeft(2, '0')}'),
               trailing: const Icon(Icons.chevron_right),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.nights_stay_outlined),
               title: const Text('오후 알림'),
-              subtitle: Text('${eveningTime.hour}:${eveningTime.minute.toString().padLeft(2, '0')}'),
+              subtitle: Text(
+                  '${eveningTime.hour}:${eveningTime.minute.toString().padLeft(2, '0')}'),
               trailing: const Icon(Icons.chevron_right),
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               '알림은 처방 기간(30일) 동안 매일 설정한 시간에 전송됩니다.',
-              style: Theme.of(ctx).textTheme.bodySmall?.copyWith(color: Theme.of(ctx).colorScheme.outline),
+              style: TextStyle(
+                color: SanggamTheme.onSurfaceDim,
+                fontSize: 12,
+              ),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('취소')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('취소'),
+          ),
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
@@ -216,14 +363,22 @@ class PrescriptionDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildWarningItem(ThemeData theme, String text) {
+  Widget _buildWarningItem(String text) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('• ', style: TextStyle(color: Colors.orange)),
-          Expanded(child: Text(text, style: theme.textTheme.bodySmall)),
+          const Text('• ', style: TextStyle(color: SanggamTheme.primary)),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -234,16 +389,15 @@ class PrescriptionDetailScreen extends ConsumerWidget {
 class _PharmacySearchSheet extends ConsumerStatefulWidget {
   const _PharmacySearchSheet({
     required this.prescriptionId,
-    required this.theme,
     required this.parentContext,
   });
 
   final String prescriptionId;
-  final ThemeData theme;
   final BuildContext parentContext;
 
   @override
-  ConsumerState<_PharmacySearchSheet> createState() => _PharmacySearchSheetState();
+  ConsumerState<_PharmacySearchSheet> createState() =>
+      _PharmacySearchSheetState();
 }
 
 class _PharmacySearchSheetState extends ConsumerState<_PharmacySearchSheet> {
@@ -269,12 +423,15 @@ class _PharmacySearchSheetState extends ConsumerState<_PharmacySearchSheet> {
         });
       }
     } catch (_) {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 
   Future<void> _sendToPharmacy(Map<String, dynamic> pharmacy) async {
-    final pharmacyId = pharmacy['facility_id'] as String? ?? pharmacy['id'] as String? ?? '';
+    final pharmacyId =
+        pharmacy['facility_id'] as String? ?? pharmacy['id'] as String? ?? '';
     final pharmacyName = pharmacy['name'] as String? ?? '약국';
     setState(() => _sendingTo = pharmacyId);
     try {
@@ -303,7 +460,6 @@ class _PharmacySearchSheetState extends ConsumerState<_PharmacySearchSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = widget.theme;
     return DraggableScrollableSheet(
       initialChildSize: 0.5,
       minChildSize: 0.3,
@@ -315,7 +471,14 @@ class _PharmacySearchSheetState extends ConsumerState<_PharmacySearchSheet> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                Text('주변 약국', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                const Text(
+                  '주변 약국',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const Spacer(),
                 TextButton(
                   onPressed: () {
@@ -330,9 +493,15 @@ class _PharmacySearchSheetState extends ConsumerState<_PharmacySearchSheet> {
           if (_loading)
             const Expanded(child: Center(child: CircularProgressIndicator()))
           else if (_pharmacies.isEmpty)
-            Expanded(
+            const Expanded(
               child: Center(
-                child: Text('주변 약국을 찾을 수 없습니다.', style: theme.textTheme.bodyMedium),
+                child: Text(
+                  '주변 약국을 찾을 수 없습니다.',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                  ),
+                ),
               ),
             )
           else
@@ -345,16 +514,25 @@ class _PharmacySearchSheetState extends ConsumerState<_PharmacySearchSheet> {
                   final name = p['name'] as String? ?? '약국';
                   final address = p['address'] as String? ?? '';
                   final distance = p['distance_km'] as num?;
-                  final pharmacyId = p['facility_id'] as String? ?? p['id'] as String? ?? '';
+                  final pharmacyId =
+                      p['facility_id'] as String? ?? p['id'] as String? ?? '';
                   return ListTile(
-                    leading: const Icon(Icons.local_pharmacy, color: Colors.green),
+                    leading: const Icon(Icons.local_pharmacy,
+                        color: SanggamTheme.jagaeCyan),
                     title: Text(name),
-                    subtitle: Text('$address${distance != null ? '\n${distance.toStringAsFixed(1)}km' : ''}'),
+                    subtitle: Text(
+                        '$address${distance != null ? '\n${distance.toStringAsFixed(1)}km' : ''}'),
                     isThreeLine: distance != null,
                     trailing: FilledButton(
-                      onPressed: _sendingTo == pharmacyId ? null : () => _sendToPharmacy(p),
+                      onPressed: _sendingTo == pharmacyId
+                          ? null
+                          : () => _sendToPharmacy(p),
                       child: _sendingTo == pharmacyId
-                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
                           : const Text('전송'),
                     ),
                   );

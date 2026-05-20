@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/manpasik/backend/services/health-record-service/internal/service"
 	apperrors "github.com/manpasik/backend/shared/errors"
+	"github.com/manpasik/backend/shared/tenancy"
 )
 
 // ============================================================================
@@ -87,17 +88,24 @@ func NewHealthRecordRepository(pool *pgxpool.Pool) *HealthRecordRepository {
 }
 
 // Save는 건강 기록을 저장합니다.
+//
+// Phase AH-1: ctx 의 tenant_id 자동 부여. 미설정 시 NULL (legacy/personal).
 func (r *HealthRecordRepository) Save(ctx context.Context, rec *service.HealthRecord) error {
 	const q = `INSERT INTO health_records
 		(id, user_id, record_type, title, description, data, source,
-		 fhir_resource_id, fhir_type, recorded_at, created_at, updated_at)
-		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`
+		 fhir_resource_id, fhir_type, recorded_at, created_at, updated_at, tenant_id)
+		VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`
+
+	var tenantID interface{}
+	if tid, ok := tenancy.TenantFromContext(ctx); ok && !tid.IsZero() {
+		tenantID = string(tid)
+	}
 
 	_, err := r.pool.Exec(ctx, q,
 		rec.ID, rec.UserID, recordTypeDBValue(rec.RecordType), rec.Title, rec.Description,
 		rec.Data, rec.Source,
 		nullIfEmpty(rec.FHIRResourceID), nullFHIRType(rec.FHIRType),
-		rec.RecordedAt, rec.CreatedAt, rec.UpdatedAt,
+		rec.RecordedAt, rec.CreatedAt, rec.UpdatedAt, tenantID,
 	)
 	return err
 }
@@ -121,10 +129,19 @@ func (r *HealthRecordRepository) FindByID(ctx context.Context, id string) (*serv
 }
 
 // FindByUserID는 사용자 건강 기록 목록을 조회합니다.
+//
+// Phase AH-1: ctx 의 tenant_id 자동 격리. 미설정 시 tenant_id IS NULL 만
+// (legacy/personal). 다른 조직 의료 기록은 자연 차단.
 func (r *HealthRecordRepository) FindByUserID(ctx context.Context, userID string, typeFilter service.HealthRecordType, startDate, endDate *time.Time, limit, offset int) ([]*service.HealthRecord, int, error) {
 	where := `WHERE user_id = $1 AND deleted_at IS NULL`
 	args := []interface{}{userID}
 	idx := 2
+
+	// 의료 기록 격리 (Phase AH-1)
+	tenantClause, tenantArgs := tenancy.BuildTenantClause(ctx, "", idx)
+	where += tenantClause
+	args = append(args, tenantArgs...)
+	idx += len(tenantArgs)
 
 	if typeFilter != service.RecordTypeUnknown {
 		where += fmt.Sprintf(` AND record_type = $%d`, idx)

@@ -31,6 +31,7 @@ import (
 	v1 "github.com/manpasik/backend/shared/gen/go/v1"
 	"github.com/manpasik/backend/shared/middleware"
 	"github.com/manpasik/backend/shared/observability"
+	"github.com/manpasik/backend/shared/tenancy"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -96,12 +97,18 @@ func main() {
 
 	coachingSvc := service.NewCoachingService(logger, goalRepo, msgRepo, reportRepo)
 
-	grpcServer := grpc.NewServer(
+	tenancyEngine := tenancy.NewPolicyEngine(tenancy.NewMemoryMembershipStore())
+	serverOpts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			middleware.RequestIDInterceptor(),
 			observability.UnaryServerInterceptor(metrics),
 		),
-	)
+	}
+	serverOpts = append(serverOpts, tenancy.MaybeServerOptions(tenancyEngine, nil)...)
+	if tenancy.EnforcedFromEnv() {
+		log.Printf("[%s] 멀티테넌트 RBAC 인터셉터 활성화", serviceName)
+	}
+	grpcServer := grpc.NewServer(serverOpts...)
 
 	healthServer := health.NewServer()
 	healthpb.RegisterHealthServer(grpcServer, healthServer)

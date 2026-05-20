@@ -140,6 +140,7 @@ class _TossPaymentWebViewState extends State<TossPaymentWebView> {
         title: const Text('결제'),
         leading: IconButton(
           icon: const Icon(Icons.close),
+          tooltip: '닫기',
           onPressed: () => Navigator.pop(context, null),
         ),
       ),

@@ -356,4 +356,78 @@ mod tests {
         let norm: f32 = fp.data().iter().map(|x| x * x).sum::<f32>().sqrt();
         assert!((norm - 1.0).abs() < 0.001);
     }
+
+    // ========================================================================
+    // Phase M 엣지 케이스 (+10건)
+    // ========================================================================
+
+    #[test]
+    fn test_basic_invalid_dimension_fails() {
+        let result = FingerprintVector::basic(vec![0.1f32; 87]);
+        assert!(result.is_err(), "87차원은 88차원과 다르므로 실패해야 함");
+    }
+
+    #[test]
+    fn test_enhanced_invalid_dimension_fails() {
+        let result = FingerprintVector::enhanced(vec![0.1f32; 449]);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_full_invalid_dimension_fails() {
+        let result = FingerprintVector::full(vec![0.1f32; 895]);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_ultimate_invalid_dimension_fails() {
+        let result = FingerprintVector::ultimate(vec![0.1f32; 1791]);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_normalization_handles_zero_vector() {
+        let data: Vec<f32> = vec![0.0f32; 88];
+        let mut fp = FingerprintVector::basic(data).unwrap();
+        let _ = fp.normalize(); // 0 벡터 정규화는 결과 무관
+    }
+
+    #[test]
+    fn test_negative_values_allowed() {
+        let data: Vec<f32> = (0..88)
+            .map(|i| if i % 2 == 0 { -1.0 } else { 1.0 })
+            .collect();
+        let fp = FingerprintVector::basic(data).unwrap();
+        assert_eq!(fp.dimension(), 88);
+    }
+
+    #[test]
+    fn test_extreme_large_values() {
+        let data = vec![1e10f32; 88];
+        let fp = FingerprintVector::basic(data).unwrap();
+        assert_eq!(fp.dimension(), 88);
+    }
+
+    #[test]
+    fn test_basic_empty_vec_fails() {
+        let result = FingerprintVector::basic(vec![]);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_dim_constants_match_ssot() {
+        // SSOT 차원 상수 검증
+        assert_eq!(DIM_88, 88);
+        assert_eq!(DIM_448, 448);
+        assert_eq!(DIM_896, 896);
+        assert_eq!(DIM_1792, 1792);
+    }
+
+    #[test]
+    fn test_same_dimensions_same_type() {
+        let basic = FingerprintVector::basic(vec![0.0f32; 88]).unwrap();
+        let basic2 = FingerprintVector::basic(vec![0.5f32; 88]).unwrap();
+        // 다른 데이터지만 같은 타입
+        assert_eq!(basic.measurement_type(), basic2.measurement_type());
+    }
 }

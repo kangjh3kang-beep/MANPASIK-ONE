@@ -324,3 +324,127 @@ func TestEndToEnd_IoTFlow(t *testing.T) {
 		t.Errorf("E2E: 데이터 수: got %d, want 1", len(dataList))
 	}
 }
+
+// ============================================================================
+// Phase B 신규 테스트
+// ============================================================================
+
+func TestRegisterDevice_InvalidProtocol(t *testing.T) {
+	svc := newTestService()
+	ctx := context.Background()
+
+	_, err := svc.RegisterDevice(ctx, "dev-proto-001", "zigbee", nil)
+	if err == nil {
+		t.Error("지원하지 않는 프로토콜에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestRegisterDevice_Duplicate(t *testing.T) {
+	svc := newTestService()
+	ctx := context.Background()
+
+	_, err := svc.RegisterDevice(ctx, "dev-dup-001", "mqtt", nil)
+	if err != nil {
+		t.Fatalf("첫 번째 등록 실패: %v", err)
+	}
+
+	_, err = svc.RegisterDevice(ctx, "dev-dup-001", "ble", nil)
+	if err == nil {
+		t.Error("중복 등록에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestUpdateDeviceStatus(t *testing.T) {
+	svc := newTestService()
+	ctx := context.Background()
+
+	_, _ = svc.RegisterDevice(ctx, "dev-status-001", "mqtt", nil)
+
+	// registered → online
+	d, err := svc.UpdateDeviceStatus(ctx, "dev-status-001", "online")
+	if err != nil {
+		t.Fatalf("상태 변경 실패: %v", err)
+	}
+	if d.Status != "online" {
+		t.Errorf("Status = %s, want online", d.Status)
+	}
+
+	// online → offline
+	d, err = svc.UpdateDeviceStatus(ctx, "dev-status-001", "offline")
+	if err != nil {
+		t.Fatalf("상태 변경 실패: %v", err)
+	}
+	if d.Status != "offline" {
+		t.Errorf("Status = %s, want offline", d.Status)
+	}
+
+	// offline → registered (불가)
+	_, err = svc.UpdateDeviceStatus(ctx, "dev-status-001", "registered")
+	if err == nil {
+		t.Error("허용되지 않는 상태 전이에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestHeartbeat(t *testing.T) {
+	svc := newTestService()
+	ctx := context.Background()
+
+	_, _ = svc.RegisterDevice(ctx, "dev-hb-001", "ble", nil)
+
+	d, err := svc.Heartbeat(ctx, "dev-hb-001")
+	if err != nil {
+		t.Fatalf("Heartbeat 실패: %v", err)
+	}
+	if d.Status != "online" {
+		t.Errorf("Heartbeat 후 Status = %s, want online", d.Status)
+	}
+}
+
+func TestUpdateCommandStatus(t *testing.T) {
+	svc := newTestService()
+	ctx := context.Background()
+
+	_, _ = svc.RegisterDevice(ctx, "dev-cmd-status", "mqtt", nil)
+	cmd, _ := svc.SendCommand(ctx, "dev-cmd-status", "reboot", "")
+
+	// pending → sent
+	updated, err := svc.UpdateCommandStatus(ctx, cmd.ID, "sent")
+	if err != nil {
+		t.Fatalf("명령 상태 변경 실패: %v", err)
+	}
+	if updated.Status != "sent" {
+		t.Errorf("Status = %s, want sent", updated.Status)
+	}
+
+	// sent → acknowledged → completed
+	svc.UpdateCommandStatus(ctx, cmd.ID, "acknowledged")
+	final, err := svc.UpdateCommandStatus(ctx, cmd.ID, "completed")
+	if err != nil {
+		t.Fatalf("완료 상태 변경 실패: %v", err)
+	}
+	if final.Status != "completed" {
+		t.Errorf("Status = %s, want completed", final.Status)
+	}
+
+	// completed → pending (불가)
+	_, err = svc.UpdateCommandStatus(ctx, cmd.ID, "pending")
+	if err == nil {
+		t.Error("완료 후 pending 전환에 에러가 반환되어야 합니다")
+	}
+}
+
+func TestReceiveData_InvalidDataType(t *testing.T) {
+	svc := newTestService()
+	ctx := context.Background()
+
+	_, err := svc.ReceiveData(ctx, "dev-data-001", "unknown_sensor", 42.0, "units")
+	if err == nil {
+		t.Error("지원하지 않는 데이터 타입에 에러가 반환되어야 합니다")
+	}
+
+	// 유효한 타입은 성공
+	_, err = svc.ReceiveData(ctx, "dev-data-001", "temperature", 36.5, "celsius")
+	if err != nil {
+		t.Fatalf("유효한 데이터 타입에 실패: %v", err)
+	}
+}

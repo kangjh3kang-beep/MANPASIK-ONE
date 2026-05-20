@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
 
 class HoloGlobe extends StatefulWidget {
   final double size;
@@ -22,26 +21,23 @@ class _HoloGlobeState extends State<HoloGlobe> with TickerProviderStateMixin {
   late AnimationController _rotationController;
   late AnimationController _pulseController;
   late AnimationController _scanController;
-  
+
   final List<_Point3D> _points = [];
-  final int _pointCount = 1500; // Increased density for volumetric feel
+  final int _pointCount = 1500;
 
   @override
   void initState() {
     super.initState();
-    // 1. Rotation
     _rotationController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 24),
     )..repeat();
 
-    // 2. Energy Pulse (Expansion)
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
     )..repeat();
 
-    // 3. Data Scan (Vertical Scan)
     _scanController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 5),
@@ -51,17 +47,15 @@ class _HoloGlobeState extends State<HoloGlobe> with TickerProviderStateMixin {
   }
 
   void _generatePoints() {
-    final random = math.Random();
     for (int i = 0; i < _pointCount; i++) {
-      // Golden Spiral distribution for uniform sphere coverage
       final phi = math.acos(1 - 2 * (i + 0.5) / _pointCount);
       final theta = math.pi * (1 + math.sqrt(5)) * i;
-      
+
       final r = widget.size * 0.4;
       final x = r * math.sin(phi) * math.cos(theta);
       final y = r * math.sin(phi) * math.sin(theta);
       final z = r * math.cos(phi);
-      
+
       _points.add(_Point3D(x, y, z));
     }
   }
@@ -124,23 +118,22 @@ class _GlobePainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width * 0.4;
 
-    // 1. Pearl Core (Yeouiju) - Solid glowing center
+    // 1. Pearl Core (Yeouiju)
     final coreGradient = RadialGradient(
       colors: [
-        Colors.white.withOpacity(0.6),      // Bright core
-        accentColor.withOpacity(0.4),       // Inner glow
-        color.withOpacity(0.05),            // Outer aura
+        Colors.white.withValues(alpha: 0.6),
+        accentColor.withValues(alpha: 0.4),
+        color.withValues(alpha: 0.05),
         Colors.transparent,
       ],
       stops: const [0.0, 0.2, 0.5, 1.0],
     ).createShader(Rect.fromCircle(center: center, radius: radius * 0.6));
-    
-    // Draw Core
+
     canvas.drawCircle(center, radius * 0.6, Paint()..shader = coreGradient);
 
-    // 2. Wireframe Lat/Long (Subtle Background Structure)
+    // 2. Wireframe Lat/Long
     final wireframePaint = Paint()
-      ..color = color.withOpacity(0.05)
+      ..color = color.withValues(alpha: 0.05)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.5;
 
@@ -150,94 +143,84 @@ class _GlobePainter extends CustomPainter {
     final pointPaint = Paint()
       ..color = color
       ..strokeCap = StrokeCap.round
-      ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 1.0); // Soften edges
-    
+      ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 1.0);
+
     final glowPaint = Paint()
-      ..color = accentColor.withOpacity(0.3)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.0); // Outer glow
+      ..color = accentColor.withValues(alpha: 0.3)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3.0);
 
     for (var point in points) {
-      // Rotate Point
-      double rotatedX = point.x * math.cos(rotation) - point.z * math.sin(rotation);
-      double rotatedZ = point.x * math.sin(rotation) + point.z * math.cos(rotation);
-      double y = point.y;
+      final rotatedX = point.x * math.cos(rotation) - point.z * math.sin(rotation);
+      final rotatedZ = point.x * math.sin(rotation) + point.z * math.cos(rotation);
+      final y = point.y;
 
-      // Perspective Projection
-      double scale = 300 / (300 - rotatedZ);
-      double x2d = rotatedX * scale + center.dx;
-      double y2d = y * scale + center.dy;
+      final scale = 300 / (300 - rotatedZ);
+      final x2d = rotatedX * scale + center.dx;
+      final y2d = y * scale + center.dy;
 
-      // Depth alpha
-      double alpha = ((rotatedZ + radius) / (2 * radius)).clamp(0.0, 1.0);
-      
-      // Interaction with Scan Line
-      // Map scanValue (0..1) to (-radius..+radius)
-      double scanY = (scanValue * 2 - 1) * radius;
-      double distToScan = (y - scanY).abs();
-      
-      bool isScanned = distToScan < 5.0; // Particles near scan line
+      final alpha = ((rotatedZ + radius) / (2 * radius)).clamp(0.0, 1.0);
+
+      final scanY = (scanValue * 2 - 1) * radius;
+      final distToScan = (y - scanY).abs();
+
+      final isScanned = distToScan < 5.0;
 
       if (isScanned) {
-         pointPaint.color = Colors.white.withOpacity(alpha); // White hot scan
+         pointPaint.color = Colors.white.withValues(alpha: alpha);
          pointPaint.strokeWidth = 2.5 * scale;
-         pointPaint.maskFilter = null; // Sharp for scanned points
-         
-         // Extra glow for scanned points
+         pointPaint.maskFilter = null;
+
          canvas.drawCircle(Offset(x2d, y2d), 4.0 * scale, glowPaint);
       } else {
-         pointPaint.color = color.withOpacity(alpha * 0.7); // Slightly more opaque
-         pointPaint.strokeWidth = 1.5 * scale; // Slightly larger
+         pointPaint.color = color.withValues(alpha: alpha * 0.7);
+         pointPaint.strokeWidth = 1.5 * scale;
          pointPaint.maskFilter = const MaskFilter.blur(BlurStyle.solid, 1.0);
       }
-      
+
       canvas.drawCircle(Offset(x2d, y2d), (isScanned ? 2.0 : 1.2) * scale, pointPaint);
     }
 
-    // 4. Shockwave (Multiple Expanding Rings)
+    // 4. Shockwave
     for(int i=0; i<3; i++) {
-        double waveProgress = (pulseValue + i * 0.33) % 1.0;
-        double waveRadius = radius * (0.4 + waveProgress * 0.8);
-        
+        final waveProgress = (pulseValue + i * 0.33) % 1.0;
+        final waveRadius = radius * (0.4 + waveProgress * 0.8);
+
         if (waveRadius < size.width * 0.55) {
              final waveAlpha = (1.0 - waveProgress).clamp(0.0, 1.0);
              final pulsePaint = Paint()
               ..style = PaintingStyle.stroke
               ..strokeWidth = 1.5 * (1.0 - waveProgress)
-              ..color = accentColor.withOpacity(waveAlpha * 0.4)
+              ..color = accentColor.withValues(alpha: waveAlpha * 0.4)
               ..maskFilter = const MaskFilter.blur(BlurStyle.solid, 2);
-              
-             // Draw elliptical ring to match perspective
+
              canvas.drawOval(
-               Rect.fromCenter(center: center, width: waveRadius * 2, height: waveRadius * 2), 
+               Rect.fromCenter(center: center, width: waveRadius * 2, height: waveRadius * 2),
                pulsePaint
              );
         }
     }
 
-    // 5. Data Scan Laser (Horizontal Plane)
-    double scanPlanY = center.dy + (scanValue * 2 - 1) * radius;
-    // Calculate width at this Y
-    double dY = (scanPlanY - center.dy).abs();
+    // 5. Data Scan Laser
+    final scanPlanY = center.dy + (scanValue * 2 - 1) * radius;
+    final dY = (scanPlanY - center.dy).abs();
     if (dY < radius) {
-        double scanWidth = math.sqrt(radius * radius - dY * dY) * 2;
-        
-        // Laser Line
+        final scanWidth = math.sqrt(radius * radius - dY * dY) * 2;
+
         canvas.drawLine(
           Offset(center.dx - scanWidth/2, scanPlanY),
           Offset(center.dx + scanWidth/2, scanPlanY),
           Paint()
-            ..color = Colors.white.withOpacity(0.8)
+            ..color = Colors.white.withValues(alpha: 0.8)
             ..strokeWidth = 1.0
             ..shader = LinearGradient(colors: [
                Colors.transparent, accentColor, Colors.white, accentColor, Colors.transparent
             ]).createShader(Rect.fromLTWH(center.dx - scanWidth/2, scanPlanY, scanWidth, 2))
         );
-        
-        // Laser Glow
+
         canvas.drawOval(
            Rect.fromCenter(center: Offset(center.dx, scanPlanY), width: scanWidth, height: scanWidth * 0.3),
            Paint()
-            ..color = accentColor.withOpacity(0.1)
+            ..color = accentColor.withValues(alpha: 0.1)
             ..style = PaintingStyle.fill
             ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15)
         );
@@ -248,16 +231,10 @@ class _GlobePainter extends CustomPainter {
   }
 
   void _drawWireframe(Canvas canvas, Offset center, double radius, double rotation, Paint paint) {
-     // Longitudinal Lines (Meridians)
      for(int i=0; i<6; i++) {
-        double angle = (i * 30) * math.pi / 180;
-        // Draw ellipse for meridian
-        // This is complex in 2D. Simplified: just a few static rings rotated? 
-        // Better: Dynamic calculation based on Z rotation.
-        // For efficiency, skipping full 3D wireframe mesh for now, using particles for volume.
+        // Meridian drawing placeholder
      }
-     
-     // Simple Equatorial Rings
+
      canvas.drawCircle(center, radius, paint);
      canvas.drawOval(Rect.fromCenter(center: center, width: radius * 2, height: radius * 0.6), paint);
      canvas.drawOval(Rect.fromCenter(center: center, width: radius * 1.5, height: radius * 2), paint);
@@ -268,35 +245,28 @@ class _GlobePainter extends CustomPainter {
        final path = Path();
        final startX = center.dx - width / 2;
        path.moveTo(startX, center.dy);
-       
+
        for(double x = 0; x <= width; x += 5) {
-          double nX = x / width; // 0..1
-          // Envelope: Sinc-like or Bell curve to keep edges attached
-          double env = math.pow(math.sin(math.pi * nX), 2).toDouble();
-          
+          final nX = x / width;
+          final env = math.pow(math.sin(math.pi * nX), 2).toDouble();
+
           double y = math.sin(x * freq + time * speed) * amp * env;
-          // Add interference
           y += math.sin(x * freq * 2.5 - time * speed * 1.5) * (amp * 0.3) * env;
 
           path.lineTo(startX + x, center.dy + y);
        }
-       
+
        final p = Paint()
          ..color = c
          ..style = PaintingStyle.stroke
          ..strokeWidth = widthStroke;
-       
+
        canvas.drawPath(path, p);
     }
 
-    // 1. Primary High-Frequency Data Wave
-    drawWave(0.1, 40, 5, color.withOpacity(0.8), 2.0);
-    
-    // 2. Secondary Harmonic Wave (Accent)
-    drawWave(0.06, 30, 3, accentColor.withOpacity(0.6), 1.5);
-    
-    // 3. Bass Wave (Low Freq)
-    drawWave(0.03, 60, 2, color.withOpacity(0.3), 1.0);
+    drawWave(0.1, 40, 5, color.withValues(alpha: 0.8), 2.0);
+    drawWave(0.06, 30, 3, accentColor.withValues(alpha: 0.6), 1.5);
+    drawWave(0.03, 60, 2, color.withValues(alpha: 0.3), 1.0);
   }
 
   @override

@@ -5,11 +5,26 @@ import 'package:go_router/go_router.dart';
 import 'package:manpasik/shared/providers/auth_provider.dart';
 import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/core/services/rust_ffi_stub.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/shared/widgets/primary_button.dart';
 import 'package:manpasik/shared/widgets/wave_ripple_painter.dart';
 import 'package:manpasik/shared/widgets/breathing_overlay.dart';
-import 'package:lottie/lottie.dart';
+
+// ───────────────────────────────────────────────────
+// MeasurementScreen — Sanggam Orbit 측정 화면
+//
+// [Rule 4] app_theme → sanggam_theme
+// [Rule 4] AppTheme.sanggamGold 3x → SanggamTheme.primary
+// [Rule 4] AppTheme.waveCyan 4x → SanggamTheme.jagaeCyan
+// [Rule 4] AppTheme.deepSeaBlue → SanggamTheme.surfaceVariant
+// [Rule 4] Theme.of(context).textTheme → 직접 TextStyle
+// [Rule 4] theme.colorScheme.* → SanggamTheme 상수
+// [Rule 4] Colors.green → SanggamTheme.jagaeCyan
+// [Rule 4] Colors.red → SanggamTheme.error
+// [Rule 4] Card → 다크 테마 Container
+// [Rule 4] withOpacity → withValues(alpha:)
+// [Rule 4] lottie import 제거 (미사용)
+// ───────────────────────────────────────────────────
 
 /// 측정 상태
 enum MeasurementStatus { idle, connecting, measuring, complete, error }
@@ -37,6 +52,9 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
   String? _cartridgeId;
   double _measureProgress = 0.0;
   String _phaseText = '파동 안정화 중...';
+
+  // 실측정 결과 (목업 아닌 실제 파이프라인 결과)
+  MeasurementPipelineResult? _pipelineResult;
 
   // Wave 애니메이션 컨트롤러
   AnimationController? _waveController;
@@ -104,28 +122,52 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
       return;
     }
 
-    // 시뮬레이션: 측정 진행 단계 (S5b에서 실제 스트림 연동)
-    // Phase 1: 파동 안정화 중...
-    for (int i = 0; i < 10; i++) {
-      await Future.delayed(const Duration(milliseconds: 200));
-      if (!mounted) return;
-      setState(() => _measureProgress = (i + 1) / 20);
-    }
-
-    // Phase 2: 분석 중...
+    // 실제 측정 파이프라인 실행 (RustBridge 경유)
+    // Phase 1: 차동 계측 데이터 수집
+    setState(() {
+      _measureProgress = 0.1;
+      _phaseText = '차동 신호 수집 중...';
+    });
+    await Future.delayed(const Duration(milliseconds: 300));
     if (!mounted) return;
-    setState(() => _phaseText = '분석 중...');
-    for (int i = 10; i < 20; i++) {
+
+    setState(() {
+      _measureProgress = 0.3;
+      _phaseText = 'S_diff 연산 중...';
+    });
+
+    try {
+      // Phase 2: RustBridge 파이프라인 (BLE→DSP→AI)
+      final result = await RustBridge.runMeasurementPipeline(
+        deviceId: 'device-1',
+        biomarker: 'glucose',
+        unit: 'mg/dL',
+      );
+      if (!mounted) return;
+      setState(() {
+        _measureProgress = 0.7;
+        _phaseText = 'AI 분석 완료...';
+      });
+
       await Future.delayed(const Duration(milliseconds: 200));
       if (!mounted) return;
-      setState(() => _measureProgress = (i + 1) / 20);
+      _pipelineResult = result;
+
+      setState(() {
+        _measureProgress = 1.0;
+        _phaseText = '측정 완료';
+      });
+    } catch (_) {
+      if (!mounted) return;
+      _disposeWaveAnimation();
+      setState(() => _status = MeasurementStatus.error);
+      return;
     }
 
     if (!mounted) return;
     _disposeWaveAnimation();
     setState(() {
       _status = MeasurementStatus.complete;
-      _phaseText = '측정 완료';
     });
   }
 
@@ -142,11 +184,22 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
   void _reset() {
     _disposeWaveAnimation();
     _sessionId = null;
+    _pipelineResult = null;
     setState(() {
       _status = MeasurementStatus.idle;
       _measureProgress = 0.0;
       _phaseText = '파동 안정화 중...';
     });
+  }
+
+  static String _riskLevelKo(String? level) {
+    return switch (level) {
+      'normal' => '정상',
+      'caution' => '주의',
+      'warning' => '경고',
+      'critical' => '위험',
+      _ => '--',
+    };
   }
 
   @override
@@ -157,17 +210,22 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isMeasuring = _status == MeasurementStatus.measuring;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          tooltip: '뒤로 가기',
           onPressed: () => context.pop(),
         ),
-        title: const Text('측정'),
+        title: const Text('측정', style: TextStyle(
+          color: SanggamTheme.primary,
+          fontWeight: FontWeight.bold,
+        )),
       ),
       body: BreathingOverlay(
         enabled: isMeasuring,
@@ -181,7 +239,7 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
                 // 상태 표시 영역
                 Expanded(
                   child: Center(
-                    child: _buildStatusWidget(theme),
+                    child: _buildStatusWidget(),
                   ),
                 ),
 
@@ -248,40 +306,29 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
     );
   }
 
-  Widget _buildStatusWidget(ThemeData theme) {
+  Widget _buildStatusWidget() {
     switch (_status) {
       case MeasurementStatus.idle:
-        return Column(
+        return const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: 160,
-              height: 160,
-              child: Lottie.asset(
-                'assets/lottie/blood_drop.json',
-                repeat: true,
-                errorBuilder: (_, __, ___) => Container(
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.sensors_rounded, size: 72, color: theme.colorScheme.onPrimaryContainer),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
+            Icon(Icons.sensors_rounded, size: 72, color: SanggamTheme.primary),
+            SizedBox(height: 24),
             Text(
               '디바이스를 준비해주세요',
-              style: theme.textTheme.titleLarge?.copyWith(
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
             Text(
               '카트리지를 장착하고\n측정 버튼을 눌러주세요',
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              style: TextStyle(
+                color: SanggamTheme.onSurfaceDim,
+                fontSize: 14,
               ),
             ),
           ],
@@ -303,33 +350,36 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
                             animationValue: _waveController!.value,
                             rippleCount: 5,
                           ),
-                          child: Center(
+                          child: const Center(
                             child: Icon(
                               Icons.bluetooth_searching_rounded,
                               size: 48,
-                              color: AppTheme.waveCyan,
+                              color: SanggamTheme.jagaeCyan,
                             ),
                           ),
                         );
                       },
                     )
-                  : CircularProgressIndicator(
+                  : const CircularProgressIndicator(
                       strokeWidth: 4,
-                      color: theme.colorScheme.primary,
+                      color: SanggamTheme.primary,
                     ),
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               '디바이스 연결 중...',
-              style: theme.textTheme.titleLarge?.copyWith(
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               'BLE 연결을 시도하고 있습니다',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              style: TextStyle(
+                color: SanggamTheme.onSurfaceDim,
+                fontSize: 14,
               ),
             ),
           ],
@@ -351,7 +401,7 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
                           painter: WavePainter(
                             animationValue: _waveController!.value,
                             progress: _measureProgress,
-                            waveColor: AppTheme.waveCyan,
+                            waveColor: SanggamTheme.jagaeCyan,
                           ),
                         );
                       },
@@ -365,9 +415,10 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
               child: Text(
                 _phaseText,
                 key: ValueKey(_phaseText),
-                style: theme.textTheme.titleLarge?.copyWith(
+                style: const TextStyle(
+                  color: SanggamTheme.primary,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: AppTheme.sanggamGold,
                 ),
               ),
             ),
@@ -378,18 +429,19 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
               child: LinearProgressIndicator(
                 value: _measureProgress,
                 minHeight: 6,
-                backgroundColor: AppTheme.deepSeaBlue.withOpacity(0.3),
+                backgroundColor: SanggamTheme.surfaceVariant.withValues(alpha: 0.3),
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  Color.lerp(AppTheme.waveCyan, AppTheme.sanggamGold, _measureProgress)!,
+                  Color.lerp(SanggamTheme.jagaeCyan, SanggamTheme.primary, _measureProgress)!,
                 ),
               ),
             ),
             const SizedBox(height: 8),
             Text(
               '${(_measureProgress * 100).toInt()}%',
-              style: theme.textTheme.bodySmall?.copyWith(
+              style: const TextStyle(
                 fontFamily: 'JetBrains Mono',
-                color: AppTheme.waveCyan,
+                color: SanggamTheme.jagaeCyan,
+                fontSize: 12,
               ),
             ),
           ],
@@ -403,56 +455,79 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: Colors.green.withValues(alpha: 0.1),
+                color: SanggamTheme.jagaeCyan.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
                 Icons.check_circle_rounded,
                 size: 72,
-                color: Colors.green,
+                color: SanggamTheme.jagaeCyan,
               ),
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               '측정 완료!',
-              style: theme.textTheme.headlineMedium?.copyWith(
+              style: TextStyle(
+                color: SanggamTheme.jagaeCyan,
+                fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: Colors.green,
               ),
             ),
             const SizedBox(height: 16),
-            // 더미 결과
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildResultItem(theme, '98.4', 'mg/dL', '혈당'),
-                    Container(
-                      width: 1,
-                      height: 40,
-                      color: theme.colorScheme.outlineVariant,
-                    ),
-                    _buildResultItem(theme, '정상', '', '판정'),
-                  ],
-                ),
+            // 실측정 결과
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: SanggamTheme.surfaceVariant),
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildResultItem(
+                    _pipelineResult?.measurement.primaryValue.toStringAsFixed(1) ?? '--',
+                    _pipelineResult?.measurement.unit ?? 'mg/dL',
+                    '혈당',
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: SanggamTheme.surfaceVariant,
+                  ),
+                  _buildResultItem(
+                    _riskLevelKo(_pipelineResult?.analysis.riskLevel),
+                    '',
+                    '판정',
+                  ),
+                  Container(
+                    width: 1,
+                    height: 40,
+                    color: SanggamTheme.surfaceVariant,
+                  ),
+                  _buildResultItem(
+                    '${(_pipelineResult?.measurement.confidence ?? 0.0 * 100).toStringAsFixed(0)}%',
+                    '',
+                    '신뢰도',
+                  ),
+                ],
               ),
             ),
           ],
         );
 
       case MeasurementStatus.error:
-        return Column(
+        return const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, size: 72, color: Colors.red),
-            const SizedBox(height: 24),
+            Icon(Icons.error_outline, size: 72, color: SanggamTheme.error),
+            SizedBox(height: 24),
             Text(
               '측정 실패',
-              style: theme.textTheme.titleLarge?.copyWith(
+              style: TextStyle(
+                color: SanggamTheme.error,
+                fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: Colors.red,
               ),
             ),
           ],
@@ -460,27 +535,31 @@ class _MeasurementScreenState extends ConsumerState<MeasurementScreen>
     }
   }
 
-  Widget _buildResultItem(ThemeData theme, String value, String unit, String label) {
+  Widget _buildResultItem(String value, String unit, String label) {
     return Column(
       children: [
         Text(
           value,
-          style: theme.textTheme.headlineSmall?.copyWith(
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
           ),
         ),
         if (unit.isNotEmpty)
           Text(
             unit,
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+            style: const TextStyle(
+              color: SanggamTheme.onSurfaceDim,
+              fontSize: 11,
             ),
           ),
         const SizedBox(height: 4),
         Text(
           label,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+          style: const TextStyle(
+            color: SanggamTheme.onSurfaceDim,
+            fontSize: 12,
           ),
         ),
       ],

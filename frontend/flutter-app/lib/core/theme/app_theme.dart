@@ -11,6 +11,16 @@ class AppTheme {
   static const hanjiWhite = Color(0xFFF8FAFC);
   static const dancheongRed = Color(0xFFFF4D4D); // Critical Alerts
   static const celadonTeal = Color(0xFF00897B); // Primary Brand Color
+
+  // Premium Asset Paths (NadoBanana Pro Edition)
+  static const goldButtonAsset = 'assets/images/premium/premium_glossy_gold_button_texture_1771749127373.png';
+  static const jagaeButtonAsset = 'assets/images/premium/premium_jagae_iridescent_button_texture_1771749140880.png';
+  static const iconPackAsset = 'assets/images/premium/premium_sanggam_futuristic_icon_pack_1771749160859.png';
+  
+  static const tierBadgesAsset = 'assets/images/premium/premium_tier_badges_sanggam_pack_1771750084838.png';
+  static const cartridgeIconsAsset = 'assets/images/premium/premium_bio_cartridge_icons_sanggam_pack_1771750104995.png';
+  static const aiPersonaAsset = 'assets/images/premium/premium_ai_persona_hologram_orb_1771750122274.png';
+  static const onboardingGuidesAsset = 'assets/images/premium/premium_onboarding_guide_illustrations_pack_1771750149063.png';
   
   // Light Theme (Clean Professional)
   static final ThemeData light = ThemeData(

@@ -12,6 +12,7 @@ import (
 
 	v1 "github.com/manpasik/backend/shared/gen/go/v1"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 )
 
 // ============================================================================
@@ -25,13 +26,13 @@ func (m *mockAuthClient) Register(_ context.Context, in *v1.RegisterRequest, _ .
 	return &v1.RegisterResponse{UserId: "user_001", Email: in.Email, DisplayName: in.DisplayName}, nil
 }
 func (m *mockAuthClient) Login(_ context.Context, _ *v1.LoginRequest, _ ...grpc.CallOption) (*v1.LoginResponse, error) {
-	return &v1.LoginResponse{AccessToken: "at_test", RefreshToken: "rt_test"}, nil
+	return &v1.LoginResponse{AccessToken: "at_test", RefreshToken: "rt_test", UserId: "user_001"}, nil
 }
 func (m *mockAuthClient) SocialLogin(_ context.Context, _ *v1.SocialLoginRequest, _ ...grpc.CallOption) (*v1.LoginResponse, error) {
-	return &v1.LoginResponse{AccessToken: "at_social", RefreshToken: "rt_social"}, nil
+	return &v1.LoginResponse{AccessToken: "at_social", RefreshToken: "rt_social", UserId: "user_social_001"}, nil
 }
 func (m *mockAuthClient) RefreshToken(_ context.Context, _ *v1.RefreshTokenRequest, _ ...grpc.CallOption) (*v1.LoginResponse, error) {
-	return &v1.LoginResponse{AccessToken: "at_new", RefreshToken: "rt_new"}, nil
+	return &v1.LoginResponse{AccessToken: "at_new", RefreshToken: "rt_new", UserId: "user_001"}, nil
 }
 func (m *mockAuthClient) Logout(_ context.Context, _ *v1.LogoutRequest, _ ...grpc.CallOption) (*v1.LogoutResponse, error) {
 	return &v1.LogoutResponse{}, nil
@@ -44,25 +45,99 @@ func (m *mockAuthClient) ResetPassword(_ context.Context, _ *v1.ResetPasswordReq
 }
 
 // mockMeasurementClient는 MeasurementServiceClient를 모킹합니다.
-type mockMeasurementClient struct{}
+type mockMeasurementClient struct {
+	lastStream *mockMeasurementStream
+}
 
 func (m *mockMeasurementClient) StartSession(_ context.Context, _ *v1.StartSessionRequest, _ ...grpc.CallOption) (*v1.StartSessionResponse, error) {
 	return &v1.StartSessionResponse{SessionId: "sess_001"}, nil
 }
-func (m *mockMeasurementClient) StreamMeasurement(_ context.Context, _ ...grpc.CallOption) (grpc.BidiStreamingClient[v1.MeasurementData, v1.MeasurementResult], error) {
-	return nil, nil
+func (m *mockMeasurementClient) StreamMeasurement(_ context.Context, _ ...grpc.CallOption) (v1.MeasurementService_StreamMeasurementClient, error) {
+	stream := &mockMeasurementStream{}
+	m.lastStream = stream
+	return stream, nil
 }
 func (m *mockMeasurementClient) EndSession(_ context.Context, _ *v1.EndSessionRequest, _ ...grpc.CallOption) (*v1.EndSessionResponse, error) {
 	return &v1.EndSessionResponse{SessionId: "sess_001"}, nil
 }
 func (m *mockMeasurementClient) GetMeasurementHistory(_ context.Context, _ *v1.GetHistoryRequest, _ ...grpc.CallOption) (*v1.GetHistoryResponse, error) {
-	return &v1.GetHistoryResponse{}, nil
+	return &v1.GetHistoryResponse{
+		Measurements: []*v1.MeasurementSummary{
+			{
+				SessionId:       "sess_history_001",
+				CartridgeType:   "glucose",
+				PrimaryValue:    98.4,
+				Unit:            "mg/dL",
+				EvidenceStatus:  "research_only",
+				DiagnosticReady: false,
+				EvidenceGaps:    []string{"clinical_lock_required"},
+			},
+		},
+		TotalCount: 1,
+	}, nil
 }
 func (m *mockMeasurementClient) ExportSingleMeasurement(_ context.Context, _ *v1.ExportSingleMeasurementRequest, _ ...grpc.CallOption) (*v1.ExportFHIRResponse, error) {
 	return &v1.ExportFHIRResponse{}, nil
 }
 func (m *mockMeasurementClient) ExportToFHIRObservations(_ context.Context, _ *v1.ExportToFHIRObservationsRequest, _ ...grpc.CallOption) (*v1.ExportFHIRResponse, error) {
 	return &v1.ExportFHIRResponse{}, nil
+}
+func (m *mockMeasurementClient) SyncDigitalTwin(_ context.Context, _ *v1.SyncDigitalTwinRequest, _ ...grpc.CallOption) (*v1.SyncDigitalTwinResponse, error) {
+	return &v1.SyncDigitalTwinResponse{Accepted: true, TwinId: "twin_001"}, nil
+}
+func (m *mockMeasurementClient) GetCalibrationStatus(_ context.Context, _ *v1.GetCalibrationStatusRequest, _ ...grpc.CallOption) (*v1.GetCalibrationStatusResponse, error) {
+	return &v1.GetCalibrationStatusResponse{CalibrationState: "valid", DriftScore: 0.1}, nil
+}
+
+type mockMeasurementStream struct {
+	sent       []*v1.MeasurementData
+	closeSent  bool
+	recvCalled bool
+}
+
+func (s *mockMeasurementStream) Send(data *v1.MeasurementData) error {
+	s.sent = append(s.sent, data)
+	return nil
+}
+
+func (s *mockMeasurementStream) Recv() (*v1.MeasurementResult, error) {
+	if s.recvCalled {
+		return nil, io.EOF
+	}
+	s.recvCalled = true
+	sessionID := ""
+	if len(s.sent) > 0 {
+		sessionID = s.sent[0].SessionId
+	}
+	return &v1.MeasurementResult{
+		SessionId:         sessionID,
+		PrimaryValue:      98.4,
+		Unit:              "mg/dL",
+		Confidence:        0.97,
+		FingerprintVector: []float32{0.1, 0.2, 0.3},
+		EvidenceStatus:    "research_only",
+		DiagnosticReady:   false,
+		EvidenceGaps:      []string{"clinical_lock_required"},
+	}, nil
+}
+
+func (s *mockMeasurementStream) Header() (metadata.MD, error) { return metadata.MD{}, nil }
+func (s *mockMeasurementStream) Trailer() metadata.MD         { return metadata.MD{} }
+func (s *mockMeasurementStream) CloseSend() error {
+	s.closeSent = true
+	return nil
+}
+func (s *mockMeasurementStream) Context() context.Context { return context.Background() }
+func (s *mockMeasurementStream) SendMsg(m any) error      { return nil }
+func (s *mockMeasurementStream) RecvMsg(m any) error      { return nil }
+
+type mockAuditRecorder struct {
+	events []auditRecordEvent
+}
+
+func (m *mockAuditRecorder) RecordAuditEvent(_ context.Context, event auditRecordEvent) (*auditRecordResult, error) {
+	m.events = append(m.events, event)
+	return &auditRecordResult{EntryID: "audit-entry-001", Status: "persisted"}, nil
 }
 
 // mockDeviceClient는 DeviceServiceClient를 모킹합니다.
@@ -74,7 +149,7 @@ func (m *mockDeviceClient) RegisterDevice(_ context.Context, _ *v1.RegisterDevic
 func (m *mockDeviceClient) ListDevices(_ context.Context, _ *v1.ListDevicesRequest, _ ...grpc.CallOption) (*v1.ListDevicesResponse, error) {
 	return &v1.ListDevicesResponse{}, nil
 }
-func (m *mockDeviceClient) StreamDeviceStatus(_ context.Context, _ ...grpc.CallOption) (grpc.BidiStreamingClient[v1.DeviceStatusUpdate, v1.DeviceCommand], error) {
+func (m *mockDeviceClient) StreamDeviceStatus(_ context.Context, _ ...grpc.CallOption) (v1.DeviceService_StreamDeviceStatusClient, error) {
 	return nil, nil
 }
 func (m *mockDeviceClient) RequestOtaUpdate(_ context.Context, _ *v1.OtaRequest, _ ...grpc.CallOption) (*v1.OtaResponse, error) {
@@ -560,8 +635,50 @@ func assertJSONKey(t *testing.T, body []byte, key string) {
 	if err := json.Unmarshal(body, &m); err != nil {
 		t.Fatalf("JSON 파싱 실패: %v (body: %s)", err, string(body))
 	}
+	if _, ok := m[key]; ok {
+		return
+	}
+	if snakeKey := camelToSnake(key); snakeKey != key {
+		if _, ok := m[snakeKey]; ok {
+			return
+		}
+	}
 	if _, ok := m[key]; !ok {
 		t.Errorf("응답 JSON에 키 %q가 없습니다. 응답: %s", key, string(body))
+	}
+}
+
+func camelToSnake(s string) string {
+	var b strings.Builder
+	for i, r := range s {
+		if i > 0 && r >= 'A' && r <= 'Z' {
+			b.WriteByte('_')
+		}
+		if r >= 'A' && r <= 'Z' {
+			r += 'a' - 'A'
+		}
+		b.WriteRune(r)
+	}
+	return b.String()
+}
+
+func assertJSONValue(t *testing.T, body []byte, key string, want interface{}) {
+	t.Helper()
+	var m map[string]interface{}
+	if err := json.Unmarshal(body, &m); err != nil {
+		t.Fatalf("JSON 파싱 실패: %v (body: %s)", err, string(body))
+	}
+	got, ok := m[key]
+	if !ok {
+		if snakeKey := camelToSnake(key); snakeKey != key {
+			got, ok = m[snakeKey]
+		}
+	}
+	if !ok {
+		t.Fatalf("응답 JSON에 키 %q가 없습니다. 응답: %s", key, string(body))
+	}
+	if got != want {
+		t.Fatalf("응답 JSON %q = %v, 기대값 = %v", key, got, want)
 	}
 }
 
@@ -590,7 +707,7 @@ func TestE2E_AuthRegister(t *testing.T) {
 	assertJSONKey(t, body, "displayName")
 }
 
-// E2E #2: POST /api/v1/auth/login → 200 + tokens
+// E2E #2: POST /api/v1/auth/login → 200 + tokens + user_id
 func TestE2E_AuthLogin(t *testing.T) {
 	mux := e2eSetup()
 	code, body := doRequest(t, mux, "POST", "/api/v1/auth/login",
@@ -598,18 +715,20 @@ func TestE2E_AuthLogin(t *testing.T) {
 	assertStatusCode(t, code, http.StatusOK)
 	assertJSONKey(t, body, "accessToken")
 	assertJSONKey(t, body, "refreshToken")
+	assertJSONValue(t, body, "user_id", "user_001")
 }
 
-// E2E #3: POST /api/v1/auth/refresh → 200 + newAccessToken
+// E2E #3: POST /api/v1/auth/refresh → 200 + newAccessToken + user_id
 func TestE2E_AuthRefresh(t *testing.T) {
 	mux := e2eSetup()
 	code, body := doRequest(t, mux, "POST", "/api/v1/auth/refresh",
 		`{"refresh_token":"rt_old_token"}`)
 	assertStatusCode(t, code, http.StatusOK)
 	assertJSONKey(t, body, "accessToken")
+	assertJSONValue(t, body, "user_id", "user_001")
 }
 
-// E2E #4: POST /api/v1/auth/social-login → 200 + tokens
+// E2E #4: POST /api/v1/auth/social-login → 200 + tokens + user_id
 func TestE2E_AuthSocialLogin(t *testing.T) {
 	mux := e2eSetup()
 	code, body := doRequest(t, mux, "POST", "/api/v1/auth/social-login",
@@ -617,6 +736,7 @@ func TestE2E_AuthSocialLogin(t *testing.T) {
 	assertStatusCode(t, code, http.StatusOK)
 	assertJSONKey(t, body, "accessToken")
 	assertJSONKey(t, body, "refreshToken")
+	assertJSONValue(t, body, "user_id", "user_social_001")
 }
 
 // E2E #5: GET /api/v1/users/{userId}/profile (user 클라이언트 nil → 인증없이) → 503
@@ -658,8 +778,133 @@ func TestE2E_EndMeasurementSession(t *testing.T) {
 // E2E #9: GET /api/v1/measurements/history → 200 + items
 func TestE2E_GetMeasurementHistory(t *testing.T) {
 	mux := e2eSetup()
-	code, _ := doRequest(t, mux, "GET", "/api/v1/measurements/history?user_id=user_001", "")
+	code, body := doRequest(t, mux, "GET", "/api/v1/measurements/history?user_id=user_001", "")
 	assertStatusCode(t, code, http.StatusOK)
+	assertJSONKey(t, body, "measurements")
+	if !strings.Contains(string(body), "evidence_status") {
+		t.Fatalf("history response missing evidence_status: %s", body)
+	}
+	if !strings.Contains(string(body), "diagnostic_ready") {
+		t.Fatalf("history response missing diagnostic_ready: %s", body)
+	}
+	if !strings.Contains(string(body), "evidence_gaps") {
+		t.Fatalf("history response missing evidence_gaps: %s", body)
+	}
+	if !strings.Contains(string(body), "research_only") {
+		t.Fatalf("history response missing research_only evidence status: %s", body)
+	}
+}
+
+// E2E #9-1: POST /api/v1/measurements/process -> gRPC StreamMeasurement -> result
+func TestE2E_ProcessMeasurementGoldenPath(t *testing.T) {
+	measurement := &mockMeasurementClient{}
+	h := newMockHandler()
+	h.measurement = measurement
+	mux := h.SetupRoutes()
+
+	code, body := doRequest(t, mux, "POST", "/api/v1/measurements/process", `{
+		"session_id":"sess_001",
+		"raw_channels":[1.1,2.2,3.3],
+		"differential":{"s_det":10.5,"s_ref":1.5,"alpha":0.95,"s_corrected":9.075},
+		"env_meta":{"temp_c":24.5,"humidity_pct":45.0,"pressure_kpa":101.3}
+	}`)
+
+	assertStatusCode(t, code, http.StatusOK)
+	assertJSONKey(t, body, "session_id")
+	assertJSONKey(t, body, "primary_value")
+	assertJSONKey(t, body, "fingerprint_vector")
+	assertJSONKey(t, body, "evidence_status")
+	assertJSONKey(t, body, "diagnostic_ready")
+	assertJSONKey(t, body, "evidence_gaps")
+	if !strings.Contains(string(body), "research_only") {
+		t.Fatalf("response body does not include research_only evidence status: %s", body)
+	}
+
+	if measurement.lastStream == nil {
+		t.Fatalf("StreamMeasurement가 호출되지 않았습니다")
+	}
+	if !measurement.lastStream.closeSent {
+		t.Fatalf("StreamMeasurement CloseSend가 호출되지 않았습니다")
+	}
+	if got := len(measurement.lastStream.sent); got != 1 {
+		t.Fatalf("StreamMeasurement Send 호출 수 = %d, 기대값 = 1", got)
+	}
+	sent := measurement.lastStream.sent[0]
+	if sent.SessionId != "sess_001" {
+		t.Fatalf("session_id = %q, 기대값 = sess_001", sent.SessionId)
+	}
+	if len(sent.RawChannels) != 3 {
+		t.Fatalf("raw_channels 길이 = %d, 기대값 = 3", len(sent.RawChannels))
+	}
+	if sent.Differential == nil || sent.Differential.Alpha != 0.95 {
+		t.Fatalf("differential payload가 올바르지 않습니다: %#v", sent.Differential)
+	}
+	if sent.EnvMeta == nil || sent.EnvMeta.TempC != 24.5 {
+		t.Fatalf("env_meta payload가 올바르지 않습니다: %#v", sent.EnvMeta)
+	}
+	if sent.Timestamp == nil {
+		t.Fatalf("timestamp가 설정되지 않았습니다")
+	}
+}
+
+// E2E #9-2: POST /api/v1/measurements/trace-events -> PHI-minimized remote trace intake
+func TestE2E_RecordMeasurementTraceEvent(t *testing.T) {
+	recorder := &mockAuditRecorder{}
+	h := newMockHandler()
+	h.SetAuditEventRecorder(recorder)
+	mux := h.SetupRoutes()
+	code, body := doRequest(t, mux, "POST", "/api/v1/measurements/trace-events", `{
+		"schema_version":"measure_trace.v1",
+		"source":"flutter-test",
+		"route":"/measure",
+		"phase":"serverProcessed",
+		"elapsed_ms":42,
+		"occurred_at":"2026-05-01T12:00:00Z",
+		"session_id":"sess_001",
+		"cartridge_id":"cart_001",
+		"engine_mode":"native",
+		"unit":"mg/dL",
+		"confidence":0.97,
+		"has_primary_value":true
+	}`)
+
+	assertStatusCode(t, code, http.StatusAccepted)
+	assertJSONKey(t, body, "accepted")
+	assertJSONKey(t, body, "event_id")
+	assertJSONKey(t, body, "sink")
+	assertJSONKey(t, body, "audit_status")
+	assertJSONKey(t, body, "audit_entry_id")
+	assertJSONValue(t, body, "audit_status", "persisted")
+
+	if len(recorder.events) != 1 {
+		t.Fatalf("audit recorder events = %d, want 1", len(recorder.events))
+	}
+	event := recorder.events[0]
+	if event.Action != "measure.trace.serverProcessed" {
+		t.Fatalf("audit action = %q", event.Action)
+	}
+	if event.ResourceType != "measurement_trace" || event.ResourceID != "sess_001" {
+		t.Fatalf("audit resource mismatch: type=%q id=%q", event.ResourceType, event.ResourceID)
+	}
+	if event.Metadata["has_primary_value"] != "true" {
+		t.Fatalf("audit metadata has_primary_value = %q", event.Metadata["has_primary_value"])
+	}
+	if _, ok := event.Metadata["primary_value"]; ok {
+		t.Fatalf("audit metadata must not include primary_value")
+	}
+}
+
+func TestE2E_RecordMeasurementTraceEventRejectsPrimaryValue(t *testing.T) {
+	mux := e2eSetup()
+	code, body := doRequest(t, mux, "POST", "/api/v1/measurements/trace-events", `{
+		"phase":"serverProcessed",
+		"elapsed_ms":42,
+		"occurred_at":"2026-05-01T12:00:00Z",
+		"primary_value":95.0
+	}`)
+
+	assertStatusCode(t, code, http.StatusBadRequest)
+	assertJSONHasError(t, body)
 }
 
 // ---------------------------------------------------------------------------

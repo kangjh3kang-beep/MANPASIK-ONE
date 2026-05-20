@@ -1,11 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+
+// ───────────────────────────────────────────────────
+// LegalScreen — Sanggam Orbit 이용약관/개인정보처리방침
+//
+// [Rule 4] AppBar → body 내 커스텀 헤더
+// [Rule 4] Theme.of(context) 1x 제거
+// [Rule 4] theme.textTheme ~3x → 직접 TextStyle
+// [Rule 4] theme.colorScheme 1x → SanggamTheme 상수
+// [Rule 4] Scaffold 배경 → SanggamTheme.background
+// ───────────────────────────────────────────────────
+
 /// 이용약관 / 개인정보처리방침 화면
 ///
 /// [type] 파라미터로 'terms' 또는 'privacy'를 받아 분기합니다.
 class LegalScreen extends StatelessWidget {
-  const LegalScreen({super.key, required this.type});
+  const LegalScreen(
+      {super.key, required this.type});
 
   final String type;
 
@@ -13,38 +26,94 @@ class LegalScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isTerms ? '이용약관' : '개인정보처리방침'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+      backgroundColor:
+          SanggamTheme.background,
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              _isTerms ? 'ManPaSik 서비스 이용약관' : 'ManPaSik 개인정보처리방침',
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+            // 헤더
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white),
+                    tooltip: '뒤로 가기',
+                    onPressed: () =>
+                        context.pop(),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      _isTerms
+                          ? '이용약관'
+                          : '개인정보처리방침',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              '시행일: 2026-01-01 | 버전: 1.0',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+            // 본문
+            Expanded(
+              child: SingleChildScrollView(
+                padding:
+                    const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment
+                          .start,
+                  children: [
+                    Text(
+                      _isTerms
+                          ? 'ManPaSik 서비스 이용약관'
+                          : 'ManPaSik 개인정보처리방침',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(
+                        height: 8),
+                    const Text(
+                      '시행일: 2026-01-01 | 버전: 1.0',
+                      style: TextStyle(
+                        color: SanggamTheme
+                            .onSurfaceDim,
+                        fontSize: 13,
+                      ),
+                    ),
+                    const Divider(
+                      height: 32,
+                      color: SanggamTheme
+                          .surfaceVariant,
+                    ),
+                    Text(
+                      _isTerms
+                          ? _termsContent
+                          : _privacyContent,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        height: 1.8,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const Divider(height: 32),
-            Text(
-              _isTerms ? _termsContent : _privacyContent,
-              style: theme.textTheme.bodyMedium?.copyWith(height: 1.8),
             ),
           ],
         ),

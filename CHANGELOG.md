@@ -1,3 +1,18 @@
+##_2026-05-21_Codex_go_work_assay_gate_alignment
+**status**: merged_followup_done
+**plan**:
+- main fast-forward 병합 후 clean worktree에서 `assay_evidence_gate`가 `go.work`의 낮은 Go 버전 때문에 실패하는 문제를 보정한다.
+**changes**:
+- go.work
+  - workspace Go 버전을 1.25.0으로 정렬해 backend/shared/assay evidence gate가 clean main에서도 실행되게 했다.
+**quality_gate**:
+- RED on clean main: `bash scripts/assay_evidence_gate.sh`: FAIL, `go.work lists go 1.21`
+- GREEN after go.work alignment: `bash scripts/assay_evidence_gate.sh`: PASS
+- `git diff --cached --check`: PASS
+**notes**:
+- 작업트리에 남아 있는 `./go-backend` workspace 추가 변경은 이번 커밋에 포함하지 않았다.
+---
+
 ##_2026-05-19_Codex_flutter_web_timing_governance_index_p38
 **status**: task1_task5_integration_done
 **plan**:

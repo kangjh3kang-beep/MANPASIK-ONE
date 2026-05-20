@@ -1,86 +1,86 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/shared/widgets/primary_button.dart';
+import 'package:manpasik/shared/widgets/sanggam_container.dart';
+
+// ───────────────────────────────────────────────────
+// ResultScreen — Sanggam Orbit 분석 결과
+//
+// [Rule 4] +sanggam_theme.dart, +sanggam_container.dart
+// [Rule 4] AppBar → body 내 커스텀 헤더
+// [Rule 4] Theme.of(context) 2x 제거
+// [Rule 4] theme.textTheme.* ~12x → 직접 TextStyle
+// [Rule 4] theme.colorScheme.* ~15x → SanggamTheme 상수
+// [Rule 4] Colors.blue → SanggamTheme.jagaeCyan
+// [Rule 4] Colors.green → SanggamTheme.jagaeCyan
+// [Rule 4] Colors.amber → SanggamTheme.primary
+// [Rule 4] withOpacity 3x → withValues(alpha:)
+// [Rule 4] Container 2x → SanggamContainer
+// [Rule 4] Scaffold 배경 → SanggamTheme.background
+// [Rule 2] borderRadius:20→24, borderRadius:100→16
+// ───────────────────────────────────────────────────
 
 class ResultScreen extends StatelessWidget {
-  const ResultScreen({super.key});
+  const ResultScreen({
+    super.key,
+    this.value = 0.0,
+    this.unit = 'mg/dL',
+    this.status = '',
+    this.biomarker = '',
+  });
+
+  final double value;
+  final String unit;
+  final String status;
+  final String biomarker;
+
+  String get _statusText {
+    if (status.isNotEmpty) return status;
+    if (value <= 0) return '측정 대기';
+    return '분석 완료';
+  }
+
+  Color get _statusColor {
+    if (status.contains('정상') || status.contains('normal')) {
+      return SanggamTheme.jagaeCyan;
+    }
+    if (status.contains('주의') || status.contains('warning')) {
+      return SanggamTheme.primary;
+    }
+    if (status.contains('위험') || status.contains('critical')) {
+      return SanggamTheme.error;
+    }
+    return SanggamTheme.primary;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      appBar: AppBar(
-        title: const Text('분석 결과'),
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => context.go('/home'),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+      backgroundColor: SanggamTheme.background,
+      body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 1. Result Summary Card (Hanji Style)
-            Container(
-              padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.primaryContainer.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: theme.colorScheme.primary.withOpacity(0.2),
-                ),
-                image: const DecorationImage(
-                  image: AssetImage('assets/images/hanji_texture.png'), // 나중에 텍스처 추가
-                  opacity: 0.1,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Column(
+            // 헤더
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 8, vertical: 8),
+              child: Row(
                 children: [
-                  Text(
-                    DateFormat('yyyy. MM. dd  HH:mm').format(DateTime.now()),
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+                  IconButton(
+                    icon: const Icon(Icons.close,
+                        color: Colors.white),
+                    tooltip: '닫기',
+                    onPressed: () => context.go('/home'),
                   ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        '98.4',
-                        style: theme.textTheme.displayMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: theme.colorScheme.primary, // 청자색
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'mg/dL',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary,
-                      borderRadius: BorderRadius.circular(100),
-                    ),
+                  const SizedBox(width: 8),
+                  const Expanded(
                     child: Text(
-                      '정상 범위입니다',
-                      style: theme.textTheme.labelLarge?.copyWith(
-                        color: theme.colorScheme.onPrimary,
+                      '분석 결과',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -88,88 +88,203 @@ class ResultScreen extends StatelessWidget {
                 ],
               ),
             ),
-
-            const SizedBox(height: 32),
-
-            // 2. Detailed Analysis (Grid)
-            Text(
-              '상세 분석',
-              style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 1.5,
-              children: [
-                _buildDetailCard(context, '수분량', '적정', Icons.water_drop, Colors.blue),
-                _buildDetailCard(context, '전해질', '주의', Icons.bolt, theme.colorScheme.error),
-                _buildDetailCard(context, '스트레스', '낮음', Icons.mood, Colors.green),
-                _buildDetailCard(context, '피로도', '보통', Icons.battery_charging_full, Colors.amber),
-              ],
-            ),
-
-            const SizedBox(height: 32),
-
-            // 3. AI Coaching Message
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.secondaryContainer.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.auto_awesome, color: theme.colorScheme.secondary),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'AI 건강 코칭',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: theme.colorScheme.secondary,
+            // 본문
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.stretch,
+                  children: [
+                    // 1. 결과 요약 카드
+                    SanggamContainer(
+                      borderRadius: 24,
+                      borderColor: SanggamTheme.primary
+                          .withValues(alpha: 0.2),
+                      padding: const EdgeInsets.all(32),
+                      child: Column(
+                        children: [
+                          Text(
+                            DateFormat('yyyy. MM. dd  HH:mm')
+                                .format(DateTime.now()),
+                            style: const TextStyle(
+                              color: SanggamTheme
+                                  .onSurfaceDim,
+                              fontSize: 14,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '지난주보다 수치가 안정적입니다. 지금처럼 하루 2L 수분 섭취를 유지하세요. 저녁 영양제 섭취도 잊지 마세요!',
-                          style: theme.textTheme.bodyMedium,
-                        ),
+                          const SizedBox(height: 24),
+                          Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.center,
+                            crossAxisAlignment:
+                                CrossAxisAlignment.baseline,
+                            textBaseline:
+                                TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                value > 0
+                                    ? value.toStringAsFixed(1)
+                                    : '--',
+                                style: const TextStyle(
+                                  color: SanggamTheme
+                                      .primary,
+                                  fontSize: 40,
+                                  fontWeight:
+                                      FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                unit,
+                                style: const TextStyle(
+                                  color: SanggamTheme
+                                      .onSurfaceDim,
+                                  fontSize: 24,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          Container(
+                            padding:
+                                const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8),
+                            decoration: BoxDecoration(
+                              color: _statusColor,
+                              borderRadius:
+                                  BorderRadius.circular(
+                                      16),
+                            ),
+                            child: Text(
+                              _statusText,
+                              style: const TextStyle(
+                                color: SanggamTheme
+                                    .background,
+                                fontSize: 14,
+                                fontWeight:
+                                    FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    // 2. 상세 분석 그리드
+                    const Text(
+                      '상세 분석',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics:
+                          const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 16,
+                      crossAxisSpacing: 16,
+                      childAspectRatio: 1.5,
+                      children: [
+                        _buildDetailCard(
+                            '수분량',
+                            '적정',
+                            Icons.water_drop,
+                            SanggamTheme.jagaeCyan),
+                        _buildDetailCard(
+                            '전해질',
+                            '주의',
+                            Icons.bolt,
+                            SanggamTheme.error),
+                        _buildDetailCard(
+                            '스트레스',
+                            '낮음',
+                            Icons.mood,
+                            SanggamTheme.jagaeCyan),
+                        _buildDetailCard(
+                            '피로도',
+                            '보통',
+                            Icons.battery_charging_full,
+                            SanggamTheme.primary),
                       ],
                     ),
-                  ),
-                ],
+
+                    const SizedBox(height: 32),
+
+                    // 3. AI 코칭 메시지
+                    SanggamContainer(
+                      borderRadius: 24,
+                      padding: const EdgeInsets.all(24),
+                      child: Row(
+                        crossAxisAlignment:
+                            CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.auto_awesome,
+                              color: SanggamTheme.primary),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: const [
+                                Text(
+                                  'AI 건강 코칭',
+                                  style: TextStyle(
+                                    color: SanggamTheme
+                                        .primary,
+                                    fontSize: 14,
+                                    fontWeight:
+                                        FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  '지난주보다 수치가 안정적입니다. 지금처럼 하루 2L 수분 섭취를 유지하세요. 저녁 영양제 섭취도 잊지 마세요!',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 32),
+
+                    PrimaryButton(
+                      text: '확인완료',
+                      onPressed: () =>
+                          context.go('/home'),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
-
-            const SizedBox(height: 32),
-            
-            PrimaryButton(
-              text: '확인완료',
-              onPressed: () => context.go('/home'),
-            ),
-            const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDetailCard(BuildContext context, String label, String value, IconData icon, Color color) {
-    final theme = Theme.of(context);
+  Widget _buildDetailCard(String label, String value,
+      IconData icon, Color color) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(20),
+        color: SanggamTheme.surface,
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -180,8 +295,9 @@ class ResultScreen extends StatelessWidget {
               const Spacer(),
               Text(
                 value,
-                style: theme.textTheme.titleMedium?.copyWith(
+                style: TextStyle(
                   color: color,
+                  fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -190,8 +306,9 @@ class ResultScreen extends StatelessWidget {
           const Spacer(),
           Text(
             label,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+            style: const TextStyle(
+              color: SanggamTheme.onSurfaceDim,
+              fontSize: 14,
             ),
           ),
         ],

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
 import 'package:manpasik/features/measurement/domain/fingerprint_analyzer.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 
 /// 비표적 분석 결과 카드 (C3)
 ///
@@ -22,9 +22,14 @@ class UntargetedAnalysisCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: SanggamTheme.surfaceVariant.withValues(alpha: 0.3),
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -32,12 +37,14 @@ class UntargetedAnalysisCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.biotech_rounded,
-                    color: theme.colorScheme.primary, size: 20),
+                const Icon(Icons.biotech_rounded,
+                    color: SanggamTheme.primary, size: 20),
                 const SizedBox(width: 8),
-                Text(
+                const Text(
                   '비표적 분석',
-                  style: theme.textTheme.titleSmall?.copyWith(
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -47,18 +54,19 @@ class UntargetedAnalysisCard extends StatelessWidget {
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
                     color: anomalies.isEmpty
-                        ? Colors.green.withOpacity(0.1)
-                        : AppTheme.dancheongRed.withOpacity(0.1),
+                        ? SanggamTheme.jagaeCyan.withValues(alpha: 0.1)
+                        : SanggamTheme.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     anomalies.isEmpty
                         ? '정상'
                         : '${anomalies.length}건 감지',
-                    style: theme.textTheme.bodySmall?.copyWith(
+                    style: TextStyle(
                       color: anomalies.isEmpty
-                          ? Colors.green
-                          : AppTheme.dancheongRed,
+                          ? SanggamTheme.jagaeCyan
+                          : SanggamTheme.error,
+                      fontSize: 12,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -80,8 +88,8 @@ class UntargetedAnalysisCard extends StatelessWidget {
                         getTooltipItem: (group, groupIndex, rod, rodIndex) {
                           return BarTooltipItem(
                             '${clusters[group.x].name}\n${(rod.toY * 100).toStringAsFixed(0)}%',
-                            theme.textTheme.bodySmall!
-                                .copyWith(color: Colors.white),
+                            const TextStyle(
+                                color: Colors.white, fontSize: 12),
                           );
                         },
                       ),
@@ -101,8 +109,10 @@ class UntargetedAnalysisCard extends StatelessWidget {
                                   clusters[idx].name.length > 3
                                       ? clusters[idx].name.substring(0, 3)
                                       : clusters[idx].name,
-                                  style: theme.textTheme.bodySmall
-                                      ?.copyWith(fontSize: 8),
+                                  style: const TextStyle(
+                                    color: SanggamTheme.onSurfaceDim,
+                                    fontSize: 8,
+                                  ),
                                 ),
                               );
                             }
@@ -118,13 +128,13 @@ class UntargetedAnalysisCard extends StatelessWidget {
                           sideTitles: SideTitles(showTitles: false)),
                     ),
                     borderData: FlBorderData(show: false),
-                    gridData: FlGridData(show: false),
+                    gridData: const FlGridData(show: false),
                     barGroups: clusters.asMap().entries.map((e) {
                       final color = e.value.anomalyScore > 0.25
-                          ? AppTheme.dancheongRed
+                          ? SanggamTheme.error
                           : e.value.anomalyScore > 0.15
-                              ? Colors.orange
-                              : Colors.green;
+                              ? SanggamTheme.primary
+                              : SanggamTheme.jagaeCyan;
                       return BarChartGroupData(
                         x: e.key,
                         barRods: [
@@ -146,7 +156,7 @@ class UntargetedAnalysisCard extends StatelessWidget {
             // 이상 항목 설명
             if (anomalies.isNotEmpty) ...[
               const SizedBox(height: 16),
-              const Divider(),
+              const Divider(color: SanggamTheme.surfaceVariant),
               const SizedBox(height: 8),
               ...anomalies.take(3).map((a) => Padding(
                     padding: const EdgeInsets.only(bottom: 8),
@@ -157,14 +167,17 @@ class UntargetedAnalysisCard extends StatelessWidget {
                           Icons.warning_amber_rounded,
                           size: 16,
                           color: a.severity == AnomalySeverity.high
-                              ? AppTheme.dancheongRed
-                              : Colors.orange,
+                              ? SanggamTheme.error
+                              : SanggamTheme.primary,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             a.description,
-                            style: theme.textTheme.bodySmall,
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ],
@@ -174,10 +187,11 @@ class UntargetedAnalysisCard extends StatelessWidget {
 
             if (anomalies.isEmpty) ...[
               const SizedBox(height: 12),
-              Text(
+              const Text(
                 '모든 바이오마커가 정상 범위 내에 있습니다.',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: Colors.green,
+                style: TextStyle(
+                  color: SanggamTheme.jagaeCyan,
+                  fontSize: 12,
                 ),
               ),
             ],

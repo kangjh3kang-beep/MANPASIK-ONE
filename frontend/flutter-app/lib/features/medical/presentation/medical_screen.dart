@@ -1,491 +1,527 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:manpasik/core/providers/grpc_provider.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
-import 'package:manpasik/features/medical/domain/medical_repository.dart';
-import 'package:manpasik/features/medical/presentation/widgets/doctor_list.dart';
-import 'package:manpasik/features/medical/presentation/widgets/hero_telemedicine_card.dart';
-import 'package:manpasik/shared/widgets/animate_fade_in_up.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+import 'package:manpasik/shared/utils/navigation_utils.dart';
+import 'package:manpasik/shared/widgets/sanggam_container.dart';
 
-/// 의료 서비스 메인 화면 (Digital Hospital Lobby)
-class MedicalScreen extends ConsumerStatefulWidget {
+class MedicalScreen extends StatefulWidget {
   const MedicalScreen({super.key});
 
   @override
-  ConsumerState<MedicalScreen> createState() => _MedicalScreenState();
+  State<MedicalScreen> createState() => _MedicalScreenState();
 }
 
-class _MedicalScreenState extends ConsumerState<MedicalScreen> {
+class _MedicalScreenState extends State<MedicalScreen> {
+  bool _shareVitals = true;
+  bool _shareLabs = true;
+  bool _shareRecentHistory = true;
+
   @override
   Widget build(BuildContext context) {
-    final reservationsAsync = ref.watch(reservationsProvider);
-    final prescriptionsAsync = ref.watch(prescriptionsProvider);
-    final reportsAsync = ref.watch(healthReportsProvider);
-
-    // Force Dark Theme for Premium Medical Feel
-    return Theme(
-      data: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: const Color(0xFF050B14),
-        colorScheme: ColorScheme.dark(
-          primary: const Color(0xFF00E5FF),
-          surface: const Color(0xFF1A1F35),
-        ),
-      ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: RefreshIndicator(
-          color: AppTheme.sanggamGold,
-          backgroundColor: const Color(0xFF1A1F35),
-          onRefresh: () async {
-            ref.invalidate(reservationsProvider);
-            ref.invalidate(prescriptionsProvider);
-            ref.invalidate(healthReportsProvider);
-            ref.invalidate(recommendedDoctorsProvider);
-          },
-          child: CustomScrollView(
-            physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-            slivers: [
-              SliverAppBar(
-                expandedHeight: 80.0,
-                floating: true,
-                pinned: false,
-                backgroundColor: Colors.transparent,
-                centerTitle: false,
-                title: const Text(
-                  'Digital Hospital',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                actions: [
+    return Scaffold(
+      backgroundColor: SanggamTheme.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+              child: Row(
+                children: [
                   IconButton(
-                    icon: const Icon(Icons.notifications_outlined, color: Colors.white),
-                    onPressed: () {},
+                    tooltip: '뒤로',
+                    onPressed: () => context.popOrHome(),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white),
+                  ),
+                  const SizedBox(width: 6),
+                  const Expanded(
+                    child: Text(
+                      '의료 서비스 허브',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  TextButton.icon(
+                    onPressed: () => context.go('/home'),
+                    icon: const Icon(Icons.home_rounded, size: 16),
+                    label: const Text('홈'),
+                    style: TextButton.styleFrom(
+                      foregroundColor: SanggamTheme.primary,
+                    ),
                   ),
                 ],
               ),
-
-              // 1. Hero Telemedicine Section
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.only(bottom: 24),
-                  child: AnimateFadeInUp(child: HeroTelemedicineCard()),
-                ),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  _buildJourneyOverview(),
+                  const SizedBox(height: 16),
+                  _buildActionGrid(context),
+                  const SizedBox(height: 16),
+                  _buildLiveEntryCard(context),
+                  const SizedBox(height: 16),
+                  _buildRecentConsultation(context),
+                  const SizedBox(height: 16),
+                  _buildSupportMenu(context),
+                ],
               ),
-
-              // 2. Quick Services (2x2 Grid)
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverGrid.count(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1.4,
-                  children: [
-                    _buildQuickServiceItem(Icons.videocam_outlined, '화상 진료', '/medical/telemedicine'), // Added Video Call
-                    _buildQuickServiceItem(Icons.medication_outlined, '처방전 관리', '/medical/prescription/1'),
-                    _buildQuickServiceItem(Icons.local_pharmacy_outlined, '약국 찾기', '/medical/pharmacy'),
-                    _buildQuickServiceItem(Icons.local_hospital_outlined, '주변 병원 찾기', '/medical/facility-search'),
-                  ],
-                ),
-              ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 32)),
-
-              // 3. Recommended Doctors
-              const SliverToBoxAdapter(
-                child: DoctorList(),
-              ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 32)),
-
-              // 4. 나의 진료 현황 (예약)
-              SliverToBoxAdapter(
-                child: _buildSectionWithData(
-                  title: '나의 진료 현황',
-                  asyncValue: reservationsAsync,
-                  emptyMessage: '예정된 진료 내역이 없습니다.',
-                  emptyAction: '진료 예약하기',
-                  onEmptyAction: () => context.push('/medical/telemedicine'),
-                  builder: (reservations) => Column(
-                    children: reservations.map((r) => _buildReservationTile(r)).toList(),
-                  ),
-                ),
-              ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
-
-              // 5. 최근 처방전
-              SliverToBoxAdapter(
-                child: _buildSectionWithData(
-                  title: '최근 처방전',
-                  asyncValue: prescriptionsAsync,
-                  emptyMessage: '처방전 내역이 없습니다.',
-                  builder: (prescriptions) => Column(
-                    children: prescriptions.map((p) => _buildPrescriptionTile(p)).toList(),
-                  ),
-                ),
-              ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
-
-              // 6. 건강 리포트
-              SliverToBoxAdapter(
-                child: _buildSectionWithData(
-                  title: '건강 리포트',
-                  asyncValue: reportsAsync,
-                  emptyMessage: '충분한 측정 데이터가 쌓이면 AI가 분석합니다.',
-                  builder: (reports) => Column(
-                    children: reports.map((r) => _buildReportTile(r)).toList(),
-                  ),
-                ),
-              ),
-
-              // 7. 응급 안내 + 면책
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 0),
-                  child: _buildEmergencyBanner(),
-                ),
-              ),
-
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                  child: _buildDisclaimer(),
-                ),
-              ),
-
-              const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  // ── Quick Service Item ──
-  Widget _buildQuickServiceItem(IconData icon, String label, String? route) {
-    return AnimateFadeInUp(
-      delay: const Duration(milliseconds: 200),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: route != null ? () => context.push(route) : () {},
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white10),
+  Widget _buildJourneyOverview() {
+    return SanggamContainer(
+      borderRadius: 20,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.health_and_safety_rounded,
+                  size: 20,
+                  color: SanggamTheme.primary.withValues(alpha: 0.95)),
+              const SizedBox(width: 8),
+              const Text(
+                '진료 스토리라인',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            '의료기관 선택 → 예약 → 화상진료 → 처방전/약국 전송 → 결과 확인',
+            style: TextStyle(
+              color: SanggamTheme.onSurfaceDim,
+              fontSize: 13,
+              height: 1.45,
             ),
+          ),
+          const SizedBox(height: 12),
+          const Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _JourneyChip(icon: Icons.search_rounded, label: '기관 선택'),
+              _JourneyChip(icon: Icons.event_available_rounded, label: '예약'),
+              _JourneyChip(icon: Icons.videocam_rounded, label: '화상진료'),
+              _JourneyChip(icon: Icons.local_pharmacy_rounded, label: '약국 전송'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionGrid(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 2,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      childAspectRatio: 1.28,
+      children: [
+        _ActionCard(
+          icon: Icons.apartment_rounded,
+          title: '의료기관 선택',
+          description: '전문의/병원 검색',
+          onTap: () => context.push('/medical/facility-search'),
+        ),
+        _ActionCard(
+          icon: Icons.video_camera_front_rounded,
+          title: '화상진료 예약',
+          description: '진료과·의사 선택',
+          onTap: () => context.push('/medical/telemedicine'),
+        ),
+        _ActionCard(
+          icon: Icons.local_pharmacy_rounded,
+          title: '약국 선택',
+          description: '처방전 전송·수령',
+          onTap: () => context.push('/medical/pharmacy'),
+        ),
+        _ActionCard(
+          icon: Icons.share_rounded,
+          title: '바이오데이터 공유',
+          description: '진료용 데이터 제공',
+          onTap: _openShareSheet,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLiveEntryCard(BuildContext context) {
+    return SanggamContainer(
+      borderRadius: 18,
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            height: 46,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: SanggamTheme.primary.withValues(alpha: 0.16),
+            ),
+            child:
+                const Icon(Icons.videocam_rounded, color: SanggamTheme.primary),
+          ),
+          const SizedBox(width: 12),
+          const Expanded(
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(icon, color: AppTheme.sanggamGold, size: 28),
-                const SizedBox(height: 8),
                 Text(
-                  label,
-                  style: const TextStyle(
+                  '진료실 바로 입장',
+                  style: TextStyle(
                     color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  '예약 세션이 있으면 바로 화상진료로 이동합니다.',
+                  style: TextStyle(
+                    color: SanggamTheme.onSurfaceDim,
                     fontSize: 12,
-                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
           ),
-        ),
+          const SizedBox(width: 8),
+          FilledButton(
+            onPressed: () => context.push('/medical/video-call/demo-session'),
+            style: FilledButton.styleFrom(
+              backgroundColor: SanggamTheme.primary,
+              foregroundColor: SanggamTheme.background,
+            ),
+            child: const Text('입장'),
+          ),
+        ],
       ),
     );
   }
 
-  // ── 범용 섹션 빌더 ──
-  Widget _buildSectionWithData<T>({
-    required String title,
-    required AsyncValue<List<T>> asyncValue,
-    required String emptyMessage,
-    String? emptyAction,
-    VoidCallback? onEmptyAction,
-    required Widget Function(List<T> data) builder,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+  Widget _buildRecentConsultation(BuildContext context) {
+    return SanggamContainer(
+      borderRadius: 18,
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Text(
+            '최근 진료/처방',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 15,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            leading: const Icon(Icons.description_outlined,
+                color: SanggamTheme.jagaeCyan),
+            title: const Text(
+              '진료 결과 보기',
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
+            subtitle: const Text(
+              '2026-02-23 / 내과 / 김건강 전문의',
+              style: TextStyle(color: SanggamTheme.onSurfaceDim, fontSize: 11),
+            ),
+            trailing:
+                const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+            onTap: () => context.push('/medical/consultation/demo/result'),
+          ),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            leading: const Icon(Icons.receipt_long_rounded,
+                color: SanggamTheme.primary),
+            title: const Text(
+              '처방전 상세',
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
+            subtitle: const Text(
+              '약국 전송 상태 확인',
+              style: TextStyle(color: SanggamTheme.onSurfaceDim, fontSize: 11),
+            ),
+            trailing:
+                const Icon(Icons.chevron_right_rounded, color: Colors.white54),
+            onTap: () => context.push('/medical/prescription/demo'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSupportMenu(BuildContext context) {
+    return SanggamContainer(
+      borderRadius: 18,
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          _SupportMenuTile(
+            icon: Icons.place_rounded,
+            title: '내 주변 의료기관',
+            subtitle: '거리/운영시간/접수 상태 확인',
+            onTap: () => context.push('/medical/facility-search'),
+          ),
+          const Divider(height: 1, color: Color(0x22D4AF37)),
+          _SupportMenuTile(
+            icon: Icons.local_shipping_rounded,
+            title: '약 배송/수령 설정',
+            subtitle: '수령 방식과 알림 관리',
+            onTap: () => context.push('/medical/pharmacy'),
+          ),
+          const Divider(height: 1, color: Color(0x22D4AF37)),
+          _SupportMenuTile(
+            icon: Icons.monitor_heart_rounded,
+            title: '진료 전 바이오데이터 점검',
+            subtitle: '공유 항목과 최근 측정값 확인',
+            onTap: _openShareSheet,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _openShareSheet() async {
+    await showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: const Color(0xFF0A1428),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            return SafeArea(
+              top: false,
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      '진료용 바이오데이터 공유',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _shareSwitchTile(
+                      title: '실시간 활력징후',
+                      value: _shareVitals,
+                      onChanged: (value) =>
+                          setSheetState(() => _shareVitals = value),
+                    ),
+                    _shareSwitchTile(
+                      title: '최근 검사 결과',
+                      value: _shareLabs,
+                      onChanged: (value) =>
+                          setSheetState(() => _shareLabs = value),
+                    ),
+                    _shareSwitchTile(
+                      title: '최근 진료 이력',
+                      value: _shareRecentHistory,
+                      onChanged: (value) =>
+                          setSheetState(() => _shareRecentHistory = value),
+                    ),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: () {
+                          Navigator.of(sheetContext).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('선택한 바이오데이터 공유 설정이 적용되었습니다.'),
+                            ),
+                          );
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: SanggamTheme.primary,
+                          foregroundColor: SanggamTheme.background,
+                        ),
+                        child: const Text('공유 설정 저장'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+    setState(() {});
+  }
+
+  Widget _shareSwitchTile({
+    required String title,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return SwitchListTile(
+      value: value,
+      onChanged: onChanged,
+      contentPadding: EdgeInsets.zero,
+      activeThumbColor: SanggamTheme.primary,
+      title: Text(
+        title,
+        style: const TextStyle(color: Colors.white, fontSize: 14),
+      ),
+      subtitle: const Text(
+        '진료 세션 중 의료진에게만 제공됩니다.',
+        style: TextStyle(color: SanggamTheme.onSurfaceDim, fontSize: 11),
+      ),
+    );
+  }
+}
+
+class _JourneyChip extends StatelessWidget {
+  const _JourneyChip({
+    required this.icon,
+    required this.label,
+  });
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(999),
+        color: SanggamTheme.primary.withValues(alpha: 0.12),
+        border: Border.all(
+          color: SanggamTheme.primary.withValues(alpha: 0.35),
+          width: 0.7,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: SanggamTheme.primary),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActionCard extends StatelessWidget {
+  const _ActionCard({
+    required this.icon,
+    required this.title,
+    required this.description,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String description;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return SanggamContainer(
+      onTap: onTap,
+      borderRadius: 16,
+      padding: const EdgeInsets.all(14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: SanggamTheme.primary, size: 22),
+          const Spacer(),
           Text(
             title,
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 12),
-          asyncValue.when(
-            data: (list) {
-              if (list.isEmpty) return _buildEmptyTile(emptyMessage, emptyAction, onEmptyAction);
-              return builder(list);
-            },
-            loading: () => Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1A1F35),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white10),
-              ),
-              child: const Center(
-                child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.sanggamGold)),
-              ),
+          const SizedBox(height: 4),
+          Text(
+            description,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: SanggamTheme.onSurfaceDim,
+              fontSize: 11,
             ),
-            error: (_, __) => _buildEmptyTile('정보를 불러올 수 없습니다', null, null),
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildEmptyTile(String message, String? actionLabel, VoidCallback? onAction) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1F35),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Column(
-        children: [
-          Text(message, style: const TextStyle(color: Colors.white38, fontSize: 13)),
-          if (actionLabel != null && onAction != null) ...[
-            const SizedBox(height: 12),
-            OutlinedButton(
-              onPressed: onAction,
-              style: OutlinedButton.styleFrom(
-                side: BorderSide(color: AppTheme.sanggamGold.withOpacity(0.5)),
-                foregroundColor: AppTheme.sanggamGold,
-              ),
-              child: Text(actionLabel, style: const TextStyle(fontSize: 12)),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
+class _SupportMenuTile extends StatelessWidget {
+  const _SupportMenuTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
 
-  // ── 예약 타일 ──
-  Widget _buildReservationTile(TelemedicineReservation r) {
-    final statusColor = switch (r.status) {
-      ReservationStatus.confirmed => const Color(0xFF00E676),
-      ReservationStatus.inProgress => Colors.orange,
-      ReservationStatus.completed => Colors.grey,
-      ReservationStatus.cancelled => Colors.red,
-      _ => const Color(0xFF00E5FF),
-    };
-    final statusText = switch (r.status) {
-      ReservationStatus.pending => '대기 중',
-      ReservationStatus.confirmed => '확정',
-      ReservationStatus.inProgress => '진행 중',
-      ReservationStatus.completed => '완료',
-      ReservationStatus.cancelled => '취소됨',
-    };
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
 
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1F35),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white10),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.videocam, color: statusColor, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  r.doctorName.isNotEmpty ? r.doctorName : '비대면 진료',
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  '${r.scheduledAt.month}/${r.scheduledAt.day} ${r.scheduledAt.hour}:${r.scheduledAt.minute.toString().padLeft(2, '0')}',
-                  style: const TextStyle(color: Colors.white38, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: statusColor.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(statusText, style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── 처방전 타일 ──
-  Widget _buildPrescriptionTile(Prescription p) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () => context.push('/medical/prescription/${p.id}'),
-        borderRadius: BorderRadius.circular(14),
-        child: Container(
-          width: double.infinity,
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1F35),
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.white10),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.medication, color: Color(0xFF66BB6A), size: 22),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      p.doctorName.isNotEmpty ? '${p.doctorName} 처방' : '처방전',
-                      style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-                    ),
-                    Text(
-                      '${p.items.length}개 의약품 | ${p.issuedAt.month}/${p.issuedAt.day} 발행',
-                      style: const TextStyle(color: Colors.white38, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              const Icon(Icons.chevron_right, color: Colors.white24, size: 20),
-            ],
-          ),
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: onTap,
+      dense: true,
+      leading: Icon(icon, color: SanggamTheme.primary),
+      title: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+          fontSize: 14,
         ),
       ),
-    );
-  }
-
-  // ── 리포트 타일 ──
-  Widget _buildReportTile(HealthReport r) {
-    final statusColor = switch (r.overallStatus) {
-      'excellent' => const Color(0xFF00E676),
-      'good' => const Color(0xFF29B6F6),
-      'caution' => Colors.orange,
-      'alert' => Colors.red,
-      _ => const Color(0xFF00E5FF),
-    };
-    final statusIcon = switch (r.overallStatus) {
-      'excellent' => Icons.sentiment_very_satisfied,
-      'good' => Icons.sentiment_satisfied,
-      'caution' => Icons.sentiment_neutral,
-      'alert' => Icons.sentiment_very_dissatisfied,
-      _ => Icons.analytics,
-    };
-
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1F35),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white10),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(
+          color: SanggamTheme.onSurfaceDim,
+          fontSize: 11,
+        ),
       ),
-      child: Row(
-        children: [
-          Icon(statusIcon, color: statusColor, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  r.periodDescription.isNotEmpty ? r.periodDescription : '건강 리포트',
-                  style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  '${r.generatedAt.month}/${r.generatedAt.day} | ${r.analyses.length}개 바이오마커',
-                  style: const TextStyle(color: Colors.white38, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          const Icon(Icons.chevron_right, color: Colors.white24, size: 20),
-        ],
-      ),
-    );
-  }
-
-  // ── 응급 배너 ──
-  Widget _buildEmergencyBanner() {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.red.withOpacity(0.2)),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.emergency, color: Colors.redAccent, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  '응급 상황 시 119에 전화하세요',
-                  style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-                Text(
-                  '본 서비스는 응급 의료 서비스를 대체하지 않습니다',
-                  style: TextStyle(color: Colors.redAccent.withOpacity(0.6), fontSize: 11),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── 면책 조항 ──
-  Widget _buildDisclaimer() {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.info_outline, size: 14, color: Colors.white24),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-              '본 서비스의 측정 결과 및 AI 분석은 의료 진단을 대체하지 않습니다. '
-              '정확한 진단은 반드시 의료 전문가와 상담하시기 바랍니다.',
-              style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.3)),
-            ),
-          ),
-        ],
-      ),
+      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white54),
     );
   }
 }

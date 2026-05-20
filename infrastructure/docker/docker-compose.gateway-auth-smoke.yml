@@ -1,0 +1,53 @@
+# ManPaSik gateway + auth-service container smoke.
+#
+# Narrow scope: validate container images, runtime env, Gateway HTTP health,
+# AuthService gRPC wiring, and the REST auth user_id lifecycle without the full
+# development dependency stack.
+
+services:
+  auth-service:
+    build:
+      context: ../../backend
+      dockerfile: services/auth-service/Dockerfile
+    image: manpasik/auth-service:smoke
+    environment:
+      VERSION: auth-compose-smoke
+      GRPC_PORT: ":50051"
+      METRICS_PORT: ":9100"
+      SHUTDOWN_TIMEOUT_SECONDS: "1"
+      TENANCY_ENFORCED: "false"
+      JWT_SECRET: gateway-auth-compose-smoke-secret-32-bytes
+      JWT_ISSUER: manpasik-compose-smoke
+      LOG_LEVEL: debug
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:9100/health | grep -q 'healthy'"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s
+
+  gateway:
+    build:
+      context: ../../backend
+      dockerfile: services/gateway/Dockerfile
+    image: manpasik/gateway:auth-smoke
+    depends_on:
+      auth-service:
+        condition: service_healthy
+    environment:
+      VERSION: gateway-auth-compose-smoke
+      HTTP_PORT: ":8080"
+      AUTH_SERVICE_ADDR: "auth-service:50051"
+      SHUTDOWN_TIMEOUT_SECONDS: "1"
+      TENANCY_ENFORCED: "false"
+      JWT_SECRET: gateway-auth-compose-smoke-secret-32-bytes
+      JWT_ISSUER: manpasik-compose-smoke
+      LOG_LEVEL: debug
+    ports:
+      - "127.0.0.1:${MANPASIK_GATEWAY_AUTH_SMOKE_HTTP_PORT:-18081}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8080/health | grep -q 'ok'"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 5s

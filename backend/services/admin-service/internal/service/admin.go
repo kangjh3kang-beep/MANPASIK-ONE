@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/manpasik/backend/shared/compliance"
 	apperrors "github.com/manpasik/backend/shared/errors"
 	"go.uber.org/zap"
 )
@@ -677,6 +678,151 @@ func (s *AdminService) GetInventoryStats(ctx context.Context, categoryFilter int
 		LowStockCount:   lowStock,
 		OutOfStockCount: outOfStock,
 	}, nil
+}
+
+// ============================================================================
+// 규제 준수 (Compliance)
+// ============================================================================
+
+// ComplianceOverview는 규제 준수 현황 요약입니다.
+type ComplianceOverview struct {
+	Items          []compliance.ComplianceStatus
+	TotalItems     int
+	Compliant      int
+	Partial        int
+	NonCompliant   int
+	ComplianceRate float64 // 0.0~1.0
+	CheckedAt      time.Time
+}
+
+// GetCompliance는 규제 준수 현황을 반환합니다.
+func (s *AdminService) GetCompliance(ctx context.Context, framework string) (*ComplianceOverview, error) {
+	items := compliance.GetComplianceOverview()
+
+	// 프레임워크 필터
+	if framework != "" {
+		filtered := make([]compliance.ComplianceStatus, 0)
+		for _, item := range items {
+			if strings.EqualFold(item.Framework, framework) {
+				filtered = append(filtered, item)
+			}
+		}
+		items = filtered
+	}
+
+	compliant, partial, nonCompliant := 0, 0, 0
+	for _, item := range items {
+		switch item.Status {
+		case "compliant":
+			compliant++
+		case "partial":
+			partial++
+		case "non_compliant":
+			nonCompliant++
+		}
+	}
+
+	total := len(items)
+	rate := 0.0
+	if total > 0 {
+		rate = float64(compliant) / float64(total)
+	}
+
+	return &ComplianceOverview{
+		Items:          items,
+		TotalItems:     total,
+		Compliant:      compliant,
+		Partial:        partial,
+		NonCompliant:   nonCompliant,
+		ComplianceRate: rate,
+		CheckedAt:      time.Now().UTC(),
+	}, nil
+}
+
+// DeletionRequest는 사용자 데이터 삭제 요청입니다 (GDPR Art.17).
+type DeletionRequest struct {
+	RequestID   string
+	UserID      string
+	RequestedBy string // 요청한 관리자 ID
+	Reason      string
+	Scope       []string // 삭제 대상 데이터 유형
+	Status      string
+	Results     []compliance.DeletionResult
+	RequestedAt time.Time
+	ProcessedAt *time.Time
+}
+
+// ProcessDeletionRequest는 사용자 데이터 삭제 요청을 처리합니다.
+func (s *AdminService) ProcessDeletionRequest(ctx context.Context, adminID, userID, reason string, scope []string) (*DeletionRequest, error) {
+	if adminID == "" {
+		return nil, apperrors.New(apperrors.ErrInvalidInput, "admin_id는 필수입니다")
+	}
+	if userID == "" {
+		return nil, apperrors.New(apperrors.ErrInvalidInput, "삭제 대상 user_id는 필수입니다")
+	}
+	if reason == "" {
+		return nil, apperrors.New(apperrors.ErrInvalidInput, "삭제 사유는 필수입니다")
+	}
+
+	now := time.Now().UTC()
+	reqID := uuid.New().String()
+
+	// 규제 준수 삭제 프로세서
+	rm := compliance.NewRetentionManager()
+	dp := compliance.NewDeletionProcessor(rm)
+
+	// 내부 삭제 요청 실행
+	compReq := &compliance.DeletionRequest{
+		RequestID:   reqID,
+		UserID:      userID,
+		RequestedAt: now,
+		Reason:      reason,
+		Scope:       scope,
+	}
+
+	// 등록된 삭제기가 없으면 시뮬레이션 결과 반환
+	if err := dp.ProcessDeletion(ctx, compReq); err != nil {
+		s.logger.Error("삭제 요청 처리 실패", zap.Error(err))
+		return nil, apperrors.New(apperrors.ErrInternal, "삭제 요청 처리에 실패했습니다")
+	}
+
+	// 감사 로그 기록
+	_ = s.auditRepo.Save(ctx, &AuditLogEntry{
+		EntryID:      uuid.New().String(),
+		AdminID:      adminID,
+		Action:       ActionDelete,
+		ResourceType: "user_data",
+		ResourceID:   userID,
+		Description:  "데이터 삭제 요청 (GDPR Art.17): " + reason,
+		Timestamp:    now,
+	})
+
+	// 확장 감사 로그
+	s.recordAuditDetail(ctx, adminID, "data_deletion", "user:"+userID, "active", string(compReq.Status))
+
+	s.logger.Info("데이터 삭제 요청 처리 완료",
+		zap.String("request_id", reqID),
+		zap.String("user_id", userID),
+		zap.String("status", string(compReq.Status)),
+	)
+
+	return &DeletionRequest{
+		RequestID:   reqID,
+		UserID:      userID,
+		RequestedBy: adminID,
+		Reason:      reason,
+		Scope:       scope,
+		Status:      string(compReq.Status),
+		Results:     compReq.Results,
+		RequestedAt: now,
+		ProcessedAt: compReq.ProcessedAt,
+	}, nil
+}
+
+// GetRetentionPolicies는 데이터 보존 정책 목록을 반환합니다.
+func (s *AdminService) GetRetentionPolicies(_ context.Context) []compliance.RetentionPolicy {
+	rm := compliance.NewRetentionManager()
+	return rm.ListPolicies()
 }
 
 // ============================================================================

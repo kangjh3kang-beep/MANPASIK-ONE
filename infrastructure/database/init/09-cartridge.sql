@@ -213,3 +213,45 @@ CREATE INDEX IF NOT EXISTS idx_usage_user ON cartridge_usage_log (user_id);
 CREATE INDEX IF NOT EXISTS idx_usage_session ON cartridge_usage_log (session_id);
 CREATE INDEX IF NOT EXISTS idx_usage_date ON cartridge_usage_log (used_at);
 CREATE INDEX IF NOT EXISTS idx_usage_user_date ON cartridge_usage_log (user_id, used_at);
+
+-- ============================================================================
+-- 카트리지 정의 (SDK 개발자용 — 하네스 호환성 H5)
+-- 카트리지 타입의 상세 하드웨어 사양 및 규제 정보
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS cartridge_definitions (
+    id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    developer_id      VARCHAR(64),
+    category_code     SMALLINT NOT NULL,
+    type_index        SMALLINT NOT NULL,
+    name              VARCHAR(128) NOT NULL,
+    version           VARCHAR(16) NOT NULL DEFAULT '1.0',
+
+    -- 하네스 호환성 (H5 인터페이스 계약)
+    csi_version       VARCHAR(8) NOT NULL DEFAULT 'v1.0',   -- CSI v1.0=16핀, v2.0=24핀
+    pin_config        JSONB NOT NULL DEFAULT '{}',           -- 핀 할당 맵
+    afe_blocks        TEXT[] NOT NULL DEFAULT '{}',           -- AFE 블록: electrochem, optical, enose 등
+    measurement_modes TEXT[] NOT NULL DEFAULT '{}',           -- CA, CV, EIS, DPV 등
+
+    -- 보정 파라미터
+    calibration_schema JSONB DEFAULT '{}',                   -- NFC 태그 데이터 스키마
+    alpha_default     DOUBLE PRECISION DEFAULT 0.98,         -- SSOT 기본 alpha
+    temp_compensation BOOLEAN DEFAULT false,
+    humidity_compensation BOOLEAN DEFAULT false,
+
+    -- 규제 (H3 사전인증 플랫폼)
+    regulatory_class  VARCHAR(16) DEFAULT 'pending',         -- Class I, Class II
+    regulatory_path   VARCHAR(32),                           -- 510k, de_novo, CE-IVDR
+    approval_status   VARCHAR(16) DEFAULT 'draft',           -- draft, submitted, approved, rejected
+
+    -- 메타
+    created_at        TIMESTAMPTZ DEFAULT NOW(),
+    approved_at       TIMESTAMPTZ,
+
+    FOREIGN KEY (category_code, type_index)
+        REFERENCES cartridge_types(category_code, type_index) ON DELETE RESTRICT
+);
+
+CREATE INDEX IF NOT EXISTS idx_cartdef_developer ON cartridge_definitions(developer_id);
+CREATE INDEX IF NOT EXISTS idx_cartdef_category ON cartridge_definitions(category_code, type_index);
+CREATE INDEX IF NOT EXISTS idx_cartdef_status ON cartridge_definitions(approval_status);
+CREATE INDEX IF NOT EXISTS idx_cartdef_csi ON cartridge_definitions(csi_version);

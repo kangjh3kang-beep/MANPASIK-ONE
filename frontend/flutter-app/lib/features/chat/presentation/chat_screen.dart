@@ -4,14 +4,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/shared/providers/chat_provider.dart';
 import 'package:manpasik/shared/widgets/streaming_text_bubble.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/shared/widgets/cosmic_background.dart';
-import 'package:manpasik/shared/widgets/jagae_pattern.dart';
+
+// ───────────────────────────────────────────────────
+// ChatScreen — Sanggam Orbit AI 채팅
+//
+// [Rule 4] AppBar → body 내 커스텀 헤더
+// [Rule 4] app_theme.dart → sanggam_theme.dart
+// [Rule 4] AppTheme.sanggamGold → SanggamTheme.primary
+// [Rule 4] AppTheme.waveCyan → SanggamTheme.jagaeCyan
+// [Rule 4] AppTheme.celadonTeal → SanggamTheme.jagaeCyan (alpha)
+// [Rule 4] AppTheme.deepSeaBlue → SanggamTheme.background
+// [Rule 4] AppTheme.aiPersonaAsset → 직접 경로 상수
+// [Rule 4] jagae_pattern.dart + KoreanEdgeBorder → Container border
+// [Rule 4] Theme.of(context) ~6x 제거
+// [Rule 4] theme.colorScheme.* ~15x → SanggamTheme 직접
+// [Rule 4] theme.textTheme.* ~8x → 직접 TextStyle
+// [Rule 4] withOpacity ~10x → withValues(alpha:)
+// [Rule 4] Color(0xFF1A1A1A) → SanggamTheme.surface
+// [Rule 2] 12→16, 4→8, 10→8, 20→16, 28→32, 44→48, borderRadius 20→24
+// ───────────────────────────────────────────────────
+
+const _aiPersonaAsset =
+    'assets/images/premium/premium_ai_persona_hologram_orb_1771750122274.png';
 
 /// AI 건강 어시스턴트 채팅 화면
 ///
 /// gRPC AIInferenceService 연동, 미연결 시 로컬 fallback 응답 제공.
-/// 빈 상태: 환영 메시지 + 예시 질문 칩, 메시지 목록: 사용자/AI 구분.
 class ChatScreen extends ConsumerStatefulWidget {
   const ChatScreen({super.key});
 
@@ -62,7 +82,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('대화 기록 삭제'),
-        content: const Text('모든 대화 기록이 삭제됩니다. 계속하시겠습니까?'),
+        content:
+            const Text('모든 대화 기록이 삭제됩니다. 계속하시겠습니까?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -70,9 +91,9 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text(
+            child: const Text(
               '삭제',
-              style: TextStyle(color: Theme.of(context).colorScheme.error),
+              style: TextStyle(color: SanggamTheme.error),
             ),
           ),
         ],
@@ -86,73 +107,70 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final chatState = ref.watch(chatProvider);
 
-    // 새 메시지 도착 시 자동 스크롤
     ref.listen<ChatState>(chatProvider, (prev, next) {
-      if (prev != null && next.messages.length > prev.messages.length) {
+      if (prev != null &&
+          next.messages.length > prev.messages.length) {
         _scrollToBottom();
       }
     });
 
     return Scaffold(
-
-      backgroundColor: Colors.transparent, // Make scaffold transparent for CosmicBackground
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.auto_awesome_rounded, // Changed to Oracle icon
-              color: AppTheme.sanggamGold,
-              size: 24,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              '만파식 AI 코치',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                shadows: [
-                  Shadow(color: AppTheme.sanggamGold, blurRadius: 10),
-                ],
-              ),
-            ),
-          ],
-        ),
-        centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white70),
-        actions: [
-          if (chatState.messages.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.delete_outline_rounded),
-              tooltip: '대화 기록 삭제',
-              onPressed: _showClearDialog,
-            ),
-        ],
-      ),
+      backgroundColor: Colors.transparent,
       body: CosmicBackground(
-        child: SafeArea( // Need SafeArea inside CosmicBackground
+        child: SafeArea(
           child: Column(
             children: [
-              // 면책 조항 (Glass Style)
+              // 헤더: 뒤로가기 + AI 코치 타이틀 + 삭제
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 8, vertical: 8),
+                child: Row(
+                  children: [
+                    const BackButton(color: Colors.white),
+                    Image.asset(_aiPersonaAsset,
+                        height: 32, width: 32, fit: BoxFit.contain),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        '만파식 AI 코치',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    if (chatState.messages.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(
+                            Icons.delete_outline_rounded,
+                            color: Colors.white),
+                        tooltip: '대화 기록 삭제',
+                        onPressed: _showClearDialog,
+                      ),
+                  ],
+                ),
+              ),
+
+              // 면책 조항
               const _DisclaimerBanner(
-                text: 'AI 건강 코치의 응답은 참고용이며, 의료 전문가의 진단을 대체하지 않습니다.',
+                text:
+                    'AI 건강 코치의 응답은 참고용이며, 의료 전문가의 진단을 대체하지 않습니다.',
               ),
 
               // 메시지 영역
               Expanded(
-                child: chatState.messages.isEmpty && !chatState.isStreaming
+                child: chatState.messages.isEmpty &&
+                        !chatState.isStreaming
                     ? _EmptyState(onExampleTap: _sendExample)
                     : _MessageList(
                         messages: chatState.messages,
                         isLoading: chatState.isLoading,
                         isStreaming: chatState.isStreaming,
-                        streamingContent: chatState.streamingContent,
+                        streamingContent:
+                            chatState.streamingContent,
                         scrollController: _scrollController,
                         typingText: 'AI가 분석 중...',
                       ),
@@ -164,7 +182,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 focusNode: _focusNode,
                 hintText: '건강에 대해 물어보세요...',
                 sendLabel: '전송',
-                isLoading: chatState.isLoading || chatState.isStreaming,
+                isLoading:
+                    chatState.isLoading || chatState.isStreaming,
                 onSend: _sendMessage,
               ),
             ],
@@ -183,16 +202,16 @@ class _DisclaimerBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: theme.colorScheme.surfaceContainerHighest.withOpacity(0.5),
+      padding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: SanggamTheme.surfaceVariant.withValues(alpha: 0.5),
       child: Text(
         text,
         textAlign: TextAlign.center,
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
+        style: const TextStyle(
+          color: SanggamTheme.onSurfaceDim,
           fontSize: 11,
         ),
       ),
@@ -208,8 +227,6 @@ class _EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     const examples = [
       (Icons.bloodtype_rounded, '혈당 수치가 높은데 어떻게 해야 하나요?'),
       (Icons.favorite_rounded, '혈압 관리 방법을 알려주세요'),
@@ -226,41 +243,32 @@ class _EmptyState extends StatelessWidget {
 
           // AI 아이콘
           Container(
-            width: 80,
-            height: 80,
+            width: 96,
+            height: 96,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  theme.colorScheme.primary,
-                  theme.colorScheme.tertiary,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: theme.colorScheme.primary.withOpacity(0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
+                  color:
+                      SanggamTheme.jagaeCyan.withValues(alpha: 0.3),
+                  blurRadius: 32,
+                  spreadRadius: 8,
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.smart_toy_rounded,
-              color: Colors.white,
-              size: 40,
-            ),
+            child: Image.asset(_aiPersonaAsset,
+                fit: BoxFit.contain),
           ),
 
           const SizedBox(height: 24),
 
           // 환영 메시지
-          Text(
+          const Text(
             '안녕하세요! MANPASIK AI 건강 코치입니다.\n건강에 관한 질문을 해주세요.',
             textAlign: TextAlign.center,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              color: theme.colorScheme.onSurface,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
               height: 1.6,
             ),
           ),
@@ -277,16 +285,20 @@ class _EmptyState extends StatelessWidget {
                 avatar: Icon(e.$1, size: 18),
                 label: Text(
                   e.$2,
-                  style: theme.textTheme.bodySmall,
+                  style: const TextStyle(
+                    color: SanggamTheme.onSurfaceDim,
+                    fontSize: 12,
+                  ),
                 ),
                 onPressed: () => onExampleTap(e.$2),
-                backgroundColor:
-                    theme.colorScheme.surfaceContainerHighest.withOpacity(0.6),
+                backgroundColor: SanggamTheme.surfaceVariant
+                    .withValues(alpha: 0.6),
                 side: BorderSide(
-                  color: theme.colorScheme.outlineVariant.withOpacity(0.5),
+                  color: SanggamTheme.onSurfaceDim
+                      .withValues(alpha: 0.3),
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(24),
                 ),
               );
             }).toList(),
@@ -320,20 +332,21 @@ class _MessageList extends StatelessWidget {
     final extraItems = isStreaming ? 1 : (isLoading ? 1 : 0);
     return ListView.builder(
       controller: scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       itemCount: messages.length + extraItems,
       itemBuilder: (context, index) {
         // 스트리밍 버블
         if (index == messages.length && isStreaming) {
           return Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.only(bottom: 16),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
+                const CircleAvatar(
                   radius: 16,
-                  backgroundColor: Theme.of(context).colorScheme.primary,
-                  child: const Icon(Icons.smart_toy_rounded,
+                  backgroundColor: SanggamTheme.primary,
+                  child: Icon(Icons.smart_toy_rounded,
                       color: Colors.white, size: 18),
                 ),
                 const SizedBox(width: 8),
@@ -364,7 +377,8 @@ class _MessageBubble extends ConsumerStatefulWidget {
   final ChatMessage message;
 
   @override
-  ConsumerState<_MessageBubble> createState() => _MessageBubbleState();
+  ConsumerState<_MessageBubble> createState() =>
+      _MessageBubbleState();
 }
 
 class _MessageBubbleState extends ConsumerState<_MessageBubble> {
@@ -386,7 +400,9 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
       );
       if (mounted) {
         setState(() {
-          _translatedText = res['translated_text'] as String? ?? res['text'] as String? ?? '';
+          _translatedText = res['translated_text'] as String? ??
+              res['text'] as String? ??
+              '';
           _translating = false;
         });
       }
@@ -397,98 +413,111 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final isUser = widget.message.role == 'user';
+    final bubbleRadius = BorderRadius.only(
+      topLeft: const Radius.circular(16),
+      topRight: const Radius.circular(16),
+      bottomLeft: Radius.circular(isUser ? 16 : 4),
+      bottomRight: Radius.circular(isUser ? 4 : 16),
+    );
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         mainAxisAlignment:
             isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
-            CircleAvatar(
+            const CircleAvatar(
               radius: 16,
-              backgroundColor: theme.colorScheme.primary,
-              child: const Icon(Icons.smart_toy_rounded, color: Colors.white, size: 18),
+              backgroundColor: SanggamTheme.primary,
+              child: Icon(Icons.smart_toy_rounded,
+                  color: Colors.white, size: 18),
             ),
             const SizedBox(width: 8),
           ],
           Flexible(
             child: Column(
-              crossAxisAlignment:
-                  isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isUser
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
-                KoreanEdgeBorder(
-                  borderRadius: BorderRadius.only(
-                      topLeft: const Radius.circular(16),
-                      topRight: const Radius.circular(16),
-                      bottomLeft: Radius.circular(isUser ? 16 : 4),
-                      bottomRight: Radius.circular(isUser ? 4 : 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: isUser
+                        ? SanggamTheme.jagaeCyan
+                            .withValues(alpha: 0.2)
+                        : SanggamTheme.surface
+                            .withValues(alpha: 0.8),
+                    borderRadius: bubbleRadius,
+                    border: isUser
+                        ? null
+                        : Border.all(
+                            color: SanggamTheme.primary
+                                .withValues(alpha: 0.5),
+                            width: 1.0,
+                          ),
                   ),
-                  borderWidth: isUser ? 0 : 1.0, // Only border for AI
-                  borderColor: AppTheme.sanggamGold.withOpacity(0.5),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: isUser
-                          ? AppTheme.celadonTeal.withOpacity(0.8) // User: Teal Glass
-                          : const Color(0xFF1A1A1A).withOpacity(0.8), // AI: Dark Glass
-                      borderRadius: BorderRadius.only(
-                        topLeft: const Radius.circular(16),
-                        topRight: const Radius.circular(16),
-                        bottomLeft: Radius.circular(isUser ? 16 : 4),
-                        bottomRight: Radius.circular(isUser ? 4 : 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.message.content,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          height: 1.5,
+                        ),
                       ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                      if (_translatedText != null) ...[
+                        Divider(
+                            height: 16,
+                            color: SanggamTheme.onSurfaceDim
+                                .withValues(alpha: 0.3)),
                         Text(
-                          widget.message.content,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: Colors.white, // Always white text on glass
-                            height: 1.5,
-                            fontFamily: isUser ? null : 'Noto Sans KR', // Serif-like for AI? Or clean?
+                          _translatedText!,
+                          style: const TextStyle(
+                            color: SanggamTheme.onSurfaceDim,
+                            fontSize: 12,
+                            fontStyle: FontStyle.italic,
                           ),
                         ),
-                        if (_translatedText != null) ...[
-                          const Divider(height: 12, color: Colors.white24),
-                          Text(
-                            _translatedText!,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.white70,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
                       ],
-                    ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       _formatTime(widget.message.timestamp),
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                      style: TextStyle(
+                        color: SanggamTheme.onSurfaceDim
+                            .withValues(alpha: 0.6),
                         fontSize: 11,
                       ),
                     ),
                     const SizedBox(width: 8),
                     InkWell(
-                      onTap: _translating ? null : _translateMessage,
+                      onTap:
+                          _translating ? null : _translateMessage,
                       child: _translating
-                          ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 1.5))
+                          ? const SizedBox(
+                              width: 12,
+                              height: 12,
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 1.5))
                           : Icon(
-                              _translatedText != null ? Icons.translate : Icons.translate,
+                              Icons.translate,
                               size: 14,
                               color: _translatedText != null
-                                  ? theme.colorScheme.primary
-                                  : theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
+                                  ? SanggamTheme.primary
+                                  : SanggamTheme.onSurfaceDim
+                                      .withValues(alpha: 0.6),
                             ),
                     ),
                   ],
@@ -498,10 +527,11 @@ class _MessageBubbleState extends ConsumerState<_MessageBubble> {
           ),
           if (isUser) ...[
             const SizedBox(width: 8),
-            CircleAvatar(
+            const CircleAvatar(
               radius: 16,
-              backgroundColor: AppTheme.deepSeaBlue,
-              child: const Icon(Icons.person_rounded, color: Colors.white, size: 18),
+              backgroundColor: SanggamTheme.background,
+              child: Icon(Icons.person_rounded,
+                  color: Colors.white, size: 18),
             ),
           ],
         ],
@@ -524,26 +554,23 @@ class _TypingIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            radius: 16,
-            backgroundColor: theme.colorScheme.primary,
-            child: const Icon(
-              Icons.smart_toy_rounded,
-              color: Colors.white,
-              size: 18,
-            ),
+            radius: 18,
+            backgroundColor: Colors.transparent,
+            child:
+                Image.asset(_aiPersonaAsset, fit: BoxFit.contain),
           ),
           const SizedBox(width: 8),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(
+                horizontal: 16, vertical: 16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
+              color: SanggamTheme.surfaceVariant,
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(16),
                 topRight: Radius.circular(16),
@@ -554,19 +581,20 @@ class _TypingIndicator extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(
+                const SizedBox(
                   width: 16,
                   height: 16,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: theme.colorScheme.primary,
+                    color: SanggamTheme.primary,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Text(
-                  text,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                const SizedBox(width: 8),
+                const Text(
+                  'AI가 분석 중...',
+                  style: TextStyle(
+                    color: SanggamTheme.onSurfaceDim,
+                    fontSize: 12,
                   ),
                 ),
               ],
@@ -599,14 +627,13 @@ class _ChatInputBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: SanggamTheme.surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 8,
             offset: const Offset(0, -2),
           ),
         ],
@@ -614,7 +641,7 @@ class _ChatInputBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+          padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
           child: Row(
             children: [
               Expanded(
@@ -629,34 +656,33 @@ class _ChatInputBar extends StatelessWidget {
                   decoration: InputDecoration(
                     hintText: hintText,
                     filled: true,
-                    fillColor: theme.colorScheme.surfaceContainerHighest
-                        .withOpacity(0.5),
+                    fillColor: SanggamTheme.surfaceVariant
+                        .withValues(alpha: 0.5),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(24),
                       borderSide: BorderSide.none,
                     ),
                     contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
+                      horizontal: 16,
+                      vertical: 8,
                     ),
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              // 전송 버튼
               Material(
-                color: theme.colorScheme.primary,
+                color: SanggamTheme.primary,
                 shape: const CircleBorder(),
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   onTap: isLoading ? null : onSend,
                   child: SizedBox(
-                    width: 44,
-                    height: 44,
+                    width: 48,
+                    height: 48,
                     child: Icon(
                       Icons.send_rounded,
                       color: isLoading
-                          ? Colors.white.withOpacity(0.5)
+                          ? Colors.white.withValues(alpha: 0.5)
                           : Colors.white,
                       size: 20,
                     ),

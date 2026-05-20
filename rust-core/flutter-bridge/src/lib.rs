@@ -2,6 +2,8 @@
 //!
 //! Flutter에서 호출 가능한 Rust 함수들
 
+mod frb_generated;
+
 use manpasik_engine::{
     ble::{BleManager, ConnectionState, DeviceInfo},
     differential::{
@@ -165,6 +167,29 @@ pub fn fingerprint_cosine_similarity(
     fp1.cosine_similarity(&fp2).map_err(|e| e.to_string())
 }
 
+/// 트렌드 분석 결과 DTO (선형회귀 + 예측)
+#[frb(dart_metadata=("freezed"))]
+pub struct TrendAnalysisDto {
+    /// 트렌드 방향: improving, worsening, stable, insufficient
+    pub direction: String,
+    /// 선형회귀 기울기 (단위시간당 변화량)
+    pub slope: f64,
+    /// 선형회귀 절편
+    pub intercept: f64,
+    /// 결정계수 R² (0~1)
+    pub r_squared: f64,
+    /// 기울기 95% 신뢰구간 [하한, 상한]
+    pub slope_ci_95: Vec<f64>,
+    /// 미래 예측값
+    pub predictions: Vec<f64>,
+    /// 이동평균 (최근 3개)
+    pub moving_average: f64,
+    /// 변동계수 CV%
+    pub coefficient_of_variation: f64,
+    /// 한국어 요약
+    pub summary: String,
+}
+
 /// 핑거프린트 DTO
 #[frb(dart_metadata=("freezed"))]
 pub struct FingerprintDto {
@@ -198,7 +223,7 @@ pub async fn ble_scan() -> Vec<DeviceInfoDto> {
 #[frb]
 pub async fn ble_connect(device_id: String) -> Result<bool, String> {
     let mut ble = BleManager::new();
-    ble.connect(&device_id).await.map(|_| true).map_err(|e| e)
+    ble.connect(&device_id).await.map(|_| true).map_err(|e| e.to_string())
 }
 
 /// 디바이스 정보 DTO
@@ -217,8 +242,27 @@ pub struct DeviceInfoDto {
 /// 카트리지 읽기
 #[frb]
 pub async fn nfc_read_cartridge() -> Result<CartridgeInfoDto, String> {
+    let mut nfc = NfcReader::new();
+    let info = nfc.read_cartridge().await.map_err(|e| e.to_string())?;
+
+    Ok(CartridgeInfoDto {
+        cartridge_id: info.cartridge_id,
+        cartridge_type: format!("{:?}", info.cartridge_type),
+        lot_id: info.lot_id,
+        expiry_date: info.expiry_date,
+        remaining_uses: info.remaining_uses,
+    })
+}
+
+/// NFC 태그 원시 데이터 파싱 (플랫폼 독립적)
+///
+/// Flutter에서 nfc_manager 등으로 읽은 원시 바이트를 전달받아
+/// Rust의 v1.0/v2.0 자동 감지 파서로 CartridgeInfo를 추출합니다.
+/// 하드웨어 없이도 NFC 태그 데이터를 파싱할 수 있습니다.
+#[frb(sync)]
+pub fn nfc_parse_tag(data: Vec<u8>) -> Result<CartridgeInfoDto, String> {
     let nfc = NfcReader::new();
-    let info = nfc.read_cartridge().await?;
+    let info = nfc.parse_tag_data(&data).map_err(|e| e.to_string())?;
 
     Ok(CartridgeInfoDto {
         cartridge_id: info.cartridge_id,
@@ -432,6 +476,44 @@ pub fn get_max_channels() -> usize {
     manpasik_engine::MAX_CHANNELS
 }
 
+/// 시계열 트렌드 분석 (선형회귀 + 신뢰구간 + 예측)
+#[frb(sync)]
+pub fn analyze_trend(
+    values: Vec<f64>,
+    biomarker: String,
+    predict_ahead: usize,
+) -> TrendAnalysisDto {
+    use manpasik_engine::ai::{TrendAnalyzer, TrendDirection};
+    let analyzer = TrendAnalyzer::new();
+    let result = analyzer.analyze(&values, &biomarker, predict_ahead);
+
+    let direction = match result.direction {
+        TrendDirection::Improving => "improving",
+        TrendDirection::Worsening => "worsening",
+        TrendDirection::Stable => "stable",
+        TrendDirection::Insufficient => "insufficient",
+    };
+
+    let (slope, intercept, r_squared, slope_ci_low, slope_ci_high) =
+        if let Some(ref reg) = result.regression {
+            (reg.slope, reg.intercept, reg.r_squared, reg.slope_ci_95[0], reg.slope_ci_95[1])
+        } else {
+            (0.0, 0.0, 0.0, 0.0, 0.0)
+        };
+
+    TrendAnalysisDto {
+        direction: direction.to_string(),
+        slope,
+        intercept,
+        r_squared,
+        slope_ci_95: vec![slope_ci_low, slope_ci_high],
+        predictions: result.predictions,
+        moving_average: result.moving_average,
+        coefficient_of_variation: result.coefficient_of_variation,
+        summary: result.summary,
+    }
+}
+
 /// SHA-256 해시 계산
 #[frb(sync)]
 pub fn calculate_sha256(data: Vec<u8>) -> String {
@@ -507,5 +589,91 @@ mod tests {
         assert_eq!(ble_connection_quality(-65), "good");
         assert_eq!(ble_connection_quality(-80), "fair");
         assert_eq!(ble_connection_quality(-95), "poor");
+    }
+
+    #[test]
+    fn test_nfc_parse_tag_v1() {
+        // v1.0 태그 데이터 생성 (64 바이트)
+        let mut data = vec![0u8; 64];
+        // [0-7] 카트리��� ID
+        data[0..8].copy_from_slice(&[0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08]);
+        // [8] 카트리지 타입 (Glucose = 0x01)
+        data[8] = 0x01;
+        // [9-16] 로트 ID
+        data[9..17].copy_from_slice(b"LOT2026A");
+        // [17-24] 유효 기간
+        data[17..25].copy_from_slice(b"20270630");
+        // [25-26] 잔여 사용 횟수 (u16 LE = 10)
+        data[25..27].copy_from_slice(&10u16.to_le_bytes());
+        // [27-28] 최대 사용 횟수 (u16 LE = 50)
+        data[27..29].copy_from_slice(&50u16.to_le_bytes());
+        // [29-36] alpha 계수 (f64 LE = 0.98)
+        data[29..37].copy_from_slice(&0.98f64.to_le_bytes());
+        // [37-44] 온도 보정 계수
+        data[37..45].copy_from_slice(&0.01f64.to_le_bytes());
+        // [45-52] 습도 보정 계수
+        data[45..53].copy_from_slice(&0.005f64.to_le_bytes());
+
+        let result = nfc_parse_tag(data);
+        assert!(result.is_ok(), "v1.0 태그 파싱 성공: {:?}", result.err());
+        let info = result.unwrap();
+        assert_eq!(info.remaining_uses, 10);
+    }
+
+    #[test]
+    fn test_nfc_parse_tag_too_short() {
+        // 너무 짧은 데이터 → 에러
+        let data = vec![0u8; 10];
+        let result = nfc_parse_tag(data);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_sha256_hash() {
+        let hash = calculate_sha256(b"ManPaSik".to_vec());
+        assert_eq!(hash.len(), 64); // SHA-256 hex = 64자
+        assert!(!hash.is_empty());
+    }
+
+    #[test]
+    fn test_differential_measure_vec() {
+        let s_det = vec![1.0f64; 16];
+        let s_ref = vec![0.01f64; 16];
+        let result = differential_measure(s_det, s_ref, 0.98);
+        assert!(result.is_ok());
+        let corrected = result.unwrap();
+        assert_eq!(corrected.len(), 16);
+        // S_corrected = 1.0 - 0.98 * 0.01 = 0.9902
+        assert!((corrected[0] - 0.9902).abs() < 0.001);
+    }
+
+    #[test]
+    fn test_analyze_trend_improving() {
+        let values = vec![120.0, 115.0, 110.0, 105.0, 100.0];
+        let result = analyze_trend(values, "glucose".to_string(), 2);
+        assert_eq!(result.direction, "improving");
+        assert!(result.r_squared > 0.95);
+        assert_eq!(result.predictions.len(), 2);
+        assert!(result.predictions[0] < 100.0);
+    }
+
+    #[test]
+    fn test_analyze_trend_insufficient() {
+        let values = vec![100.0];
+        let result = analyze_trend(values, "glucose".to_string(), 0);
+        assert_eq!(result.direction, "insufficient");
+    }
+
+    #[test]
+    fn test_cosine_similarity_identical() {
+        let fp = vec![1.0f32, 0.0, 0.5];
+        // 동일 벡터의 코사인 유사도 = 1.0
+        // 88차원으로 맞춤
+        let data = vec![0.5f32; 88];
+        let similarity =
+            fingerprint_cosine_similarity(data.clone(), data.clone(), 88);
+        assert!(similarity.is_ok());
+        let sim = similarity.unwrap();
+        assert!((sim - 1.0).abs() < 0.001, "동일 벡터 유사도 = 1.0");
     }
 }

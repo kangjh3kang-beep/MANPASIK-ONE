@@ -1,13 +1,24 @@
 import 'dart:math' as math;
-import 'package:flutter/material.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
 
-/// 한지 (Korean Paper) 배경
+import 'package:flutter/material.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
+
+// ───────────────────────────────────────────────────
+// HanjiBackground — 다크 상감 한지(韓紙) 배경
+//
+// [Rule 4] withOpacity 2건 → withValues(alpha:)
+// [Rule 4] AppTheme 미사용 → SanggamTheme 통일
+// [Rule 4] 라이트 하드코딩 (0xFFF9F9F7, 0xFFDCDCDC) → SanggamTheme 다크 상수
+// [Rule 2] 기존 구조 유지 (배경 위젯, 간격 해당 없음)
+//
+// 닥나무 섬유질(Fiber) 텍스처를 금선(Gold) 톤으로 전환하여
+// Sanggam Orbit 디자인 시스템과 시각적 일관성 확보.
+// ───────────────────────────────────────────────────
+
+/// 한지(韓紙) 질감 배경 — 다크 Sanggam 스타일.
 ///
-/// 백자(Baekja)와 창호지의 미학을 담은 은은한 배경 위젯.
-/// - 닥나무 섬유질(Fiber) 텍스처
-/// - 은은하게 일렁이는 햇살(Sunlight) 애니메이션
-/// - 따뜻한 미색(Off-White) 베이스
+/// 닥나무 섬유질을 금빛 라인으로, 은은한 햇살을
+/// 따뜻한 금색 글로우로 표현하여 다크 모드에 통합.
 class HanjiBackground extends StatefulWidget {
   final Widget child;
 
@@ -17,13 +28,14 @@ class HanjiBackground extends StatefulWidget {
   State<HanjiBackground> createState() => _HanjiBackgroundState();
 }
 
-class _HanjiBackgroundState extends State<HanjiBackground> with SingleTickerProviderStateMixin {
-  late AnimationController _sunlightController;
+class _HanjiBackgroundState extends State<HanjiBackground>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _glowCtrl;
 
   @override
   void initState() {
     super.initState();
-    _sunlightController = AnimationController(
+    _glowCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 10),
     )..repeat(reverse: true);
@@ -31,7 +43,7 @@ class _HanjiBackgroundState extends State<HanjiBackground> with SingleTickerProv
 
   @override
   void dispose() {
-    _sunlightController.dispose();
+    _glowCtrl.dispose();
     super.dispose();
   }
 
@@ -39,30 +51,28 @@ class _HanjiBackgroundState extends State<HanjiBackground> with SingleTickerProv
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // 1. 따뜻한 백자색 베이스
-        Container(
-          color: const Color(0xFFF9F9F7), // Baekja White
+        // 1. 다크 베이스
+        const Positioned.fill(
+          child: ColoredBox(color: SanggamTheme.background),
         ),
 
-        // 2. 한지 섬유질 텍스처 (Custom Painter)
-        Positioned.fill(
-          child: CustomPaint(
-            painter: _HanjiFiberPainter(),
-          ),
+        // 2. 한지 섬유질 텍스처 (금빛 라인)
+        const Positioned.fill(
+          child: CustomPaint(painter: _HanjiFiberPainter()),
         ),
 
-        // 3. 은은한 햇살 (Breathing Gradient) - Toned down for readability
+        // 3. 은은한 금빛 글로우 (breathing)
         Positioned.fill(
           child: AnimatedBuilder(
-            animation: _sunlightController,
+            animation: _glowCtrl,
             builder: (context, _) {
-              return Container(
+              return DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: RadialGradient(
-                    center: const Alignment(0.0, -0.3), // 약간 위쪽
-                    radius: 1.5 + (_sunlightController.value * 0.1), // Reduced movement
+                    center: const Alignment(0.0, -0.3),
+                    radius: 1.5 + (_glowCtrl.value * 0.1),
                     colors: [
-                      Colors.white.withOpacity(0.2), // Reduced opacity from 0.4
+                      SanggamTheme.primary.withValues(alpha: 0.06),
                       Colors.transparent,
                     ],
                     stops: const [0.0, 0.8],
@@ -80,36 +90,39 @@ class _HanjiBackgroundState extends State<HanjiBackground> with SingleTickerProv
   }
 }
 
+// ═══════════════════════════════════════════════════
+//  한지 섬유질 페인터 — 금빛 닥나무 섬유
+// ═══════════════════════════════════════════════════
+
 class _HanjiFiberPainter extends CustomPainter {
-  final _random = math.Random(42); // 고정된 시드
+  const _HanjiFiberPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
+    final random = math.Random(42); // 고정 시드 — 안정적 텍스처
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.5
-      ..color = const Color(0xFFDCDCDC).withOpacity(0.15); // 아주 연한 회색 (가독성 위해 투명도 조절)
+      ..color = SanggamTheme.primary.withValues(alpha: 0.04);
 
-    // 무작위 섬유질 그리기
     for (int i = 0; i < 500; i++) {
-      final x = _random.nextDouble() * size.width;
-      final y = _random.nextDouble() * size.height;
-      final length = _random.nextDouble() * 10 + 5;
-      final angle = _random.nextDouble() * 2 * math.pi;
+      final x = random.nextDouble() * size.width;
+      final y = random.nextDouble() * size.height;
+      final length = random.nextDouble() * 10 + 5;
+      final angle = random.nextDouble() * 2 * math.pi;
 
       final dx = math.cos(angle) * length;
       final dy = math.sin(angle) * length;
 
-      // 닥나무 섬유의 불규칙한 느낌 (곡선)
-      final path = Path();
-      path.moveTo(x, y);
-      path.quadraticBezierTo(
-        x + dx * 0.5 + _random.nextDouble() * 2, 
-        y + dy * 0.5 + _random.nextDouble() * 2, 
-        x + dx, 
-        y + dy
-      );
-      
+      final path = Path()
+        ..moveTo(x, y)
+        ..quadraticBezierTo(
+          x + dx * 0.5 + random.nextDouble() * 2,
+          y + dy * 0.5 + random.nextDouble() * 2,
+          x + dx,
+          y + dy,
+        );
+
       canvas.drawPath(path, paint);
     }
   }

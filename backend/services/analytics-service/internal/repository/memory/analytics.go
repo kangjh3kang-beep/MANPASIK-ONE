@@ -109,3 +109,17 @@ func (r *AnalyticsRepository) ListRecentEvents(_ context.Context, limit int) ([]
 
 	return events[:limit], nil
 }
+
+// ListEventsByUser는 특정 사용자의 모든 이벤트를 반환합니다.
+func (r *AnalyticsRepository) ListEventsByUser(_ context.Context, userID string) ([]*service.AnalyticsEvent, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	var result []*service.AnalyticsEvent
+	for _, event := range r.store {
+		if event.UserID == userID {
+			result = append(result, event)
+		}
+	}
+	return result, nil
+}

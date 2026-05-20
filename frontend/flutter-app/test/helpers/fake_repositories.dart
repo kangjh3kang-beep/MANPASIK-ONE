@@ -100,6 +100,18 @@ class FakeMeasurementRepository implements MeasurementRepository {
   }
 
   @override
+  Future<ProcessMeasurementResult> processMeasurement(
+    ProcessMeasurementRequest request,
+  ) async {
+    return ProcessMeasurementResult(
+      sessionId: request.sessionId,
+      primaryValue: request.primaryValue,
+      unit: request.unit,
+      confidence: request.confidence,
+    );
+  }
+
+  @override
   Future<MeasurementHistoryResult> getHistory({
     required String userId,
     int limit = 20,

@@ -82,3 +82,13 @@ func (r *NLPRepository) GetSuggestions(_ context.Context, queryID string) ([]ser
 	copy(result, suggestions)
 	return result, nil
 }
+
+// SaveSuggestions는 질의 ID에 해당하는 제안 목록을 저장합니다.
+func (r *NLPRepository) SaveSuggestions(_ context.Context, queryID string, suggestions []service.Suggestion) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	cp := make([]service.Suggestion, len(suggestions))
+	copy(cp, suggestions)
+	r.suggestions[queryID] = cp
+	return nil
+}

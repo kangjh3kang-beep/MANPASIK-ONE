@@ -1,6 +1,5 @@
 import 'package:manpasik/features/auth/domain/auth_repository.dart';
 import 'package:manpasik/core/services/grpc_client.dart';
-import 'package:manpasik/generated/manpasik.pb.dart';
 import 'package:manpasik/generated/manpasik.pbgrpc.dart';
 import 'package:grpc/grpc.dart';
 

@@ -4,6 +4,12 @@
 global:
   scrape_interval: 15s
   evaluation_interval: 15s
+  external_labels:
+    cluster: manpasik
+    environment: production
+
+rule_files:
+  - "alert_rules.yml"
 
 scrape_configs:
   # Prometheus 자체 모니터링
@@ -143,3 +149,133 @@ scrape_configs:
       - targets: ["translation-service:9100"]
         labels:
           service: translation-service
+
+  # Gateway (REST)
+  - job_name: gateway
+    static_configs:
+      - targets: ["gateway:9100"]
+        labels:
+          service: gateway
+
+  # 추가 gRPC 서비스
+  - job_name: grpc-audit-service
+    static_configs:
+      - targets: ["audit-service:9100"]
+        labels:
+          service: audit-service
+
+  - job_name: grpc-digital-twin-service
+    static_configs:
+      - targets: ["digital-twin-service:9100"]
+        labels:
+          service: digital-twin-service
+
+  - job_name: grpc-assistant-service
+    static_configs:
+      - targets: ["assistant-service:9100"]
+        labels:
+          service: assistant-service
+
+  - job_name: grpc-concept-service
+    static_configs:
+      - targets: ["concept-service:9100"]
+        labels:
+          service: concept-service
+
+  - job_name: grpc-cartridge-store-service
+    static_configs:
+      - targets: ["cartridge-store-service:9100"]
+        labels:
+          service: cartridge-store-service
+
+  - job_name: grpc-data-platform-service
+    static_configs:
+      - targets: ["data-platform-service:9100"]
+        labels:
+          service: data-platform-service
+
+  - job_name: grpc-voice-profile-service
+    static_configs:
+      - targets: ["voice-profile-service:9100"]
+        labels:
+          service: voice-profile-service
+
+  # 추가 HTTP 서비스
+  - job_name: http-analytics-service
+    static_configs:
+      - targets: ["analytics-service:9100"]
+        labels:
+          service: analytics-service
+
+  - job_name: http-emergency-service
+    static_configs:
+      - targets: ["emergency-service:9100"]
+        labels:
+          service: emergency-service
+
+  - job_name: http-iot-gateway-service
+    static_configs:
+      - targets: ["iot-gateway-service:9100"]
+        labels:
+          service: iot-gateway-service
+
+  - job_name: http-marketplace-service
+    static_configs:
+      - targets: ["marketplace-service:9100"]
+        labels:
+          service: marketplace-service
+
+  - job_name: http-nlp-service
+    static_configs:
+      - targets: ["nlp-service:9100"]
+        labels:
+          service: nlp-service
+
+  # ============================================================================
+  # 인프라 모니터링 (Phase G 추가)
+  # ============================================================================
+
+  # Kubernetes 클러스터 상태 (kube-state-metrics)
+  - job_name: kube-state-metrics
+    static_configs:
+      - targets: ["kube-state-metrics.monitoring:8080"]
+
+  # 노드 시스템 메트릭 (node-exporter)
+  - job_name: node-exporter
+    kubernetes_sd_configs:
+      - role: node
+    relabel_configs:
+      - source_labels: [__address__]
+        regex: (.+):(.+)
+        target_label: __address__
+        replacement: ${1}:9100
+      - source_labels: [__meta_kubernetes_node_name]
+        target_label: node
+
+  # PostgreSQL (postgres-exporter)
+  - job_name: postgresql
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+        labels:
+          service: postgresql
+
+  # Redis (redis-exporter)
+  - job_name: redis
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+        labels:
+          service: redis
+
+  # Kafka (kafka-exporter)
+  - job_name: kafka
+    static_configs:
+      - targets: ["kafka-exporter:9308"]
+        labels:
+          service: kafka
+
+  # NGINX Ingress Controller
+  - job_name: nginx-ingress
+    static_configs:
+      - targets: ["ingress-nginx-controller.ingress-nginx:10254"]
+        labels:
+          service: nginx-ingress

@@ -2,7 +2,8 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/features/devices/domain/device_repository.dart';
-import 'package:manpasik/shared/widgets/holo_body.dart' show HoloGender;
+import 'package:manpasik/shared/widgets/holo_body.dart'
+    show HoloBodyProfile, HoloGender;
 
 /// 30초 폴링 자동갱신 ConnectedDevices StreamProvider
 final pollingConnectedDevicesProvider = StreamProvider<List<ConnectedDevice>>((ref) {
@@ -57,7 +58,7 @@ final selectedDeviceProvider = Provider<ConnectedDevice?>((ref) {
   );
 });
 
-/// 모니터링 필터 탭 (0=All, 1=Gas, 2=Env, 3=Bio)
+/// 모니터링 필터 탭 (0=All, 1=Bio, 2=Gas, 3=Env)
 final monitoringFilterTabProvider = StateProvider<int>((ref) => 0);
 
 /// 필터링된 기기 목록 (파생)
@@ -67,11 +68,11 @@ final filteredDevicesProvider = Provider<AsyncValue<List<ConnectedDevice>>>((ref
   return devicesAsync.whenData((devices) {
     switch (tabIndex) {
       case 1:
-        return devices.where((d) => d.type == DeviceType.gasCartridge).toList();
-      case 2:
-        return devices.where((d) => d.type == DeviceType.envCartridge).toList();
-      case 3:
         return devices.where((d) => d.type == DeviceType.bioCartridge).toList();
+      case 2:
+        return devices.where((d) => d.type == DeviceType.gasCartridge).toList();
+      case 3:
+        return devices.where((d) => d.type == DeviceType.envCartridge).toList();
       default:
         return devices;
     }
@@ -115,7 +116,11 @@ final alertDevicesProvider = Provider<List<ConnectedDevice>>((ref) {
   );
 });
 
-/// HoloBody 성별 토글 (바이오 탭 전용) — HoloGender enum은 holo_body.dart에서 import
+/// HoloBody 프로필 선택 (바이오 탭 전용)
+final holoBodyProfileProvider =
+    StateProvider<HoloBodyProfile>((ref) => HoloBodyProfile.adultMale);
+
+/// 하위호환용 성별 상태 (기존 코드 호환)
 final holoGenderProvider = StateProvider<HoloGender>((ref) => HoloGender.male);
 
 /// 선택된 바이오 기기의 생체 데이터 (파생)

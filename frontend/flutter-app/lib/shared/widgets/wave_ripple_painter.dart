@@ -1,6 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 
 /// 물결 파동(Wave Ripple) 애니메이션을 그리는 CustomPainter.
 ///
@@ -17,8 +17,8 @@ class WaveRipplePainter extends CustomPainter {
   WaveRipplePainter({
     required this.animationValue,
     this.rippleCount = 4,
-    this.primaryColor = AppTheme.waveCyan,
-    this.secondaryColor = AppTheme.sanggamGold,
+    this.primaryColor = SanggamTheme.jagaeCyan,
+    this.secondaryColor = SanggamTheme.primary,
   });
 
   @override
@@ -33,7 +33,7 @@ class WaveRipplePainter extends CustomPainter {
 
       // Wave Cyan → Sanggam Gold로 페이드
       final color = Color.lerp(primaryColor, secondaryColor, phase)!
-          .withOpacity(opacity);
+          .withValues(alpha: opacity);
 
       final paint = Paint()
         ..color = color
@@ -47,8 +47,8 @@ class WaveRipplePainter extends CustomPainter {
     final glowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          primaryColor.withOpacity(0.2 * (0.5 + 0.5 * math.sin(animationValue * math.pi * 2))),
-          primaryColor.withOpacity(0.0),
+          primaryColor.withValues(alpha: 0.2 * (0.5 + 0.5 * math.sin(animationValue * math.pi * 2))),
+          primaryColor.withValues(alpha: 0.0),
         ],
       ).createShader(Rect.fromCircle(center: center, radius: maxRadius * 0.15));
     canvas.drawCircle(center, maxRadius * 0.15, glowPaint);
@@ -76,8 +76,8 @@ class WaveRippleBackground extends StatefulWidget {
     this.child,
     this.duration = const Duration(seconds: 4),
     this.rippleCount = 4,
-    this.primaryColor = AppTheme.waveCyan,
-    this.secondaryColor = AppTheme.sanggamGold,
+    this.primaryColor = SanggamTheme.jagaeCyan,
+    this.secondaryColor = SanggamTheme.primary,
   });
 
   @override
@@ -135,7 +135,7 @@ class WavePainter extends CustomPainter {
   WavePainter({
     required this.animationValue,
     this.progress = 0.0,
-    this.waveColor = AppTheme.waveCyan,
+    this.waveColor = SanggamTheme.jagaeCyan,
   });
 
   @override
@@ -165,18 +165,18 @@ class WavePainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 6.0
       ..strokeCap = StrokeCap.round
-      ..color = waveColor.withOpacity(0.15)
+      ..color = waveColor.withValues(alpha: 0.15)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
     canvas.drawPath(path, glowPaint);
 
     // 메인 라인 (위 레이어)
     paint.shader = LinearGradient(
       colors: [
-        waveColor.withOpacity(0.3),
+        waveColor.withValues(alpha: 0.3),
         waveColor,
-        AppTheme.sanggamGold,
+        SanggamTheme.primary,
         waveColor,
-        waveColor.withOpacity(0.3),
+        waveColor.withValues(alpha: 0.3),
       ],
     ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
     canvas.drawPath(path, paint);

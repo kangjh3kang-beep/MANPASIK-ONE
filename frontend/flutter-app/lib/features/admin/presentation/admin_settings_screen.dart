@@ -3,14 +3,28 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/generated/manpasik.pb.dart';
 import 'package:manpasik/shared/providers/admin_settings_provider.dart';
+import 'package:manpasik/shared/widgets/sanggam_container.dart';
+
+// ───────────────────────────────────────────────────
+// AdminSettingsScreen — Sanggam Orbit 시스템 설정
+//
+// [Rule 4] +sanggam_theme.dart + sanggam_container.dart
+// [Rule 4] AppBar+TabBar → body 내 커스텀 헤더+탭
+// [Rule 4] Theme.of(context) 4x + ThemeData 파라미터 6x 제거
+// [Rule 4] theme.textTheme.* ~20x → 직접 TextStyle
+// [Rule 4] theme.colorScheme.* ~20x → SanggamTheme 상수
+// [Rule 4] Colors.blue/orange/green/red/purple/grey → SanggamTheme
+// [Rule 4] Card → SanggamContainer
+// [Rule 4] Scaffold 배경 → SanggamTheme.background
+// [Rule 2] borderRadius:14→16, 10→16, 6→8
+// ───────────────────────────────────────────────────
 
 /// 관리자 시스템 설정 화면 (AS-6)
-///
-/// 카테고리별 설정 조회, 검색, 편집 기능 제공.
-/// AdminService gRPC (ListSystemConfigs, SetSystemConfig, ValidateConfigValue) 연동.
-class AdminSettingsScreen extends ConsumerStatefulWidget {
+class AdminSettingsScreen
+    extends ConsumerStatefulWidget {
   const AdminSettingsScreen({super.key});
 
   @override
@@ -18,7 +32,8 @@ class AdminSettingsScreen extends ConsumerStatefulWidget {
       _AdminSettingsScreenState();
 }
 
-class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen>
+class _AdminSettingsScreenState
+    extends ConsumerState<AdminSettingsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _searchController = TextEditingController();
@@ -32,16 +47,21 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen>
     );
     _tabController.addListener(_onTabChanged);
 
-    // 초기 데이터 로드
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(adminSettingsProvider.notifier).loadConfigs();
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) {
+      ref
+          .read(adminSettingsProvider.notifier)
+          .loadConfigs();
     });
   }
 
   void _onTabChanged() {
     if (!_tabController.indexIsChanging) {
-      final category = adminConfigCategories[_tabController.index];
-      ref.read(adminSettingsProvider.notifier).changeCategory(category);
+      final category = adminConfigCategories[
+          _tabController.index];
+      ref
+          .read(adminSettingsProvider.notifier)
+          .changeCategory(category);
     }
   }
 
@@ -55,22 +75,27 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final settingsState = ref.watch(adminSettingsProvider);
+    final settingsState =
+        ref.watch(adminSettingsProvider);
 
-    // 에러 스낵바
-    ref.listen<AdminSettingsState>(adminSettingsProvider, (prev, next) {
-      if (next.errorMessage != null && next.errorMessage != prev?.errorMessage) {
+    ref.listen<AdminSettingsState>(
+        adminSettingsProvider, (prev, next) {
+      if (next.errorMessage != null &&
+          next.errorMessage !=
+              prev?.errorMessage) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(next.errorMessage!),
-            backgroundColor: theme.colorScheme.error,
+            backgroundColor: SanggamTheme.error,
             behavior: SnackBarBehavior.floating,
             action: SnackBarAction(
               label: '닫기',
               textColor: Colors.white,
               onPressed: () {
-                ref.read(adminSettingsProvider.notifier).clearError();
+                ref
+                    .read(adminSettingsProvider
+                        .notifier)
+                    .clearError();
               },
             ),
           ),
@@ -79,97 +104,195 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen>
     });
 
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.pop(),
-        ),
-        title: const Text('시스템 설정 관리'),
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabAlignment: TabAlignment.start,
-          tabs: adminConfigCategories.map((cat) {
-            final label = categoryLabels[cat] ?? cat;
-            final count = settingsState.categoryCounts[cat];
-            return Tab(
+      backgroundColor: SanggamTheme.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 헤더
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 8, vertical: 8),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(_getCategoryIcon(cat), size: 18),
-                  const SizedBox(width: 6),
-                  Text(label),
-                  if (count != null && count > 0) ...[
-                    const SizedBox(width: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 1,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        '$count',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onPrimaryContainer,
-                        ),
+                  IconButton(
+                    icon: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.white),
+                    tooltip: '뒤로 가기',
+                    onPressed: () => context.pop(),
+                  ),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      '시스템 설정 관리',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  ],
+                  ),
                 ],
               ),
-            );
-          }).toList(),
-        ),
-      ),
-      body: Column(
-        children: [
-          // 검색 바
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: '설정 검색...',
-                prefixIcon: const Icon(Icons.search),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          ref
-                              .read(adminSettingsProvider.notifier)
-                              .setSearchQuery('');
-                        },
-                      )
-                    : null,
-              ),
-              onChanged: (value) {
-                ref
-                    .read(adminSettingsProvider.notifier)
-                    .setSearchQuery(value);
-                setState(() {}); // suffixIcon 갱신
-              },
             ),
-          ),
 
-          // 설정 카드 목록
-          Expanded(
-            child: settingsState.isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : settingsState.filteredConfigs.isEmpty
-                    ? _buildEmptyState(theme)
-                    : _buildConfigList(theme, settingsState.filteredConfigs),
-          ),
-        ],
+            // 탭바
+            TabBar(
+              controller: _tabController,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              indicatorColor: SanggamTheme.primary,
+              labelColor: SanggamTheme.primary,
+              unselectedLabelColor:
+                  SanggamTheme.onSurfaceDim,
+              dividerColor:
+                  SanggamTheme.surfaceVariant,
+              tabs: adminConfigCategories
+                  .map((cat) {
+                final label =
+                    categoryLabels[cat] ?? cat;
+                final count = settingsState
+                    .categoryCounts[cat];
+                return Tab(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                          _getCategoryIcon(cat),
+                          size: 18),
+                      const SizedBox(width: 8),
+                      Text(label),
+                      if (count != null &&
+                          count > 0) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding:
+                              const EdgeInsets
+                                  .symmetric(
+                                  horizontal: 8,
+                                  vertical: 2),
+                          decoration:
+                              BoxDecoration(
+                            color: SanggamTheme
+                                .primary
+                                .withValues(
+                                    alpha: 0.15),
+                            borderRadius:
+                                BorderRadius
+                                    .circular(
+                                        16),
+                          ),
+                          child: Text(
+                            '$count',
+                            style:
+                                const TextStyle(
+                              color: SanggamTheme
+                                  .primary,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              }).toList(),
+            ),
+
+            // 검색 바
+            Padding(
+              padding:
+                  const EdgeInsets.fromLTRB(
+                      16, 16, 16, 8),
+              child: TextField(
+                controller: _searchController,
+                style: const TextStyle(
+                    color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: '설정 검색...',
+                  hintStyle: const TextStyle(
+                      color: SanggamTheme
+                          .onSurfaceDim),
+                  prefixIcon: const Icon(
+                      Icons.search,
+                      color: SanggamTheme
+                          .onSurfaceDim),
+                  suffixIcon: _searchController
+                          .text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(
+                              Icons.clear,
+                              color: SanggamTheme
+                                  .onSurfaceDim),
+                          tooltip: '검색 초기화',
+                          onPressed: () {
+                            _searchController
+                                .clear();
+                            ref
+                                .read(
+                                    adminSettingsProvider
+                                        .notifier)
+                                .setSearchQuery(
+                                    '');
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: SanggamTheme.surface,
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(16),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder:
+                      OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                        color: SanggamTheme
+                            .surfaceVariant),
+                  ),
+                  focusedBorder:
+                      OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(16),
+                    borderSide: const BorderSide(
+                        color:
+                            SanggamTheme.primary),
+                  ),
+                ),
+                onChanged: (value) {
+                  ref
+                      .read(adminSettingsProvider
+                          .notifier)
+                      .setSearchQuery(value);
+                  setState(() {});
+                },
+              ),
+            ),
+
+            // 설정 카드 목록
+            Expanded(
+              child: settingsState.isLoading
+                  ? const Center(
+                      child:
+                          CircularProgressIndicator(
+                              color: SanggamTheme
+                                  .primary))
+                  : settingsState
+                          .filteredConfigs.isEmpty
+                      ? _buildEmptyState()
+                      : _buildConfigList(
+                          settingsState
+                              .filteredConfigs),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  /// 빈 상태 UI
-  Widget _buildEmptyState(ThemeData theme) {
+  Widget _buildEmptyState() {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(48),
@@ -180,28 +303,31 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen>
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
+                color: SanggamTheme.surfaceVariant,
                 shape: BoxShape.circle,
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.settings_suggest_rounded,
                 size: 48,
-                color: theme.colorScheme.onSurfaceVariant,
+                color: SanggamTheme.onSurfaceDim,
               ),
             ),
-            const SizedBox(height: 20),
-            Text(
+            const SizedBox(height: 24),
+            const Text(
               '설정 항목이 없습니다',
-              style: theme.textTheme.titleMedium?.copyWith(
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 8),
-            Text(
+            const Text(
               '해당 카테고리에 등록된 설정이 없거나\n검색 결과가 없습니다',
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              style: TextStyle(
+                color: SanggamTheme.onSurfaceDim,
+                fontSize: 14,
               ),
             ),
           ],
@@ -210,10 +336,11 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen>
     );
   }
 
-  /// 설정 카드 목록
-  Widget _buildConfigList(ThemeData theme, List<ConfigWithMeta> configs) {
+  Widget _buildConfigList(
+      List<ConfigWithMeta> configs) {
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      padding: const EdgeInsets.fromLTRB(
+          16, 0, 16, 16),
       itemCount: configs.length,
       itemBuilder: (context, index) {
         final config = configs[index];
@@ -225,11 +352,12 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen>
     );
   }
 
-  /// 편집 다이얼로그
-  Future<void> _showEditDialog(ConfigWithMeta config) async {
+  Future<void> _showEditDialog(
+      ConfigWithMeta config) async {
     final result = await showDialog<String>(
       context: context,
-      builder: (ctx) => _ConfigEditDialog(config: config),
+      builder: (ctx) =>
+          _ConfigEditDialog(config: config),
     );
 
     if (result != null && mounted) {
@@ -239,7 +367,8 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen>
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${config.displayName.isNotEmpty ? config.displayName : config.key} 저장 완료'),
+            content: Text(
+                '${config.displayName.isNotEmpty ? config.displayName : config.key} 저장 완료'),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -247,7 +376,6 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen>
     }
   }
 
-  /// 카테고리 아이콘
   IconData _getCategoryIcon(String category) {
     switch (category) {
       case 'general':
@@ -285,143 +413,160 @@ class _ConfigCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final displayName = config.displayName.isNotEmpty
-        ? config.displayName
-        : config.key;
-    final isSecret = config.securityLevel == 'secret' ||
-        config.valueType == 'secret';
-    final displayValue = isSecret ? '••••••••' : config.value;
+    final displayName =
+        config.displayName.isNotEmpty
+            ? config.displayName
+            : config.key;
+    final isSecret =
+        config.securityLevel == 'secret' ||
+            config.valueType == 'secret';
+    final displayValue =
+        isSecret ? '••••••••' : config.value;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 헤더: 키 이름 + 타입 배지
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      displayName,
-                      style: theme.textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w600,
+    return SanggamContainer(
+      borderRadius: 16,
+      padding: EdgeInsets.zero,
+      margin: const EdgeInsets.only(bottom: 16),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+          children: [
+            // 헤더: 키 이름 + 타입 배지
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    displayName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                _ValueTypeBadge(
+                    valueType: config.valueType),
+                if (config.isRequired) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2),
+                    decoration: BoxDecoration(
+                      color: SanggamTheme.error
+                          .withValues(alpha: 0.15),
+                      borderRadius:
+                          BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      '필수',
+                      style: TextStyle(
+                        color: SanggamTheme.error,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  _ValueTypeBadge(valueType: config.valueType),
-                  if (config.isRequired) ...[
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.errorContainer,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        '필수',
-                        style: theme.textTheme.labelSmall?.copyWith(
-                          color: theme.colorScheme.onErrorContainer,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
-              ),
-
-              const SizedBox(height: 8),
-
-              // 현재 값
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest
-                      .withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  displayValue.isNotEmpty ? displayValue : '(미설정)',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    fontFamily: 'monospace',
-                    color: displayValue.isNotEmpty
-                        ? theme.colorScheme.onSurface
-                        : theme.colorScheme.onSurfaceVariant,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-
-              // 설명
-              if (config.description.isNotEmpty) ...[
-                const SizedBox(height: 8),
-                Text(
-                  config.description,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
               ],
+            ),
 
-              // 메타 정보 (키, 서비스명)
+            const SizedBox(height: 8),
+
+            // 현재 값
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: SanggamTheme.surfaceVariant
+                    .withValues(alpha: 0.5),
+                borderRadius:
+                    BorderRadius.circular(8),
+              ),
+              child: Text(
+                displayValue.isNotEmpty
+                    ? displayValue
+                    : '(미설정)',
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 14,
+                  color: displayValue.isNotEmpty
+                      ? Colors.white
+                      : SanggamTheme.onSurfaceDim,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+
+            // 설명
+            if (config
+                .description.isNotEmpty) ...[
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    Icons.key_rounded,
-                    size: 14,
-                    color: theme.colorScheme.onSurfaceVariant
-                        .withValues(alpha: 0.6),
-                  ),
-                  const SizedBox(width: 4),
-                  Expanded(
-                    child: Text(
-                      config.key,
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant
-                            .withValues(alpha: 0.6),
-                        fontFamily: 'monospace',
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (config.restartRequired) ...[
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.restart_alt_rounded,
-                      size: 14,
-                      color: theme.colorScheme.error.withValues(alpha: 0.7),
-                    ),
-                    const SizedBox(width: 2),
-                    Text(
-                      '재시작 필요',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: theme.colorScheme.error.withValues(alpha: 0.7),
-                      ),
-                    ),
-                  ],
-                ],
+              Text(
+                config.description,
+                style: const TextStyle(
+                  color:
+                      SanggamTheme.onSurfaceDim,
+                  fontSize: 12,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
-          ),
+
+            // 메타 정보
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.key_rounded,
+                  size: 14,
+                  color: SanggamTheme.onSurfaceDim
+                      .withValues(alpha: 0.6),
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    config.key,
+                    style: TextStyle(
+                      color: SanggamTheme
+                          .onSurfaceDim
+                          .withValues(alpha: 0.6),
+                      fontSize: 10,
+                      fontFamily: 'monospace',
+                    ),
+                    overflow:
+                        TextOverflow.ellipsis,
+                  ),
+                ),
+                if (config
+                    .restartRequired) ...[
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.restart_alt_rounded,
+                    size: 14,
+                    color: SanggamTheme.error
+                        .withValues(alpha: 0.7),
+                  ),
+                  const SizedBox(width: 2),
+                  Text(
+                    '재시작 필요',
+                    style: TextStyle(
+                      color: SanggamTheme.error
+                          .withValues(alpha: 0.7),
+                      fontSize: 10,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
         ),
       ),
     );
@@ -431,24 +576,26 @@ class _ConfigCard extends StatelessWidget {
 // ── 값 타입 배지 ──
 
 class _ValueTypeBadge extends StatelessWidget {
-  const _ValueTypeBadge({required this.valueType});
+  const _ValueTypeBadge(
+      {required this.valueType});
 
   final String valueType;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final (label, color) = _typeInfo;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(
+          horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(6),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         label,
-        style: theme.textTheme.labelSmall?.copyWith(
+        style: TextStyle(
           color: color,
+          fontSize: 10,
           fontWeight: FontWeight.w600,
         ),
       ),
@@ -458,17 +605,22 @@ class _ValueTypeBadge extends StatelessWidget {
   (String, Color) get _typeInfo {
     switch (valueType) {
       case 'string':
-        return ('문자열', Colors.blue);
+        return ('문자열', SanggamTheme.jagaeCyan);
       case 'number':
-        return ('숫자', Colors.orange);
+        return ('숫자', SanggamTheme.primary);
       case 'boolean':
-        return ('불리언', Colors.green);
+        return ('불리언', SanggamTheme.jagaeCyan);
       case 'secret':
-        return ('비밀', Colors.red);
+        return ('비밀', SanggamTheme.error);
       case 'select':
-        return ('선택', Colors.purple);
+        return ('선택', SanggamTheme.jagaeMagenta);
       default:
-        return (valueType.isNotEmpty ? valueType : '기타', Colors.grey);
+        return (
+          valueType.isNotEmpty
+              ? valueType
+              : '기타',
+          SanggamTheme.onSurfaceDim
+        );
     }
   }
 }
@@ -476,15 +628,18 @@ class _ValueTypeBadge extends StatelessWidget {
 // ── 편집 다이얼로그 ──
 
 class _ConfigEditDialog extends StatefulWidget {
-  const _ConfigEditDialog({required this.config});
+  const _ConfigEditDialog(
+      {required this.config});
 
   final ConfigWithMeta config;
 
   @override
-  State<_ConfigEditDialog> createState() => _ConfigEditDialogState();
+  State<_ConfigEditDialog> createState() =>
+      _ConfigEditDialogState();
 }
 
-class _ConfigEditDialogState extends State<_ConfigEditDialog> {
+class _ConfigEditDialogState
+    extends State<_ConfigEditDialog> {
   late TextEditingController _valueController;
   late bool _boolValue;
   late String _selectValue;
@@ -495,8 +650,10 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
   @override
   void initState() {
     super.initState();
-    _valueController = TextEditingController(text: config.value);
-    _boolValue = config.value.toLowerCase() == 'true';
+    _valueController =
+        TextEditingController(text: config.value);
+    _boolValue =
+        config.value.toLowerCase() == 'true';
     _selectValue = config.value;
   }
 
@@ -508,54 +665,72 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final displayName = config.displayName.isNotEmpty
-        ? config.displayName
-        : config.key;
+    final displayName =
+        config.displayName.isNotEmpty
+            ? config.displayName
+            : config.key;
 
     return AlertDialog(
-      title: Text(displayName),
+      backgroundColor: SanggamTheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      title: Text(displayName,
+          style: const TextStyle(
+              color: Colors.white)),
       content: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.8,
+        width:
+            MediaQuery.of(context).size.width *
+                0.8,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
             children: [
-              // 설명
-              if (config.description.isNotEmpty) ...[
+              if (config
+                  .description.isNotEmpty) ...[
                 Text(
                   config.description,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
+                  style: const TextStyle(
+                    color:
+                        SanggamTheme.onSurfaceDim,
+                    fontSize: 12,
                   ),
                 ),
                 const SizedBox(height: 16),
               ],
 
-              // 도움말
-              if (config.helpText.isNotEmpty) ...[
+              if (config
+                  .helpText.isNotEmpty) ...[
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding:
+                      const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primaryContainer
-                        .withValues(alpha: 0.3),
-                    borderRadius: BorderRadius.circular(8),
+                    color: SanggamTheme.primary
+                        .withValues(alpha: 0.1),
+                    borderRadius:
+                        BorderRadius.circular(8),
                   ),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.info_outline_rounded,
+                      const Icon(
+                        Icons
+                            .info_outline_rounded,
                         size: 18,
-                        color: theme.colorScheme.primary,
+                        color:
+                            SanggamTheme.primary,
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           config.helpText,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: theme.colorScheme.primary,
+                          style: const TextStyle(
+                            color: SanggamTheme
+                                .primary,
+                            fontSize: 12,
                           ),
                         ),
                       ),
@@ -565,69 +740,99 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
                 const SizedBox(height: 16),
               ],
 
-              // 편집 입력
-              _buildInputWidget(theme),
+              _buildInputWidget(),
 
-              // 유효성 오류
-              if (_validationError != null) ...[
+              if (_validationError !=
+                  null) ...[
                 const SizedBox(height: 8),
                 Text(
                   _validationError!,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.error,
+                  style: const TextStyle(
+                    color: SanggamTheme.error,
+                    fontSize: 12,
                   ),
                 ),
               ],
 
-              // 메타 정보
               const SizedBox(height: 16),
-              _buildMetaInfo(theme),
+              _buildMetaInfo(),
             ],
           ),
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('취소'),
+          onPressed: () =>
+              Navigator.of(context).pop(),
+          child: const Text('취소',
+              style: TextStyle(
+                  color: SanggamTheme
+                      .onSurfaceDim)),
         ),
         FilledButton(
           onPressed: _onSave,
+          style: FilledButton.styleFrom(
+            backgroundColor: SanggamTheme.primary,
+            foregroundColor:
+                SanggamTheme.background,
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(16),
+            ),
+          ),
           child: const Text('저장'),
         ),
       ],
     );
   }
 
-  /// 값 타입별 입력 위젯
-  Widget _buildInputWidget(ThemeData theme) {
+  Widget _buildInputWidget() {
     switch (config.valueType) {
       case 'boolean':
         return SwitchListTile(
           title: Text(
             _boolValue ? '활성화' : '비활성화',
-            style: theme.textTheme.bodyLarge,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+            ),
           ),
           value: _boolValue,
-          onChanged: (v) => setState(() => _boolValue = v),
+          activeColor: SanggamTheme.primary,
+          onChanged: (v) =>
+              setState(() => _boolValue = v),
           contentPadding: EdgeInsets.zero,
         );
 
       case 'select':
         final allowed = config.allowedValues;
         if (allowed.isEmpty) {
-          return _buildTextField(theme);
+          return _buildTextField();
         }
         return DropdownButtonFormField<String>(
-          value: allowed.contains(_selectValue) ? _selectValue : null,
+          value:
+              allowed.contains(_selectValue)
+                  ? _selectValue
+                  : null,
+          dropdownColor: SanggamTheme.surface,
+          style: const TextStyle(
+              color: Colors.white),
           decoration: InputDecoration(
             labelText: '값 선택',
-            hintText: config.placeholder.isNotEmpty
-                ? config.placeholder
-                : '선택하세요',
+            labelStyle: const TextStyle(
+                color:
+                    SanggamTheme.onSurfaceDim),
+            hintText:
+                config.placeholder.isNotEmpty
+                    ? config.placeholder
+                    : '선택하세요',
+            hintStyle: const TextStyle(
+                color:
+                    SanggamTheme.onSurfaceDim),
           ),
           items: allowed.map((v) {
-            return DropdownMenuItem(value: v, child: Text(v));
+            return DropdownMenuItem(
+                value: v, child: Text(v));
           }).toList(),
           onChanged: (v) {
             if (v != null) {
@@ -642,54 +847,87 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
       case 'number':
         return TextField(
           controller: _valueController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          style: const TextStyle(
+              color: Colors.white),
+          keyboardType:
+              const TextInputType
+                  .numberWithOptions(
+                  decimal: true),
           inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[\d.\-]')),
+            FilteringTextInputFormatter.allow(
+                RegExp(r'[\d.\-]')),
           ],
           decoration: InputDecoration(
             labelText: '값',
-            hintText: config.placeholder.isNotEmpty
-                ? config.placeholder
-                : '숫자를 입력하세요',
+            labelStyle: const TextStyle(
+                color:
+                    SanggamTheme.onSurfaceDim),
+            hintText:
+                config.placeholder.isNotEmpty
+                    ? config.placeholder
+                    : '숫자를 입력하세요',
+            hintStyle: const TextStyle(
+                color:
+                    SanggamTheme.onSurfaceDim),
             helperText: _buildRangeHelper(),
+            helperStyle: const TextStyle(
+                color:
+                    SanggamTheme.onSurfaceDim),
           ),
-          onChanged: (_) => setState(() => _validationError = null),
+          onChanged: (_) => setState(
+              () => _validationError = null),
         );
 
       case 'secret':
         return TextField(
           controller: _valueController,
+          style: const TextStyle(
+              color: Colors.white),
           obscureText: true,
           decoration: InputDecoration(
             labelText: '값',
-            hintText: config.placeholder.isNotEmpty
-                ? config.placeholder
-                : '비밀 값을 입력하세요',
+            labelStyle: const TextStyle(
+                color:
+                    SanggamTheme.onSurfaceDim),
+            hintText:
+                config.placeholder.isNotEmpty
+                    ? config.placeholder
+                    : '비밀 값을 입력하세요',
+            hintStyle: const TextStyle(
+                color:
+                    SanggamTheme.onSurfaceDim),
           ),
-          onChanged: (_) => setState(() => _validationError = null),
+          onChanged: (_) => setState(
+              () => _validationError = null),
         );
 
-      default: // string 등
-        return _buildTextField(theme);
+      default:
+        return _buildTextField();
     }
   }
 
-  /// 기본 텍스트 입력
-  Widget _buildTextField(ThemeData theme) {
+  Widget _buildTextField() {
     return TextField(
       controller: _valueController,
-      maxLines: config.value.contains('\n') ? 5 : 1,
+      style:
+          const TextStyle(color: Colors.white),
+      maxLines:
+          config.value.contains('\n') ? 5 : 1,
       decoration: InputDecoration(
         labelText: '값',
+        labelStyle: const TextStyle(
+            color: SanggamTheme.onSurfaceDim),
         hintText: config.placeholder.isNotEmpty
             ? config.placeholder
             : '값을 입력하세요',
+        hintStyle: const TextStyle(
+            color: SanggamTheme.onSurfaceDim),
       ),
-      onChanged: (_) => setState(() => _validationError = null),
+      onChanged: (_) => setState(
+          () => _validationError = null),
     );
   }
 
-  /// 범위 도움말 (number 타입)
   String? _buildRangeHelper() {
     final min = config.validationMin;
     final max = config.validationMax;
@@ -699,46 +937,52 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
     return null;
   }
 
-  /// 메타 정보 표시
-  Widget _buildMetaInfo(ThemeData theme) {
+  Widget _buildMetaInfo() {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        color: SanggamTheme.surfaceVariant
+            .withValues(alpha: 0.5),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
-          _metaRow(theme, '키', config.key),
+          _metaRow('키', config.key),
           if (config.category.isNotEmpty)
-            _metaRow(theme, '카테고리',
-                categoryLabels[config.category] ?? config.category),
+            _metaRow(
+                '카테고리',
+                categoryLabels[
+                        config.category] ??
+                    config.category),
           if (config.defaultValue.isNotEmpty)
-            _metaRow(theme, '기본값', config.defaultValue),
+            _metaRow('기본값', config.defaultValue),
           if (config.serviceName.isNotEmpty)
-            _metaRow(theme, '서비스', config.serviceName),
+            _metaRow('서비스', config.serviceName),
           if (config.updatedBy.isNotEmpty)
-            _metaRow(theme, '수정자', config.updatedBy),
+            _metaRow('수정자', config.updatedBy),
           if (config.restartRequired)
-            _metaRow(theme, '재시작', '변경 적용 시 재시작 필요'),
+            _metaRow('재시작', '변경 적용 시 재시작 필요'),
         ],
       ),
     );
   }
 
-  Widget _metaRow(ThemeData theme, String label, String value) {
+  Widget _metaRow(String label, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
+      padding: const EdgeInsets.only(bottom: 8),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 64,
             child: Text(
               label,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              style: const TextStyle(
+                color: SanggamTheme.onSurfaceDim,
+                fontSize: 10,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -746,8 +990,9 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
           Expanded(
             child: Text(
               value,
-              style: theme.textTheme.labelSmall?.copyWith(
-                color: theme.colorScheme.onSurface,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
                 fontFamily: 'monospace',
               ),
             ),
@@ -757,7 +1002,6 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
     );
   }
 
-  /// 저장
   void _onSave() {
     String finalValue;
     switch (config.valueType) {
@@ -768,26 +1012,32 @@ class _ConfigEditDialogState extends State<_ConfigEditDialog> {
         finalValue = _selectValue;
         break;
       default:
-        finalValue = _valueController.text.trim();
+        finalValue =
+            _valueController.text.trim();
     }
 
-    // 클라이언트 측 기본 유효성 검증
-    if (config.isRequired && finalValue.isEmpty) {
-      setState(() => _validationError = '필수 항목입니다. 값을 입력하세요.');
+    if (config.isRequired &&
+        finalValue.isEmpty) {
+      setState(() => _validationError =
+          '필수 항목입니다. 값을 입력하세요.');
       return;
     }
 
-    if (config.valueType == 'number' && finalValue.isNotEmpty) {
-      final parsed = double.tryParse(finalValue);
+    if (config.valueType == 'number' &&
+        finalValue.isNotEmpty) {
+      final parsed =
+          double.tryParse(finalValue);
       if (parsed == null) {
-        setState(() => _validationError = '유효한 숫자를 입력하세요.');
+        setState(() =>
+            _validationError = '유효한 숫자를 입력하세요.');
         return;
       }
       final min = config.validationMin;
       final max = config.validationMax;
-      if ((min != 0 || max != 0) && (parsed < min || parsed > max)) {
-        setState(
-            () => _validationError = '범위를 벗어났습니다 ($min ~ $max)');
+      if ((min != 0 || max != 0) &&
+          (parsed < min || parsed > max)) {
+        setState(() => _validationError =
+            '범위를 벗어났습니다 ($min ~ $max)');
         return;
       }
     }

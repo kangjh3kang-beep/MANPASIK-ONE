@@ -7,6 +7,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'package:manpasik/core/router/app_router.dart';
 import 'package:manpasik/core/theme/app_theme.dart';
+import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/core/services/rust_ffi_stub.dart';
 import 'package:manpasik/core/services/crash_reporter.dart';
 import 'package:manpasik/core/services/app_logger.dart';
@@ -138,12 +139,12 @@ class _ManpasikAppState extends ConsumerState<ManpasikApp> {
     final locale = ref.watch(localeProvider);
 
     return MaterialApp.router(
-      title: 'MANPASIK Measurement System',
+      title: 'MANPASIK 차동측정시스템',
       debugShowCheckedModeBanner: false,
 
       // 테마
       theme: AppTheme.koreanWhite, // Korean White Mode (Baekja)
-      darkTheme: AppTheme.dark,
+      darkTheme: SanggamTheme.getTheme(), // Sanggam Orbit Dark Theme
       themeMode: themeMode, // Dynamic Theme Switching
 
       // 라우터

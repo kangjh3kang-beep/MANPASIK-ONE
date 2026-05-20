@@ -111,7 +111,8 @@ fn _process_internal(bytes: Vec<u8>, width: u32, height: u32) -> Result<Analysis
     // 4) 색상 기반 카트리지 반응 감지
     //    - 카트리지 반응 영역은 특정 색상 범위를 가짐
     //    - 여기서는 색상 히스토그램 분석으로 반응 여부 판별
-    let (detected, biomarker, value, confidence) = analyze_color_response(avg_r, avg_g, avg_b, &tensor);
+    let (detected, biomarker, value, confidence) =
+        analyze_color_response(avg_r, avg_g, avg_b, &tensor);
 
     // 5) 경고 생성
     let warning = if !detected {
@@ -139,13 +140,7 @@ fn analyze_color_response(r: u8, g: u8, b: u8, tensor: &Array3<f64>) -> (bool, S
     let total = (shape[0] * shape[1]) as f64;
 
     let ch_means: Vec<f64> = (0..3)
-        .map(|c| {
-            tensor
-                .slice(ndarray::s![.., .., c])
-                .iter()
-                .sum::<f64>()
-                / total
-        })
+        .map(|c| tensor.slice(ndarray::s![.., .., c]).iter().sum::<f64>() / total)
         .collect();
 
     let ch_stds: Vec<f64> = (0..3)

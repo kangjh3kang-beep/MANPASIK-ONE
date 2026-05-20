@@ -4,7 +4,6 @@ import 'package:manpasik/core/services/grpc_client.dart';
 import 'package:manpasik/core/services/rest_client.dart';
 import 'package:manpasik/core/providers/grpc_provider.dart';
 import 'package:manpasik/shared/providers/auth_provider.dart';
-import 'package:manpasik/generated/manpasik.pb.dart';
 import 'package:manpasik/generated/manpasik.pbgrpc.dart';
 import 'package:manpasik/core/services/auth_interceptor.dart';
 
@@ -131,11 +130,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
   /// gRPC를 통한 AI 서비스 호출
   Future<String> _callAiServiceGrpc(String userText) async {
     final token = _accessTokenProvider();
-    final interceptors = token != null
-        ? [AuthInterceptor(() => token)]
-        : <AuthInterceptor>[];
+    final interceptors =
+        token != null ? [AuthInterceptor(() => token)] : <AuthInterceptor>[];
 
-    final client = AIInferenceServiceClient(
+    final client = AiInferenceServiceClient(
       _manager.aiInferenceChannel,
       interceptors: interceptors,
     );
@@ -155,7 +153,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
   String _generateFallbackResponse(String userText) {
     final lower = userText.toLowerCase();
 
-    if (lower.contains('혈당') || lower.contains('blood sugar') || lower.contains('glucose')) {
+    if (lower.contains('혈당') ||
+        lower.contains('blood sugar') ||
+        lower.contains('glucose')) {
       return '혈당 관리에 대해 물어봐 주셨네요.\n\n'
           '일반적인 공복 혈당 정상 범위는 70~100 mg/dL입니다. '
           '식후 2시간 기준 140 mg/dL 미만이 정상이에요.\n\n'
@@ -173,7 +173,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
           '💡 현재 AI 서버에 연결되지 않아 기본 정보를 표시하고 있습니다.';
     }
 
-    if (lower.contains('운동') || lower.contains('exercise') || lower.contains('workout')) {
+    if (lower.contains('운동') ||
+        lower.contains('exercise') ||
+        lower.contains('workout')) {
       return '건강한 운동 습관에 대해 알려드릴게요.\n\n'
           '세계보건기구(WHO) 권장:\n'
           '• 주 150~300분 중강도 유산소 운동\n'
@@ -183,7 +185,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
           '💡 현재 AI 서버에 연결되지 않아 기본 정보를 표시하고 있습니다.';
     }
 
-    if (lower.contains('식단') || lower.contains('diet') || lower.contains('음식') || lower.contains('food')) {
+    if (lower.contains('식단') ||
+        lower.contains('diet') ||
+        lower.contains('음식') ||
+        lower.contains('food')) {
       return '건강한 식단 관리에 대해 알려드릴게요.\n\n'
           '• 채소와 과일을 충분히 섭취하세요\n'
           '• 정제 탄수화물보다 통곡물을 선택하세요\n'
@@ -193,7 +198,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
           '💡 현재 AI 서버에 연결되지 않아 기본 정보를 표시하고 있습니다.';
     }
 
-    if (lower.contains('수면') || lower.contains('sleep') || lower.contains('잠')) {
+    if (lower.contains('수면') ||
+        lower.contains('sleep') ||
+        lower.contains('잠')) {
       return '건강한 수면에 대해 알려드릴게요.\n\n'
           '성인 기준 하루 7~9시간 수면이 권장됩니다.\n\n'
           '좋은 수면 습관:\n'

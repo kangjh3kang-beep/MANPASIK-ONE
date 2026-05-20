@@ -61,6 +61,7 @@ type Refund struct {
 type PaymentRepository interface {
 	Create(ctx context.Context, payment *Payment) error
 	GetByID(ctx context.Context, id string) (*Payment, error)
+	GetByOrderID(ctx context.Context, orderID string) (*Payment, error)
 	ListByUserID(ctx context.Context, userID string, limit, offset int32) ([]*Payment, int32, error)
 	Update(ctx context.Context, payment *Payment) error
 }
@@ -362,4 +363,68 @@ func (s *PaymentService) RefundPayment(ctx context.Context, paymentID string, re
 	}
 
 	return refund, payment, nil
+}
+
+// ConfirmPaymentByWebhook은 Toss 웹훅 콜백으로 결제를 확인합니다.
+// PG 승인 API를 재호출하지 않고 DB 상태만 갱신합니다 (이미 Toss 서버에서 승인됨).
+func (s *PaymentService) ConfirmPaymentByWebhook(ctx context.Context, paymentKey, orderID string, amount int32) (*Payment, error) {
+	payment, err := s.payRepo.GetByOrderID(ctx, orderID)
+	if err != nil || payment == nil {
+		return nil, apperrors.New(apperrors.ErrNotFound, "주문을 찾을 수 없습니다: "+orderID)
+	}
+
+	// 이미 완료된 결제면 멱등 처리
+	if payment.Status == PaymentStatusCompleted {
+		return payment, nil
+	}
+
+	if payment.Status != PaymentStatusPending {
+		return nil, apperrors.New(apperrors.ErrInvalidInput, "대기 상태의 결제만 웹훅으로 확인할 수 있습니다")
+	}
+
+	// 금액 검증
+	if amount > 0 && amount != payment.AmountKRW {
+		s.logger.Warn("웹훅 금액 불일치",
+			zap.Int32("expected", payment.AmountKRW),
+			zap.Int32("actual", amount),
+		)
+		return nil, apperrors.New(apperrors.ErrInvalidInput, "결제 금액이 일치하지 않습니다")
+	}
+
+	now := time.Now().UTC()
+	payment.Status = PaymentStatusCompleted
+	payment.PgTransactionID = paymentKey
+	payment.PgProvider = "toss"
+	payment.CompletedAt = &now
+
+	if err := s.payRepo.Update(ctx, payment); err != nil {
+		return nil, apperrors.New(apperrors.ErrInternal, "결제 확인에 실패했습니다")
+	}
+
+	s.logger.Info("웹훅 결제 확인",
+		zap.String("order_id", orderID),
+		zap.String("payment_key", paymentKey),
+	)
+
+	// 이벤트 발행
+	if s.eventPublisher != nil {
+		ptStr := "one_time"
+		if payment.PaymentType == PaymentTypeSubscription {
+			ptStr = "subscription"
+		}
+		_ = s.eventPublisher.PublishPaymentCompleted(ctx, &PaymentCompletedEvent{
+			PaymentID:       payment.ID,
+			UserID:          payment.UserID,
+			OrderID:         payment.OrderID,
+			SubscriptionID:  payment.SubscriptionID,
+			PaymentType:     ptStr,
+			AmountKRW:       payment.AmountKRW,
+			PaymentMethod:   payment.PaymentMethod,
+			PgProvider:      "toss",
+			PgTransactionID: paymentKey,
+			CompletedAt:     now,
+		})
+	}
+
+	return payment, nil
 }

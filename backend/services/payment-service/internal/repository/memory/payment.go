@@ -42,6 +42,18 @@ func (r *PaymentRepository) GetByID(_ context.Context, id string) (*service.Paym
 	return &cp, nil
 }
 
+func (r *PaymentRepository) GetByOrderID(_ context.Context, orderID string) (*service.Payment, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	for _, p := range r.payments {
+		if p.OrderID == orderID {
+			cp := *p
+			return &cp, nil
+		}
+	}
+	return nil, nil
+}
+
 func (r *PaymentRepository) ListByUserID(_ context.Context, userID string, limit, offset int32) ([]*service.Payment, int32, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

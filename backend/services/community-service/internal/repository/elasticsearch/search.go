@@ -89,3 +89,35 @@ func (s *PostSearchIndexer) IndexPost(ctx context.Context, post *service.Post) e
 func (s *PostSearchIndexer) DeletePost(ctx context.Context, postID string) error {
 	return s.es.DeleteDocument(ctx, postIndexName, postID)
 }
+
+// SearchPosts는 Elasticsearch에서 게시글을 전문 검색합니다.
+func (s *PostSearchIndexer) SearchPosts(ctx context.Context, query string, limit int) ([]string, error) {
+	if limit <= 0 {
+		limit = 20
+	}
+
+	esQuery := map[string]interface{}{
+		"size": limit,
+		"query": map[string]interface{}{
+			"multi_match": map[string]interface{}{
+				"query":  query,
+				"fields": []string{"title^2", "content", "tags"},
+			},
+		},
+		"sort": []interface{}{
+			map[string]string{"_score": "desc"},
+			map[string]string{"created_at": "desc"},
+		},
+	}
+
+	resp, err := s.es.Search(ctx, postIndexName, esQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	ids := make([]string, 0, len(resp.Hits.Hits))
+	for _, hit := range resp.Hits.Hits {
+		ids = append(ids, hit.ID)
+	}
+	return ids, nil
+}

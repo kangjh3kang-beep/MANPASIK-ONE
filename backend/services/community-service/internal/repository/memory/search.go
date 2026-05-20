@@ -23,3 +23,8 @@ func (s *PostSearchIndexer) IndexPost(_ context.Context, _ *service.Post) error 
 func (s *PostSearchIndexer) DeletePost(_ context.Context, _ string) error {
 	return nil
 }
+
+// SearchPosts는 no-op 입니다 (빈 결과 반환).
+func (s *PostSearchIndexer) SearchPosts(_ context.Context, _ string, _ int) ([]string, error) {
+	return nil, nil
+}

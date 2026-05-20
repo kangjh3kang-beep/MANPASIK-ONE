@@ -91,13 +91,27 @@ class FingerprintAnalyzer {
     return anomalies;
   }
 
-  /// 시뮬레이션용 896차원 데이터 생성
+  /// 차동 계측 결과로부터 896차원 핑거프린트 벡터를 생성합니다.
+  ///
+  /// 88차원 기본 특성 추출 + 896차원 확장을 Dart-side에서 수행.
+  /// Rust 네이티브 엔진과 동일한 알고리즘 구현.
+  static List<double> fromDifferentialData(List<double> diffWave) {
+    if (diffWave.isEmpty) return List.filled(896, 0.0);
+
+    // 88차원 기본 특성 추출
+    final base88 = _extractFeatures88(diffWave);
+    // 896차원 확장
+    return _expandTo896(base88);
+  }
+
+  /// 시뮬레이션용 896차원 데이터 생성 (테스트/데모 전용)
+  ///
+  /// 프로덕션에서는 [fromDifferentialData] 사용.
   static List<double> generateSimulatedData({int seed = 42}) {
     final rng = Random(seed);
     return List.generate(896, (i) {
       final base = 0.3 + 0.4 * sin(i * 0.02);
       final noise = (rng.nextDouble() - 0.5) * 0.3;
-      // 일부 클러스터에 이상치 삽입
       final anomaly = (i > 300 && i < 380) ? 0.4 : 0.0;
       return (base + noise + anomaly).clamp(0.0, 1.0);
     });
@@ -106,6 +120,131 @@ class FingerprintAnalyzer {
   static double _normalize(double value, double min, double max) {
     if (max == min) return 0.5;
     return ((value - min) / (max - min)).clamp(0.0, 1.0);
+  }
+
+  // ─── 내부: 88차원 특성 추출 (Rust FeatureExtractor Dart 대응) ───
+
+  static List<double> _extractFeatures88(List<double> data) {
+    final f = List.filled(88, 0.0);
+    if (data.isEmpty) return f;
+    final n = data.length;
+
+    double sum = 0, sumSq = 0;
+    double peak = double.negativeInfinity, valley = double.infinity;
+    for (final v in data) {
+      sum += v; sumSq += v * v;
+      if (v > peak) peak = v;
+      if (v < valley) valley = v;
+    }
+    final mean = sum / n;
+    final variance = (sumSq / n - mean * mean).clamp(0.0, double.infinity);
+    final std = sqrt(variance);
+    f[0] = peak; f[1] = valley; f[2] = mean; f[3] = std;
+    f[4] = sqrt(sumSq / n); // RMS
+
+    final sorted = List<double>.from(data)..sort();
+    f[7] = sorted[n ~/ 2]; // median
+    f[12] = peak - valley; // peak-to-peak
+    f[14] = sumSq; // energy
+
+    // AUC
+    double auc = 0;
+    for (int i = 1; i < n; i++) { auc += (data[i - 1] + data[i]) * 0.5; }
+    f[16] = auc;
+
+    // 세그먼트 통계
+    final segSize = n ~/ 4;
+    for (int seg = 0; seg < 4; seg++) {
+      final start = seg * segSize;
+      final end = seg == 3 ? n : start + segSize;
+      final chunk = data.sublist(start, end);
+      double cS = 0, cMx = double.negativeInfinity, cMn = double.infinity;
+      for (final v in chunk) { cS += v; if (v > cMx) cMx = v; if (v < cMn) cMn = v; }
+      final cM = cS / chunk.length;
+      double cV = 0;
+      for (final v in chunk) { cV += (v - cM) * (v - cM); }
+      f[32 + seg * 4] = cM;
+      f[33 + seg * 4] = sqrt(cV / chunk.length);
+      f[34 + seg * 4] = cMx;
+      f[35 + seg * 4] = cMn;
+    }
+
+    // 백분위수
+    f[48] = sorted[(0.05 * (n - 1)).round().clamp(0, n - 1)];
+    f[50] = sorted[(0.25 * (n - 1)).round().clamp(0, n - 1)];
+    f[52] = sorted[(0.75 * (n - 1)).round().clamp(0, n - 1)];
+    f[54] = sorted[(0.95 * (n - 1)).round().clamp(0, n - 1)];
+
+    // 트렌드
+    final half = n ~/ 2;
+    if (half > 0) {
+      f[72] = data.sublist(0, half).reduce((a, b) => a + b) / half;
+      f[73] = data.sublist(half).reduce((a, b) => a + b) / (n - half);
+    }
+
+    return f;
+  }
+
+  // ─── 내부: 88→896 확장 (Rust MultiModeExpander Dart 대응) ───
+
+  static List<double> _expandTo896(List<double> base88) {
+    final expanded = <double>[];
+    expanded.addAll(base88);                              // [0..88]
+    expanded.addAll(base88.map((v) => v * v));             // [88..176]
+    expanded.addAll(base88.map((v) =>                      // [176..264]
+        v.sign * pow(v.abs(), 1.0 / 3.0).toDouble()));
+    expanded.addAll(base88.map((v) =>                      // [264..352]
+        v.abs() > 1e-12 ? log(v.abs()) * v.sign : 0.0));
+
+    // [352..616] 교호작용
+    int count = 0;
+    for (int g = 0; g < 80 && count < 264; g += 8) {
+      final ng = g + 8;
+      if (ng >= 88) break;
+      for (int i = g; i < g + 8 && count < 264; i++) {
+        for (int j = ng; j < min(ng + 8, 88) && count < 264; j++) {
+          expanded.add(base88[i] * base88[j]);
+          count++;
+        }
+      }
+    }
+    while (count < 264) { expanded.add(0.0); count++; }
+
+    // [616..744] eNose (네이티브 없을 시 0)
+    expanded.addAll(List.filled(128, 0.0));
+
+    // [744..808] 윈도우 통계
+    for (int seg = 0; seg < 8; seg++) {
+      final start = seg * 11;
+      final end = min((seg + 1) * 11, 88);
+      final chunk = base88.sublist(start, end);
+      double s = 0, mx = double.negativeInfinity, mn = double.infinity;
+      for (final v in chunk) { s += v; if (v > mx) mx = v; if (v < mn) mn = v; }
+      final m = s / chunk.length;
+      double vr = 0;
+      for (final v in chunk) { vr += (v - m) * (v - m); }
+      expanded.addAll([m, sqrt(vr / chunk.length), mx, mn, mx - mn,
+        chunk.map((v) => v * v).reduce((a, b) => a + b), 0.0, 0.0]);
+    }
+
+    // [808..896] 정규화
+    double gMean = 0, gMin = double.infinity, gMax = double.negativeInfinity;
+    for (final v in base88) { gMean += v; if (v < gMin) gMin = v; if (v > gMax) gMax = v; }
+    gMean /= 88;
+    double gVar = 0;
+    for (final v in base88) { gVar += (v - gMean) * (v - gMean); }
+    final gStd = sqrt(gVar / 88);
+    final gRange = gMax - gMin;
+    for (int i = 0; i < 44; i++) {
+      expanded.add(gStd > 1e-12 ? (base88[i] - gMean) / gStd : 0.0);
+    }
+    for (int i = 44; i < 88; i++) {
+      expanded.add(gRange > 1e-12 ? (base88[i] - gMin) / gRange : 0.0);
+    }
+
+    while (expanded.length < 896) { expanded.add(0.0); }
+    if (expanded.length > 896) return expanded.sublist(0, 896);
+    return expanded;
   }
 }
 

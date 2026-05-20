@@ -290,3 +290,150 @@ func TestRequestOtaUpdate_존재하지_않는_디바이스(t *testing.T) {
 		t.Fatal("존재하지 않는 디바이스에 대해 에러가 발생해야 합니다")
 	}
 }
+
+// =============================================================================
+// Phase F 추가 테스트
+// =============================================================================
+
+type mockKafkaPublisher struct {
+	registeredEvents    []*DeviceRegisteredEvent
+	statusChangedEvents []*DeviceStatusChangedEvent
+}
+
+func (m *mockKafkaPublisher) PublishDeviceRegistered(_ context.Context, e *DeviceRegisteredEvent) error {
+	m.registeredEvents = append(m.registeredEvents, e)
+	return nil
+}
+func (m *mockKafkaPublisher) PublishDeviceStatusChanged(_ context.Context, e *DeviceStatusChangedEvent) error {
+	m.statusChangedEvents = append(m.statusChangedEvents, e)
+	return nil
+}
+
+func TestRegisterDevice_기본_이름_생성(t *testing.T) {
+	svc, _, _ := newTestDeviceService(10)
+	ctx := context.Background()
+
+	device, _, err := svc.RegisterDevice(ctx, "BLE-XX", "SN-9876", "1.0.0", "user-1")
+	if err != nil {
+		t.Fatalf("등록 실패: %v", err)
+	}
+	expected := "ManPaSik Reader SN-9"
+	if device.Name != expected {
+		t.Errorf("기본 이름: got %q, want %q", device.Name, expected)
+	}
+}
+
+func TestRequestOtaUpdate_체크섬_결정적(t *testing.T) {
+	svc, _, _ := newTestDeviceService(10)
+	ctx := context.Background()
+
+	device, _, _ := svc.RegisterDevice(ctx, "BLE-01", "SN-0001", "1.0.0", "user-1")
+
+	_, _, cs1, _ := svc.RequestOtaUpdate(ctx, device.ID, "2.0.0")
+	_, _, cs2, _ := svc.RequestOtaUpdate(ctx, device.ID, "2.0.0")
+
+	if cs1 != cs2 {
+		t.Errorf("동일 입력에 대한 체크섬이 달라야 합니다: %s vs %s", cs1, cs2)
+	}
+	if cs1 == "" {
+		t.Error("체크섬이 비어있습니다")
+	}
+}
+
+func TestListDevices_다른_유저_격리(t *testing.T) {
+	svc, _, _ := newTestDeviceService(10)
+	ctx := context.Background()
+
+	svc.RegisterDevice(ctx, "BLE-01", "SN-0001", "1.0.0", "user-A")
+	svc.RegisterDevice(ctx, "BLE-02", "SN-0002", "1.0.0", "user-A")
+	svc.RegisterDevice(ctx, "BLE-03", "SN-0003", "1.0.0", "user-B")
+
+	devA, _ := svc.ListDevices(ctx, "user-A")
+	devB, _ := svc.ListDevices(ctx, "user-B")
+
+	if len(devA) != 2 {
+		t.Errorf("user-A 디바이스 2개 기대: got %d", len(devA))
+	}
+	if len(devB) != 1 {
+		t.Errorf("user-B 디바이스 1개 기대: got %d", len(devB))
+	}
+}
+
+func TestRegisterDevice_Kafka이벤트_발행(t *testing.T) {
+	svc, _, _ := newTestDeviceService(10)
+	kafka := &mockKafkaPublisher{}
+	svc.SetEventPublisher(kafka)
+	ctx := context.Background()
+
+	device, _, err := svc.RegisterDevice(ctx, "BLE-01", "SN-0001", "1.0.0", "user-1")
+	if err != nil {
+		t.Fatalf("등록 실패: %v", err)
+	}
+	if len(kafka.registeredEvents) != 1 {
+		t.Fatalf("Kafka 등록 이벤트 1건 기대: got %d", len(kafka.registeredEvents))
+	}
+	evt := kafka.registeredEvents[0]
+	if evt.DeviceID != device.ID {
+		t.Errorf("이벤트 DeviceID 불일치: got %s", evt.DeviceID)
+	}
+	if evt.UserID != "user-1" {
+		t.Errorf("이벤트 UserID 불일치: got %s", evt.UserID)
+	}
+}
+
+func TestUpdateDeviceStatus_Kafka이벤트_발행(t *testing.T) {
+	svc, _, _ := newTestDeviceService(10)
+	kafka := &mockKafkaPublisher{}
+	svc.SetEventPublisher(kafka)
+	ctx := context.Background()
+
+	device, _, _ := svc.RegisterDevice(ctx, "BLE-01", "SN-0001", "1.0.0", "user-1")
+	svc.UpdateDeviceStatus(ctx, device.ID, StatusMeasuring, 80)
+
+	if len(kafka.statusChangedEvents) != 1 {
+		t.Fatalf("Kafka 상태변경 이벤트 1건 기대: got %d", len(kafka.statusChangedEvents))
+	}
+	evt := kafka.statusChangedEvents[0]
+	if evt.NewStatus != string(StatusMeasuring) {
+		t.Errorf("이벤트 NewStatus 불일치: got %s", evt.NewStatus)
+	}
+}
+
+func TestRequestOtaUpdate_이벤트_기록(t *testing.T) {
+	svc, _, eventRepo := newTestDeviceService(10)
+	ctx := context.Background()
+
+	device, _, _ := svc.RegisterDevice(ctx, "BLE-01", "SN-0001", "1.0.0", "user-1")
+	svc.RequestOtaUpdate(ctx, device.ID, "2.0.0")
+
+	// 등록 이벤트(1) + OTA 이벤트(1) = 2
+	if len(eventRepo.events) != 2 {
+		t.Fatalf("이벤트 2건 기대: got %d", len(eventRepo.events))
+	}
+	if eventRepo.events[1].EventType != "ota_started" {
+		t.Errorf("이벤트 타입 ota_started 기대: got %s", eventRepo.events[1].EventType)
+	}
+}
+
+func TestUpdateDeviceStatus_연속_변경(t *testing.T) {
+	svc, deviceRepo, eventRepo := newTestDeviceService(10)
+	ctx := context.Background()
+
+	device, _, _ := svc.RegisterDevice(ctx, "BLE-01", "SN-0001", "1.0.0", "user-1")
+
+	svc.UpdateDeviceStatus(ctx, device.ID, StatusMeasuring, 90)
+	svc.UpdateDeviceStatus(ctx, device.ID, StatusOnline, 85)
+	svc.UpdateDeviceStatus(ctx, device.ID, StatusOffline, 80)
+
+	updated := deviceRepo.devices[device.ID]
+	if updated.Status != StatusOffline {
+		t.Errorf("최종 상태 offline 기대: got %s", updated.Status)
+	}
+	if updated.BatteryPercent != 80 {
+		t.Errorf("최종 배터리 80 기대: got %d", updated.BatteryPercent)
+	}
+	// 등록(1) + 상태변경(3) = 4
+	if len(eventRepo.events) != 4 {
+		t.Errorf("이벤트 4건 기대: got %d", len(eventRepo.events))
+	}
+}

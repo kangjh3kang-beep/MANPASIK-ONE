@@ -45,6 +45,7 @@ services:
       - ../database/init/23-data-sharing-consents.sql:/docker-entrypoint-initdb.d/23-data-sharing-consents.sql
       - ../database/init/24-prescription-fulfillment.sql:/docker-entrypoint-initdb.d/24-prescription-fulfillment.sql
       - ../database/init/25-admin-settings-ext.sql:/docker-entrypoint-initdb.d/25-admin-settings-ext.sql
+      - ../database/init/39-audit.sql:/docker-entrypoint-initdb.d/39-audit.sql
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U manpasik" ]
       interval: 10s
@@ -702,6 +703,30 @@ services:
       - manpasik-network
     restart: unless-stopped
 
+  audit-service:
+    build:
+      context: ../../backend
+      dockerfile: services/audit-service/Dockerfile
+    image: manpasik/audit-service:dev
+    container_name: manpasik-audit-service
+    environment:
+      GRPC_PORT: ":50072"
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: manpasik
+      DB_PASSWORD: manpasik_dev_2026
+      DB_NAME: manpasik
+      DB_SSLMODE: disable
+    ports:
+      - "50074:50072"
+      - "9110:9100"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - manpasik-network
+    restart: unless-stopped
+
   # =============================================================================
   # REST API 게이트웨이 (gRPC → HTTP)
   # =============================================================================
@@ -735,6 +760,8 @@ services:
       COMMUNITY_SERVICE_ADDR: "manpasik-community-service:50065"
       RESERVATION_SERVICE_ADDR: "manpasik-reservation-service:50066"
       ADMIN_SERVICE_ADDR: "manpasik-admin-service:50067"
+      AUDIT_SERVICE_ADDR: "manpasik-audit-service:50072"
+      AUDIT_INTAKE_URL: "http://manpasik-audit-service:9100/audit/events"
       NOTIFICATION_SERVICE_ADDR: "manpasik-notification-service:50068"
       PRESCRIPTION_SERVICE_ADDR: "manpasik-prescription-service:50069"
       VIDEO_SERVICE_ADDR: "manpasik-video-service:50070"
@@ -762,6 +789,7 @@ services:
       - community-service
       - reservation-service
       - admin-service
+      - audit-service
       - notification-service
       - prescription-service
       - video-service

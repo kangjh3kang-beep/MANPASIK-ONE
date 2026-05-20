@@ -37,6 +37,7 @@ import (
 	v1 "github.com/manpasik/backend/shared/gen/go/v1"
 	"github.com/manpasik/backend/shared/middleware"
 	"github.com/manpasik/backend/shared/observability"
+	"github.com/manpasik/backend/shared/tenancy"
 	"github.com/manpasik/backend/shared/vectordb"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -156,12 +157,18 @@ func main() {
 		}
 	}
 
-	grpcServer := grpc.NewServer(
+	tenancyEngine := tenancy.NewPolicyEngine(tenancy.NewMemoryMembershipStore())
+	serverOpts := []grpc.ServerOption{
 		grpc.ChainUnaryInterceptor(
 			middleware.RequestIDInterceptor(),
 			observability.UnaryServerInterceptor(metrics),
 		),
-	)
+	}
+	serverOpts = append(serverOpts, tenancy.MaybeServerOptions(tenancyEngine, nil)...)
+	if tenancy.EnforcedFromEnv() {
+		log.Printf("[%s] 멀티테넌트 RBAC 인터셉터 활성화", serviceName)
+	}
+	grpcServer := grpc.NewServer(serverOpts...)
 
 	healthServer := health.NewServer()
 	healthpb.RegisterHealthServer(grpcServer, healthServer)
@@ -199,15 +206,21 @@ func main() {
 		cancel()
 	}()
 
-	// Start observability HTTP server
+	// REST HTTP 서버 (검색 API + 메트릭 + 헬스)
+	restHandler := handler.NewRESTHandler(measureSvc)
+
 	go func() {
 		mux := http.NewServeMux()
 		mux.HandleFunc("/metrics", metrics.PrometheusHandler())
 		mux.HandleFunc("/health", healthCheck.Handler())
-		metricsAddr := ":9100"
-		logger.Info("Metrics server starting", zap.String("addr", metricsAddr))
-		if err := http.ListenAndServe(metricsAddr, mux); err != nil {
-			logger.Error("Metrics server failed", zap.Error(err))
+		restHandler.RegisterRoutes(mux)
+		httpPort := os.Getenv("HTTP_PORT")
+		if httpPort == "" {
+			httpPort = ":8080"
+		}
+		log.Printf("[%s] HTTP server (REST) on %s", serviceName, httpPort)
+		if err := http.ListenAndServe(httpPort, mux); err != nil {
+			logger.Error("HTTP server failed", zap.Error(err))
 		}
 	}()
 

@@ -25,12 +25,12 @@ void main() {
       expect(devices, isEmpty);
     });
 
-    test('getConnectedDevices는 시뮬레이션 디바이스 10개를 반환한다', () async {
+    test('getConnectedDevices는 DEMO 디바이스 3개를 반환한다 (서버 미연결 시)', () async {
       final client = ManPaSikRestClient(baseUrl: 'http://localhost:99999/api/v1');
       final repo = DeviceRepositoryRest(client);
       final devices = await repo.getConnectedDevices();
       expect(devices, isA<List<ConnectedDevice>>());
-      expect(devices.length, 10);
+      expect(devices.length, 3);
     });
 
     test('getConnectedDevices 디바이스에 올바른 필드가 있다', () async {

@@ -177,17 +177,32 @@ type DailyReportRepository interface {
 	ListByUserAndRange(ctx context.Context, userID string, start, end time.Time) ([]*DailyHealthReport, error)
 }
 
+// HealthDataProvider는 외부 건강 데이터를 제공하는 인터페이스입니다.
+// ai-inference-service 등의 건강 점수/카테고리 데이터를 코칭에 활용합니다.
+type HealthDataProvider interface {
+	// GetUserHealthScore는 사용자의 건강 점수와 카테고리별 점수를 반환합니다.
+	GetUserHealthScore(ctx context.Context, userID string) (*UserHealthData, error)
+}
+
+// UserHealthData는 외부 건강 데이터 제공자로부터 받은 건강 정보입니다.
+type UserHealthData struct {
+	OverallScore   float64
+	CategoryScores map[string]float64 // cardiovascular, metabolic, nutritional, fitness
+	Trend          string             // improving, stable, declining
+}
+
 // ============================================================================
 // 코칭 서비스 (Coaching Service)
 // ============================================================================
 
 // CoachingService는 AI 건강 코칭 비즈니스 로직입니다.
 type CoachingService struct {
-	logger      *zap.Logger
-	goalRepo    HealthGoalRepository
-	msgRepo     CoachingMessageRepository
-	reportRepo  DailyReportRepository
-	rng         *rand.Rand
+	logger       *zap.Logger
+	goalRepo     HealthGoalRepository
+	msgRepo      CoachingMessageRepository
+	reportRepo   DailyReportRepository
+	healthData   HealthDataProvider // nil이면 시뮬레이션 사용
+	rng          *rand.Rand
 }
 
 // NewCoachingService는 새 CoachingService를 생성합니다.
@@ -204,6 +219,11 @@ func NewCoachingService(
 		reportRepo: reportRepo,
 		rng:        rand.New(rand.NewSource(time.Now().UnixNano())),
 	}
+}
+
+// SetHealthDataProvider는 건강 데이터 제공자를 주입합니다.
+func (s *CoachingService) SetHealthDataProvider(provider HealthDataProvider) {
+	s.healthData = provider
 }
 
 // ============================================================================
@@ -361,9 +381,19 @@ func (s *CoachingService) GenerateDailyReport(ctx context.Context, userID string
 	// 날짜 정규화 (시간 제거)
 	date = time.Date(date.Year(), date.Month(), date.Day(), 0, 0, 0, 0, time.UTC)
 
-	// 시뮬레이션된 리포트 생성
+	// 건강 데이터 제공자에서 실제 점수를 가져옴 (없으면 시뮬레이션)
+	var overallScore float64
 	measurementsCount := int32(s.rng.Intn(8) + 1) // 1~8 측정
-	overallScore := math.Round((60+s.rng.Float64()*40)*10) / 10
+	if s.healthData != nil {
+		hd, err := s.healthData.GetUserHealthScore(ctx, userID)
+		if err == nil && hd != nil {
+			overallScore = math.Round(hd.OverallScore*10) / 10
+		} else {
+			overallScore = math.Round((60+s.rng.Float64()*40)*10) / 10
+		}
+	} else {
+		overallScore = math.Round((60+s.rng.Float64()*40)*10) / 10
+	}
 
 	highlights := make([]*CoachingMessage, 0)
 	// 주요 하이라이트 2~3개 생성
@@ -854,62 +884,169 @@ func (s *CoachingService) generateRecommendationMessage(userID string) *Coaching
 
 func (s *CoachingService) generateAllRecommendations(userID string) []*Recommendation {
 	now := time.Now().UTC()
-	return []*Recommendation{
-		{
-			RecommendationID: uuid.New().String(),
-			Type:             RecommendationTypeFood,
-			Title:            "혈당 관리를 위한 식단 추천",
-			Description:      "혈당 수치 안정화를 위해 저GI 식품 위주의 식단을 권장합니다. 현미, 귀리, 채소, 두부 등을 활용한 식단을 만들어 보세요.",
-			Reason:           "최근 혈당 측정 결과를 기반으로 식이 관리가 필요합니다",
-			Priority:         RiskLevelModerate,
-			ActionSteps:      []string{"아침: 귀리죽 + 계란 + 채소 샐러드", "점심: 현미밥 + 두부구이 + 나물", "저녁: 잡곡밥 + 생선구이 + 미역국", "간식: 견과류 한 줌 또는 사과 반 개"},
-			RelatedMetric:    "공복혈당",
-			CreatedAt:        now,
-		},
-		{
-			RecommendationID: uuid.New().String(),
-			Type:             RecommendationTypeExercise,
-			Title:            "심혈관 건강을 위한 운동 프로그램",
-			Description:      "유산소 운동은 심혈관 건강과 혈당 조절에 효과적입니다. 걷기부터 시작하여 점진적으로 강도를 높여보세요.",
-			Reason:           "정기적인 운동은 건강 점수를 개선하는 가장 효과적인 방법입니다",
-			Priority:         RiskLevelModerate,
-			ActionSteps:      []string{"월수금: 빠르게 걷기 30분", "화목: 가벼운 근력 운동 20분", "주말: 자전거 타기 또는 수영 40분", "매일: 스트레칭 10분"},
-			RelatedMetric:    "심혈관",
-			CreatedAt:        now,
-		},
-		{
-			RecommendationID: uuid.New().String(),
-			Type:             RecommendationTypeSupplement,
-			Title:            "영양 보충제 추천",
-			Description:      "균형 잡힌 영양 섭취를 위해 부족할 수 있는 영양소의 보충을 권장합니다. 반드시 의사와 상담 후 복용하세요.",
-			Reason:           "현대인의 식습관으로 부족하기 쉬운 영양소를 보충합니다",
-			Priority:         RiskLevelLow,
-			ActionSteps:      []string{"비타민 D: 하루 1,000IU (실내 생활이 많은 경우)", "오메가-3: 하루 1,000mg (생선 섭취 부족 시)", "마그네슘: 하루 300-400mg (스트레스가 많은 경우)", "의사와 상담 후 복용을 시작하세요"},
-			RelatedMetric:    "영양",
-			CreatedAt:        now,
-		},
-		{
-			RecommendationID: uuid.New().String(),
-			Type:             RecommendationTypeLifestyle,
-			Title:            "스트레스 관리와 수면 개선",
-			Description:      "만성 스트레스는 혈당, 혈압, 면역력에 부정적 영향을 미칩니다. 수면의 질을 높이고 스트레스를 관리하는 생활 습관을 만드세요.",
-			Reason:           "스트레스와 수면은 전반적 건강 지표에 영향을 미칩니다",
-			Priority:         RiskLevelModerate,
-			ActionSteps:      []string{"매일 같은 시간에 취침하기 (23시 이전)", "취침 전 1시간은 디지털 기기 사용 중단", "하루 10분 명상 또는 심호흡 연습", "주 1회 이상 자연에서 산책하기"},
-			RelatedMetric:    "스트레스",
-			CreatedAt:        now,
-		},
-		{
-			RecommendationID: uuid.New().String(),
-			Type:             RecommendationTypeCheckup,
-			Title:            "정기 건강검진 안내",
-			Description:      "정기적인 건강검진은 질병을 조기에 발견하고 예방하는 가장 좋은 방법입니다. 최근 건강검진 일정을 확인해 보세요.",
-			Reason:           "측정 데이터를 기반으로 전문적인 검진이 권장됩니다",
-			Priority:         RiskLevelModerate,
-			ActionSteps:      []string{"연 1회 종합 건강검진 받기", "혈액 검사 (공복혈당, HbA1c, 지질 패널)", "혈압 및 심전도 검사", "눈, 치아 정기 검진"},
-			RelatedMetric:    "종합",
-			CreatedAt:        now,
-		},
+
+	// 건강 데이터가 있으면 카테고리 점수 기반 동적 우선순위 적용
+	var healthData *UserHealthData
+	if s.healthData != nil {
+		hd, err := s.healthData.GetUserHealthScore(context.Background(), userID)
+		if err == nil && hd != nil {
+			healthData = hd
+		}
+	}
+
+	recs := s.buildRecommendationPool(now, healthData)
+
+	// 건강 데이터 기반 우선순위 재정렬
+	if healthData != nil {
+		s.prioritizeRecommendations(recs, healthData)
+	}
+
+	return recs
+}
+
+// buildRecommendationPool은 건강 데이터에 따라 맞춤형 추천 풀을 생성합니다.
+func (s *CoachingService) buildRecommendationPool(now time.Time, healthData *UserHealthData) []*Recommendation {
+	recs := make([]*Recommendation, 0, 5)
+
+	// 식단 추천 (대사 점수 기반)
+	foodRec := &Recommendation{
+		RecommendationID: uuid.New().String(),
+		Type:             RecommendationTypeFood,
+		RelatedMetric:    "공복혈당",
+		CreatedAt:        now,
+	}
+	if healthData != nil && healthData.CategoryScores["metabolic"] < 60 {
+		foodRec.Title = "혈당 관리 긴급 식단 조정"
+		foodRec.Description = "대사 지표가 낮습니다. 즉시 저GI 식품 위주로 식단을 전환하고, 정제 탄수화물을 최소화하세요."
+		foodRec.Reason = fmt.Sprintf("대사 건강 점수 %.0f점으로 적극적인 식이 관리가 필요합니다", healthData.CategoryScores["metabolic"])
+		foodRec.Priority = RiskLevelHigh
+		foodRec.ActionSteps = []string{"정제 탄수화물(흰빵, 흰쌀) → 통곡물로 교체", "매 끼니 식이섬유 풍부한 채소 반 접시 이상", "당분 음료 중단, 물 또는 무가당 차로 대체", "식후 15분 이내 가벼운 산책"}
+	} else {
+		foodRec.Title = "혈당 관리를 위한 식단 추천"
+		foodRec.Description = "혈당 수치 안정화를 위해 저GI 식품 위주의 식단을 권장합니다."
+		foodRec.Reason = "최근 혈당 측정 결과를 기반으로 식이 관리가 필요합니다"
+		foodRec.Priority = RiskLevelModerate
+		foodRec.ActionSteps = []string{"아침: 귀리죽 + 계란 + 채소 샐러드", "점심: 현미밥 + 두부구이 + 나물", "저녁: 잡곡밥 + 생선구이 + 미역국", "간식: 견과류 한 줌 또는 사과 반 개"}
+	}
+	recs = append(recs, foodRec)
+
+	// 운동 추천 (심혈관+체력 점수 기반)
+	exerciseRec := &Recommendation{
+		RecommendationID: uuid.New().String(),
+		Type:             RecommendationTypeExercise,
+		RelatedMetric:    "심혈관",
+		CreatedAt:        now,
+	}
+	if healthData != nil && healthData.CategoryScores["cardiovascular"] < 60 {
+		exerciseRec.Title = "심혈관 건강 개선 집중 프로그램"
+		exerciseRec.Description = "심혈관 지표가 낮습니다. 유산소 운동을 매일 실시하고, 나트륨 섭취를 하루 2g 이하로 제한하세요."
+		exerciseRec.Reason = fmt.Sprintf("심혈관 건강 점수 %.0f점으로 적극적 운동이 필요합니다", healthData.CategoryScores["cardiovascular"])
+		exerciseRec.Priority = RiskLevelHigh
+		exerciseRec.ActionSteps = []string{"매일: 빠르게 걷기 30분 (심박수 120-140)", "주 3회: 수영 또는 자전거 40분", "매일: 혈압 모니터링 (아침/저녁)", "나트륨 섭취 제한: 국물, 찌개 줄이기"}
+	} else {
+		exerciseRec.Title = "심혈관 건강을 위한 운동 프로그램"
+		exerciseRec.Description = "유산소 운동은 심혈관 건강과 혈당 조절에 효과적입니다."
+		exerciseRec.Reason = "정기적인 운동은 건강 점수를 개선하는 가장 효과적인 방법입니다"
+		exerciseRec.Priority = RiskLevelModerate
+		exerciseRec.ActionSteps = []string{"월수금: 빠르게 걷기 30분", "화목: 가벼운 근력 운동 20분", "주말: 자전거 타기 또는 수영 40분", "매일: 스트레칭 10분"}
+	}
+	recs = append(recs, exerciseRec)
+
+	// 영양 보충 추천 (영양 점수 기반)
+	suppRec := &Recommendation{
+		RecommendationID: uuid.New().String(),
+		Type:             RecommendationTypeSupplement,
+		RelatedMetric:    "영양",
+		CreatedAt:        now,
+	}
+	if healthData != nil && healthData.CategoryScores["nutritional"] < 60 {
+		suppRec.Title = "영양 결핍 보충 프로그램"
+		suppRec.Description = "영양 지표가 낮습니다. 전문의 상담 후 부족 영양소를 적극 보충하세요."
+		suppRec.Reason = fmt.Sprintf("영양 점수 %.0f점으로 영양 보충이 시급합니다", healthData.CategoryScores["nutritional"])
+		suppRec.Priority = RiskLevelHigh
+		suppRec.ActionSteps = []string{"철분 + 비타민 C 복합 보충제 (빈혈 예방)", "비타민 D: 하루 2,000IU (결핍 위험)", "단백질: 체중 kg당 1.2g 이상 섭취", "혈액 검사로 정확한 결핍 확인 필수"}
+	} else {
+		suppRec.Title = "영양 보충제 추천"
+		suppRec.Description = "균형 잡힌 영양 섭취를 위해 부족할 수 있는 영양소의 보충을 권장합니다."
+		suppRec.Reason = "현대인의 식습관으로 부족하기 쉬운 영양소를 보충합니다"
+		suppRec.Priority = RiskLevelLow
+		suppRec.ActionSteps = []string{"비타민 D: 하루 1,000IU (실내 생활이 많은 경우)", "오메가-3: 하루 1,000mg (생선 섭취 부족 시)", "마그네슘: 하루 300-400mg (스트레스가 많은 경우)", "의사와 상담 후 복용을 시작하세요"}
+	}
+	recs = append(recs, suppRec)
+
+	// 생활습관 추천
+	lifestyleRec := &Recommendation{
+		RecommendationID: uuid.New().String(),
+		Type:             RecommendationTypeLifestyle,
+		Title:            "스트레스 관리와 수면 개선",
+		Description:      "만성 스트레스는 혈당, 혈압, 면역력에 부정적 영향을 미칩니다.",
+		Reason:           "스트레스와 수면은 전반적 건강 지표에 영향을 미칩니다",
+		Priority:         RiskLevelModerate,
+		ActionSteps:      []string{"매일 같은 시간에 취침하기 (23시 이전)", "취침 전 1시간은 디지털 기기 사용 중단", "하루 10분 명상 또는 심호흡 연습", "주 1회 이상 자연에서 산책하기"},
+		RelatedMetric:    "스트레스",
+		CreatedAt:        now,
+	}
+	recs = append(recs, lifestyleRec)
+
+	// 건강검진 추천 (전체 점수 기반)
+	checkupRec := &Recommendation{
+		RecommendationID: uuid.New().String(),
+		Type:             RecommendationTypeCheckup,
+		RelatedMetric:    "종합",
+		CreatedAt:        now,
+	}
+	if healthData != nil && healthData.OverallScore < 60 {
+		checkupRec.Title = "긴급 건강검진 권장"
+		checkupRec.Description = "종합 건강 점수가 낮습니다. 가능한 빨리 종합 건강검진을 받으시기 바랍니다."
+		checkupRec.Reason = fmt.Sprintf("종합 건강 점수 %.0f점으로 전문 검진이 필요합니다", healthData.OverallScore)
+		checkupRec.Priority = RiskLevelHigh
+		checkupRec.ActionSteps = []string{"2주 이내 종합 건강검진 예약", "혈액 검사 (공복혈당, HbA1c, 지질 패널, CBC)", "심전도 + 흉부 X-ray", "전문의 상담 및 추적 관리 계획 수립"}
+	} else {
+		checkupRec.Title = "정기 건강검진 안내"
+		checkupRec.Description = "정기적인 건강검진은 질병을 조기에 발견하고 예방하는 가장 좋은 방법입니다."
+		checkupRec.Reason = "측정 데이터를 기반으로 전문적인 검진이 권장됩니다"
+		checkupRec.Priority = RiskLevelModerate
+		checkupRec.ActionSteps = []string{"연 1회 종합 건강검진 받기", "혈액 검사 (공복혈당, HbA1c, 지질 패널)", "혈압 및 심전도 검사", "눈, 치아 정기 검진"}
+	}
+	recs = append(recs, checkupRec)
+
+	return recs
+}
+
+// prioritizeRecommendations는 건강 데이터에 따라 추천 우선순위를 재정렬합니다.
+// 가장 낮은 카테고리 점수 관련 추천이 최상위로 올라갑니다.
+func (s *CoachingService) prioritizeRecommendations(recs []*Recommendation, healthData *UserHealthData) {
+	// 카테고리→추천 타입 매핑
+	categoryToType := map[string]RecommendationType{
+		"metabolic":      RecommendationTypeFood,
+		"cardiovascular": RecommendationTypeExercise,
+		"nutritional":    RecommendationTypeSupplement,
+		"fitness":        RecommendationTypeExercise,
+	}
+
+	// 가장 낮은 카테고리 찾기
+	worstCategory := ""
+	worstScore := 100.0
+	for cat, sc := range healthData.CategoryScores {
+		if sc < worstScore {
+			worstScore = sc
+			worstCategory = cat
+		}
+	}
+
+	if worstCategory == "" {
+		return
+	}
+
+	targetType := categoryToType[worstCategory]
+
+	// 해당 타입의 추천을 맨 앞으로 이동
+	for i, rec := range recs {
+		if rec.Type == targetType && i > 0 {
+			// 위치 교환
+			recs[0], recs[i] = recs[i], recs[0]
+			break
+		}
 	}
 }
 

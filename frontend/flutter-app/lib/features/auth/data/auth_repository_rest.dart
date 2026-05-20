@@ -14,16 +14,23 @@ class AuthRepositoryRest implements AuthRepository {
   Future<AuthResult> login(String email, String password) async {
     try {
       final res = await _client.login(email, password);
-      final accessToken = res['access_token'] as String? ?? '';
-      final refreshToken = res['refresh_token'] as String? ?? '';
-      final userId = res['user_id'] as String? ?? '';
+      final accessToken =
+          _readString(res, 'access_token', alternate: 'accessToken');
+      final refreshToken =
+          _readString(res, 'refresh_token', alternate: 'refreshToken');
+      final userId = _readString(res, 'user_id', alternate: 'userId');
 
       if (accessToken.isNotEmpty) {
         _client.setAuthToken(accessToken);
         return AuthResult.success(
           userId: userId.isNotEmpty ? userId : 'unknown',
           email: email,
-          displayName: res['display_name'] as String? ?? email.split('@').first,
+          displayName: _readString(
+            res,
+            'display_name',
+            alternate: 'displayName',
+            fallback: email.split('@').first,
+          ),
           accessToken: accessToken,
           refreshToken: refreshToken,
         );
@@ -74,16 +81,22 @@ class AuthRepositoryRest implements AuthRepository {
         provider: provider,
         idToken: token,
       );
-      final accessToken = res['access_token'] as String? ?? '';
-      final refreshToken = res['refresh_token'] as String? ?? '';
-      final userId = res['user_id'] as String? ?? '';
+      final accessToken =
+          _readString(res, 'access_token', alternate: 'accessToken');
+      final refreshToken =
+          _readString(res, 'refresh_token', alternate: 'refreshToken');
+      final userId = _readString(res, 'user_id', alternate: 'userId');
 
       if (accessToken.isNotEmpty) {
         _client.setAuthToken(accessToken);
         return AuthResult.success(
           userId: userId.isNotEmpty ? userId : 'unknown',
-          email: res['email'] as String? ?? '',
-          displayName: res['display_name'] as String?,
+          email: _readString(res, 'email'),
+          displayName: _readNullableString(
+            res,
+            'display_name',
+            alternate: 'displayName',
+          ),
           accessToken: accessToken,
           refreshToken: refreshToken,
         );
@@ -94,5 +107,35 @@ class AuthRepositoryRest implements AuthRepository {
     } catch (e) {
       return AuthResult.failure(e.toString());
     }
+  }
+
+  String _readString(
+    Map<String, dynamic> source,
+    String primary, {
+    String? alternate,
+    String fallback = '',
+  }) {
+    return _readNullableString(source, primary, alternate: alternate) ??
+        fallback;
+  }
+
+  String? _readNullableString(
+    Map<String, dynamic> source,
+    String primary, {
+    String? alternate,
+  }) {
+    final primaryValue = source[primary];
+    if (primaryValue is String) {
+      return primaryValue;
+    }
+
+    if (alternate != null) {
+      final alternateValue = source[alternate];
+      if (alternateValue is String) {
+        return alternateValue;
+      }
+    }
+
+    return null;
   }
 }

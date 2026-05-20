@@ -201,14 +201,10 @@ impl BleManager {
 
         #[cfg(feature = "ble")]
         {
-            let manager =
-                Manager::new()
-                    .await
-                    .map_err(|e| BleError::ConnectionFailed(e.to_string()))?;
-            let adapters = manager
-                .adapters()
+            let manager = Manager::new()
                 .await
-                .map_err(|_| BleError::NoAdapter)?;
+                .map_err(|e| BleError::ConnectionFailed(e.to_string()))?;
+            let adapters = manager.adapters().await.map_err(|_| BleError::NoAdapter)?;
             let adapter = adapters.into_iter().next().ok_or(BleError::NoAdapter)?;
 
             // 스캔 캐시 또는 새 스캔으로 peripheral 탐색
@@ -243,12 +239,10 @@ impl BleManager {
             .ok();
 
             // 배터리 레벨 읽기 시도
-            let battery = Self::read_characteristic_u8(
-                &peripheral,
-                characteristic_uuids::BATTERY_LEVEL,
-            )
-            .await
-            .ok();
+            let battery =
+                Self::read_characteristic_u8(&peripheral, characteristic_uuids::BATTERY_LEVEL)
+                    .await
+                    .ok();
 
             let properties = peripheral.properties().await.ok().flatten();
             let name = properties
@@ -381,14 +375,10 @@ impl BleManager {
     /// BLE GATT Write 명령 전송
     #[cfg(feature = "ble")]
     async fn write_command(&self, device_id: &str, command: BleCommand) -> Result<(), BleError> {
-        let manager =
-            Manager::new()
-                .await
-                .map_err(|e| BleError::WriteError(e.to_string()))?;
-        let adapters = manager
-            .adapters()
+        let manager = Manager::new()
             .await
-            .map_err(|_| BleError::NoAdapter)?;
+            .map_err(|e| BleError::WriteError(e.to_string()))?;
+        let adapters = manager.adapters().await.map_err(|_| BleError::NoAdapter)?;
         let adapter = adapters.into_iter().next().ok_or(BleError::NoAdapter)?;
         let peripherals = adapter
             .peripherals()
@@ -401,17 +391,14 @@ impl BleManager {
             .ok_or_else(|| BleError::DeviceNotFound(device_id.to_string()))?;
 
         // MEASUREMENT_COMMAND 특성 찾기
-        let cmd_uuid =
-            BleUuid::parse_str(characteristic_uuids::MEASUREMENT_COMMAND)
-                .map_err(|e| BleError::CharacteristicNotFound(e.to_string()))?;
+        let cmd_uuid = BleUuid::parse_str(characteristic_uuids::MEASUREMENT_COMMAND)
+            .map_err(|e| BleError::CharacteristicNotFound(e.to_string()))?;
 
         let characteristics = peripheral.characteristics();
         let cmd_char = characteristics
             .iter()
             .find(|c| c.uuid == cmd_uuid)
-            .ok_or_else(|| {
-                BleError::CharacteristicNotFound("MEASUREMENT_COMMAND".to_string())
-            })?;
+            .ok_or_else(|| BleError::CharacteristicNotFound("MEASUREMENT_COMMAND".to_string()))?;
 
         // 명령 바이트 전송
         peripheral
@@ -470,18 +457,11 @@ impl BleManager {
     ///
     /// MEASUREMENT_DATA 특성을 구독하여 스트리밍 데이터 수신
     #[cfg(feature = "ble")]
-    pub async fn subscribe_measurement_data(
-        &self,
-        device_id: &str,
-    ) -> Result<(), BleError> {
-        let manager =
-            Manager::new()
-                .await
-                .map_err(|e| BleError::ConnectionFailed(e.to_string()))?;
-        let adapters = manager
-            .adapters()
+    pub async fn subscribe_measurement_data(&self, device_id: &str) -> Result<(), BleError> {
+        let manager = Manager::new()
             .await
-            .map_err(|_| BleError::NoAdapter)?;
+            .map_err(|e| BleError::ConnectionFailed(e.to_string()))?;
+        let adapters = manager.adapters().await.map_err(|_| BleError::NoAdapter)?;
         let adapter = adapters.into_iter().next().ok_or(BleError::NoAdapter)?;
         let peripherals = adapter
             .peripherals()
@@ -494,9 +474,8 @@ impl BleManager {
             .ok_or_else(|| BleError::DeviceNotFound(device_id.to_string()))?;
 
         // MEASUREMENT_DATA Notify 특성 구독
-        let data_uuid =
-            BleUuid::parse_str(characteristic_uuids::MEASUREMENT_DATA)
-                .map_err(|e| BleError::CharacteristicNotFound(e.to_string()))?;
+        let data_uuid = BleUuid::parse_str(characteristic_uuids::MEASUREMENT_DATA)
+            .map_err(|e| BleError::CharacteristicNotFound(e.to_string()))?;
 
         let characteristics = peripheral.characteristics();
         let data_char = characteristics
@@ -556,7 +535,10 @@ impl BleStateMachine {
                 | (BleStateMachine::Connected, BleStateMachine::Disconnecting)
                 | (BleStateMachine::Streaming, BleStateMachine::Connected)
                 | (BleStateMachine::Streaming, BleStateMachine::Disconnecting)
-                | (BleStateMachine::Disconnecting, BleStateMachine::Disconnected)
+                | (
+                    BleStateMachine::Disconnecting,
+                    BleStateMachine::Disconnected
+                )
         )
     }
 
