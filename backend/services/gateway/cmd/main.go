@@ -25,6 +25,7 @@ import (
 	gw "github.com/manpasik/backend/services/gateway/internal/middleware"
 	"github.com/manpasik/backend/shared/config"
 	v1 "github.com/manpasik/backend/shared/gen/go/v1"
+	"github.com/manpasik/backend/shared/medical/fhir"
 	"github.com/manpasik/backend/shared/tenancy"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -153,6 +154,13 @@ func main() {
 	tenancyHTTP.SetPathPrefix("/api/v1")
 	tenancyHTTP.RegisterRoutes(mux)
 	log.Printf("[%s] Tenancy REST API mounted on /api/v1/tenancy/*", serviceName)
+
+	// HL7 외부 검사 결과 BundleStore (Phase AW-4)
+	// tenancyPool 을 재사용 — 같은 PostgreSQL 인스턴스를 사용하므로 별도 pool 불필요.
+	bundleStore := buildHL7BundleStore(tenancyPool, serviceName)
+	if bundleStore != nil {
+		restHandler.SetHL7BundleStore(bundleStore)
+	}
 
 	// 미들웨어 체인: 보안헤더 → CORS → Rate Limit → 바디크기제한 → 로깅 → 테넌시 전파
 	// (테넌시는 가장 안쪽 = 핸들러 직전에 두어, 라우트 분기 후 ctx 에 안전히 보관)
@@ -433,6 +441,36 @@ func getEnv(key, defaultValue string) string {
 		return v
 	}
 	return defaultValue
+}
+
+// buildHL7BundleStore 는 Phase AW-4 — DB pool 이 있으면 PostgresBundleStore,
+// 없으면 MemoryBundleStore 반환. nil 은 아무 BundleStore 도 활성 안 함을 의미하나
+// 본 함수는 항상 인메모리 fallback 을 제공해 외부 LIS 통합이 dev 환경에서도 동작.
+func buildHL7BundleStore(pool *pgxpool.Pool, serviceName string) fhirBundleStoreLike {
+	if pool != nil {
+		store, err := fhir.NewPostgresBundleStore(fhir.NewPgxBundleAdapter(pool))
+		if err == nil {
+			log.Printf("[%s] HL7 BundleStore: PostgreSQL 영속화 활성", serviceName)
+			return store
+		}
+		log.Printf("[%s] PostgresBundleStore 생성 실패 (인메모리 fallback): %v", serviceName, err)
+	} else {
+		log.Printf("[%s] HL7 BundleStore: 인메모리 (DB_HOST 미설정)", serviceName)
+	}
+	// 인메모리 — tenant 당 최대 1000 entry FIFO
+	return fhir.NewMemoryBundleStore(1000)
+}
+
+// fhirBundleStoreLike 는 SetHL7BundleStore 가 받는 최소 인터페이스 — main.go 가
+// handler 패키지의 fhirBundleStore unexported 타입에 직접 의존하지 않도록 별도
+// 정의. 인터페이스 시그니처는 동일.
+type fhirBundleStoreLike interface {
+	Save(ctx context.Context, b *fhir.Bundle, tenantID, patientID string) error
+	Get(ctx context.Context, bundleID, tenantID string) (*fhir.StoredBundle, error)
+	ListByPatient(ctx context.Context, tenantID, patientID string, limit int) ([]*fhir.StoredBundle, error)
+	ListByTenant(ctx context.Context, tenantID string, limit int) ([]*fhir.StoredBundle, error)
+	Delete(ctx context.Context, bundleID, tenantID string) error
+	Count(ctx context.Context, tenantID string) int
 }
 
 // init은 fmt 패키지 사용을 보장합니다.
