@@ -6,6 +6,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/manpasik/backend/shared/medical/fhir"
 )
 
 const testORU = "MSH|^~\\&|LIS|HospA|EMR|HospA|20260521103000||ORU^R01|MSGTEST|P|2.5\r" +
@@ -159,7 +161,8 @@ func TestExternalHL7Import_WrongMethod(t *testing.T) {
 	h := newNilHandler()
 	mux := h.SetupRoutes()
 
-	req := httptest.NewRequest(http.MethodGet, "/api/v1/external/hl7", nil)
+	// PATCH 는 등록되지 않은 메서드 (POST=import, GET=list, DELETE=delete)
+	req := httptest.NewRequest(http.MethodPatch, "/api/v1/external/hl7", nil)
 	w := httptest.NewRecorder()
 	mux.ServeHTTP(w, req)
 
@@ -193,4 +196,232 @@ func min(a, b int) int {
 		return a
 	}
 	return b
+}
+
+// ============================================================================
+// Phase AV — BundleStore 통합 테스트
+// ============================================================================
+
+func newHandlerWithStore() *RestHandler {
+	h := newNilHandler()
+	h.SetHL7BundleStore(fhir.NewMemoryBundleStore(0))
+	return h
+}
+
+func TestExternalHL7Import_StoreTrue_SavesBundle(t *testing.T) {
+	h := newHandlerWithStore()
+	mux := h.SetupRoutes()
+
+	req := newExternalHL7Request(t, testORU, "text/plain", "store=true")
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("status = %d, body=%s", w.Code, w.Body.String())
+	}
+	var resp map[string]interface{}
+	_ = json.Unmarshal(w.Body.Bytes(), &resp)
+	if resp["stored"] != true {
+		t.Errorf("stored = %v, true 기대", resp["stored"])
+	}
+
+	// 저장 확인: GET 으로 다시 조회 가능
+	getReq := httptest.NewRequest(http.MethodGet,
+		"/api/v1/external/hl7/hl7v2-MSGTEST", nil)
+	getW := httptest.NewRecorder()
+	mux.ServeHTTP(getW, getReq)
+	if getW.Code != http.StatusOK {
+		t.Errorf("GET 조회 실패: status=%d body=%s", getW.Code, getW.Body.String())
+	}
+	var entry map[string]interface{}
+	_ = json.Unmarshal(getW.Body.Bytes(), &entry)
+	if entry["patient_id"] != "PAT-ext" {
+		t.Errorf("patient_id = %v, PAT-ext 기대", entry["patient_id"])
+	}
+}
+
+func TestExternalHL7Import_StoreFalse_DoesNotSave(t *testing.T) {
+	h := newHandlerWithStore()
+	mux := h.SetupRoutes()
+
+	req := newExternalHL7Request(t, testORU, "text/plain", "")
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("status = %d", w.Code)
+	}
+	var resp map[string]interface{}
+	_ = json.Unmarshal(w.Body.Bytes(), &resp)
+	if resp["stored"] != false {
+		t.Errorf("stored = %v, false 기대", resp["stored"])
+	}
+
+	// store 안 했으니 GET 조회 시 404
+	getReq := httptest.NewRequest(http.MethodGet,
+		"/api/v1/external/hl7/hl7v2-MSGTEST", nil)
+	getW := httptest.NewRecorder()
+	mux.ServeHTTP(getW, getReq)
+	if getW.Code != http.StatusNotFound {
+		t.Errorf("미저장 항목 GET status = %d, 404 기대", getW.Code)
+	}
+}
+
+func TestExternalHL7Import_StoreWithoutStoreConfigured(t *testing.T) {
+	h := newNilHandler() // store 미설정
+	mux := h.SetupRoutes()
+
+	req := newExternalHL7Request(t, testORU, "text/plain", "store=true")
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	if w.Code != http.StatusServiceUnavailable {
+		t.Errorf("status = %d, 503 기대", w.Code)
+	}
+}
+
+func TestExternalHL7Get_NotFound(t *testing.T) {
+	h := newHandlerWithStore()
+	mux := h.SetupRoutes()
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/external/hl7/missing-id", nil)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Errorf("status = %d, 404 기대", w.Code)
+	}
+}
+
+func TestExternalHL7List_Empty(t *testing.T) {
+	h := newHandlerWithStore()
+	mux := h.SetupRoutes()
+
+	req := httptest.NewRequest(http.MethodGet, "/api/v1/external/hl7", nil)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("status = %d", w.Code)
+	}
+	var resp map[string]interface{}
+	_ = json.Unmarshal(w.Body.Bytes(), &resp)
+	if cnt, _ := resp["count"].(float64); cnt != 0 {
+		t.Errorf("count = %v, 0 기대", resp["count"])
+	}
+}
+
+func TestExternalHL7List_PatientFilter(t *testing.T) {
+	h := newHandlerWithStore()
+	mux := h.SetupRoutes()
+
+	// 두 번 저장 (멱등 — 같은 MSG-ID 이므로 한 entry)
+	for i := 0; i < 2; i++ {
+		req := newExternalHL7Request(t, testORU, "text/plain", "store=true")
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Fatalf("save status = %d", w.Code)
+		}
+	}
+
+	// PAT-ext 로 조회
+	req := httptest.NewRequest(http.MethodGet,
+		"/api/v1/external/hl7?patient=PAT-ext", nil)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("status = %d", w.Code)
+	}
+	var resp map[string]interface{}
+	_ = json.Unmarshal(w.Body.Bytes(), &resp)
+	if cnt, _ := resp["count"].(float64); cnt != 1 {
+		t.Errorf("count = %v, 1 기대 (멱등)", resp["count"])
+	}
+
+	// 미존재 환자
+	missReq := httptest.NewRequest(http.MethodGet,
+		"/api/v1/external/hl7?patient=NOTFOUND", nil)
+	missW := httptest.NewRecorder()
+	mux.ServeHTTP(missW, missReq)
+	if missW.Code != http.StatusOK {
+		t.Errorf("status = %d", missW.Code)
+	}
+	var missResp map[string]interface{}
+	_ = json.Unmarshal(missW.Body.Bytes(), &missResp)
+	if cnt, _ := missResp["count"].(float64); cnt != 0 {
+		t.Errorf("미존재 patient count = %v, 0 기대", missResp["count"])
+	}
+}
+
+func TestExternalHL7Delete_RoundTrip(t *testing.T) {
+	h := newHandlerWithStore()
+	mux := h.SetupRoutes()
+
+	// 저장
+	req := newExternalHL7Request(t, testORU, "text/plain", "store=true")
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("save status = %d", w.Code)
+	}
+
+	// 삭제
+	delReq := httptest.NewRequest(http.MethodDelete,
+		"/api/v1/external/hl7/hl7v2-MSGTEST", nil)
+	delW := httptest.NewRecorder()
+	mux.ServeHTTP(delW, delReq)
+	if delW.Code != http.StatusOK {
+		t.Errorf("delete status = %d", delW.Code)
+	}
+
+	// 다시 GET 시 404
+	getReq := httptest.NewRequest(http.MethodGet,
+		"/api/v1/external/hl7/hl7v2-MSGTEST", nil)
+	getW := httptest.NewRecorder()
+	mux.ServeHTTP(getW, getReq)
+	if getW.Code != http.StatusNotFound {
+		t.Errorf("삭제 후 GET status = %d, 404 기대", getW.Code)
+	}
+
+	// 두 번째 삭제 시 404
+	del2W := httptest.NewRecorder()
+	mux.ServeHTTP(del2W, delReq)
+	if del2W.Code != http.StatusNotFound {
+		t.Errorf("이미 삭제된 항목 DELETE = %d, 404 기대", del2W.Code)
+	}
+}
+
+func TestExternalHL7Delete_StoreNotConfigured(t *testing.T) {
+	h := newNilHandler()
+	mux := h.SetupRoutes()
+
+	req := httptest.NewRequest(http.MethodDelete, "/api/v1/external/hl7/x", nil)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	if w.Code != http.StatusServiceUnavailable {
+		t.Errorf("status = %d, 503 기대", w.Code)
+	}
+}
+
+func TestExternalHL7List_WithLimit(t *testing.T) {
+	h := newHandlerWithStore()
+	mux := h.SetupRoutes()
+
+	// 서로 다른 MSG-ID 로 3개 저장
+	for i := 0; i < 3; i++ {
+		raw := strings.Replace(testORU, "MSGTEST", "MSG-"+string(rune('A'+i)), 1)
+		req := newExternalHL7Request(t, raw, "text/plain", "store=true")
+		w := httptest.NewRecorder()
+		mux.ServeHTTP(w, req)
+		if w.Code != http.StatusOK {
+			t.Fatalf("save status = %d body=%s", w.Code, w.Body.String())
+		}
+	}
+
+	req := httptest.NewRequest(http.MethodGet,
+		"/api/v1/external/hl7?limit=2", nil)
+	w := httptest.NewRecorder()
+	mux.ServeHTTP(w, req)
+	var resp map[string]interface{}
+	_ = json.Unmarshal(w.Body.Bytes(), &resp)
+	if cnt, _ := resp["count"].(float64); cnt != 2 {
+		t.Errorf("count = %v, 2 기대 (limit=2)", resp["count"])
+	}
 }

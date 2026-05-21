@@ -56,6 +56,9 @@ type RestHandler struct {
 	dataProvision   v1.DataProvisionServiceClient
 	voiceProfile    v1.VoiceProfileServiceClient
 
+	// Phase AV: HL7 외부 검사 결과 영속화 (선택적 — nil 이면 저장 기능 비활성)
+	hl7BundleStore fhirBundleStore
+
 	jwtSecret string
 }
 
