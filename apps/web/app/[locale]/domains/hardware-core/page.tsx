@@ -1,5 +1,4 @@
 'use client';
-export const runtime = 'edge';
 
 import React, { useState, useEffect } from 'react';
 import { Cpu, HardDrive, Unplug, Zap, Activity, ShieldCheck, Microscope } from 'lucide-react';
@@ -8,7 +7,7 @@ import { DomainHeader } from '@mmup/ui';
 
 export default function HardwareCorePage() {
   const { data: session } = useSession();
-  const [cpuTemp, setCpuTemp] = useState(42.5);
+  const [cpuTemp, setCpuTemp] = useState(42);
   const [memUsage, setMemUsage] = useState(15.4);
   const user = session?.user as any;
 

@@ -1,5 +1,4 @@
 'use client';
-export const runtime = 'edge';
 import React, { useState, useEffect } from 'react';
 import { Activity, Users, AlertTriangle, TrendingUp, Heart, Droplets, Zap, Stethoscope } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
@@ -18,6 +17,7 @@ export default function ClinicalPage() {
   const { data: initialVitals, isLoading, error } = usePatientVitals('patient-1');
   const [vitals, setVitals] = useState<VitalSign[]>([]);
 
+  // 실시간 데이터 시뮬레이션 (Operational Readiness)
   useEffect(() => {
     if (initialVitals?.data) {
       setVitals(initialVitals.data);
@@ -41,11 +41,22 @@ export default function ClinicalPage() {
     return () => clearInterval(interval);
   }, []);
 
+
   if (isLoading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <Activity className="w-12 h-12 text-sky-500 animate-pulse" />
         <p className="text-slate-500 font-medium">임상 데이터 로드 중...</p>
+      </div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-xl max-w-md text-center">
+        <AlertTriangle className="w-16 h-16 text-rose-500 mx-auto mb-4" />
+        <h2 className="text-xl font-bold text-slate-900 mb-2">데이터 통신 에러</h2>
+        <button onClick={() => window.location.reload()} className="px-6 py-2 bg-sky-600 text-white rounded-xl font-bold">재시도</button>
       </div>
     </div>
   );
@@ -75,6 +86,7 @@ export default function ClinicalPage() {
       />
 
       <div className="max-w-7xl mx-auto px-8 py-8 space-y-8">
+        {/* 통계 요약 */}
         <div className="grid grid-cols-4 gap-4">
           {[
             { label: '활성 환자', value: '1,247', icon: Users, c: 'text-sky-600 bg-sky-50' },
@@ -89,12 +101,14 @@ export default function ClinicalPage() {
           ))}
         </div>
 
+        {/* 실시간 바이탈 카드 */}
         <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-rose-500 animate-ping" />
               실시간 생체 신호 (Live Vitals)
             </h2>
+            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-1 rounded">Stream Active : 2.4GHz</div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -125,11 +139,17 @@ export default function ClinicalPage() {
           </div>
         </div>
 
+        {/* 차트 섹션 */}
         <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-xl font-bold text-slate-900">심박수 정밀 추이 분석</h2>
               <p className="text-sm text-slate-400 mt-1">GNN 모델 기반 99.8% 정확도 필터링 적용</p>
+            </div>
+            <div className="flex gap-2">
+              {['1H', '4H', '12H', '1D'].map(t => (
+                <button key={t} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${t === '4H' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400 hover:bg-slate-200'}`}>{t}</button>
+              ))}
             </div>
           </div>
           <div className="h-[320px] w-full">
@@ -146,3 +166,4 @@ export default function ClinicalPage() {
     </div>
   );
 }
+

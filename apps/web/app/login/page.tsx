@@ -61,14 +61,14 @@ export default function LoginPage() {
         <div className="mx-auto w-full max-w-md">
           {/* Logo */}
           <div className="flex items-center justify-between mb-10">
-            <div className="flex items-center gap-3">
+            <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-600 text-white shadow-lg shadow-sky-600/20">
                 <Activity className="h-6 w-6" />
               </div>
               <span className="text-2xl font-bold tracking-tight text-slate-900">
                 MMUP<span className="text-sky-600">.</span>
               </span>
-            </div>
+            </Link>
             
             <Link 
               href="/"
