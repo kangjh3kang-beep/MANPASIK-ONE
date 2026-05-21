@@ -12,7 +12,7 @@ import { MSWProvider } from '../components/common/msw-provider';
 import { AuthProvider } from '../components/common/auth-provider';
 
 export const metadata = {
-  title: 'MMUP [VERIFIED_SYNC] 생태계',
+  title: 'MMUP 생태계',
   description: 'MMUP 통합 의료 생태계 플랫폼 — 정밀 의학을 일상으로',
 };
 

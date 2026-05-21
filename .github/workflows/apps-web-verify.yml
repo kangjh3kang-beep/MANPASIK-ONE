@@ -1,0 +1,91 @@
+name: apps/web — Build & Verify
+
+# Phase BW-4 — Cloudflare Pages 가 자동 배포하기 전에 GitHub Actions 에서
+# Next.js 빌드 + 산출물 검증을 선행. main branch 빌드 실패 시 머지 차단.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/apps-web-verify.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - 'packages/**'
+      - 'pnpm-lock.yaml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-verify:
+    name: Build apps/web + Self-Verify .next/
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.28.1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build apps/web (Next.js)
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ secrets.NEXT_PUBLIC_API_BASE_URL || 'https://manpasik.com/api' }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_BUILD_SHA: ${{ github.sha }}
+        run: pnpm --filter @mmup/web build
+
+      - name: Verify .next/ contracts (Phase BW-3)
+        working-directory: apps/web
+        run: pnpm verify:build
+
+      - name: Sentinel grep — 전체 소스 트리
+        run: |
+          set -e
+          # apps/web 의 소스 + 빌드 산출물 양쪽에서 sentinel 검출
+          PATTERNS=(
+            "TEST_REPLACEMENT_SUCCESS"
+            "PLACEHOLDER_DO_NOT_DEPLOY"
+            "\[VERIFIED_SYNC\]"
+            "\[SYNC_OK_"
+            "\[TEST_"
+            "\[REPLACEMENT_"
+          )
+          HITS=0
+          for p in "${PATTERNS[@]}"; do
+            if grep -rn "$p" apps/web/app apps/web/components apps/web/lib 2>/dev/null | grep -v node_modules | head -5; then
+              HITS=$((HITS + 1))
+            fi
+          done
+          if [ "$HITS" -gt 0 ]; then
+            echo "::error::Sentinel 패턴이 apps/web 소스에 잔존 — 배포 차단"
+            exit 1
+          fi
+          echo "✅ 소스 트리에 sentinel 미검출"
+
+      - name: Upload .next/standalone artifact
+        if: success() && hashFiles('apps/web/.next/standalone/**') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: apps-web-standalone-${{ github.sha }}
+          path: apps/web/.next/standalone/
+          retention-days: 7

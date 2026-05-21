@@ -28,7 +28,7 @@ export function SiteHeader() {
               <Activity className="h-5 w-5" />
             </div>
             <span className="text-[22px] font-bold tracking-tight text-slate-900">
-              MMUP<span className="text-sky-600">.</span> [SYNC_OK_11:15]
+              MMUP<span className="text-sky-600">.</span>
             </span>
           </Link>
 
