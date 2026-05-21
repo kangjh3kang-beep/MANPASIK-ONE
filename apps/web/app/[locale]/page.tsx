@@ -1,4 +1,5 @@
 'use client';
+export const runtime = 'edge';
 import React from 'react';
 import { SiteHeader } from '../../components/site-header';
 import { DomainHeader } from '@mmup/ui';

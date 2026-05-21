@@ -1,4 +1,5 @@
 'use client';
+export const runtime = 'edge';
 
 import React, { useState, useEffect } from 'react';
 import { Cpu, HardDrive, Unplug, Zap, Activity, ShieldCheck, Microscope } from 'lucide-react';

@@ -1,4 +1,5 @@
 'use client';
+export const runtime = 'edge';
 import React, { useState, useEffect } from 'react';
 import { Activity, Users, AlertTriangle, TrendingUp, Heart, Droplets, Zap, Stethoscope } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
