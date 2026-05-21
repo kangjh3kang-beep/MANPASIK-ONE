@@ -173,6 +173,9 @@ func (h *RestHandler) SetupRoutes() *http.ServeMux {
 	h.registerDataPlatformRoutes(mux)
 	h.registerVoiceProfileRoutes(mux)
 
+	// 외부 HL7 v2 통합 (Phase AU-2)
+	h.registerExternalHL7Routes(mux)
+
 	return mux
 }
 

@@ -217,6 +217,25 @@ func TestFromHL7v2Message_EmptyOBX(t *testing.T) {
 	}
 }
 
+func TestImportHL7v2_OneStep(t *testing.T) {
+	bundle, err := fhir.ImportHL7v2(sampleORU, fhir.FromHL7v2Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(bundle.Entry) != 3 {
+		t.Errorf("Entry = %d, 3 기대", len(bundle.Entry))
+	}
+}
+
+func TestImportHL7v2_InvalidRaw(t *testing.T) {
+	if _, err := fhir.ImportHL7v2("not an hl7 message", fhir.FromHL7v2Options{}); err == nil {
+		t.Error("invalid raw 통과")
+	}
+	if _, err := fhir.ImportHL7v2("", fhir.FromHL7v2Options{}); err == nil {
+		t.Error("빈 raw 통과")
+	}
+}
+
 func TestParseHL7ReferenceRange_Edge(t *testing.T) {
 	// 직접 호출 테스트는 internal helper 라 lite 검증.
 	// ">3.0" 형식이 정상 파싱되는지 ORU 변환을 통해 확인.

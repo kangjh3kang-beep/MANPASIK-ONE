@@ -26,6 +26,21 @@ import (
 //	  ├─ PID-3 / PID-5  → HL7Patient 메타 (Subject 참조 식별자)
 //	  └─ OBX 각각        → Observation (LOINC code, value, units, range)
 
+// ImportHL7v2 는 raw HL7 메시지 문자열 → FHIR Bundle 변환 1-step 헬퍼.
+//
+// `hl7.Parse(raw)` + `FromHL7v2Message(msg, opts)` 를 결합한 단축 함수로,
+// 외부 시스템 통합 (gateway HTTP 핸들러 등) 에서 raw 메시지를 받아 즉시
+// FHIR Bundle 로 변환할 때 사용합니다.
+//
+// 빈 문자열 / 유효하지 않은 헤더 / 변환 실패 시 에러 반환.
+func ImportHL7v2(raw string, opts FromHL7v2Options) (*Bundle, error) {
+	msg, err := hl7.Parse(raw)
+	if err != nil {
+		return nil, fmt.Errorf("HL7 파싱: %w", err)
+	}
+	return FromHL7v2Message(msg, opts)
+}
+
 // HL7Patient 는 PID segment 에서 추출된 환자 메타.
 //
 // 본격적인 Patient 리소스 빌드 대신 외부 시스템 식별자로 Subject 참조에 사용.
