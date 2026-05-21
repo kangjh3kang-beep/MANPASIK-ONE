@@ -247,6 +247,14 @@ class AdminDashboardScreen extends ConsumerWidget {
           onTap: () =>
               context.push('/admin/ecosystem'),
         ),
+        // Phase AQ-2: Tenancy 운영 대시보드 진입점 (G5 보완)
+        _AdminMenuTile(
+          icon: Icons.business_center,
+          title: '멀티테넌트 운영',
+          subtitle: 'Tenancy 통계 + LLM Audit + Webhook DLQ',
+          onTap: () =>
+              context.push('/admin/tenancy-dashboard'),
+        ),
         const SizedBox(height: 24),
 
         // 최근 감사 로그
