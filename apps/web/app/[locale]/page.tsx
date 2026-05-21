@@ -33,18 +33,18 @@ export default function UnifiedDashboard() {
                   정밀 의학 데이터의 전주기 관리를 한눈에 확인하세요.
                 </p>
                 <div className="flex flex-wrap gap-4">
-                  <a 
-                    href="http://localhost:3001/"
+                  <Link 
+                    href="/domains/clinical"
                     className="px-6 py-3.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-sky-600/30 flex items-center gap-2"
                   >
                     데모 콘솔 열기
-                  </a>
-                  <a 
-                    href="http://localhost:3008/"
+                  </Link>
+                  <Link 
+                    href="/domains/app"
                     className="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl transition-all border border-white/20 backdrop-blur-sm"
                   >
                     건강 앱 관리
-                  </a>
+                  </Link>
                 </div>
 
               </div>

@@ -38,8 +38,8 @@ interface AuthMiddlewareConfig {
 export function withAuth(config: AuthMiddlewareConfig) {
   const {
     allowedPersonas,
-    loginUrl = 'http://localhost:3000/login',
-    unauthorizedUrl = 'http://localhost:3000/unauthorized',
+    loginUrl = '/login',
+    unauthorizedUrl = '/unauthorized',
     publicPaths = ['/api/auth', '/_next', '/favicon.ico'],
   } = config;
 
@@ -58,9 +58,7 @@ export function withAuth(config: AuthMiddlewareConfig) {
 
     if (!sessionToken) {
       // 인증되지 않은 유저 → 로그인 페이지로 리다이렉트
-      const url = new URL(loginUrl);
-      // 포트가 다를 수 있으므로 현재 요청의 도메인을 사용하도록 보정 가능
-      // 여기서는 명시적인 URL 환경변수 처리 권장
+      const url = new URL(loginUrl, request.url);
       url.searchParams.set('callbackUrl', request.url);
       return NextResponse.redirect(url);
     }
@@ -78,7 +76,7 @@ export function withAuth(config: AuthMiddlewareConfig) {
         console.log(`[AuthMiddleware] User access to ${pathname} validated.`);
       }
     } catch (err) {
-      return NextResponse.redirect(new URL(unauthorizedUrl));
+      return NextResponse.redirect(new URL(unauthorizedUrl, request.url));
     }
 
     return NextResponse.next();
