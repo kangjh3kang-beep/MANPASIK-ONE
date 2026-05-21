@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Activity, ArrowRight, Eye, EyeOff, ShieldCheck, Stethoscope, FlaskConical, Pill, Users2, FileCode2, Smartphone, Settings } from 'lucide-react';
+import { Activity, ArrowRight, Eye, EyeOff, ShieldCheck, Stethoscope, FlaskConical, Pill, Users2, FileCode2, Smartphone, Settings, Home } from 'lucide-react';
 import { signIn } from 'next-auth/react';
+import Link from 'next/link';
 
 const PERSONA_CARDS = [
   { email: 'patient@mmup.io', label: '환자', desc: '건강 데이터 조회 및 리워드', icon: Smartphone, color: 'bg-cyan-500' },
@@ -59,13 +60,23 @@ export default function LoginPage() {
       <div className="flex flex-1 flex-col justify-center px-8 py-12 lg:px-16">
         <div className="mx-auto w-full max-w-md">
           {/* Logo */}
-          <div className="flex items-center gap-3 mb-10">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-600 text-white shadow-lg shadow-sky-600/20">
-              <Activity className="h-6 w-6" />
+          <div className="flex items-center justify-between mb-10">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-600 text-white shadow-lg shadow-sky-600/20">
+                <Activity className="h-6 w-6" />
+              </div>
+              <span className="text-2xl font-bold tracking-tight text-slate-900">
+                MMUP<span className="text-sky-600">.</span>
+              </span>
             </div>
-            <span className="text-2xl font-bold tracking-tight text-slate-900">
-              MMUP<span className="text-sky-600">.</span>
-            </span>
+            
+            <Link 
+              href="/"
+              className="flex items-center gap-2 rounded-lg bg-slate-100 px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition-colors"
+            >
+              <Home className="h-4 w-4" />
+              홈으로 가기
+            </Link>
           </div>
 
           {/* Title Section */}
