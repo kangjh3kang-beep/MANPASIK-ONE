@@ -5,8 +5,7 @@ import { SessionProvider } from 'next-auth/react';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
-      {children}
-    </SessionProvider>
+    // @ts-expect-error — React 19 + next-auth beta children type mismatch
+    <SessionProvider>{children}</SessionProvider>
   );
 }
