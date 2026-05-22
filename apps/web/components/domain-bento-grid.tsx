@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Network, Database, ShieldCheck, ActivitySquare, Pill, FileCode2, GraduationCap, Users2, Stethoscope, ChevronRight, Globe } from 'lucide-react';
+import { Network, Database, ShieldCheck, ActivitySquare, Pill, FileCode2, Users2, Stethoscope, ChevronRight, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 

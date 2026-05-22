@@ -1,10 +1,9 @@
 'use client';
 import React from 'react';
 import { SiteHeader } from '@/components/site-header';
-import { DomainHeader } from '@mmup/ui';
 import { DomainBentoGrid } from '@/components/domain-bento-grid';
 import { EcosystemNerveCenter } from '@/components/dashboard/ecosystem-nerve-center';
-import { LayoutGrid, Database, Activity } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 

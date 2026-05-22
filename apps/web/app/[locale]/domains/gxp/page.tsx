@@ -1,9 +1,9 @@
 'use client';
 import React from 'react';
-import { Pill, ClipboardCheck, FileSignature, Shield, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
-import { useSession, signOut } from 'next-auth/react';
+import { Pill, ClipboardCheck, Shield, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 import { useAuditLogs, useCompliance, AuditLog } from '@mmup/api-client';
-import { DataTable, Column, DomainHeader } from '@mmup/ui';
+import { DataTable, Column } from '@mmup/ui';
 
 export default function GxPPage() {
   const { data: session } = useSession();

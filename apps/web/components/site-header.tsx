@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
-import { Activity, Menu, X, ChevronRight, Globe, LogIn } from 'lucide-react';
+import { Activity, Menu, ChevronRight, Globe, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
