@@ -1,19 +1,30 @@
-# Cloudflare Pages — apps/web (Next.js + next-on-pages adapter)
+#:schema node_modules/wrangler/config-schema.json
+# Cloudflare Workers — apps/web (Next.js + @opennextjs/cloudflare adapter)
 #
-# 본 파일은 빌드 후 산출물 디렉토리를 명시함으로써 Cloudflare 대시보드 GUI
-# 설정 변경 없이도 자동으로 .vercel/output/static 을 deploy 하게 한다.
+# Phase BY — Vercel 의존 완전 제거 (Pages → Workers 마이그레이션).
 #
-# next-on-pages 가 Next.js 빌드 결과를 분석하여 다음을 생성:
-#   .vercel/output/static/        — 정적 자산
-#   .vercel/output/functions/     — Cloudflare Pages Functions (SSR/middleware/API)
-#   .vercel/output/_routes.json   — 라우팅 메타
+# @opennextjs/cloudflare 가 Next.js 빌드 결과를 분석하여 다음을 생성:
+#   .open-next/worker.js              — Workers 진입점 (SSR/middleware/API)
+#   .open-next/assets/                — 정적 자산 (이미지/CSS/JS/font)
+#   .open-next/                       — 메타데이터 + manifest
 #
-# pages_build_output_dir 만 명시하면 Cloudflare Pages 가 자동 인식.
+# Pages 의 GitHub 자동 빌드 대신 Workers 는 wrangler deploy 또는 Workers Builds
+# (GitHub 연동) 로 배포. main 브랜치 push → Workers Builds 자동 트리거.
 
-name = "manpasik-one"
-pages_build_output_dir = ".vercel/output/static"
-
-# Next.js 15 + jose (next-auth) 가 CompressionStream / DecompressionStream
-# 등 Node.js API 를 사용. Edge runtime 의 nodejs_compat 플래그로 허용.
+name = "manpasik-web"
+main = ".open-next/worker.js"
 compatibility_date = "2025-05-22"
 compatibility_flags = ["nodejs_compat"]
+
+# Workers Static Assets — .open-next/assets/ 를 자동 서빙
+# binding 은 Worker 내부에서 ASSETS 로 접근 가능
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# 빌드 산출물 디렉토리 — Workers Builds 가 이 경로의 worker.js 를 deploy
+# (자동으로 .open-next/worker.js + assets 함께 업로드)
+
+# 사용자 정의 도메인 (Workers 대시보드 또는 API 로 별도 설정):
+#   - manpasik.com (production)
+#   - www.manpasik.com (production redirect)

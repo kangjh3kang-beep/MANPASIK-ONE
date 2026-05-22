@@ -1,15 +1,17 @@
 #!/usr/bin/env node
 /**
- * Phase BW-3 / BX (Harness H3 / H5 / H7) — apps/web 빌드 산출물 자가 검증.
+ * Phase BY (Harness H3 / H5 / H7) — apps/web 빌드 산출물 자가 검증.
  *
- * 두 빌드 모드 모두 지원:
- *   (a) next build → .next/ (기존 standalone 모드)
- *   (b) @cloudflare/next-on-pages → .vercel/output/static/ (Cloudflare Pages 모드)
+ * 세 가지 빌드 모드 모두 지원:
+ *   (a) next build → .next/ (standalone, 검증용)
+ *   (b) @opennextjs/cloudflare → .open-next/ (Cloudflare Workers, 운영)
+ *   (c) @cloudflare/next-on-pages → .vercel/output/static/ (DEPRECATED, legacy)
  *
  * 검증 항목:
- *   1. 빌드 산출물 존재 (둘 중 하나 OK)
+ *   1. 빌드 산출물 존재
  *   2. sentinel 패턴 미잔존 (소스 + 산출물)
- *   3. Cloudflare Pages Deploy Contract (단일 파일 < 25 MiB, 총 < 20K files)
+ *   3. Cloudflare Deploy Contract (단일 파일 < 25 MiB, 총 < 20K files)
+ *   4. OpenNext 핵심 파일 존재 (worker.js + assets/)
  *
  * 실패 시 종료 코드 1 — CI 차단.
  */
@@ -21,6 +23,9 @@ const ROOT = new URL('..', import.meta.url).pathname;
 const NEXT_DIR = join(ROOT, '.next');
 const VERCEL_OUTPUT = join(ROOT, '.vercel', 'output');
 const VERCEL_STATIC = join(VERCEL_OUTPUT, 'static');
+const OPEN_NEXT_DIR = join(ROOT, '.open-next');
+const OPEN_NEXT_WORKER = join(OPEN_NEXT_DIR, 'worker.js');
+const OPEN_NEXT_ASSETS = join(OPEN_NEXT_DIR, 'assets');
 
 const fails = [];
 const warns = [];
@@ -31,24 +36,46 @@ function ok(msg) { console.log(`  ✅ ${msg}`); }
 
 console.log('🔍 apps/web 빌드 산출물 검증 시작\n');
 
-// 빌드 모드 자동 감지
+// 빌드 모드 자동 감지 (OpenNext 우선 → next-on-pages → next build)
 const hasNextDir = existsSync(NEXT_DIR);
 const hasVercelOutput = existsSync(VERCEL_STATIC);
+const hasOpenNext = existsSync(OPEN_NEXT_DIR);
 
-if (!hasNextDir && !hasVercelOutput) {
-  fail('빌드 산출물 미존재 — .next/ 또는 .vercel/output/static/ 둘 다 없음');
+if (!hasNextDir && !hasVercelOutput && !hasOpenNext) {
+  fail('빌드 산출물 미존재 — .open-next/, .vercel/output/static/, .next/ 모두 없음');
   printResult();
   process.exit(1);
 }
 
-// 검증 대상 디렉토리 결정 (next-on-pages 우선)
+// 검증 대상 디렉토리 결정 (OpenNext 우선)
 let DEPLOY_DIR;
 let MODE;
-if (hasVercelOutput) {
-  DEPLOY_DIR = VERCEL_STATIC;
-  MODE = 'next-on-pages (Cloudflare Pages)';
+if (hasOpenNext) {
+  DEPLOY_DIR = OPEN_NEXT_DIR;
+  MODE = 'OpenNext (Cloudflare Workers)';
   ok(`빌드 모드: ${MODE}`);
-  ok('.vercel/output/static/ 디렉토리 존재');
+  ok('.open-next/ 디렉토리 존재');
+
+  if (existsSync(OPEN_NEXT_WORKER)) {
+    const workerSize = statSync(OPEN_NEXT_WORKER).size;
+    ok(`worker.js 존재 (${(workerSize / 1024 / 1024).toFixed(2)} MiB)`);
+    if (workerSize > 25 * 1024 * 1024) {
+      fail(`worker.js ${(workerSize / 1024 / 1024).toFixed(1)} MiB > Workers 한계 25 MiB`);
+    }
+  } else {
+    fail('.open-next/worker.js 누락 — OpenNext 빌드 비정상 종료');
+  }
+
+  if (existsSync(OPEN_NEXT_ASSETS)) {
+    ok('.open-next/assets/ 디렉토리 존재');
+  } else {
+    fail('.open-next/assets/ 누락 — 정적 자산 디렉토리 없음');
+  }
+} else if (hasVercelOutput) {
+  DEPLOY_DIR = VERCEL_STATIC;
+  MODE = 'next-on-pages (Cloudflare Pages, DEPRECATED)';
+  ok(`빌드 모드: ${MODE}`);
+  warn('next-on-pages 는 deprecated — OpenNext 마이그레이션 권장');
 } else {
   DEPLOY_DIR = NEXT_DIR;
   MODE = 'next build (standalone)';
