@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3000",
-    "build": "next build && rm -rf .next/cache && node scripts/verify-build.mjs",
+    "build": "npx @cloudflare/next-on-pages@latest && node scripts/verify-build.mjs",
+    "build:next": "next build && rm -rf .next/cache",
     "build:legacy": "next build",
-    "build:verified": "next build && rm -rf .next/cache && node scripts/verify-build.mjs",
+    "build:verified": "npx @cloudflare/next-on-pages@latest && node scripts/verify-build.mjs",
     "verify:build": "node scripts/verify-build.mjs",
     "start": "next start",
     "lint": "next lint",
@@ -29,11 +30,13 @@
     "zustand": "^5.0.0"
   },
   "devDependencies": {
+    "@cloudflare/next-on-pages": "^1.13.16",
     "@playwright/test": "^1.40.0",
     "@types/node": "25.6.0",
     "autoprefixer": "^10.4.17",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "vercel": "^39.4.0"
   }
 }
