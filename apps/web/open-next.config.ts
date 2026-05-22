@@ -1,4 +1,4 @@
-// @ts-expect-error - @opennextjs/cloudflare provides this at build time
+// @ts-ignore - @opennextjs/cloudflare provides this at build time
 import { defineCloudflareConfig } from '@opennextjs/cloudflare';
 
 /**
