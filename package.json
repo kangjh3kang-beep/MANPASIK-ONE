@@ -22,6 +22,11 @@
     "@testing-library/react": "^16.0.0",
     "jsdom": "^25.0.0"
   },
+  "pnpm": {
+    "overrides": {
+      "next": "15.5.18"
+    }
+  },
   "msw": {
     "workerDirectory": [
       "apps/web/public"
