@@ -19,6 +19,9 @@ backend/coverage.out
 # ── Node / Frontend ──
 node_modules/
 .next/
+.open-next/
+.vercel/
+.wrangler/
 out/
 build/
 dist/
