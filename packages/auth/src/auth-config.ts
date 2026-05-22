@@ -14,6 +14,30 @@ import Credentials from 'next-auth/providers/credentials';
 import type { Persona, MMUPUser } from './personas';
 import { getPersonaRedirectUrl } from './personas';
 
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      id?: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      persona?: Persona;
+      organization?: string;
+      licenseNumber?: string;
+      clinicalTrialId?: string;
+    };
+  }
+}
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    persona?: Persona;
+    organization?: string;
+    licenseNumber?: string;
+    clinicalTrialId?: string;
+  }
+}
+
 /**
  * 데모용 사용자 데이터베이스 (개발 환경 전용)
  * - 실제 프로덕션에서는 PostgreSQL + Prisma ORM으로 대체
@@ -115,10 +139,10 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as any).persona = token.persona;
-        (session.user as any).organization = token.organization;
-        (session.user as any).licenseNumber = token.licenseNumber;
-        (session.user as any).clinicalTrialId = token.clinicalTrialId;
+        session.user.persona = token.persona;
+        session.user.organization = token.organization;
+        session.user.licenseNumber = token.licenseNumber;
+        session.user.clinicalTrialId = token.clinicalTrialId;
       }
       return session;
     },

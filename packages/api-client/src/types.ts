@@ -113,3 +113,56 @@ export interface ComplianceRule {
   passedItems: number;
   status: 'pass' | 'warning' | 'fail';
 }
+
+// ===== 에이전트 파이프라인 =====
+export interface AgentPipelineStep {
+  id: number;
+  name: string;
+}
+
+export interface AgentPipelineState {
+  steps: AgentPipelineStep[];
+  activeStep: number;
+  totalRequests: number;
+}
+
+// ===== 개발자 포털 =====
+export interface DevPortalKey {
+  id: string;
+  key: string;
+  name: string;
+  createdAt: string;
+  status: 'active' | 'revoked';
+}
+
+export interface DevPortalEndpoint {
+  method: string;
+  path: string;
+  description: string;
+  auth: string;
+  status: 'stable' | 'beta' | 'deprecated';
+}
+
+// ===== 하드웨어 =====
+export interface HardwareDevice {
+  name: string;
+  status: string;
+  latency: string;
+}
+
+export interface HardwareDiagnostics {
+  engineVersion: string;
+  cpuTemp: number;
+  memoryMB: number;
+  securityStatus: string;
+}
+
+// ===== 앱 메트릭 =====
+export interface AppMetric {
+  label: string;
+  value: string;
+  unit: string;
+  trend: string;
+  iconName: string;
+  color: string;
+}

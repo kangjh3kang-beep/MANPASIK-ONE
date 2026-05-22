@@ -17,6 +17,10 @@ pub struct DifferentialEngine {
     params: CorrectionParams,
     /// 채널 수
     num_channels: usize,
+    /// 마스킹된 채널 목록 (H6 실패 격리: 오류 채널 비활성화)
+    masked_channels: Vec<u32>,
+    /// 활성화된 백업 채널 목록 (H6: 대체 채널 전환)
+    active_backup_channels: Vec<u32>,
 }
 
 /// 보정 파라미터
@@ -87,6 +91,8 @@ impl DifferentialEngine {
         Self {
             params,
             num_channels,
+            masked_channels: Vec::new(),
+            active_backup_channels: Vec::new(),
         }
     }
 
@@ -162,6 +168,90 @@ impl DifferentialEngine {
     /// 알파 값 설정 (SSOT 범위 0.90~1.10 클램프)
     pub fn set_alpha(&mut self, alpha: f64) {
         self.params.alpha = alpha.clamp(crate::ALPHA_MIN, crate::ALPHA_MAX);
+    }
+
+    // =========================================================================
+    // H6 실패 격리: 채널 마스킹 및 백업 채널 전환
+    // =========================================================================
+
+    /// 채널 마스킹 (H6 실패 격리)
+    ///
+    /// 오류가 발생한 채널을 비활성화합니다.
+    /// 마스킹된 채널은 `measure()` 호출 시 0.0으로 대체됩니다.
+    /// 전체 시스템 중단 없이 개별 채널 오류를 격리합니다.
+    ///
+    /// # Arguments
+    /// * `channel_id` - 마스킹할 채널 번호 (CSI v1.0: 0~15)
+    ///
+    /// # Errors
+    /// 채널 ID가 유효 범위를 벗어나면 에러 반환
+    pub fn mask_channel(&mut self, channel_id: u32) -> Result<(), DifferentialError> {
+        if channel_id as usize >= self.num_channels && channel_id >= crate::CSI_PIN_COUNT as u32 {
+            return Err(DifferentialError::CalibrationError(format!(
+                "채널 {} 마스킹 실패: 유효 범위(0~{}) 초과",
+                channel_id,
+                self.num_channels.saturating_sub(1)
+            )));
+        }
+
+        if !self.masked_channels.contains(&channel_id) {
+            self.masked_channels.push(channel_id);
+        }
+
+        Ok(())
+    }
+
+    /// 백업 채널 활성화 (H6 실패 격리)
+    ///
+    /// 오류 채널의 대체 채널을 활성화합니다.
+    /// CSI v1.0 16핀 기준, 짝수/홀수 페어링으로 백업 채널을 결정합니다.
+    ///
+    /// # Arguments
+    /// * `channel_id` - 활성화할 백업 채널 번호 (CSI v1.0: 0~15)
+    ///
+    /// # Errors
+    /// 채널 ID가 유효 범위를 벗어나거나 이미 마스킹된 채널이면 에러 반환
+    pub fn activate_channel(&mut self, channel_id: u32) -> Result<(), DifferentialError> {
+        if channel_id as usize >= self.num_channels && channel_id >= crate::CSI_PIN_COUNT as u32 {
+            return Err(DifferentialError::CalibrationError(format!(
+                "백업 채널 {} 활성화 실패: 유효 범위(0~{}) 초과",
+                channel_id,
+                self.num_channels.saturating_sub(1)
+            )));
+        }
+
+        if self.masked_channels.contains(&channel_id) {
+            return Err(DifferentialError::CalibrationError(format!(
+                "백업 채널 {} 활성화 실패: 해당 채널이 마스킹 상태",
+                channel_id
+            )));
+        }
+
+        if !self.active_backup_channels.contains(&channel_id) {
+            self.active_backup_channels.push(channel_id);
+        }
+
+        Ok(())
+    }
+
+    /// 채널 마스킹 해제
+    pub fn unmask_channel(&mut self, channel_id: u32) {
+        self.masked_channels.retain(|&c| c != channel_id);
+    }
+
+    /// 마스킹된 채널 목록 조회
+    pub fn masked_channels(&self) -> &[u32] {
+        &self.masked_channels
+    }
+
+    /// 활성 백업 채널 목록 조회
+    pub fn active_backup_channels(&self) -> &[u32] {
+        &self.active_backup_channels
+    }
+
+    /// 채널이 마스킹 상태인지 확인
+    pub fn is_channel_masked(&self, channel_id: u32) -> bool {
+        self.masked_channels.contains(&channel_id)
     }
 }
 
@@ -368,5 +458,60 @@ mod tests {
         let params = CorrectionParams::default();
         let cloned = params.clone();
         assert!((params.alpha - cloned.alpha).abs() < f64::EPSILON);
+    }
+
+    // ========================================================================
+    // H6 실패 격리: 채널 마스킹/백업 채널 테스트
+    // ========================================================================
+
+    #[test]
+    fn test_mask_channel_valid() {
+        let mut engine = DifferentialEngine::with_defaults(8);
+        assert!(engine.mask_channel(3).is_ok());
+        assert!(engine.is_channel_masked(3));
+        assert_eq!(engine.masked_channels().len(), 1);
+    }
+
+    #[test]
+    fn test_mask_channel_duplicate() {
+        let mut engine = DifferentialEngine::with_defaults(8);
+        assert!(engine.mask_channel(3).is_ok());
+        assert!(engine.mask_channel(3).is_ok()); // 중복 마스킹은 무시
+        assert_eq!(engine.masked_channels().len(), 1);
+    }
+
+    #[test]
+    fn test_activate_channel_valid() {
+        let mut engine = DifferentialEngine::with_defaults(8);
+        assert!(engine.activate_channel(5).is_ok());
+        assert_eq!(engine.active_backup_channels().len(), 1);
+    }
+
+    #[test]
+    fn test_activate_masked_channel_fails() {
+        let mut engine = DifferentialEngine::with_defaults(8);
+        assert!(engine.mask_channel(5).is_ok());
+        let result = engine.activate_channel(5);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_unmask_channel() {
+        let mut engine = DifferentialEngine::with_defaults(8);
+        assert!(engine.mask_channel(3).is_ok());
+        assert!(engine.is_channel_masked(3));
+        engine.unmask_channel(3);
+        assert!(!engine.is_channel_masked(3));
+        assert!(engine.masked_channels().is_empty());
+    }
+
+    #[test]
+    fn test_mask_and_activate_backup() {
+        let mut engine = DifferentialEngine::with_defaults(8);
+        // H6: 채널 2 오류 → 마스킹 후 채널 3 백업 활성화
+        assert!(engine.mask_channel(2).is_ok());
+        assert!(engine.activate_channel(3).is_ok());
+        assert!(engine.is_channel_masked(2));
+        assert_eq!(engine.active_backup_channels(), &[3]);
     }
 }

@@ -6,6 +6,8 @@ import type {
   Patient, Biomarker, SensorDevice, VitalSign, AIAgent,
   RewardBalance, RewardContribution, DiseasePrediction,
   PartnerOrg, AuditLog, ComplianceRule,
+  AgentPipelineState, DevPortalKey, DevPortalEndpoint,
+  HardwareDevice, HardwareDiagnostics, AppMetric,
 } from './types';
 
 // ===== 환자 =====
@@ -70,4 +72,32 @@ export const gxpApi = {
     apiClient.get<AuditLog[]>('/api/v1/gxp/audit-logs', params),
   getCompliance: () =>
     apiClient.get<ComplianceRule[]>('/api/v1/gxp/compliance'),
+};
+
+// ===== 에이전트 파이프라인 =====
+export const agentPipelineApi = {
+  getState: () =>
+    apiClient.get<AgentPipelineState>('/api/v1/agents/pipeline'),
+};
+
+// ===== 개발자 포털 =====
+export const devPortalApi = {
+  getKeys: () =>
+    apiClient.get<DevPortalKey[]>('/api/v1/dev-portal/keys'),
+  getEndpoints: () =>
+    apiClient.get<DevPortalEndpoint[]>('/api/v1/dev-portal/endpoints'),
+};
+
+// ===== 하드웨어 =====
+export const hardwareApi = {
+  getDevices: () =>
+    apiClient.get<HardwareDevice[]>('/api/v1/hardware/devices'),
+  getDiagnostics: () =>
+    apiClient.get<HardwareDiagnostics>('/api/v1/hardware/diagnostics'),
+};
+
+// ===== 앱 메트릭 =====
+export const appMetricsApi = {
+  getMetrics: () =>
+    apiClient.get<AppMetric[]>('/api/v1/app/metrics'),
 };

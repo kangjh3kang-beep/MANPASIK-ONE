@@ -5,5 +5,14 @@
   "types": "src/index.ts",
   "dependencies": {
     "@mmup/types": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "@testing-library/react": ">=14.0.0",
+    "msw": ">=2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@testing-library/react": { "optional": true },
+    "msw": { "optional": true }
   }
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -44,11 +45,21 @@ func main() {
 		AiInferenceAddr:  getEnvOrDefault("AI_INFERENCE_SERVICE_ADDR", "localhost:50058"),
 		CartridgeAddr:    getEnvOrDefault("CARTRIDGE_SERVICE_ADDR", "localhost:50059"),
 		CalibrationAddr:  getEnvOrDefault("CALIBRATION_SERVICE_ADDR", "localhost:50060"),
-		CoachingAddr:     getEnvOrDefault("COACHING_SERVICE_ADDR", "localhost:50061"),
+		CoachingAddr:       getEnvOrDefault("COACHING_SERVICE_ADDR", "localhost:50061"),
+		IotGatewayAddr:     getEnvOrDefault("IOT_GATEWAY_SERVICE_ADDR", "localhost:50072"),
+		NlpAddr:            getEnvOrDefault("NLP_SERVICE_ADDR", "localhost:50074"),
+		MarketplaceAddr:    getEnvOrDefault("MARKETPLACE_SERVICE_ADDR", "localhost:50075"),
 	}
 
 	metrics := observability.NewMetrics()
 	healthCheck := observability.NewHealthCheck(serviceName, Version)
+
+	tp, err := observability.InitTracer(serviceName)
+	if err != nil {
+		log.Printf("[%s] [WARN] Tracing init failed: %v", serviceName, err)
+	} else {
+		defer tp.Shutdown(context.Background())
+	}
 
 	r := router.NewRouter(cfg)
 
@@ -114,6 +125,9 @@ func main() {
 	log.Printf("[%s]   /api/v1/cartridges/*    → Cartridge (%s)", serviceName, cfg.CartridgeAddr)
 	log.Printf("[%s]   /api/v1/calibration/*   → Calibration (%s)", serviceName, cfg.CalibrationAddr)
 	log.Printf("[%s]   /api/v1/coaching/*       → Coaching (%s)", serviceName, cfg.CoachingAddr)
+	log.Printf("[%s]   /api/v1/iot/*           → IoTGateway (%s)", serviceName, cfg.IotGatewayAddr)
+	log.Printf("[%s]   /api/v1/nlp/*           → NLP (%s)", serviceName, cfg.NlpAddr)
+	log.Printf("[%s]   /api/v1/marketplace/*   → Marketplace (%s)", serviceName, cfg.MarketplaceAddr)
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
 		log.Fatalf("HTTP server error: %v", err)

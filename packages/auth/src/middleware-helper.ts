@@ -11,6 +11,7 @@
  */
 
 import { type NextRequest, NextResponse } from 'next/server';
+import { decode } from 'next-auth/jwt';
 import type { Persona } from './personas';
 
 interface AuthMiddlewareConfig {
@@ -23,6 +24,8 @@ interface AuthMiddlewareConfig {
   /** 인증 체크를 건너뛸 경로 패턴 */
   publicPaths?: string[];
 }
+
+const AUTH_SECRET = process.env.AUTH_SECRET || 'mmup-dev-secret-key-change-in-production';
 
 /**
  * 글로벌 미들웨어 팩토리
@@ -57,25 +60,36 @@ export function withAuth(config: AuthMiddlewareConfig) {
       request.cookies.get('__Secure-authjs.session-token')?.value;
 
     if (!sessionToken) {
-      // 인증되지 않은 유저 → 로그인 페이지로 리다이렉트
       const url = new URL(loginUrl, request.url);
       url.searchParams.set('callbackUrl', request.url);
       return NextResponse.redirect(url);
     }
 
-    // [Operational Readiness] JWT 페이로드에서 persona 추출 및 권한 체크
-    // 실제 운영 환경에서는 jose.jwtVerify를 사용해야 하며, 여기서는 시연을 위해 디코딩 로직 시뮬레이션
+    // JWT 페이로드에서 persona 추출 및 권한 체크
     try {
-      // Note: Auth.js v5의 세션 토큰은 암호화(JWE)되어 있을 수 있습니다.
-      // 여기서는 유저 세션의 무결성이 보장된 상태에서 페르소나 필드 존재 여부를 체크하는 정책을 수립합니다.
-      
-      // TODO: jose를 이용한 실제 시크릿 기반 검증 로직 추가 (WP-1 Tail 작업)
-      // 현재는 모든 인증된 세션에 대해 allowedPersonas가 비어있지 않으면 통과 시키는 안정적 로직 적용
-      if (allowedPersonas.length > 0) {
-        // 실제 운영 시에는 여기서 decodeToken(sessionToken).persona 대조 수행
-        console.log(`[AuthMiddleware] User access to ${pathname} validated.`);
+      const token = await decode({
+        token: sessionToken,
+        secret: AUTH_SECRET,
+        salt: request.cookies.has('__Secure-authjs.session-token')
+          ? '__Secure-authjs.session-token'
+          : 'authjs.session-token',
+      });
+
+      if (!token) {
+        const url = new URL(loginUrl, request.url);
+        url.searchParams.set('callbackUrl', request.url);
+        return NextResponse.redirect(url);
       }
-    } catch (err) {
+
+      const persona = token.persona as Persona | undefined;
+
+      // admin은 모든 도메인 접근 허용
+      if (persona !== 'admin' && allowedPersonas.length > 0) {
+        if (!persona || !allowedPersonas.includes(persona)) {
+          return NextResponse.redirect(new URL(unauthorizedUrl, request.url));
+        }
+      }
+    } catch {
       return NextResponse.redirect(new URL(unauthorizedUrl, request.url));
     }
 

@@ -24,4 +24,7 @@ COPY --from=builder /nlp-service /usr/local/bin/nlp-service
 
 EXPOSE 8080
 
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget -qO /dev/null http://localhost:9100/health 2>/dev/null || exit 1
+
 CMD ["nlp-service"]

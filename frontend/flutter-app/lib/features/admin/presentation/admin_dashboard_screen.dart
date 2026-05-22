@@ -199,6 +199,13 @@ class AdminDashboardScreen extends ConsumerWidget {
               context.push('/admin/audit'),
         ),
         _AdminMenuTile(
+          icon: Icons.devices,
+          title: '기기 관리',
+          subtitle: '등록 기기 현황, 펌웨어, 배터리 모니터링',
+          onTap: () =>
+              context.push('/admin/devices'),
+        ),
+        _AdminMenuTile(
           icon: Icons.bar_chart,
           title: '서비스 모니터링',
           subtitle: '마이크로서비스 상태 확인',

@@ -7,14 +7,10 @@ import (
 	"time"
 
 	v1 "github.com/manpasik/backend/shared/gen/go/v1"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
-func (r *Router) dialAuth() (*grpc.ClientConn, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	return grpc.DialContext(ctx, r.authAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+func (r *Router) dialAuth() (*grpcConnWithBreaker, error) {
+	return r.dialWithBreaker("auth", r.authAddr)
 }
 
 // POST /api/v1/auth/register
@@ -29,14 +25,14 @@ func (r *Router) handleRegister(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := r.dialAuth()
+	cb, err := r.dialAuth()
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "인증 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewAuthServiceClient(conn)
+	client := v1.NewAuthServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -69,14 +65,14 @@ func (r *Router) handleLogin(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := r.dialAuth()
+	cb, err := r.dialAuth()
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "인증 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewAuthServiceClient(conn)
+	client := v1.NewAuthServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -107,14 +103,14 @@ func (r *Router) handleRefreshToken(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := r.dialAuth()
+	cb, err := r.dialAuth()
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "인증 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewAuthServiceClient(conn)
+	client := v1.NewAuthServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -144,14 +140,14 @@ func (r *Router) handleLogout(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := r.dialAuth()
+	cb, err := r.dialAuth()
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "인증 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewAuthServiceClient(conn)
+	client := v1.NewAuthServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

@@ -30,14 +30,14 @@ func (r *Router) handleCreateRecord(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.healthRecordAddr)
+	cb, err := r.dialWithBreaker("health-record", r.healthRecordAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "건강기록 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewHealthRecordServiceClient(conn)
+	client := v1.NewHealthRecordServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -74,14 +74,14 @@ func (r *Router) handleListRecords(w http.ResponseWriter, req *http.Request) {
 		limit = 20
 	}
 
-	conn, err := dialGRPC(r.healthRecordAddr)
+	cb, err := r.dialWithBreaker("health-record", r.healthRecordAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "건강기록 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewHealthRecordServiceClient(conn)
+	client := v1.NewHealthRecordServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -115,14 +115,14 @@ func (r *Router) handleGetRecord(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.healthRecordAddr)
+	cb, err := r.dialWithBreaker("health-record", r.healthRecordAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "건강기록 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewHealthRecordServiceClient(conn)
+	client := v1.NewHealthRecordServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -149,14 +149,14 @@ func (r *Router) handleExportToFHIR(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.healthRecordAddr)
+	cb, err := r.dialWithBreaker("health-record", r.healthRecordAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "건강기록 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewHealthRecordServiceClient(conn)
+	client := v1.NewHealthRecordServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -217,14 +217,14 @@ func (r *Router) handleListNotifications(w http.ResponseWriter, req *http.Reques
 		limit = 20
 	}
 
-	conn, err := dialGRPC(r.notificationAddr)
+	cb, err := r.dialWithBreaker("notification", r.notificationAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "알림 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewNotificationServiceClient(conn)
+	client := v1.NewNotificationServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -258,14 +258,14 @@ func (r *Router) handleMarkAsRead(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.notificationAddr)
+	cb, err := r.dialWithBreaker("notification", r.notificationAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "알림 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewNotificationServiceClient(conn)
+	client := v1.NewNotificationServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -290,14 +290,14 @@ func (r *Router) handleGetUnreadCount(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	conn, err := dialGRPC(r.notificationAddr)
+	cb, err := r.dialWithBreaker("notification", r.notificationAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "알림 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewNotificationServiceClient(conn)
+	client := v1.NewNotificationServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -350,14 +350,14 @@ func (r *Router) handleListPosts(w http.ResponseWriter, req *http.Request) {
 		limit = 20
 	}
 
-	conn, err := dialGRPC(r.communityAddr)
+	cb, err := r.dialWithBreaker("community", r.communityAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "커뮤니티 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCommunityServiceClient(conn)
+	client := v1.NewCommunityServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -398,14 +398,14 @@ func (r *Router) handleCreatePost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.communityAddr)
+	cb, err := r.dialWithBreaker("community", r.communityAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "커뮤니티 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCommunityServiceClient(conn)
+	client := v1.NewCommunityServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -432,14 +432,14 @@ func (r *Router) handleGetPost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.communityAddr)
+	cb, err := r.dialWithBreaker("community", r.communityAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "커뮤니티 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCommunityServiceClient(conn)
+	client := v1.NewCommunityServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -470,14 +470,14 @@ func (r *Router) handleLikePost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.communityAddr)
+	cb, err := r.dialWithBreaker("community", r.communityAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "커뮤니티 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCommunityServiceClient(conn)
+	client := v1.NewCommunityServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -525,14 +525,14 @@ func postToMap(p *v1.Post) map[string]interface{} {
 
 // GET /api/v1/admin/stats
 func (r *Router) handleGetSystemStats(w http.ResponseWriter, req *http.Request) {
-	conn, err := dialGRPC(r.adminAddr)
+	cb, err := r.dialWithBreaker("admin", r.adminAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "관리자 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewAdminServiceClient(conn)
+	client := v1.NewAdminServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -568,14 +568,14 @@ func (r *Router) handleAdminListUsers(w http.ResponseWriter, req *http.Request) 
 		limit = 20
 	}
 
-	conn, err := dialGRPC(r.adminAddr)
+	cb, err := r.dialWithBreaker("admin", r.adminAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "관리자 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewAdminServiceClient(conn)
+	client := v1.NewAdminServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -626,14 +626,14 @@ func (r *Router) handleGetAuditLog(w http.ResponseWriter, req *http.Request) {
 		limit = 20
 	}
 
-	conn, err := dialGRPC(r.adminAddr)
+	cb, err := r.dialWithBreaker("admin", r.adminAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "관리자 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewAdminServiceClient(conn)
+	client := v1.NewAdminServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

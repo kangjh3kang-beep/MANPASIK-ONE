@@ -1,5 +1,19 @@
 syntax = "proto3";
 
+// ============================================================================
+// ManPaSik Proto Versioning Policy (H5: Interface Contracts)
+// ============================================================================
+// - Package: manpasik.v1  (current)
+// - Field numbers 1-49: active fields for v1.x
+// - Field numbers 50-60: reserved for v2.0 expansion
+// - NEVER reuse or reassign a field number once released.
+// - NEVER remove a field in a minor version; deprecate with reserved.
+// - Connector: CSI v1.0 = Samtec MECF-08-01-L-DV, 16-pin, 1.27mm
+//   (E12-IF 12-pin is PROHIBITED per CLAUDE.md SSOT)
+// - When migrating to v2, create a new package manpasik.v2 and
+//   maintain backward-compatible transcoding for v1 clients.
+// ============================================================================
+
 package manpasik.v1;
 
 option go_package = "github.com/manpasik/backend/shared/gen/go/v1";
@@ -39,6 +53,9 @@ message RegisterRequest {
   bool privacy_agreed = 14;
   bool health_data_agreed = 15;     // 건강정보 수집 동의 (필수)
   bool marketing_agreed = 16;       // 마케팅 동의 (선택)
+
+  // H5: Reserved for v2.0 expansion (federated identity, FHIR patient link, etc.)
+  reserved 20 to 30;
 }
 
 message RegisterResponse {
@@ -167,6 +184,10 @@ message MeasurementData {
   DifferentialCorrection differential = 3;
   EnvironmentMeta env_meta = 4;
   google.protobuf.Timestamp timestamp = 5;
+
+  // H5: Reserved for v2.0 expansion (multi-stage AFE data, fingerprint vectors, etc.)
+  reserved 50 to 60;
+  reserved "legacy_measurement_id";
 }
 
 message DifferentialCorrection {
@@ -954,6 +975,12 @@ message CartridgeDetail {
   string reference_range = 17;
   bool is_valid = 18;
   string validation_message = 19;
+
+  // H5: Reserved for v2.0 expansion (stage info, multi-analyte, NAAT params, etc.)
+  reserved 50 to 60;
+  // E12-IF 12-pin connector reference is PROHIBITED (CLAUDE.md SSOT).
+  // CSI v1.0 = Samtec MECF-08-01-L-DV, 16-pin, 1.27mm only.
+  reserved "deprecated_12pin_code";
 }
 
 message RecordUsageRequest {
@@ -4384,4 +4411,245 @@ message DeleteVoiceProfileRequest {
 
 message DeleteVoiceProfileResponse {
   bool success = 1;
+}
+
+// ============================================================================
+// IoT 게이트웨이 서비스 (IoT Gateway Service) — Phase 4
+// ============================================================================
+
+service IoTGatewayService {
+  rpc RegisterDevice(RegisterIoTDeviceRequest) returns (IoTDeviceResponse);
+  rpc GetDevice(GetIoTDeviceRequest) returns (IoTDeviceResponse);
+  rpc SendDeviceCommand(SendDeviceCommandRequest) returns (DeviceCommandResponse);
+  rpc GetDeviceTelemetry(GetDeviceTelemetryRequest) returns (DeviceTelemetryResponse);
+  rpc Heartbeat(IoTHeartbeatRequest) returns (IoTDeviceResponse);
+  rpc ListDeviceData(ListDeviceDataRequest) returns (ListDeviceDataResponse);
+}
+
+message RegisterIoTDeviceRequest {
+  string device_id = 1;
+  string protocol = 2;           // "mqtt", "ble", "coap", "http", "websocket"
+  map<string, string> metadata = 3;
+}
+
+message IoTDeviceResponse {
+  string id = 1;
+  string device_id = 2;
+  string protocol = 3;
+  string status = 4;
+  map<string, string> metadata = 5;
+  google.protobuf.Timestamp last_ping_at = 6;
+}
+
+message GetIoTDeviceRequest {
+  string device_id = 1;
+}
+
+message SendDeviceCommandRequest {
+  string device_id = 1;
+  string command_type = 2;
+  string payload = 3;
+}
+
+message DeviceCommandResponse {
+  string id = 1;
+  string device_id = 2;
+  string command_type = 3;
+  string payload = 4;
+  string status = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+
+message GetDeviceTelemetryRequest {
+  string device_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message DeviceTelemetryResponse {
+  repeated IoTDataPoint data = 1;
+}
+
+message IoTDataPoint {
+  string id = 1;
+  string device_id = 2;
+  string data_type = 3;
+  double value = 4;
+  string unit = 5;
+  google.protobuf.Timestamp received_at = 6;
+}
+
+message IoTHeartbeatRequest {
+  string device_id = 1;
+}
+
+message ListDeviceDataRequest {
+  string device_id = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ListDeviceDataResponse {
+  repeated IoTDataPoint data = 1;
+}
+
+// ============================================================================
+// NLP 서비스 (NLP Service) — Phase 4
+// ============================================================================
+
+service NLPService {
+  rpc ParseHealthQuery(ParseHealthQueryRequest) returns (ParseHealthQueryResponse);
+  rpc ExtractSymptoms(ExtractSymptomsRequest) returns (ExtractSymptomsResponse);
+  rpc GetSuggestions(GetSuggestionsRequest) returns (GetSuggestionsResponse);
+  rpc AnalyzeKoreanText(AnalyzeKoreanTextRequest) returns (AnalyzeKoreanTextResponse);
+}
+
+message ParseHealthQueryRequest {
+  string user_id = 1;
+  string text = 2;
+}
+
+message ParseHealthQueryResponse {
+  string id = 1;
+  string user_id = 2;
+  string raw_text = 3;
+  string intent = 4;
+  repeated string entities = 5;
+  double confidence = 6;
+  string urgency = 7;
+}
+
+message ExtractSymptomsRequest {
+  string text = 1;
+}
+
+message ExtractSymptomsResponse {
+  string id = 1;
+  string text = 2;
+  repeated NLPSymptom symptoms = 3;
+  string urgency = 4;
+  google.protobuf.Timestamp processed_at = 5;
+}
+
+message NLPSymptom {
+  string name = 1;
+  string severity = 2;
+  string body_part = 3;
+  double confidence = 4;
+}
+
+message GetSuggestionsRequest {
+  string query_id = 1;
+}
+
+message GetSuggestionsResponse {
+  repeated NLPSuggestion suggestions = 1;
+}
+
+message NLPSuggestion {
+  string id = 1;
+  string query_id = 2;
+  string text = 3;
+  string category = 4;
+  int32 priority = 5;
+}
+
+message AnalyzeKoreanTextRequest {
+  string text = 1;
+}
+
+message AnalyzeKoreanTextResponse {
+  string text = 1;
+  string intent = 2;
+  double confidence = 3;
+  int32 severity = 4;
+  repeated string keywords = 5;
+  string urgency = 6;
+}
+
+// ============================================================================
+// 마켓플레이스 서비스 (Marketplace Service) — Phase 4
+// ============================================================================
+
+service MarketplaceService {
+  rpc ListProducts(ListMarketplaceProductsRequest) returns (ListMarketplaceProductsResponse);
+  rpc GetProduct(GetMarketplaceProductRequest) returns (MarketplaceProduct);
+  rpc CreateProduct(CreateMarketplaceProductRequest) returns (MarketplaceProduct);
+  rpc UpdateProduct(UpdateMarketplaceProductRequest) returns (UpdateMarketplaceProductResponse);
+  rpc RegisterPartner(RegisterMarketplacePartnerRequest) returns (RegisterMarketplacePartnerResponse);
+  rpc GetPartnerStats(GetPartnerStatsRequest) returns (PartnerStatsResponse);
+}
+
+message ListMarketplaceProductsRequest {
+  string partner_id = 1;
+  string category = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message ListMarketplaceProductsResponse {
+  repeated MarketplaceProduct products = 1;
+  int32 total = 2;
+}
+
+message MarketplaceProduct {
+  string id = 1;
+  string partner_id = 2;
+  string name = 3;
+  string description = 4;
+  double price = 5;
+  string category = 6;
+  string image_url = 7;
+  bool is_active = 8;
+  google.protobuf.Timestamp created_at = 9;
+  google.protobuf.Timestamp updated_at = 10;
+}
+
+message GetMarketplaceProductRequest {
+  string product_id = 1;
+}
+
+message CreateMarketplaceProductRequest {
+  string partner_id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string category = 5;
+  string image_url = 6;
+}
+
+message UpdateMarketplaceProductRequest {
+  string product_id = 1;
+  string name = 2;
+  string description = 3;
+  double price = 4;
+  string category = 5;
+  string image_url = 6;
+  bool is_active = 7;
+}
+
+message UpdateMarketplaceProductResponse {
+  bool success = 1;
+}
+
+message RegisterMarketplacePartnerRequest {
+  string name = 1;
+  string description = 2;
+  string contact_email = 3;
+}
+
+message RegisterMarketplacePartnerResponse {
+  string partner_id = 1;
+  string status = 2;
+}
+
+message GetPartnerStatsRequest {
+  string partner_id = 1;
+}
+
+message PartnerStatsResponse {
+  string partner_id = 1;
+  int32 total_products = 2;
+  int32 total_orders = 3;
+  double revenue = 4;
 }

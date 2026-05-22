@@ -40,15 +40,20 @@ pub struct DeviceInfo {
 
 /// ManPaSik 리더기 GATT 서비스 UUID
 pub mod service_uuids {
-    /// 메인 측정 서비스
+    /// 메인 측정 서비스 (V1 — 16채널)
     pub const MEASUREMENT_SERVICE: &str = "0000fff0-0000-1000-8000-00805f9b34fb";
     /// 디바이스 정보 서비스
     pub const DEVICE_INFO_SERVICE: &str = "0000180a-0000-1000-8000-00805f9b34fb";
     /// 배터리 서비스
     pub const BATTERY_SERVICE: &str = "0000180f-0000-1000-8000-00805f9b34fb";
+
+    // ── V2 확장 서비스 (H2: 32채널 + 스트리밍) ──
+
+    /// V2 측정 서비스 — 32채널 고속 스트리밍
+    pub const MEASUREMENT_SERVICE_V2: &str = "0000ff00-0000-1000-8000-00805f9b34fb";
 }
 
-/// ManPaSik 리더기 GATT 특성 UUID
+/// ManPaSik 리더기 GATT 특성 UUID (V1 — 16채널)
 pub mod characteristic_uuids {
     /// 측정 명령 특성 (Write)
     pub const MEASUREMENT_COMMAND: &str = "0000fff1-0000-1000-8000-00805f9b34fb";
@@ -62,6 +67,17 @@ pub mod characteristic_uuids {
     pub const FIRMWARE_VERSION: &str = "00002a26-0000-1000-8000-00805f9b34fb";
     /// 배터리 레벨 특성
     pub const BATTERY_LEVEL: &str = "00002a19-0000-1000-8000-00805f9b34fb";
+
+    // ── V2 확장 특성 (H2: 32채널 + 스트리밍 지원) ──
+
+    /// V2 측정 명령 특성 (Write) — 확장 파라미터 지원
+    pub const MEASUREMENT_COMMAND_V2: &str = "0000ff01-0000-1000-8000-00805f9b34fb";
+    /// V2 측정 데이터 특성 (Notify) — 32채널 고속 스트리밍
+    pub const MEASUREMENT_DATA_V2: &str = "0000ff02-0000-1000-8000-00805f9b34fb";
+    /// V2 측정 상태 특성 (Read/Notify) — 확장 상태 정보
+    pub const MEASUREMENT_STATUS_V2: &str = "0000ff03-0000-1000-8000-00805f9b34fb";
+    /// V2 보정 데이터 특성 (Read/Write) — 다중 보정 프로파일
+    pub const CALIBRATION_DATA_V2: &str = "0000ff04-0000-1000-8000-00805f9b34fb";
 }
 
 /// BLE 명령 코드
@@ -117,6 +133,70 @@ pub enum BleError {
 
     #[error("타임아웃")]
     Timeout,
+
+    #[error("지원하지 않는 펌웨어 버전: {0}")]
+    UnsupportedFirmware(String),
+}
+
+// ============================================================================
+// GATT 버전 협상 (H2: 후방 호환 — V1 카트리지는 V2 리더기에서 반드시 동작)
+// ============================================================================
+
+/// H2/H5: GATT 서비스 버전 — 펌웨어 major 버전에 따라 결정됩니다.
+///
+/// V1 (firmware 1.x): 16채널, 기본 측정 프로토콜
+/// V2 (firmware 2.x): 32채널, 고속 스트리밍 지원
+///
+/// 인터페이스 계약은 버전화되어 관리됩니다 (H5).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum GattVersion {
+    /// GATT V1 — 16채널 기본 프로토콜 (firmware 1.x)
+    V1 {
+        measurement_service: &'static str,
+        data_characteristic: &'static str,
+        channels: u16,
+    },
+    /// GATT V2 — 32채널 고속 스트리밍 (firmware 2.x)
+    V2 {
+        measurement_service: &'static str,
+        data_characteristic: &'static str,
+        channels: u16,
+        supports_streaming: bool,
+    },
+}
+
+impl GattVersion {
+    /// 채널 수 반환
+    pub fn channel_count(&self) -> u16 {
+        match self {
+            GattVersion::V1 { channels, .. } => *channels,
+            GattVersion::V2 { channels, .. } => *channels,
+        }
+    }
+
+    /// 측정 서비스 UUID 반환
+    pub fn measurement_service_uuid(&self) -> &'static str {
+        match self {
+            GattVersion::V1 { measurement_service, .. } => measurement_service,
+            GattVersion::V2 { measurement_service, .. } => measurement_service,
+        }
+    }
+
+    /// 데이터 특성 UUID 반환
+    pub fn data_characteristic_uuid(&self) -> &'static str {
+        match self {
+            GattVersion::V1 { data_characteristic, .. } => data_characteristic,
+            GattVersion::V2 { data_characteristic, .. } => data_characteristic,
+        }
+    }
+
+    /// 스트리밍 지원 여부
+    pub fn supports_streaming(&self) -> bool {
+        match self {
+            GattVersion::V1 { .. } => false,
+            GattVersion::V2 { supports_streaming, .. } => *supports_streaming,
+        }
+    }
 }
 
 /// BLE 매니저 - 여러 리더기 동시 관리 (무제한 확장)
@@ -192,6 +272,33 @@ impl BleManager {
         Vec::new()
     }
 
+    /// H2: BLE 펌웨어 버전 확인 및 GATT 계약 협상
+    ///
+    /// 펌웨어 major 버전에 따라 V1(16채널) 또는 V2(32채널+스트리밍)
+    /// GATT 서비스/특성 UUID를 결정합니다.
+    ///
+    /// V1 카트리지/리더기는 V2 앱에서도 반드시 동작해야 합니다 (H2 후방 호환).
+    pub fn negotiate_version(&self, device_info: &DeviceInfo) -> Result<GattVersion, BleError> {
+        let fw = device_info.firmware_version.as_deref().unwrap_or("1.0.0");
+        let parts: Vec<&str> = fw.split('.').collect();
+        let major = parts.first().and_then(|s| s.parse::<u32>().ok()).unwrap_or(1);
+
+        match major {
+            1 => Ok(GattVersion::V1 {
+                measurement_service: service_uuids::MEASUREMENT_SERVICE,
+                data_characteristic: characteristic_uuids::MEASUREMENT_DATA,
+                channels: 16,
+            }),
+            2 => Ok(GattVersion::V2 {
+                measurement_service: service_uuids::MEASUREMENT_SERVICE_V2,
+                data_characteristic: characteristic_uuids::MEASUREMENT_DATA_V2,
+                channels: 32,
+                supports_streaming: true,
+            }),
+            _ => Err(BleError::UnsupportedFirmware(fw.to_string())),
+        }
+    }
+
     /// 디바이스 연결
     pub async fn connect(&mut self, device_id: &str) -> Result<(), BleError> {
         // 이미 연결된 경우 스킵
@@ -258,6 +365,9 @@ impl BleManager {
                 battery_level: battery,
             };
 
+            // H2: GATT 버전 협상 — 펌웨어에 맞는 서비스/특성 UUID 결정
+            let _gatt_version = self.negotiate_version(&device_info)?;
+
             self.connected_devices
                 .write()
                 .insert(device_id.to_string(), device_info);
@@ -275,6 +385,9 @@ impl BleManager {
                 firmware_version: Some("1.0.0".to_string()),
                 battery_level: Some(100),
             };
+
+            // H2: GATT 버전 협상 — 스텁 모드에서도 버전 확인
+            let _gatt_version = self.negotiate_version(&device_info)?;
 
             self.connected_devices
                 .write()
@@ -884,5 +997,101 @@ mod tests {
         assert_eq!(packet.sequence, 1);
         assert!((packet.temperature - 23.5).abs() < 0.01);
         assert_eq!(packet.battery, 85);
+    }
+
+    // ── H2: GATT 버전 협상 테스트 ──
+
+    #[test]
+    fn test_negotiate_version_v1() {
+        let manager = BleManager::new();
+        let device = DeviceInfo {
+            device_id: "test-001".to_string(),
+            name: "MPK-Test".to_string(),
+            rssi: -45,
+            state: ConnectionState::Connected,
+            firmware_version: Some("1.2.3".to_string()),
+            battery_level: Some(90),
+        };
+        let version = manager.negotiate_version(&device).unwrap();
+        assert_eq!(version.channel_count(), 16);
+        assert!(!version.supports_streaming());
+        assert_eq!(
+            version.measurement_service_uuid(),
+            service_uuids::MEASUREMENT_SERVICE,
+        );
+    }
+
+    #[test]
+    fn test_negotiate_version_v2() {
+        let manager = BleManager::new();
+        let device = DeviceInfo {
+            device_id: "test-002".to_string(),
+            name: "MPK-Test-V2".to_string(),
+            rssi: -40,
+            state: ConnectionState::Connected,
+            firmware_version: Some("2.0.0".to_string()),
+            battery_level: Some(95),
+        };
+        let version = manager.negotiate_version(&device).unwrap();
+        assert_eq!(version.channel_count(), 32);
+        assert!(version.supports_streaming());
+        assert_eq!(
+            version.measurement_service_uuid(),
+            service_uuids::MEASUREMENT_SERVICE_V2,
+        );
+    }
+
+    #[test]
+    fn test_negotiate_version_none_defaults_to_v1() {
+        let manager = BleManager::new();
+        let device = DeviceInfo {
+            device_id: "test-003".to_string(),
+            name: "MPK-Old".to_string(),
+            rssi: -50,
+            state: ConnectionState::Connected,
+            firmware_version: None,
+            battery_level: None,
+        };
+        let version = manager.negotiate_version(&device).unwrap();
+        assert_eq!(version.channel_count(), 16);
+    }
+
+    #[test]
+    fn test_negotiate_version_unsupported() {
+        let manager = BleManager::new();
+        let device = DeviceInfo {
+            device_id: "test-004".to_string(),
+            name: "MPK-Future".to_string(),
+            rssi: -30,
+            state: ConnectionState::Connected,
+            firmware_version: Some("3.0.0".to_string()),
+            battery_level: Some(100),
+        };
+        let result = manager.negotiate_version(&device);
+        assert!(result.is_err());
+        match result {
+            Err(BleError::UnsupportedFirmware(fw)) => assert_eq!(fw, "3.0.0"),
+            _ => panic!("Expected UnsupportedFirmware error"),
+        }
+    }
+
+    #[test]
+    fn test_gatt_version_accessors() {
+        let v1 = GattVersion::V1 {
+            measurement_service: service_uuids::MEASUREMENT_SERVICE,
+            data_characteristic: characteristic_uuids::MEASUREMENT_DATA,
+            channels: 16,
+        };
+        assert_eq!(v1.channel_count(), 16);
+        assert!(!v1.supports_streaming());
+
+        let v2 = GattVersion::V2 {
+            measurement_service: service_uuids::MEASUREMENT_SERVICE_V2,
+            data_characteristic: characteristic_uuids::MEASUREMENT_DATA_V2,
+            channels: 32,
+            supports_streaming: true,
+        };
+        assert_eq!(v2.channel_count(), 32);
+        assert!(v2.supports_streaming());
     }
 }

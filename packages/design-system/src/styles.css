@@ -1,9 +1,134 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #0A2540;
-  --color-accent: #635BFF;
-  --color-error: #D92D20;
-  --color-warning: #F79009;
-  --color-success: #12B76A;
+  /* Primary — Sky */
+  --color-primary-50: #f0f9ff;
+  --color-primary-100: #e0f2fe;
+  --color-primary-200: #bae6fd;
+  --color-primary-300: #7dd3fc;
+  --color-primary-400: #38bdf8;
+  --color-primary-500: #0ea5e9;
+  --color-primary-600: #0284c7;
+  --color-primary-700: #0369a1;
+  --color-primary-800: #075985;
+  --color-primary-900: #0c4a6e;
+
+  /* Secondary — Purple */
+  --color-secondary-50: #faf5ff;
+  --color-secondary-100: #f3e8ff;
+  --color-secondary-200: #e9d5ff;
+  --color-secondary-300: #d8b4fe;
+  --color-secondary-400: #c084fc;
+  --color-secondary-500: #a855f7;
+  --color-secondary-600: #9333ea;
+  --color-secondary-700: #7e22ce;
+  --color-secondary-800: #6b21a8;
+  --color-secondary-900: #581c87;
+
+  /* Neutral — Slate */
+  --color-neutral-50: #f8fafc;
+  --color-neutral-100: #f1f5f9;
+  --color-neutral-200: #e2e8f0;
+  --color-neutral-300: #cbd5e1;
+  --color-neutral-400: #94a3b8;
+  --color-neutral-500: #64748b;
+  --color-neutral-600: #475569;
+  --color-neutral-700: #334155;
+  --color-neutral-800: #1e293b;
+  --color-neutral-900: #0f172a;
+
+  /* Semantic */
+  --color-success-light: #d1fae5;
+  --color-success: #10b981;
+  --color-success-dark: #065f46;
+
+  --color-warning-light: #fef3c7;
+  --color-warning: #f59e0b;
+  --color-warning-dark: #92400e;
+
+  --color-error-light: #fee2e2;
+  --color-error: #ef4444;
+  --color-error-dark: #991b1b;
+
+  --color-info-light: #dbeafe;
+  --color-info: #3b82f6;
+  --color-info-dark: #1e40af;
+}
+
+:root {
+  /* Spacing */
+  --mmup-spacing-0: 0;
+  --mmup-spacing-1: 4px;
+  --mmup-spacing-2: 8px;
+  --mmup-spacing-3: 12px;
+  --mmup-spacing-4: 16px;
+  --mmup-spacing-5: 20px;
+  --mmup-spacing-6: 24px;
+  --mmup-spacing-8: 32px;
+  --mmup-spacing-10: 40px;
+  --mmup-spacing-12: 48px;
+  --mmup-spacing-16: 64px;
+
+  /* Typography */
+  --mmup-font-sans: Inter, system-ui, sans-serif;
+  --mmup-font-mono: JetBrains Mono, monospace;
+
+  --mmup-text-xs: 0.75rem;
+  --mmup-text-sm: 0.875rem;
+  --mmup-text-base: 1rem;
+  --mmup-text-lg: 1.125rem;
+  --mmup-text-xl: 1.25rem;
+  --mmup-text-2xl: 1.5rem;
+  --mmup-text-3xl: 1.875rem;
+  --mmup-text-4xl: 2.25rem;
+
+  --mmup-font-normal: 400;
+  --mmup-font-medium: 500;
+  --mmup-font-semibold: 600;
+  --mmup-font-bold: 700;
+
+  --mmup-leading-tight: 1.25;
+  --mmup-leading-normal: 1.5;
+  --mmup-leading-relaxed: 1.75;
+
+  /* Border radius */
+  --mmup-radius-none: 0;
+  --mmup-radius-sm: 4px;
+  --mmup-radius-md: 8px;
+  --mmup-radius-lg: 12px;
+  --mmup-radius-xl: 16px;
+  --mmup-radius-2xl: 24px;
+  --mmup-radius-full: 9999px;
+
+  /* Shadows */
+  --mmup-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --mmup-shadow-md: 0 4px 6px rgba(0,0,0,0.07);
+  --mmup-shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  --mmup-shadow-xl: 0 20px 25px rgba(0,0,0,0.1);
+
+  /* Z-index */
+  --mmup-z-dropdown: 1000;
+  --mmup-z-sticky: 1020;
+  --mmup-z-fixed: 1030;
+  --mmup-z-modal: 1040;
+  --mmup-z-popover: 1050;
+  --mmup-z-tooltip: 1060;
+
+  /* Component tokens */
+  --mmup-button-height-sm: 32px;
+  --mmup-button-height-md: 40px;
+  --mmup-button-height-lg: 48px;
+  --mmup-button-radius: 8px;
+
+  --mmup-input-height-sm: 32px;
+  --mmup-input-height-md: 40px;
+  --mmup-input-height-lg: 48px;
+  --mmup-input-radius: 8px;
+
+  --mmup-card-radius: 16px;
+  --mmup-card-padding: 24px;
+
+  --mmup-badge-radius: 9999px;
+  --mmup-badge-px: 8px;
+  --mmup-badge-py: 2px;
 }

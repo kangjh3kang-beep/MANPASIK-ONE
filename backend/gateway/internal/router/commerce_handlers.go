@@ -22,14 +22,14 @@ func (r *Router) handleGetSubscription(w http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	conn, err := dialGRPC(r.subscriptionAddr)
+	cb, err := r.dialWithBreaker("subscription", r.subscriptionAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "구독 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewSubscriptionServiceClient(conn)
+	client := v1.NewSubscriptionServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -55,14 +55,14 @@ func (r *Router) handleCreateSubscription(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	conn, err := dialGRPC(r.subscriptionAddr)
+	cb, err := r.dialWithBreaker("subscription", r.subscriptionAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "구독 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewSubscriptionServiceClient(conn)
+	client := v1.NewSubscriptionServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -93,14 +93,14 @@ func (r *Router) handleCancelSubscription(w http.ResponseWriter, req *http.Reque
 	// Body is optional for DELETE
 	json.NewDecoder(req.Body).Decode(&body)
 
-	conn, err := dialGRPC(r.subscriptionAddr)
+	cb, err := r.dialWithBreaker("subscription", r.subscriptionAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "구독 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewSubscriptionServiceClient(conn)
+	client := v1.NewSubscriptionServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -128,14 +128,14 @@ func (r *Router) handleCancelSubscription(w http.ResponseWriter, req *http.Reque
 
 // GET /api/v1/subscriptions/plans
 func (r *Router) handleListSubscriptionPlans(w http.ResponseWriter, req *http.Request) {
-	conn, err := dialGRPC(r.subscriptionAddr)
+	cb, err := r.dialWithBreaker("subscription", r.subscriptionAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "구독 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewSubscriptionServiceClient(conn)
+	client := v1.NewSubscriptionServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -204,14 +204,14 @@ func (r *Router) handleListProducts(w http.ResponseWriter, req *http.Request) {
 		limit = 20
 	}
 
-	conn, err := dialGRPC(r.shopAddr)
+	cb, err := r.dialWithBreaker("shop", r.shopAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "쇼핑 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewShopServiceClient(conn)
+	client := v1.NewShopServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -244,14 +244,14 @@ func (r *Router) handleGetProduct(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.shopAddr)
+	cb, err := r.dialWithBreaker("shop", r.shopAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "쇼핑 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewShopServiceClient(conn)
+	client := v1.NewShopServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -278,14 +278,14 @@ func (r *Router) handleAddToCart(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.shopAddr)
+	cb, err := r.dialWithBreaker("shop", r.shopAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "쇼핑 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewShopServiceClient(conn)
+	client := v1.NewShopServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -310,14 +310,14 @@ func (r *Router) handleGetCart(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.shopAddr)
+	cb, err := r.dialWithBreaker("shop", r.shopAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "쇼핑 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewShopServiceClient(conn)
+	client := v1.NewShopServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -344,14 +344,14 @@ func (r *Router) handleCreateOrder(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.shopAddr)
+	cb, err := r.dialWithBreaker("shop", r.shopAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "쇼핑 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewShopServiceClient(conn)
+	client := v1.NewShopServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -383,14 +383,14 @@ func (r *Router) handleListOrders(w http.ResponseWriter, req *http.Request) {
 		limit = 20
 	}
 
-	conn, err := dialGRPC(r.shopAddr)
+	cb, err := r.dialWithBreaker("shop", r.shopAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "쇼핑 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewShopServiceClient(conn)
+	client := v1.NewShopServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -499,14 +499,14 @@ func (r *Router) handleCreatePayment(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.paymentAddr)
+	cb, err := r.dialWithBreaker("payment", r.paymentAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "결제 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewPaymentServiceClient(conn)
+	client := v1.NewPaymentServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -543,14 +543,14 @@ func (r *Router) handleConfirmPayment(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	conn, err := dialGRPC(r.paymentAddr)
+	cb, err := r.dialWithBreaker("payment", r.paymentAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "결제 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewPaymentServiceClient(conn)
+	client := v1.NewPaymentServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -575,14 +575,14 @@ func (r *Router) handleGetPayment(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.paymentAddr)
+	cb, err := r.dialWithBreaker("payment", r.paymentAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "결제 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewPaymentServiceClient(conn)
+	client := v1.NewPaymentServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

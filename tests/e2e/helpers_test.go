@@ -125,3 +125,8 @@ func assertNotStatus(t *testing.T, got, notWant int, msg string) {
 func uniqueEmail(prefix string) string {
 	return fmt.Sprintf("%s-%d@e2e-test.com", prefix, time.Now().UnixNano())
 }
+
+// uniqueTS 고유 타임스탬프 반환 (ID 생성용)
+func uniqueTS() int64 {
+	return time.Now().UnixNano()
+}

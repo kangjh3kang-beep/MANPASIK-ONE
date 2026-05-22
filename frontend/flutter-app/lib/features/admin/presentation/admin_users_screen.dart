@@ -355,6 +355,18 @@ class _AdminUsersScreenState
     );
   }
 
+  String _formatLastActive(String? lastActive) {
+    if (lastActive == null || lastActive.isEmpty) return '정보 없음';
+    final dt = DateTime.tryParse(lastActive);
+    if (dt == null) return lastActive;
+    final diff = DateTime.now().difference(dt);
+    if (diff.inMinutes < 1) return '방금 전';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}분 전';
+    if (diff.inHours < 24) return '${diff.inHours}시간 전';
+    if (diff.inDays < 7) return '${diff.inDays}일 전';
+    return '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}';
+  }
+
   static const _roleFilters = [
     ('all', '전체'),
     ('user', '일반'),
@@ -484,6 +496,13 @@ class _AdminUsersScreenState
                 fontSize: 12,
               ),
             ),
+          Text(
+            '최근 활동: ${_formatLastActive(user['last_active'] as String? ?? user['last_login'] as String?)}',
+            style: const TextStyle(
+              color: SanggamTheme.onSurfaceDim,
+              fontSize: 12,
+            ),
+          ),
         ],
       ),
       trailing: PopupMenuButton<String>(
@@ -515,6 +534,10 @@ class _AdminUsersScreenState
         ],
         onSelected: (action) {
           switch (action) {
+            case 'detail':
+              _showUserDetailDialog(
+                  context, user);
+              break;
             case 'role':
               _showRoleChangeDialog(
                   context, userId, name);
@@ -527,15 +550,85 @@ class _AdminUsersScreenState
                   name,
                   action);
               break;
-            default:
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(
-                SnackBar(
-                    content: Text(
-                        '$name 사용자 상세 보기')),
-              );
           }
         },
+      ),
+    );
+  }
+
+  void _showUserDetailDialog(
+      BuildContext context,
+      Map<String, dynamic> user) {
+    final name = user['display_name'] as String? ??
+        user['name'] as String? ?? '사용자';
+    final email = user['email'] as String? ?? '';
+    final role = user['role'] as String? ?? 'user';
+    final status = user['status'] as String? ?? 'active';
+    final createdAt = user['created_at'] as String? ?? '';
+    final lastActive = user['last_active'] as String? ??
+        user['last_login'] as String? ?? '';
+
+    final roleLabel = switch (role) {
+      'admin' => '관리자',
+      'clinician' => '임상의',
+      'premium' => '프리미엄',
+      _ => '일반',
+    };
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: SanggamTheme.surface,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+        title: Text(name,
+            style: const TextStyle(color: Colors.white)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _detailRow('이메일', email),
+            _detailRow('역할', roleLabel),
+            _detailRow('상태', status == 'active' ? '활성' : '정지'),
+            if (createdAt.isNotEmpty)
+              _detailRow('가입일',
+                  createdAt.length > 10 ? createdAt.substring(0, 10) : createdAt),
+            _detailRow('최근 활동', _formatLastActive(
+                lastActive.isNotEmpty ? lastActive : null)),
+          ],
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('닫기',
+                  style: TextStyle(color: SanggamTheme.onSurfaceDim))),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 72,
+            child: Text(label,
+                style: const TextStyle(
+                  color: SanggamTheme.onSurfaceDim,
+                  fontSize: 13,
+                )),
+          ),
+          Expanded(
+            child: Text(value,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                )),
+          ),
+        ],
       ),
     );
   }
@@ -726,6 +819,7 @@ class _AdminUsersScreenState
       'role': 'admin',
       'status': 'active',
       'created_at': '2025-12-01T00:00:00Z',
+      'last_active': DateTime.now().subtract(const Duration(minutes: 5)).toIso8601String(),
     },
     {
       'display_name': '이안심',
@@ -733,6 +827,7 @@ class _AdminUsersScreenState
       'role': 'clinician',
       'status': 'active',
       'created_at': '2026-01-05T00:00:00Z',
+      'last_active': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
     },
     {
       'display_name': '박자연',
@@ -740,6 +835,7 @@ class _AdminUsersScreenState
       'role': 'premium',
       'status': 'active',
       'created_at': '2026-01-15T00:00:00Z',
+      'last_active': DateTime.now().subtract(const Duration(hours: 12)).toIso8601String(),
     },
     {
       'display_name': '최희망',
@@ -747,6 +843,7 @@ class _AdminUsersScreenState
       'role': 'user',
       'status': 'active',
       'created_at': '2026-02-01T00:00:00Z',
+      'last_active': DateTime.now().subtract(const Duration(days: 1)).toIso8601String(),
     },
     {
       'display_name': '정미래',
@@ -754,6 +851,7 @@ class _AdminUsersScreenState
       'role': 'user',
       'status': 'suspended',
       'created_at': '2026-02-10T00:00:00Z',
+      'last_active': DateTime.now().subtract(const Duration(days: 30)).toIso8601String(),
     },
     {
       'display_name': '한솔루션',
@@ -761,6 +859,7 @@ class _AdminUsersScreenState
       'role': 'premium',
       'status': 'active',
       'created_at': '2026-02-12T00:00:00Z',
+      'last_active': DateTime.now().subtract(const Duration(minutes: 45)).toIso8601String(),
     },
   ];
 }

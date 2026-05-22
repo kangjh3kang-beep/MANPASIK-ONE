@@ -1,0 +1,80 @@
+{
+  "common": {
+    "loading": "読み込み中...",
+    "error": "データの読み込みに失敗しました",
+    "retry": "再試行",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "search": "検索",
+    "filter": "フィルター"
+  },
+  "clinical": {
+    "title": "臨床データコンソール",
+    "subtitle": "リアルタイム患者バイタルモニタリング & AI分析",
+    "activePatients": "アクティブ患者",
+    "dailyMeasurements": "日次測定",
+    "activeAlerts": "アクティブアラート",
+    "accuracy": "精度"
+  },
+  "agentsHub": {
+    "title": "AIエージェントオーケストレーター",
+    "subtitle": "MLモデルパイプライン管理 & モニタリング",
+    "registeredAgents": "登録エージェント",
+    "activeInference": "アクティブ推論",
+    "avgLatency": "平均レイテンシ",
+    "pipelineHealth": "パイプライン状態"
+  },
+  "predictor": {
+    "title": "バイオマーカー予測エンジン",
+    "subtitle": "GNNベース疾患リスク予測システム",
+    "targetDiseases": "対象疾患",
+    "highRiskDetections": "高リスク検出",
+    "modelAccuracy": "モデル精度"
+  },
+  "reward": {
+    "title": "患者リワードプール",
+    "subtitle": "データ貢献に対するトークンベース報酬システム",
+    "totalTokens": "保有トークン",
+    "contributions": "貢献数",
+    "monthlyReward": "月間報酬"
+  },
+  "partner": {
+    "title": "パートナー統合ハブ",
+    "subtitle": "HL7/FHIRデータパイプライン統合管理",
+    "connectedPartners": "接続パートナー",
+    "dailyExchanges": "日次交換",
+    "successRate": "成功率"
+  },
+  "gxp": {
+    "title": "GxPコンプライアンスシステム",
+    "subtitle": "cGMP監査証跡 & 電子署名規制準拠",
+    "complianceRate": "準拠率",
+    "auditItems": "監査項目",
+    "pendingItems": "保留項目",
+    "totalLogs": "全ログ"
+  },
+  "devPortal": {
+    "title": "開発者ポータル",
+    "subtitle": "OpenAPIエクスプローラー & APIキー管理",
+    "totalEndpoints": "全エンドポイント",
+    "activeKeys": "アクティブAPIキー",
+    "webhooks": "Webhook",
+    "docs": "ドキュメントバージョン"
+  },
+  "hardwareCore": {
+    "title": "ハードウェアコアエンジン",
+    "subtitle": "RustベースEdge AI & センサーキャリブレーション",
+    "engineStatus": "エンジン状態",
+    "cpuTemp": "CPU温度",
+    "memoryUsage": "メモリ使用率",
+    "compliance": "IEC 62304準拠"
+  },
+  "app": {
+    "title": "ManPaSikヘルスアプリ",
+    "subtitle": "あなたの健康データを一目で",
+    "healthScore": "健康スコア",
+    "newMeasurement": "新しい測定を開始",
+    "shareDoctor": "医師に共有",
+    "checkReward": "リワード確認"
+  }
+}

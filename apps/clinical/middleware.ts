@@ -5,24 +5,36 @@
  * @standard IEC 62304 Class C
  *
  * Clinical 도메인 미들웨어
- * - next-intl 다국어 라우팅 유지
- * - @mmup/auth 접근 제어 통합 (Sprint 5에서 활성화)
+ * - next-intl 다국어 라우팅
+ * - @mmup/auth 접근 제어 통합
  */
 
-import createMiddleware from 'next-intl/middleware';
+import createIntlMiddleware from 'next-intl/middleware';
+import { withAuth } from '@mmup/auth';
+import { NextRequest } from 'next/server';
 
-// Phase 1: 다국어 라우팅 (현재 활성)
-const intlMiddleware = createMiddleware({
+const intlMiddleware = createIntlMiddleware({
   locales: ['ko', 'en', 'ja', 'zh'],
   defaultLocale: 'ko'
 });
 
-export default intlMiddleware;
+const authMiddleware = withAuth({
+  allowedPersonas: ['doctor', 'researcher', 'admin'],
+});
+
+export default async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (!pathname.startsWith('/_next') && !pathname.startsWith('/api')) {
+    const authRes = await authMiddleware(request);
+    if (authRes && authRes.status !== 200 && authRes.headers.get('location')) {
+      return authRes;
+    }
+  }
+
+  return intlMiddleware(request);
+}
 
 export const config = {
   matcher: ['/', '/(ko|en|ja|zh)/:path*']
 };
-
-// Phase 2 참고사항 (Sprint 5에서 활성화):
-// import { withAuth } from '@mmup/auth';
-// allowedPersonas: ['doctor', 'researcher', 'admin']

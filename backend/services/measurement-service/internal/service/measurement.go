@@ -16,12 +16,19 @@ import (
 )
 
 // MeasurementService??痢≪젙 ?쒕퉬?ㅼ쓽 鍮꾩쫰?덉뒪 濡쒖쭅?낅땲??
+// AuditClient는 감사 로그 기록을 위한 인터페이스입니다 (H3 사전인증 추적).
+// audit-service에 대한 gRPC 또는 직접 호출 어댑터를 구현합니다.
+type AuditClient interface {
+	RecordAction(ctx context.Context, adminID, action, resourceType, resourceID, description string) error
+}
+
 type MeasurementService struct {
 	logger         *zap.Logger
 	sessionRepo    SessionRepository
 	measureRepo    MeasurementRepository
 	vectorRepo     VectorRepository
 	eventPublisher EventPublisher
+	auditClient    AuditClient
 	searchIndexer  SearchIndexer // optional: nil?대㈃ ?몃뜳??鍮꾪솢?깊솕
 }
 
@@ -141,6 +148,30 @@ func (s *MeasurementService) SetSearchIndexer(indexer SearchIndexer) {
 	s.searchIndexer = indexer
 }
 
+// SetAuditClient는 감사 로그 클라이언트를 설정합니다 (optional, H3).
+func (s *MeasurementService) SetAuditClient(client AuditClient) {
+	s.auditClient = client
+}
+
+// recordAuditAsync는 감사 로그를 비동기로 기록합니다.
+// audit-service 장애가 측정 흐름을 차단하지 않도록 고루틴에서 실행합니다 (H6 실패 격리).
+func (s *MeasurementService) recordAuditAsync(userID, action, resourceType, resourceID, description string) {
+	if s.auditClient == nil {
+		return
+	}
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := s.auditClient.RecordAction(ctx, userID, action, resourceType, resourceID, description); err != nil {
+			s.logger.Warn("감사 로그 기록 실패 (비치명적)",
+				zap.String("action", action),
+				zap.String("resource_id", resourceID),
+				zap.Error(err),
+			)
+		}
+	}()
+}
+
 // StartSession? ??痢≪젙 ?몄뀡???쒖옉?⑸땲??
 func (s *MeasurementService) StartSession(
 	ctx context.Context,
@@ -225,7 +256,7 @@ func (s *MeasurementService) ProcessMeasurement(
 		}
 	}
 
-	return &ProcessedResult{
+	result := &ProcessedResult{
 		SessionID:       data.SessionID,
 		PrimaryValue:    data.PrimaryValue,
 		Unit:            data.Unit,
@@ -234,7 +265,18 @@ func (s *MeasurementService) ProcessMeasurement(
 		DiagnosticReady: data.DiagnosticReady,
 		EvidenceGaps:    append([]string(nil), data.EvidenceGaps...),
 		ProcessedAt:     time.Now().UTC(),
-	}, nil
+	}
+
+	// H3 감사 로그: 측정 완료 기록 (비동기, 실패 시 측정 흐름 미차단)
+	s.recordAuditAsync(
+		data.UserID,
+		"measurement.completed",
+		"measurement_session",
+		data.SessionID,
+		fmt.Sprintf("measurement processed: value=%.4f %s, confidence=%.2f", data.PrimaryValue, data.Unit, data.Confidence),
+	)
+
+	return result, nil
 }
 
 func applyAssaySemantics(data *MeasurementData) error {
@@ -296,6 +338,15 @@ func (s *MeasurementService) EndSession(
 	s.logger.Info("痢≪젙 ?몄뀡 醫낅즺",
 		zap.String("session_id", sessionID),
 		zap.Int("total_measurements", session.TotalMeasurements),
+	)
+
+	// H3 감사 로그: 세션 종료 기록 (비동기, 실패 시 측정 흐름 미차단)
+	s.recordAuditAsync(
+		session.UserID,
+		"measurement.session_ended",
+		"measurement_session",
+		sessionID,
+		fmt.Sprintf("session ended: %d measurements, device=%s", session.TotalMeasurements, session.DeviceID),
 	)
 
 	return &SessionEndResult{

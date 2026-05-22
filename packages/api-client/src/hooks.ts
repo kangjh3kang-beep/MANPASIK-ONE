@@ -5,7 +5,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { patientsApi, sensorsApi, agentsApi, predictionsApi, rewardsApi, partnersApi, gxpApi } from './endpoints';
+import { patientsApi, sensorsApi, agentsApi, predictionsApi, rewardsApi, partnersApi, gxpApi, agentPipelineApi, devPortalApi, hardwareApi, appMetricsApi } from './endpoints';
 
 // ===== 환자 =====
 export function usePatients(params?: Record<string, string>) {
@@ -121,5 +121,57 @@ export function useCompliance() {
     queryKey: ['compliance'],
     queryFn: () => gxpApi.getCompliance(),
     staleTime: 300_000,
+  });
+}
+
+// ===== 에이전트 파이프라인 =====
+export function useAgentPipeline() {
+  return useQuery({
+    queryKey: ['agent-pipeline'],
+    queryFn: () => agentPipelineApi.getState(),
+    refetchInterval: 4_000,
+  });
+}
+
+// ===== 개발자 포털 =====
+export function useDevPortalKeys() {
+  return useQuery({
+    queryKey: ['dev-portal-keys'],
+    queryFn: () => devPortalApi.getKeys(),
+    staleTime: 60_000,
+  });
+}
+
+export function useDevPortalEndpoints() {
+  return useQuery({
+    queryKey: ['dev-portal-endpoints'],
+    queryFn: () => devPortalApi.getEndpoints(),
+    staleTime: 120_000,
+  });
+}
+
+// ===== 하드웨어 =====
+export function useHardwareDevices() {
+  return useQuery({
+    queryKey: ['hardware-devices'],
+    queryFn: () => hardwareApi.getDevices(),
+    refetchInterval: 10_000,
+  });
+}
+
+export function useHardwareDiagnostics() {
+  return useQuery({
+    queryKey: ['hardware-diagnostics'],
+    queryFn: () => hardwareApi.getDiagnostics(),
+    refetchInterval: 5_000,
+  });
+}
+
+// ===== 앱 메트릭 =====
+export function useAppMetrics() {
+  return useQuery({
+    queryKey: ['app-metrics'],
+    queryFn: () => appMetricsApi.getMetrics(),
+    refetchInterval: 10_000,
   });
 }

@@ -1,5 +1,9 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:manpasik/core/services/grpc_client.dart';
 import 'package:manpasik/core/services/rest_client.dart';
 import 'package:manpasik/core/providers/grpc_provider.dart';
@@ -9,15 +13,35 @@ import 'package:manpasik/core/services/auth_interceptor.dart';
 
 /// 채팅 메시지 모델
 class ChatMessage {
+  final String id;
   final String role; // "user", "assistant", "system"
   final String content;
   final DateTime timestamp;
+  final String? sessionId;
 
   const ChatMessage({
+    this.id = '',
     required this.role,
     required this.content,
     required this.timestamp,
+    this.sessionId,
   });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'role': role,
+        'content': content,
+        'timestamp': timestamp.toIso8601String(),
+        if (sessionId != null) 'session_id': sessionId,
+      };
+
+  factory ChatMessage.fromJson(Map<String, dynamic> json) => ChatMessage(
+        id: json['id'] as String? ?? '',
+        role: json['role'] as String? ?? 'user',
+        content: json['content'] as String? ?? '',
+        timestamp: DateTime.tryParse(json['timestamp'] as String? ?? '') ?? DateTime.now(),
+        sessionId: json['session_id'] as String?,
+      );
 }
 
 /// 채팅 상태 모델
@@ -57,13 +81,79 @@ class ChatState {
 ///
 /// gRPC AIInferenceService와 연동하며, 서버 미연결 시 로컬 fallback 응답 제공.
 /// 웹 플랫폼에서는 REST Gateway를 통해 AI 서비스 호출.
+/// Hive 기반 메시지 캐싱으로 오프라인 접근 지원.
 class ChatNotifier extends StateNotifier<ChatState> {
   ChatNotifier(this._manager, this._restClient, this._accessTokenProvider)
-      : super(const ChatState());
+      : super(const ChatState()) {
+    _initCache();
+  }
 
   final GrpcClientManager _manager;
   final ManPaSikRestClient _restClient;
   final String? Function() _accessTokenProvider;
+
+  static const _cacheBoxName = 'chat_messages';
+  Box<String>? _cacheBox;
+  String? _sessionId;
+
+  /// Hive 캐시 초기화 및 이전 메시지 복원
+  Future<void> _initCache() async {
+    try {
+      _cacheBox = await Hive.openBox<String>(_cacheBoxName);
+      final cached = _cacheBox?.values.toList() ?? [];
+      if (cached.isNotEmpty) {
+        final messages = cached
+            .map((json) {
+              try {
+                return ChatMessage.fromJson(
+                    jsonDecode(json) as Map<String, dynamic>);
+              } catch (_) {
+                return null;
+              }
+            })
+            .whereType<ChatMessage>()
+            .toList();
+        if (messages.isNotEmpty) {
+          state = state.copyWith(messages: messages);
+        }
+      }
+    } catch (e) {
+      debugPrint('[ChatNotifier] 캐시 초기화 실패: $e');
+    }
+  }
+
+  /// 메시지를 Hive 캐시에 저장
+  Future<void> _cacheMessages(List<ChatMessage> messages) async {
+    try {
+      final box = _cacheBox;
+      if (box == null) return;
+      await box.clear();
+      for (var i = 0; i < messages.length; i++) {
+        await box.put('msg_$i', jsonEncode(messages[i].toJson()));
+      }
+    } catch (e) {
+      debugPrint('[ChatNotifier] 캐시 저장 실패: $e');
+    }
+  }
+
+  /// REST 코칭 세션 생성
+  Future<String> _ensureSession() async {
+    if (_sessionId != null) return _sessionId!;
+    try {
+      final resp = await _restClient.dio.post(
+        '/coaching/sessions',
+        data: {'type': 'health_chat'},
+      );
+      final data = resp.data as Map<String, dynamic>? ?? {};
+      _sessionId = data['session_id'] as String? ??
+          data['id'] as String? ??
+          'session-${DateTime.now().millisecondsSinceEpoch}';
+      return _sessionId!;
+    } on DioException {
+      _sessionId = 'local-${DateTime.now().millisecondsSinceEpoch}';
+      return _sessionId!;
+    }
+  }
 
   /// 사용자 메시지 전송 → AI 응답 수신
   Future<void> sendMessage(String text) async {
@@ -71,9 +161,11 @@ class ChatNotifier extends StateNotifier<ChatState> {
 
     // 사용자 메시지 추가
     final userMessage = ChatMessage(
+      id: 'user-${DateTime.now().millisecondsSinceEpoch}',
       role: 'user',
       content: text.trim(),
       timestamp: DateTime.now(),
+      sessionId: _sessionId,
     );
     state = state.copyWith(
       messages: [...state.messages, userMessage],
@@ -82,30 +174,68 @@ class ChatNotifier extends StateNotifier<ChatState> {
     );
 
     try {
-      final response = await _callAiService(text.trim());
+      final response = await _callCoachingEndpoint(text.trim());
       final aiMessage = ChatMessage(
+        id: 'ai-${DateTime.now().millisecondsSinceEpoch}',
         role: 'assistant',
         content: response,
         timestamp: DateTime.now(),
+        sessionId: _sessionId,
       );
       state = state.copyWith(
         messages: [...state.messages, aiMessage],
         isLoading: false,
       );
+      await _cacheMessages(state.messages);
     } catch (e) {
       debugPrint('[ChatNotifier] AI 호출 실패: $e');
       // fallback 로컬 응답
       final fallback = _generateFallbackResponse(text.trim());
       final fallbackMessage = ChatMessage(
+        id: 'fallback-${DateTime.now().millisecondsSinceEpoch}',
         role: 'assistant',
         content: fallback,
         timestamp: DateTime.now(),
+        sessionId: _sessionId,
       );
       state = state.copyWith(
         messages: [...state.messages, fallbackMessage],
         isLoading: false,
+        error: 'AI 서비스 일시적 오류. 기본 정보로 응답합니다.',
       );
+      await _cacheMessages(state.messages);
     }
+  }
+
+  /// REST 코칭 메시지 엔드포인트를 통한 AI 서비스 호출
+  Future<String> _callCoachingEndpoint(String userText) async {
+    final sessionId = await _ensureSession();
+    try {
+      final resp = await _restClient.dio.post(
+        '/coaching/messages',
+        data: {
+          'session_id': sessionId,
+          'content': userText,
+          'role': 'user',
+        },
+      );
+      final data = resp.data as Map<String, dynamic>? ?? {};
+      final reply = data['reply'] as String? ??
+          data['content'] as String? ??
+          data['message'] as String? ??
+          '';
+      if (reply.isNotEmpty) return reply;
+      // Fall through to legacy AI service
+    } on DioException {
+      // Coaching endpoint unavailable, fall through to legacy
+    } on FormatException catch (e) {
+      debugPrint('[ChatNotifier] JSON 파싱 오류: $e');
+      // Fall through to legacy AI service
+    } on TypeError catch (e) {
+      debugPrint('[ChatNotifier] 응답 타입 오류: $e');
+      // Fall through to legacy AI service
+    }
+    return _callAiService(userText);
   }
 
   /// AI 서비스 호출 시도 (웹: REST, 네이티브: gRPC)
@@ -221,15 +351,17 @@ class ChatNotifier extends StateNotifier<ChatState> {
 
   /// 스트리밍 방식으로 메시지 전송 (C1)
   ///
-  /// REST Gateway의 /ai/chat/stream 엔드포인트를 호출하고,
+  /// REST Gateway의 /coaching/messages 엔드포인트를 호출하고,
   /// 응답을 글자 단위로 스트리밍하여 실시간 표시합니다.
   Future<void> sendMessageStream(String text) async {
     if (text.trim().isEmpty) return;
 
     final userMessage = ChatMessage(
+      id: 'user-${DateTime.now().millisecondsSinceEpoch}',
       role: 'user',
       content: text.trim(),
       timestamp: DateTime.now(),
+      sessionId: _sessionId,
     );
     state = state.copyWith(
       messages: [...state.messages, userMessage],
@@ -239,8 +371,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
     );
 
     try {
-      // REST를 통해 전체 응답 수신 후 글자 단위 스트리밍 시뮬레이션
-      final response = await _callAiService(text.trim());
+      // REST 코칭 엔드포인트를 통해 응답 수신 후 글자 단위 스트리밍 시뮬레이션
+      final response = await _callCoachingEndpoint(text.trim());
       // 글자 단위 스트리밍 시뮬레이션
       final buffer = StringBuffer();
       for (var i = 0; i < response.length; i++) {
@@ -250,15 +382,18 @@ class ChatNotifier extends StateNotifier<ChatState> {
       }
 
       final aiMessage = ChatMessage(
+        id: 'ai-${DateTime.now().millisecondsSinceEpoch}',
         role: 'assistant',
         content: response,
         timestamp: DateTime.now(),
+        sessionId: _sessionId,
       );
       state = state.copyWith(
         messages: [...state.messages, aiMessage],
         isStreaming: false,
         streamingContent: '',
       );
+      await _cacheMessages(state.messages);
     } catch (e) {
       debugPrint('[ChatNotifier] AI 스트리밍 실패: $e');
       final fallback = _generateFallbackResponse(text.trim());
@@ -272,21 +407,27 @@ class ChatNotifier extends StateNotifier<ChatState> {
       }
 
       final fallbackMessage = ChatMessage(
+        id: 'fallback-${DateTime.now().millisecondsSinceEpoch}',
         role: 'assistant',
         content: fallback,
         timestamp: DateTime.now(),
+        sessionId: _sessionId,
       );
       state = state.copyWith(
         messages: [...state.messages, fallbackMessage],
         isStreaming: false,
         streamingContent: '',
+        error: 'AI 서비스 일시적 오류. 기본 정보로 응답합니다.',
       );
+      await _cacheMessages(state.messages);
     }
   }
 
   /// 채팅 기록 초기화
   void clearChat() {
     state = const ChatState();
+    _sessionId = null;
+    _cacheBox?.clear();
   }
 }
 

@@ -1,0 +1,80 @@
+{
+  "common": {
+    "loading": "加载中...",
+    "error": "数据加载失败",
+    "retry": "重试",
+    "save": "保存",
+    "cancel": "取消",
+    "search": "搜索",
+    "filter": "筛选"
+  },
+  "clinical": {
+    "title": "临床数据控制台",
+    "subtitle": "实时患者生命体征监测与AI分析",
+    "activePatients": "活跃患者",
+    "dailyMeasurements": "每日测量",
+    "activeAlerts": "活跃告警",
+    "accuracy": "准确度"
+  },
+  "agentsHub": {
+    "title": "AI代理编排器",
+    "subtitle": "ML模型管道管理与监控",
+    "registeredAgents": "注册代理",
+    "activeInference": "活跃推理",
+    "avgLatency": "平均延迟",
+    "pipelineHealth": "管道状态"
+  },
+  "predictor": {
+    "title": "生物标志物预测引擎",
+    "subtitle": "基于GNN的疾病风险预测系统",
+    "targetDiseases": "目标疾病",
+    "highRiskDetections": "高风险检测",
+    "modelAccuracy": "模型准确度"
+  },
+  "reward": {
+    "title": "患者奖励池",
+    "subtitle": "基于代币的数据贡献奖励系统",
+    "totalTokens": "持有代币",
+    "contributions": "贡献数",
+    "monthlyReward": "月度奖励"
+  },
+  "partner": {
+    "title": "合作伙伴集成中心",
+    "subtitle": "HL7/FHIR数据管道集成管理",
+    "connectedPartners": "已连接合作伙伴",
+    "dailyExchanges": "每日交换",
+    "successRate": "成功率"
+  },
+  "gxp": {
+    "title": "GxP合规系统",
+    "subtitle": "cGMP审计追踪与电子签名法规合规",
+    "complianceRate": "合规率",
+    "auditItems": "审计项目",
+    "pendingItems": "待处理项目",
+    "totalLogs": "全部日志"
+  },
+  "devPortal": {
+    "title": "开发者门户",
+    "subtitle": "OpenAPI浏览器与API密钥管理",
+    "totalEndpoints": "全部端点",
+    "activeKeys": "活跃API密钥",
+    "webhooks": "Webhook",
+    "docs": "文档版本"
+  },
+  "hardwareCore": {
+    "title": "硬件核心引擎",
+    "subtitle": "基于Rust的边缘AI与传感器校准",
+    "engineStatus": "引擎状态",
+    "cpuTemp": "CPU温度",
+    "memoryUsage": "内存使用率",
+    "compliance": "IEC 62304合规"
+  },
+  "app": {
+    "title": "ManPaSik健康应用",
+    "subtitle": "一览您的健康数据",
+    "healthScore": "健康评分",
+    "newMeasurement": "开始新测量",
+    "shareDoctor": "分享给医生",
+    "checkReward": "查看奖励"
+  }
+}

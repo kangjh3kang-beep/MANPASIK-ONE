@@ -57,6 +57,13 @@ func main() {
 	metrics := observability.NewMetrics()
 	healthCheck := observability.NewHealthCheck(serviceName, cfg.Version)
 
+	tp, tpErr := observability.InitTracer(serviceName)
+	if tpErr != nil {
+		log.Printf("[WARN] Tracing init failed: %v", tpErr)
+	} else {
+		defer tp.Shutdown(context.Background())
+	}
+
 	log.Printf("[%s] Starting v%s...", serviceName, cfg.Version)
 	log.Printf("[%s] gRPC port: %s", serviceName, cfg.GRPCPort)
 

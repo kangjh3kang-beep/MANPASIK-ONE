@@ -1,5 +1,80 @@
 {
-  "Index": {
-    "title": "Precision Diagnostic Horizon, MMUP"
+  "common": {
+    "loading": "Loading...",
+    "error": "Failed to load data",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search",
+    "filter": "Filter"
+  },
+  "clinical": {
+    "title": "Clinical Data Console",
+    "subtitle": "Real-time patient vital monitoring & AI analysis",
+    "activePatients": "Active Patients",
+    "dailyMeasurements": "Daily Measurements",
+    "activeAlerts": "Active Alerts",
+    "accuracy": "Accuracy"
+  },
+  "agentsHub": {
+    "title": "AI Agent Orchestrator",
+    "subtitle": "ML model pipeline management & monitoring",
+    "registeredAgents": "Registered Agents",
+    "activeInference": "Active Inference",
+    "avgLatency": "Avg Latency",
+    "pipelineHealth": "Pipeline Health"
+  },
+  "predictor": {
+    "title": "Biomarker Prediction Engine",
+    "subtitle": "GNN-based disease risk prediction system",
+    "targetDiseases": "Target Diseases",
+    "highRiskDetections": "High-Risk Detections",
+    "modelAccuracy": "Model Accuracy"
+  },
+  "reward": {
+    "title": "Patient Reward Pool",
+    "subtitle": "Token-based reward system for data contributions",
+    "totalTokens": "Total Tokens",
+    "contributions": "Contributions",
+    "monthlyReward": "Monthly Reward"
+  },
+  "partner": {
+    "title": "Partner Integration Hub",
+    "subtitle": "HL7/FHIR data pipeline integration management",
+    "connectedPartners": "Connected Partners",
+    "dailyExchanges": "Daily Exchanges",
+    "successRate": "Success Rate"
+  },
+  "gxp": {
+    "title": "GxP Compliance System",
+    "subtitle": "cGMP audit trail & e-signature regulatory compliance",
+    "complianceRate": "Compliance Rate",
+    "auditItems": "Audit Items",
+    "pendingItems": "Pending Items",
+    "totalLogs": "Total Logs"
+  },
+  "devPortal": {
+    "title": "Developer Portal",
+    "subtitle": "OpenAPI explorer & API key management",
+    "totalEndpoints": "Total Endpoints",
+    "activeKeys": "Active API Keys",
+    "webhooks": "Webhooks",
+    "docs": "Docs Version"
+  },
+  "hardwareCore": {
+    "title": "Hardware Core Engine",
+    "subtitle": "Rust-based Edge AI & sensor calibration",
+    "engineStatus": "Engine Status",
+    "cpuTemp": "CPU Temp",
+    "memoryUsage": "Memory Usage",
+    "compliance": "IEC 62304 Compliance"
+  },
+  "app": {
+    "title": "ManPaSik Health App",
+    "subtitle": "Your health data at a glance",
+    "healthScore": "Health Score",
+    "newMeasurement": "New Measurement",
+    "shareDoctor": "Share with Doctor",
+    "checkReward": "Check Rewards"
   }
 }

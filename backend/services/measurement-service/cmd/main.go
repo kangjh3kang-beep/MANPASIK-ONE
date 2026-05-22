@@ -60,6 +60,13 @@ func main() {
 	metrics := observability.NewMetrics()
 	healthCheck := observability.NewHealthCheck(serviceName, cfg.Version)
 
+	tp, tpErr := observability.InitTracer(serviceName)
+	if tpErr != nil {
+		log.Printf("[WARN] Tracing init failed: %v", tpErr)
+	} else {
+		defer tp.Shutdown(context.Background())
+	}
+
 	log.Printf("[%s] Starting v%s...", serviceName, cfg.Version)
 
 	// SessionRepository / MeasurementRepository: PostgreSQL/TimescaleDB 또는 인메모리
@@ -138,6 +145,20 @@ func main() {
 	}
 
 	measureSvc := service.NewMeasurementService(logger, sessionRepo, measureRepo, vectorRepo, eventPublisher)
+
+	// AuditClient: audit-service gRPC 또는 로컬 로깅 폴백 (H3 사전인증, H6 실패 격리)
+	auditAddr := os.Getenv("AUDIT_SERVICE_ADDR")
+	if auditAddr != "" {
+		// gRPC 감사 클라이언트 (향후 RecordAction RPC 추가 시 실제 gRPC 호출로 교체)
+		auditClient := service.NewGRPCAuditClient(logger)
+		measureSvc.SetAuditClient(auditClient)
+		log.Printf("[%s] Audit client 활성화 (addr: %s, 현재 로컬 로깅 폴백)", serviceName, auditAddr)
+	} else {
+		// 로컬 로깅 폴백
+		auditClient := service.NewLoggingAuditClient(logger)
+		measureSvc.SetAuditClient(auditClient)
+		log.Printf("[%s] Audit client: 로컬 로깅 모드 (AUDIT_SERVICE_ADDR 미설정)", serviceName)
+	}
 
 	// SearchIndexer: Elasticsearch 또는 인메모리 (no-op)
 	if _, esURLSet := os.LookupEnv("ELASTICSEARCH_URL"); esURLSet && cfg.Elasticsearch.URL != "" {

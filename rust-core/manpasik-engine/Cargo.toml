@@ -37,6 +37,9 @@ btleplug = { version = "0.11", optional = true }
 hex = "0.4"
 chrono = "0.4"
 
+# AI / Inference (tract: pure Rust ONNX+TFLite runtime)
+tract-onnx = { version = "0.21", optional = true }
+
 # DSP
 rustfft = "6.2"
 
@@ -57,4 +60,4 @@ tokio = { version = "1.36", features = ["full"] }
 [features]
 default = []
 ble = ["btleplug"]
-ai = ["tracing"]
+ai = ["dep:tract-onnx", "tracing"]

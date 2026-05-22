@@ -280,6 +280,22 @@ func (s *MarketplaceService) CreateProduct(ctx context.Context, product *Partner
 	return product, nil
 }
 
+// GetProduct는 상품 ID로 상품을 조회합니다.
+func (s *MarketplaceService) GetProduct(ctx context.Context, productID string) (*PartnerProduct, error) {
+	if productID == "" {
+		return nil, fmt.Errorf("%w: product_id is required", ErrInvalidInput)
+	}
+
+	product, err := s.productRepo.FindByID(ctx, productID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrInternal, err)
+	}
+	if product == nil {
+		return nil, fmt.Errorf("%w: product %s not found", ErrNotFound, productID)
+	}
+	return product, nil
+}
+
 // GetPartnerStats는 파트너 통계를 조회합니다.
 func (s *MarketplaceService) GetPartnerStats(ctx context.Context, partnerID string) (*PartnerStats, error) {
 	if partnerID == "" {

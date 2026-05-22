@@ -1,6 +1,9 @@
 //! AI 추론 모듈
 //!
 //! TFLite + ONNX 기반 엣지 AI 추론 엔진
+//!
+//! `ai` feature 활성화 시 tract-onnx 런타임을 사용하여 실제 ONNX/TFLite 모델 추론을 수행합니다.
+//! feature 비활성화 시 `SimulatedInferenceEngine`이 폴백으로 동작합니다.
 
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -59,7 +62,417 @@ pub struct InferenceResult {
     pub model_type: ModelType,
 }
 
-/// AI 추론 엔진
+// ============================================================================
+// InferenceEngine trait — 런타임-독립 추론 인터페이스
+// ============================================================================
+
+/// 추론 엔진 트레이트
+///
+/// `SimulatedInferenceEngine`(폴백)과 `TractInferenceEngine`(실제 런타임) 모두
+/// 이 트레이트를 구현합니다.
+pub trait InferenceEngineTrait {
+    /// 모델 파일 로드
+    fn load_model(&mut self, model_path: &Path) -> Result<(), InferenceError>;
+
+    /// 단일 입력에 대한 추론 수행
+    fn predict(&self, input: &[f32]) -> Result<InferenceResult, InferenceError>;
+
+    /// 배치 추론
+    fn predict_batch(
+        &self,
+        inputs: &[Vec<f32>],
+    ) -> Result<Vec<InferenceResult>, InferenceError> {
+        inputs.iter().map(|input| self.predict(input)).collect()
+    }
+
+    /// 모델 타입
+    fn model_type(&self) -> ModelType;
+
+    /// 입력 차원
+    fn input_size(&self) -> usize;
+
+    /// 출력 차원
+    fn output_size(&self) -> usize;
+
+    /// 모델 로드 상태
+    fn is_loaded(&self) -> bool;
+
+    /// 실제 런타임 백드 모델 여부
+    fn has_runtime_backed_model(&self) -> bool;
+}
+
+// ============================================================================
+// SimulatedInferenceEngine — 시뮬레이션 폴백 (모델 없이 테스트/데모용)
+// ============================================================================
+
+/// 시뮬레이션 추론 엔진 (모델 파일 없이 동작)
+pub struct SimulatedInferenceEngine {
+    model_type: ModelType,
+    input_size: usize,
+    output_size: usize,
+    model_loaded: bool,
+}
+
+impl SimulatedInferenceEngine {
+    pub fn new(model_type: ModelType) -> Self {
+        let (input_size, output_size) = model_dims(model_type);
+        Self {
+            model_type,
+            input_size,
+            output_size,
+            model_loaded: false,
+        }
+    }
+
+    /// 시뮬레이션 추론 (모델 없이 테스트용)
+    fn simulate_inference(&self, input: &[f32]) -> (Vec<f32>, f32) {
+        match self.model_type {
+            ModelType::Calibration => {
+                let values: Vec<f32> = input.iter().map(|&v| v * 0.98 + 0.01).collect();
+                (values, 0.95)
+            }
+            ModelType::FingerprintClassifier => {
+                let num_classes = self.output_size;
+                let mut values = vec![0.0f32; num_classes];
+                let class_idx = (input.iter().sum::<f32>().abs() as usize) % num_classes;
+                values[class_idx] = 0.85;
+                (values, 0.85)
+            }
+            ModelType::AnomalyDetection => {
+                let mean: f32 = input.iter().sum::<f32>() / input.len() as f32;
+                let variance: f32 =
+                    input.iter().map(|x| (x - mean).powi(2)).sum::<f32>() / input.len() as f32;
+                let anomaly_score = (variance / 10.0).min(1.0);
+                (vec![anomaly_score], 0.90)
+            }
+            ModelType::ValuePredictor => {
+                let mean = input.iter().sum::<f32>() / input.len() as f32;
+                (vec![mean * 100.0], 0.92)
+            }
+            ModelType::QualityAssessment => {
+                let variance: f32 = {
+                    let mean = input.iter().sum::<f32>() / input.len() as f32;
+                    input.iter().map(|x| (x - mean).powi(2)).sum::<f32>() / input.len() as f32
+                };
+
+                if variance < 0.1 {
+                    (vec![0.9, 0.08, 0.02], 0.90)
+                } else if variance < 0.5 {
+                    (vec![0.2, 0.7, 0.1], 0.70)
+                } else {
+                    (vec![0.1, 0.2, 0.7], 0.70)
+                }
+            }
+        }
+    }
+}
+
+impl InferenceEngineTrait for SimulatedInferenceEngine {
+    fn load_model(&mut self, model_path: &Path) -> Result<(), InferenceError> {
+        if !model_path.exists() {
+            return Err(InferenceError::ModelNotFound(
+                model_path.to_string_lossy().to_string(),
+            ));
+        }
+        self.model_loaded = true;
+        Ok(())
+    }
+
+    fn predict(&self, input: &[f32]) -> Result<InferenceResult, InferenceError> {
+        if input.len() != self.input_size {
+            return Err(InferenceError::InputShapeMismatch {
+                expected: self.input_size,
+                got: input.len(),
+            });
+        }
+
+        let start = std::time::Instant::now();
+        let (values, confidence) = self.simulate_inference(input);
+        let inference_time_ms = start.elapsed().as_secs_f32() * 1000.0;
+
+        Ok(InferenceResult {
+            values,
+            confidence,
+            inference_time_ms,
+            model_type: self.model_type,
+        })
+    }
+
+    fn model_type(&self) -> ModelType {
+        self.model_type
+    }
+
+    fn input_size(&self) -> usize {
+        self.input_size
+    }
+
+    fn output_size(&self) -> usize {
+        self.output_size
+    }
+
+    fn is_loaded(&self) -> bool {
+        self.model_loaded
+    }
+
+    fn has_runtime_backed_model(&self) -> bool {
+        false
+    }
+}
+
+// ============================================================================
+// TractInferenceEngine — tract-onnx 기반 실제 추론 (feature = "ai")
+// ============================================================================
+
+#[cfg(feature = "ai")]
+mod tract_engine {
+    use super::*;
+    use tract_onnx::prelude::*;
+
+    /// tract 런타임을 사용하는 실제 추론 엔진
+    ///
+    /// ONNX 및 TFLite 형식 모델을 로드하여 실제 텐서 연산을 수행합니다.
+    /// 순수 Rust 구현이므로 C 의존성 없이 모든 플랫폼에서 컴파일됩니다.
+    pub struct TractInferenceEngine {
+        model_type: ModelType,
+        input_size: usize,
+        output_size: usize,
+        /// 로드된 tract 런타임 모델 (최적화 완료 상태)
+        runtime_model: Option<TypedRunnableModel<TypedFact>>,
+        /// 모델 파일 경로 (디버깅/로깅용)
+        model_path: Option<String>,
+    }
+
+    impl TractInferenceEngine {
+        /// 새 TractInferenceEngine 생성
+        pub fn new(model_type: ModelType) -> Self {
+            let (input_size, output_size) = model_dims(model_type);
+            Self {
+                model_type,
+                input_size,
+                output_size,
+                runtime_model: None,
+                model_path: None,
+            }
+        }
+
+        /// 모델 파일 확장자로 포맷 판별
+        fn detect_format(path: &Path) -> ModelFormat {
+            match path.extension().and_then(|e| e.to_str()) {
+                Some("tflite") => ModelFormat::TFLite,
+                _ => ModelFormat::Onnx, // 기본: ONNX
+            }
+        }
+    }
+
+    impl InferenceEngineTrait for TractInferenceEngine {
+        fn load_model(&mut self, model_path: &Path) -> Result<(), InferenceError> {
+            if !model_path.exists() {
+                return Err(InferenceError::ModelNotFound(
+                    model_path.to_string_lossy().to_string(),
+                ));
+            }
+
+            let format = Self::detect_format(model_path);
+
+            tracing::info!(
+                "tract 모델 로드 시작: {} (format: {:?}, type: {:?})",
+                model_path.display(),
+                format,
+                self.model_type,
+            );
+
+            // ONNX 모델 로드 및 최적화
+            let model = tract_onnx::onnx()
+                .model_for_path(model_path)
+                .map_err(|e| InferenceError::LoadError(format!("tract 모델 파싱 실패: {}", e)))?
+                .with_input_fact(
+                    0,
+                    InferenceFact::dt_shape(f32::datum_type(), tvec![1, self.input_size as i64]),
+                )
+                .map_err(|e| InferenceError::LoadError(format!("입력 형상 설정 실패: {}", e)))?
+                .into_optimized()
+                .map_err(|e| InferenceError::LoadError(format!("모델 최적화 실패: {}", e)))?
+                .into_runnable()
+                .map_err(|e| InferenceError::LoadError(format!("런타임 변환 실패: {}", e)))?;
+
+            self.model_path = Some(model_path.to_string_lossy().to_string());
+            self.runtime_model = Some(model);
+
+            tracing::info!(
+                "tract 모델 로드 완료: {:?} (입력 {}차원 -> 출력 {}차원)",
+                self.model_type,
+                self.input_size,
+                self.output_size,
+            );
+
+            Ok(())
+        }
+
+        fn predict(&self, input: &[f32]) -> Result<InferenceResult, InferenceError> {
+            if input.len() != self.input_size {
+                return Err(InferenceError::InputShapeMismatch {
+                    expected: self.input_size,
+                    got: input.len(),
+                });
+            }
+
+            let runtime = self.runtime_model.as_ref().ok_or_else(|| {
+                InferenceError::InferenceError(
+                    "모델이 로드되지 않았습니다. load_model()을 먼저 호출하세요.".to_string(),
+                )
+            })?;
+
+            let start = std::time::Instant::now();
+
+            // 입력 텐서 생성: shape [1, input_size]
+            let input_tensor: Tensor =
+                tract_ndarray::Array2::from_shape_vec((1, self.input_size), input.to_vec())
+                    .map_err(|e| {
+                        InferenceError::InferenceError(format!("입력 텐서 생성 실패: {}", e))
+                    })?
+                    .into();
+
+            // 추론 실행
+            let result = runtime
+                .run(tvec![input_tensor.into()])
+                .map_err(|e| InferenceError::InferenceError(format!("tract 추론 실패: {}", e)))?;
+
+            // 출력 텐서 추출
+            let output_tensor = result
+                .first()
+                .ok_or(InferenceError::OutputError)?;
+
+            let output_view = output_tensor
+                .to_array_view::<f32>()
+                .map_err(|e| {
+                    InferenceError::InferenceError(format!("출력 텐서 변환 실패: {}", e))
+                })?;
+
+            let values: Vec<f32> = output_view.iter().cloned().collect();
+
+            let inference_time_ms = start.elapsed().as_secs_f32() * 1000.0;
+
+            // 신뢰도 계산: 분류 모델의 경우 최대 softmax 확률, 그 외 고정값
+            let confidence = match self.model_type {
+                ModelType::FingerprintClassifier | ModelType::QualityAssessment => {
+                    // softmax 적용 후 최대 확률
+                    let max_val = values
+                        .iter()
+                        .cloned()
+                        .fold(f32::NEG_INFINITY, f32::max);
+                    let exp_sum: f32 = values.iter().map(|v| (v - max_val).exp()).sum();
+                    let max_prob = 1.0 / exp_sum; // exp(0) / sum
+                    max_prob.min(1.0)
+                }
+                _ => {
+                    // 회귀/이상탐지: 출력값 범위 기반 신뢰도 추정
+                    0.90_f32
+                }
+            };
+
+            Ok(InferenceResult {
+                values,
+                confidence,
+                inference_time_ms,
+                model_type: self.model_type,
+            })
+        }
+
+        fn model_type(&self) -> ModelType {
+            self.model_type
+        }
+
+        fn input_size(&self) -> usize {
+            self.input_size
+        }
+
+        fn output_size(&self) -> usize {
+            self.output_size
+        }
+
+        fn is_loaded(&self) -> bool {
+            self.runtime_model.is_some()
+        }
+
+        fn has_runtime_backed_model(&self) -> bool {
+            self.runtime_model.is_some()
+        }
+    }
+}
+
+#[cfg(feature = "ai")]
+pub use tract_engine::TractInferenceEngine;
+
+// ============================================================================
+// 팩토리 함수
+// ============================================================================
+
+/// 모델 타입에 따른 입출력 차원 결정 (공통 유틸리티)
+fn model_dims(model_type: ModelType) -> (usize, usize) {
+    match model_type {
+        ModelType::Calibration => (88, 88),
+        ModelType::FingerprintClassifier => (1792, 30),
+        ModelType::AnomalyDetection => (88, 1),
+        ModelType::ValuePredictor => (88, 1),
+        ModelType::QualityAssessment => (88, 3),
+    }
+}
+
+/// 추론 엔진 팩토리 함수
+///
+/// `model_path`가 주어지고 `ai` feature가 활성화되어 있으면 `TractInferenceEngine`을 생성하고
+/// 모델 로드를 시도합니다. 모델 로드 실패 또는 feature 비활성화 시 `SimulatedInferenceEngine`으로 폴백합니다.
+pub fn create_engine(
+    model_type: ModelType,
+    model_path: Option<&str>,
+) -> Box<dyn InferenceEngineTrait> {
+    #[cfg(feature = "ai")]
+    {
+        if let Some(path_str) = model_path {
+            let path = Path::new(path_str);
+            if path.exists() {
+                let mut engine = TractInferenceEngine::new(model_type);
+                match engine.load_model(path) {
+                    Ok(()) => {
+                        log::info!(
+                            "TractInferenceEngine 로드 성공: {:?} ({})",
+                            model_type,
+                            path_str
+                        );
+                        return Box::new(engine);
+                    }
+                    Err(e) => {
+                        log::warn!(
+                            "TractInferenceEngine 로드 실패, SimulatedInferenceEngine 폴백: {}",
+                            e
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    // ai feature 비활성화 또는 모델 로드 실패 시 시뮬레이션 폴백
+    #[cfg(not(feature = "ai"))]
+    {
+        let _ = model_path; // suppress unused warning
+    }
+
+    log::debug!(
+        "SimulatedInferenceEngine 사용: {:?}",
+        model_type
+    );
+    Box::new(SimulatedInferenceEngine::new(model_type))
+}
+
+// ============================================================================
+// 레거시 호환 InferenceEngine (기존 API 유지)
+// ============================================================================
+
+/// AI 추론 엔진 (레거시 호환)
+///
+/// 기존 코드와의 호환성을 위해 유지됩니다.
+/// 새 코드에서는 `create_engine()` 팩토리 함수 또는 `InferenceEngineTrait`를 사용하세요.
 pub struct InferenceEngine {
     model_type: ModelType,
     input_size: usize,
@@ -71,13 +484,7 @@ pub struct InferenceEngine {
 impl InferenceEngine {
     /// 새 추론 엔진 생성
     pub fn new(model_type: ModelType) -> Self {
-        let (input_size, output_size) = match model_type {
-            ModelType::Calibration => (88, 88), // 채널별 보정값 출력
-            ModelType::FingerprintClassifier => (1792, 30), // 1792차원 궁극 입력, 30종 분류 (29종 + NonTarget1792)
-            ModelType::AnomalyDetection => (88, 1),         // 이상 스코어
-            ModelType::ValuePredictor => (88, 1),           // 단일 예측값
-            ModelType::QualityAssessment => (88, 3),        // 품질 등급 (좋음/보통/나쁨)
-        };
+        let (input_size, output_size) = model_dims(model_type);
 
         Self {
             model_type,
@@ -126,19 +533,15 @@ impl InferenceEngine {
         {
             use std::fs;
 
-            // TFLite 모델 파일 검증
             let model_data = fs::read(model_path)
                 .map_err(|e| InferenceError::LoadError(format!("파일 읽기 실패: {}", e)))?;
 
-            // TFLite 매직 넘버 검증 (0x54464C33 = "TFL3")
             if model_data.len() < 4 {
                 return Err(InferenceError::LoadError(
                     "모델 파일이 너무 작습니다".to_string(),
                 ));
             }
 
-            // tflitec::Interpreter 로드 시도
-            // 실제 배포 시 tflitec::model::Model::from_file() 사용
             tracing::info!(
                 "TFLite 모델 로드: {} ({} bytes, {:?})",
                 model_path.display(),
@@ -153,7 +556,6 @@ impl InferenceEngine {
 
     /// 추론 수행
     pub fn predict(&self, input: &[f32]) -> Result<InferenceResult, InferenceError> {
-        // 입력 크기 검증
         if input.len() != self.input_size {
             return Err(InferenceError::InputShapeMismatch {
                 expected: self.input_size,
@@ -170,13 +572,9 @@ impl InferenceEngine {
             ));
         }
 
-        // 모델이 로드된 경우 실제 추론 시도, 실패 시 시뮬레이션 폴백
         let (values, confidence) = if self.model_loaded {
             #[cfg(feature = "ai")]
             {
-                // tflitec 추론 시도 → 실패 시 시뮬레이션 폴백
-                // 실제 배포 시: tflitec::Interpreter::invoke()
-                // 현재: 모델 파일 로드는 성공했지만 런타임이 없으면 시뮬레이션
                 tracing::debug!(
                     "AI 추론 수행: {:?} (입력 {}차원)",
                     self.model_type,
@@ -206,47 +604,39 @@ impl InferenceEngine {
     fn simulate_inference(&self, input: &[f32]) -> (Vec<f32>, f32) {
         match self.model_type {
             ModelType::Calibration => {
-                // 입력에 약간의 보정 적용
                 let values: Vec<f32> = input.iter().map(|&v| v * 0.98 + 0.01).collect();
                 (values, 0.95)
             }
             ModelType::FingerprintClassifier => {
-                // 30개 클래스에 대한 확률 분포 (29종 레거시 + NonTarget1792)
                 let num_classes = self.output_size;
                 let mut values = vec![0.0f32; num_classes];
-                // 간단한 해시 기반 클래스 선택 (시뮬레이션)
                 let class_idx = (input.iter().sum::<f32>().abs() as usize) % num_classes;
                 values[class_idx] = 0.85;
                 (values, 0.85)
             }
             ModelType::AnomalyDetection => {
-                // 입력 범위 기반 이상 스코어 계산
                 let mean: f32 = input.iter().sum::<f32>() / input.len() as f32;
                 let variance: f32 =
                     input.iter().map(|x| (x - mean).powi(2)).sum::<f32>() / input.len() as f32;
-
-                // 분산이 높으면 이상
                 let anomaly_score = (variance / 10.0).min(1.0);
                 (vec![anomaly_score], 0.90)
             }
             ModelType::ValuePredictor => {
-                // 입력 평균 기반 값 예측
                 let mean = input.iter().sum::<f32>() / input.len() as f32;
                 (vec![mean * 100.0], 0.92)
             }
             ModelType::QualityAssessment => {
-                // 품질 등급 (좋음, 보통, 나쁨) 확률
                 let variance: f32 = {
                     let mean = input.iter().sum::<f32>() / input.len() as f32;
                     input.iter().map(|x| (x - mean).powi(2)).sum::<f32>() / input.len() as f32
                 };
 
                 if variance < 0.1 {
-                    (vec![0.9, 0.08, 0.02], 0.90) // 좋음
+                    (vec![0.9, 0.08, 0.02], 0.90)
                 } else if variance < 0.5 {
-                    (vec![0.2, 0.7, 0.1], 0.70) // 보통
+                    (vec![0.2, 0.7, 0.1], 0.70)
                 } else {
-                    (vec![0.1, 0.2, 0.7], 0.70) // 나쁨
+                    (vec![0.1, 0.2, 0.7], 0.70)
                 }
             }
         }
@@ -308,7 +698,6 @@ impl ModelManager {
 
     /// 기본 모델들 로드
     pub fn load_defaults(&mut self, models_dir: &Path) -> Result<(), InferenceError> {
-        // 보정 모델
         let mut calibration = InferenceEngine::calibration();
         let cal_path = models_dir.join("calibration.tflite");
         if cal_path.exists() {
@@ -316,7 +705,6 @@ impl ModelManager {
         }
         self.calibration = Some(calibration);
 
-        // 분류 모델
         let mut classifier = InferenceEngine::classifier();
         let cls_path = models_dir.join("classifier.tflite");
         if cls_path.exists() {
@@ -324,7 +712,6 @@ impl ModelManager {
         }
         self.classifier = Some(classifier);
 
-        // 이상 탐지 모델
         let mut anomaly = InferenceEngine::anomaly_detector();
         let ano_path = models_dir.join("anomaly.tflite");
         if ano_path.exists() {
@@ -427,7 +814,6 @@ impl SafetyValidator {
     ) -> SafetyCheckResult {
         let mut warnings = Vec::new();
 
-        // 1. AI confidence 체크
         let ai_passed = inference.confidence >= self.confidence_threshold;
         if !ai_passed {
             warnings.push(format!(
@@ -436,10 +822,8 @@ impl SafetyValidator {
             ));
         }
 
-        // 2. 규칙 기반 임계값 체크 (바이오마커별)
         let rule_passed = self.check_reference_range(measured_value, biomarker_type, &mut warnings);
 
-        // 3. 최종 판정
         let final_verdict = match (ai_passed, rule_passed) {
             (true, true) => SafetyVerdict::Normal,
             (true, false) => SafetyVerdict::Alert,
@@ -471,10 +855,9 @@ impl SafetyValidator {
             "tsh" => (0.4, 4.0, 0.01, 100.0),
             "cortisol" => (6.0, 23.0, 1.0, 60.0),
             "crp" => (0.0, 3.0, 0.0, 200.0),
-            _ => return true, // 알 수 없는 타입은 패스
+            _ => return true,
         };
 
-        // 위험 수준 체크
         if value <= critical_low || value >= critical_high {
             warnings.push(format!(
                 "위험 수준: {biomarker_type} = {value:.1} (위험 범위: <{critical_low} 또는 >{critical_high})"
@@ -482,7 +865,6 @@ impl SafetyValidator {
             return false;
         }
 
-        // 정상 범위 체크
         if value < low || value > high {
             warnings.push(format!(
                 "참조 범위 이탈: {biomarker_type} = {value:.1} (정상: {low}-{high})"
@@ -555,11 +937,10 @@ impl BiasDetector {
                 max_sensitivity_gap: 0.0,
                 is_biased: false,
                 bias_threshold: self.threshold,
-                recommendations: vec!["샘플 수 부족: 최소 2개 그룹 × 30건 필요".to_string()],
+                recommendations: vec!["샘플 수 부족: 최소 2개 그룹 x 30건 필요".to_string()],
             };
         }
 
-        // 정확도 범위
         let acc_max = valid_groups
             .iter()
             .map(|g| g.accuracy)
@@ -570,7 +951,6 @@ impl BiasDetector {
             .fold(f64::INFINITY, f64::min);
         let max_accuracy_gap = acc_max - acc_min;
 
-        // 민감도 범위
         let sens_max = valid_groups
             .iter()
             .map(|g| g.sensitivity)
@@ -585,13 +965,12 @@ impl BiasDetector {
 
         let mut recommendations = Vec::new();
         if is_biased {
-            // 가장 성능 낮은 그룹 찾기
             let weakest = valid_groups
                 .iter()
                 .min_by(|a, b| a.accuracy.partial_cmp(&b.accuracy).unwrap())
                 .unwrap();
             recommendations.push(format!(
-                "편향 감지: '{}' 그룹 정확도 {:.1}% — 데이터 보강 필요",
+                "편향 감지: '{}' 그룹 정확도 {:.1}% -- 데이터 보강 필요",
                 weakest.name,
                 weakest.accuracy * 100.0
             ));
@@ -632,8 +1011,8 @@ pub struct FeatureImportance {
 /// 기여 방향
 #[derive(Debug, Clone, PartialEq)]
 pub enum ContributionDirection {
-    Positive, // 수치 상승 방향
-    Negative, // 수치 하강 방향
+    Positive,
+    Negative,
     Neutral,
 }
 
@@ -659,8 +1038,6 @@ impl ExplainabilityEngine {
     }
 
     /// 채널별 기여도 계산 (Permutation Importance 근사)
-    ///
-    /// 각 채널을 순서대로 셔플하여 예측 변화량을 측정
     pub fn compute_importance(
         &self,
         engine: &InferenceEngine,
@@ -675,7 +1052,6 @@ impl ExplainabilityEngine {
         let mut importances: Vec<FeatureImportance> = Vec::new();
 
         for i in 0..input.len() {
-            // 채널 i를 0으로 마스킹
             let mut perturbed = input.to_vec();
             perturbed[i] = 0.0;
 
@@ -702,7 +1078,6 @@ impl ExplainabilityEngine {
             });
         }
 
-        // 중요도 내림차순 정렬
         importances.sort_by(|a, b| b.importance_score.partial_cmp(&a.importance_score).unwrap());
         importances.truncate(self.top_k);
 
@@ -763,28 +1138,19 @@ impl Default for ExplainabilityEngine {
 /// 트렌드 방향
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TrendDirection {
-    /// 개선 (하강이 좋은 바이오마커) 또는 상승 (상승이 좋은 바이오마커)
     Improving,
-    /// 악화
     Worsening,
-    /// 안정
     Stable,
-    /// 데이터 부족
     Insufficient,
 }
 
 /// 선형회귀 결과
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LinearRegressionResult {
-    /// 기울기 (단위시간당 변화량)
     pub slope: f64,
-    /// 절편
     pub intercept: f64,
-    /// 결정계수 R² (0~1, 1에 가까울수록 설명력 높음)
     pub r_squared: f64,
-    /// 기울기의 표준오차
     pub slope_std_error: f64,
-    /// 95% 신뢰구간 [하한, 상한]
     pub slope_ci_95: [f64; 2],
 }
 
@@ -793,23 +1159,16 @@ pub struct LinearRegressionResult {
 pub struct TrendAnalysis {
     pub direction: TrendDirection,
     pub regression: Option<LinearRegressionResult>,
-    /// 예측값 (다음 N 시점)
     pub predictions: Vec<f64>,
-    /// 예측 신뢰구간 (각 시점별 [하한, 상한])
     pub prediction_intervals: Vec<[f64; 2]>,
-    /// 이동평균 (가장 최근 윈도우)
     pub moving_average: f64,
-    /// 변동계수 (CV%) — 안정성 지표
     pub coefficient_of_variation: f64,
-    /// 한국어 요약
     pub summary: String,
 }
 
 /// 시계열 트렌드 분석기
 pub struct TrendAnalyzer {
-    /// 트렌드 판정을 위한 기울기 임계값 (기본: 표준편차의 5%)
     pub slope_threshold_pct: f64,
-    /// 최소 데이터 포인트 수
     pub min_data_points: usize,
 }
 
@@ -822,10 +1181,6 @@ impl TrendAnalyzer {
     }
 
     /// 시계열 데이터에 대한 트렌드 분석 수행
-    ///
-    /// `values`: 시간순 측정값 배열
-    /// `biomarker`: 바이오마커 타입 (트렌드 방향 해석용)
-    /// `predict_ahead`: 미래 예측 시점 수
     pub fn analyze(&self, values: &[f64], biomarker: &str, predict_ahead: usize) -> TrendAnalysis {
         if values.len() < self.min_data_points {
             return TrendAnalysis {
@@ -856,21 +1211,16 @@ impl TrendAnalyzer {
             0.0
         };
 
-        // 선형회귀 (OLS)
         let regression = self.linear_regression(values);
 
-        // 이동평균 (최근 3개 또는 전체)
         let window = 3.min(n);
         let ma = values[n - window..].iter().sum::<f64>() / window as f64;
 
-        // 트렌드 방향 판정
         let slope_threshold = std_dev * self.slope_threshold_pct;
         let direction = self.determine_direction(&regression, slope_threshold, biomarker);
 
-        // 미래 예측
         let (predictions, intervals) = self.predict_future(&regression, n, predict_ahead, values);
 
-        // 한국어 요약
         let dir_str = match direction {
             TrendDirection::Improving => "개선",
             TrendDirection::Worsening => "악화",
@@ -893,7 +1243,6 @@ impl TrendAnalyzer {
         }
     }
 
-    /// OLS 선형회귀 (x=0,1,2,...,n-1)
     fn linear_regression(&self, values: &[f64]) -> LinearRegressionResult {
         let n = values.len() as f64;
         let x_mean = (n - 1.0) / 2.0;
@@ -917,7 +1266,6 @@ impl TrendAnalyzer {
         };
         let intercept = y_mean - slope * x_mean;
 
-        // R²
         let r_squared = if ss_yy.abs() > 1e-15 {
             let ss_res: f64 = values
                 .iter()
@@ -926,11 +1274,10 @@ impl TrendAnalyzer {
                 .sum();
             1.0 - ss_res / ss_yy
         } else {
-            1.0 // 모든 값이 동일하면 완벽 적합
+            1.0
         };
         let r_squared = r_squared.max(0.0);
 
-        // 기울기 표준오차 + 95% 신뢰구간 (t ≈ 1.96 for large n)
         let se = if n > 2.0 && ss_xx.abs() > 1e-15 {
             let ss_res: f64 = values
                 .iter()
@@ -943,7 +1290,7 @@ impl TrendAnalyzer {
             0.0
         };
 
-        let t_val = if n > 30.0 { 1.96 } else { 2.0 + 5.0 / n }; // 근사 t-value
+        let t_val = if n > 30.0 { 1.96 } else { 2.0 + 5.0 / n };
         let ci_low = slope - t_val * se;
         let ci_high = slope + t_val * se;
 
@@ -956,19 +1303,16 @@ impl TrendAnalyzer {
         }
     }
 
-    /// 트렌드 방향 결정
     fn determine_direction(
         &self,
         reg: &LinearRegressionResult,
         threshold: f64,
         biomarker: &str,
     ) -> TrendDirection {
-        // 기울기가 임계값 이내이면 안정
         if reg.slope.abs() <= threshold {
             return TrendDirection::Stable;
         }
 
-        // 바이오마커별 "좋은 방향" 판정
         let lower_is_better = matches!(
             biomarker,
             "glucose"
@@ -996,7 +1340,6 @@ impl TrendAnalyzer {
         }
     }
 
-    /// 미래 시점 예측 + 예측 구간
     fn predict_future(
         &self,
         reg: &LinearRegressionResult,
@@ -1032,7 +1375,6 @@ impl TrendAnalyzer {
             let y_pred = reg.intercept + reg.slope * x_pred;
             preds.push(y_pred);
 
-            // 예측 구간 (prediction interval)
             let h = 1.0 + 1.0 / nf + (x_pred - x_mean).powi(2) / ss_xx.max(1e-15);
             let margin = t_val * (mse * h).sqrt();
             intervals.push([y_pred - margin, y_pred + margin]);
@@ -1071,7 +1413,6 @@ mod tests {
         let result = engine.predict(&input).unwrap();
 
         assert_eq!(result.values.len(), 30);
-        // 최대 확률이 있어야 함
         let max_prob: f32 = result
             .values
             .iter()
@@ -1084,15 +1425,12 @@ mod tests {
     fn test_anomaly_detector() {
         let engine = InferenceEngine::anomaly_detector();
 
-        // 정상 데이터
         let normal_input = vec![1.0f32; 88];
         let normal_result = engine.predict(&normal_input).unwrap();
 
-        // 이상 데이터 (높은 분산)
         let anomaly_input: Vec<f32> = (0..88).map(|i| (i as f32) * 0.5).collect();
         let anomaly_result = engine.predict(&anomaly_input).unwrap();
 
-        // 이상 데이터가 더 높은 이상 스코어를 가져야 함
         assert!(anomaly_result.values[0] > normal_result.values[0]);
     }
 
@@ -1118,7 +1456,6 @@ mod tests {
             inference_time_ms: 10.0,
             model_type: ModelType::ValuePredictor,
         };
-        // 혈당 40 mg/dL — 위험 저혈당
         let result = validator.validate(&inference, 35.0, "glucose");
         assert_eq!(result.final_verdict, SafetyVerdict::Alert);
         assert!(!result.rule_passed);
@@ -1129,7 +1466,7 @@ mod tests {
         let validator = SafetyValidator::new();
         let inference = InferenceResult {
             values: vec![0.5],
-            confidence: 0.50, // 임계값 미달
+            confidence: 0.50,
             inference_time_ms: 10.0,
             model_type: ModelType::ValuePredictor,
         };
@@ -1141,7 +1478,7 @@ mod tests {
     #[test]
     fn test_input_shape_mismatch() {
         let engine = InferenceEngine::calibration();
-        let wrong_input = vec![1.0f32; 50]; // 88이 아닌 50
+        let wrong_input = vec![1.0f32; 50];
 
         let result = engine.predict(&wrong_input);
         assert!(matches!(
@@ -1175,6 +1512,45 @@ mod tests {
         assert_eq!(result.values.len(), 88);
     }
 
+    // === create_engine 팩토리 함수 테스트 ===
+
+    #[test]
+    fn test_create_engine_no_model_returns_simulated() {
+        let engine = create_engine(ModelType::Calibration, None);
+        assert!(!engine.has_runtime_backed_model());
+        assert_eq!(engine.model_type(), ModelType::Calibration);
+        assert_eq!(engine.input_size(), 88);
+
+        let result = engine.predict(&vec![1.0f32; 88]).unwrap();
+        assert_eq!(result.values.len(), 88);
+    }
+
+    #[test]
+    fn test_create_engine_nonexistent_path_returns_simulated() {
+        let engine = create_engine(
+            ModelType::ValuePredictor,
+            Some("/nonexistent/model.onnx"),
+        );
+        assert!(!engine.has_runtime_backed_model());
+    }
+
+    #[test]
+    fn test_simulated_engine_trait_impl() {
+        let mut engine = SimulatedInferenceEngine::new(ModelType::AnomalyDetection);
+        assert!(!engine.is_loaded());
+        assert!(!engine.has_runtime_backed_model());
+        assert_eq!(engine.input_size(), 88);
+        assert_eq!(engine.output_size(), 1);
+
+        // predict without loading should still work (simulation)
+        let result = engine.predict(&vec![0.5f32; 88]).unwrap();
+        assert_eq!(result.values.len(), 1);
+
+        // load_model with nonexistent path should fail
+        let err = engine.load_model(Path::new("/nonexistent"));
+        assert!(err.is_err());
+    }
+
     // === 편향 탐지 테스트 ===
 
     #[test]
@@ -1204,7 +1580,6 @@ mod tests {
             },
         ];
         let report = detector.analyze(&groups);
-        // 최대 차이 3% < 임계값 5%
         assert!(!report.is_biased);
         assert!(report.max_accuracy_gap < 0.05);
     }
@@ -1223,7 +1598,7 @@ mod tests {
             DemographicGroup {
                 name: "그룹B (소수)".to_string(),
                 sample_count: 50,
-                accuracy: 0.82, // 13% 차이 → 편향
+                accuracy: 0.82,
                 sensitivity: 0.80,
                 specificity: 0.84,
             },
@@ -1239,13 +1614,13 @@ mod tests {
         let detector = BiasDetector::new();
         let groups = vec![DemographicGroup {
             name: "소수그룹".to_string(),
-            sample_count: 5, // 최소 30 미만
+            sample_count: 5,
             accuracy: 0.50,
             sensitivity: 0.40,
             specificity: 0.60,
         }];
         let report = detector.analyze(&groups);
-        assert!(!report.is_biased); // 샘플 부족으로 판단 불가
+        assert!(!report.is_biased);
     }
 
     // === 설명가능성 테스트 ===
@@ -1262,9 +1637,7 @@ mod tests {
             .compute_importance(&engine, &input, &baseline)
             .unwrap();
 
-        // top_k = 5개 이하로 반환
         assert!(importances.len() <= 5);
-        // 내림차순 정렬
         for w in importances.windows(2) {
             assert!(w[0].importance_score >= w[1].importance_score);
         }
@@ -1298,21 +1671,19 @@ mod tests {
     #[test]
     fn test_trend_analyzer_improving() {
         let analyzer = TrendAnalyzer::new();
-        // 혈당 하강 추세 (lower is better → Improving)
         let values = vec![120.0, 115.0, 110.0, 105.0, 100.0];
         let result = analyzer.analyze(&values, "glucose", 3);
         assert_eq!(result.direction, TrendDirection::Improving);
         let reg = result.regression.as_ref().unwrap();
-        assert!(reg.slope < 0.0); // 하강
-        assert!(reg.r_squared > 0.95); // 높은 적합도
+        assert!(reg.slope < 0.0);
+        assert!(reg.r_squared > 0.95);
         assert_eq!(result.predictions.len(), 3);
-        assert!(result.predictions[0] < 100.0); // 100 미만으로 예측
+        assert!(result.predictions[0] < 100.0);
     }
 
     #[test]
     fn test_trend_analyzer_stable() {
         let analyzer = TrendAnalyzer::new();
-        // 안정적인 값 (대칭 배치 → slope ≈ 0)
         let values = vec![99.9, 100.1, 100.0, 100.1, 99.9, 100.0];
         let result = analyzer.analyze(&values, "glucose", 0);
         assert_eq!(result.direction, TrendDirection::Stable);
@@ -1322,7 +1693,7 @@ mod tests {
     #[test]
     fn test_trend_analyzer_insufficient() {
         let analyzer = TrendAnalyzer::new();
-        let values = vec![100.0, 101.0]; // 2개 < 최소 3개
+        let values = vec![100.0, 101.0];
         let result = analyzer.analyze(&values, "glucose", 0);
         assert_eq!(result.direction, TrendDirection::Insufficient);
         assert!(result.regression.is_none());
@@ -1331,14 +1702,12 @@ mod tests {
     #[test]
     fn test_trend_analyzer_worsening() {
         let analyzer = TrendAnalyzer::new();
-        // 혈당 상승 추세 (lower is better → Worsening)
         let values = vec![90.0, 100.0, 110.0, 120.0, 130.0];
         let result = analyzer.analyze(&values, "glucose", 2);
         assert_eq!(result.direction, TrendDirection::Worsening);
         let reg = result.regression.as_ref().unwrap();
         assert!(reg.slope > 0.0);
         assert_eq!(result.prediction_intervals.len(), 2);
-        // 예측 구간은 예측값을 포함해야 함
         assert!(result.prediction_intervals[0][0] <= result.predictions[0]);
         assert!(result.prediction_intervals[0][1] >= result.predictions[0]);
     }
@@ -1346,7 +1715,6 @@ mod tests {
     #[test]
     fn test_trend_analyzer_r_squared_perfect() {
         let analyzer = TrendAnalyzer::new();
-        // 완벽한 선형 데이터
         let values = vec![10.0, 20.0, 30.0, 40.0, 50.0];
         let result = analyzer.analyze(&values, "vitamin_d", 1);
         let reg = result.regression.as_ref().unwrap();

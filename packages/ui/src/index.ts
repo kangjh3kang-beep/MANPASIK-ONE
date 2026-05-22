@@ -15,4 +15,7 @@ export * from "./components/charts/radar-chart";
 export * from "./components/medical/risk-progress";
 export * from "./components/common/data-table";
 export * from "./components/common/domain-header";
+export * from "./components/common/kpi-card";
+export * from "./components/common/error-state";
+export * from "./components/common/loading-skeleton";
 export * from "./components/domain-nav";

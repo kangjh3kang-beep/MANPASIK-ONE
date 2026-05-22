@@ -3,6 +3,10 @@ use image::{ImageBuffer, Rgba};
 use ndarray::Array3;
 use serde::{Deserialize, Serialize};
 
+use crate::crypto::CryptoEngine;
+use crate::differential::DifferentialEngine;
+use crate::fingerprint;
+
 /// 카트리지 분석 결과
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AnalysisResult {
@@ -18,6 +22,183 @@ pub struct AnalysisResult {
     pub dominant_rgb: [u8; 3],
     /// 경고 메시지 (없으면 빈 문자열)
     pub warning: String,
+}
+
+/// 측정 파이프라인 무결성 검증 결과 (IEC 62304 해시체인)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MeasurementIntegrityResult {
+    /// 차동 보정된 신호 배열
+    pub corrected_values: Vec<f64>,
+    /// 88차원 핑거프린트 벡터 (f32)
+    pub fingerprint: Vec<f32>,
+    /// 최종 해시체인 해시 (hex)
+    pub chain_hash: String,
+    /// 체인 무결성 검증 결과
+    pub chain_valid: bool,
+    /// 체인 엔트리 수
+    pub chain_entries: usize,
+    /// AI 예측 시뮬레이션 값 (향후 실제 TFLite 연동)
+    pub ai_prediction: f64,
+}
+
+/// 측정 파이프라인 + IEC 62304 해시체인 무결성 검증
+///
+/// 차동측정, 핑거프린트 생성, AI 예측의 전 과정을 해시체인으로
+/// 기록하여 데이터 변조를 감지합니다 (H3 사전인증 요구사항).
+///
+/// # Arguments
+/// * `s_det` - 검출 전극 신호 배열
+/// * `s_ref` - 기준 전극 신호 배열
+/// * `alpha` - 보정 계수 (SSOT 범위: 0.90~1.10)
+///
+/// # Returns
+/// 보정된 값, 핑거프린트, 해시체인 검증 결과를 포함하는 `MeasurementIntegrityResult`
+///
+/// # Errors
+/// 채널 수 불일치, 핑거프린트 생성 실패, 해시체인 검증 실패 시 에러 반환
+pub fn process_measurement_with_integrity(
+    s_det: &[f64],
+    s_ref: &[f64],
+    alpha: f64,
+) -> std::result::Result<MeasurementIntegrityResult, String> {
+    if s_det.is_empty() {
+        return Err("s_det 신호 배열이 비어있습니다".to_string());
+    }
+    if s_det.len() != s_ref.len() {
+        return Err(format!(
+            "s_det({})와 s_ref({})의 길이가 다릅니다",
+            s_det.len(),
+            s_ref.len()
+        ));
+    }
+
+    let mut crypto = CryptoEngine::new();
+
+    // Step 1: Record raw input hash
+    let raw_bytes = serialize_signal_pair(s_det, s_ref);
+    crypto.add_chain_entry("raw_capture", &raw_bytes);
+
+    // Step 2: Differential correction (Sdiff_n = S_n - alpha_n * R_n)
+    let clamped_alpha = alpha.clamp(crate::ALPHA_MIN, crate::ALPHA_MAX);
+    let diff_engine = DifferentialEngine::with_defaults(s_det.len());
+    // with_defaults uses SSOT alpha; we need custom alpha via a params update
+    let mut diff_engine = diff_engine;
+    diff_engine.set_alpha(clamped_alpha);
+
+    let corrected = diff_engine
+        .measure(s_det, s_ref)
+        .map_err(|e| e.to_string())?;
+
+    let corrected_bytes = serialize_f64_slice(&corrected);
+    crypto.add_chain_entry("differential_correction", &corrected_bytes);
+
+    // Step 3: Fingerprint generation (88-dim)
+    let fingerprint = generate_fingerprint_88(&corrected);
+    let fp_bytes = serialize_f32_slice(&fingerprint);
+    crypto.add_chain_entry("fingerprint_generation", &fp_bytes);
+
+    // Step 4: AI prediction (simulated — real TFLite INT8 inference in Phase 6)
+    // Compute a deterministic prediction from the corrected signal mean
+    let prediction = if corrected.is_empty() {
+        0.0
+    } else {
+        let mean = corrected.iter().sum::<f64>() / corrected.len() as f64;
+        // Sigmoid-like normalization for a 0..1 confidence proxy
+        1.0 / (1.0 + (-mean).exp())
+    };
+    let prediction_bytes = prediction.to_le_bytes();
+    crypto.add_chain_entry("ai_prediction", &prediction_bytes);
+
+    // Step 5: Verify chain integrity
+    let chain_valid = crypto.verify_chain().map_err(|e| format!("{:?}", e))?;
+
+    let chain_hash = crypto
+        .current_chain_hash()
+        .unwrap_or("")
+        .to_string();
+
+    let chain_entries = crypto.chain_entries().len();
+
+    Ok(MeasurementIntegrityResult {
+        corrected_values: corrected,
+        fingerprint,
+        chain_hash,
+        chain_valid,
+        chain_entries,
+        ai_prediction: prediction,
+    })
+}
+
+/// 88차원 핑거프린트 생성 (차동 보정 결과로부터)
+///
+/// 입력 채널 수에 관계없이 88차원 벡터를 생성합니다.
+/// 채널이 88개 미만이면 통계 피처(평균, 분산, 기울기 등)로 패딩합니다.
+fn generate_fingerprint_88(corrected: &[f64]) -> Vec<f32> {
+    let dim = fingerprint::DIM_88;
+    let mut fp = Vec::with_capacity(dim);
+
+    // 직접 채널 값 복사 (88개까지)
+    for &v in corrected.iter().take(dim) {
+        fp.push(v as f32);
+    }
+
+    // 남은 슬롯을 통계 피처로 채움
+    if fp.len() < dim {
+        let n = corrected.len() as f64;
+        let mean = if n > 0.0 {
+            corrected.iter().sum::<f64>() / n
+        } else {
+            0.0
+        };
+        let variance = if n > 1.0 {
+            corrected.iter().map(|v| (v - mean).powi(2)).sum::<f64>() / (n - 1.0)
+        } else {
+            0.0
+        };
+        let std_dev = variance.sqrt();
+        let max_val = corrected
+            .iter()
+            .copied()
+            .fold(f64::NEG_INFINITY, f64::max);
+        let min_val = corrected
+            .iter()
+            .copied()
+            .fold(f64::INFINITY, f64::min);
+        let range = max_val - min_val;
+
+        // 통계 피처 패딩
+        let stats = [mean, variance, std_dev, max_val, min_val, range];
+        let mut stat_idx = 0;
+        while fp.len() < dim {
+            fp.push(stats[stat_idx % stats.len()] as f32);
+            stat_idx += 1;
+        }
+    }
+
+    fp.truncate(dim);
+    fp
+}
+
+/// f64 슬라이스를 바이트로 직렬화 (해시체인용)
+fn serialize_f64_slice(data: &[f64]) -> Vec<u8> {
+    data.iter().flat_map(|v| v.to_le_bytes()).collect()
+}
+
+/// f32 슬라이스를 바이트로 직렬화 (해시체인용)
+fn serialize_f32_slice(data: &[f32]) -> Vec<u8> {
+    data.iter().flat_map(|v| v.to_le_bytes()).collect()
+}
+
+/// 신호 쌍(s_det + s_ref)을 바이트로 직렬화 (해시체인용)
+fn serialize_signal_pair(s_det: &[f64], s_ref: &[f64]) -> Vec<u8> {
+    let mut bytes = Vec::with_capacity((s_det.len() + s_ref.len()) * 8);
+    for v in s_det {
+        bytes.extend_from_slice(&v.to_le_bytes());
+    }
+    for v in s_ref {
+        bytes.extend_from_slice(&v.to_le_bytes());
+    }
+    bytes
 }
 
 /// Flutter에서 호출되는 메인 FFI 엔트리포인트.

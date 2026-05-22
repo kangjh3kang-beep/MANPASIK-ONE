@@ -1,19 +1,19 @@
 // marketplace-service: 파트너 마켓플레이스 마이크로서비스
 //
-// 포트: HTTP :8080 (Health + REST API)
-// 의존: 인메모리 저장소
+// 포트: gRPC :50075
+// 의존: PostgreSQL(선택) — 미설정 시 인메모리 저장소 사용
 //
 // 기능:
-// - 파트너 상품 조회 (카테고리/파트너 필터)
-// - 파트너 등록
+// - 파트너 상품 CRUD
+// - 파트너 등록/승인
 // - 파트너 통계 조회
-// - 상품 업데이트
+// - gRPC MarketplaceService
 package main
 
 import (
 	"context"
-	"encoding/json"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -21,23 +21,42 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/manpasik/backend/services/marketplace-service/internal/handler"
 	"github.com/manpasik/backend/services/marketplace-service/internal/repository/memory"
 	"github.com/manpasik/backend/services/marketplace-service/internal/repository/postgres"
 	"github.com/manpasik/backend/services/marketplace-service/internal/service"
 	"github.com/manpasik/backend/shared/config"
+	v1 "github.com/manpasik/backend/shared/gen/go/v1"
+	"github.com/manpasik/backend/shared/middleware"
+	"github.com/manpasik/backend/shared/observability"
+	"go.uber.org/zap"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
+	"google.golang.org/grpc/reflection"
 )
 
 const serviceName = "marketplace-service"
 
 func main() {
-	httpPort := os.Getenv("HTTP_PORT")
-	if httpPort == "" {
-		httpPort = ":8080"
+	cfg := config.LoadFromEnv(serviceName)
+	if cfg.GRPCPort == "" || cfg.GRPCPort == ":50051" {
+		cfg.GRPCPort = ":50075"
 	}
 
-	cfg := config.LoadFromEnv(serviceName)
-	log.Printf("[%s] Starting v%s...", serviceName, cfg.Version)
+	logger, err := zap.NewProduction()
+	if err != nil {
+		logger = zap.NewNop()
+	}
+	defer logger.Sync()
 
+	metrics := observability.NewMetrics()
+	healthCheck := observability.NewHealthCheck(serviceName, cfg.Version)
+
+	log.Printf("[%s] Starting v%s...", serviceName, cfg.Version)
+	log.Printf("[%s] gRPC port: %s", serviceName, cfg.GRPCPort)
+
+	// Repositories: PostgreSQL 또는 인메모리
 	var productRepo service.ProductRepository
 	var partnerRepo service.PartnerRepository
 	var statsRepo service.StatsRepository
@@ -73,66 +92,65 @@ func main() {
 		productRepo = memory.NewProductRepository()
 		partnerRepo = memory.NewPartnerRepository()
 		statsRepo = memory.NewStatsRepository()
+		log.Printf("[%s] 인메모리 저장소 사용", serviceName)
 	}
 
 	svc := service.NewMarketplaceService(productRepo, partnerRepo, statsRepo)
 
-	// HTTP 라우터
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(`{"status":"serving","service":"marketplace-service"}`))
-	})
+	grpcServer := grpc.NewServer(
+		grpc.ChainUnaryInterceptor(
+			middleware.RequestIDInterceptor(),
+			observability.UnaryServerInterceptor(metrics),
+		),
+	)
 
-	// REST 엔드포인트
-	mux.HandleFunc("/api/v1/marketplace/products", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-		partnerID := r.URL.Query().Get("partner_id")
-		category := r.URL.Query().Get("category")
-		products, err := svc.ListPartnerProducts(r.Context(), partnerID, category)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(products)
-	})
+	healthServer := health.NewServer()
+	healthpb.RegisterHealthServer(grpcServer, healthServer)
+	healthServer.SetServingStatus(serviceName, healthpb.HealthCheckResponse_SERVING)
 
-	mux.HandleFunc("/api/v1/marketplace/partners", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-			return
-		}
-		var partner service.Partner
-		if err := json.NewDecoder(r.Body).Decode(&partner); err != nil {
-			http.Error(w, "invalid request body", http.StatusBadRequest)
-			return
-		}
-		id, err := svc.RegisterPartner(r.Context(), &partner)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(map[string]string{"partner_id": id})
-	})
+	marketplaceHandler := handler.NewMarketplaceHandler(svc, logger)
+	v1.RegisterMarketplaceServiceServer(grpcServer, marketplaceHandler)
+
+	reflection.Register(grpcServer)
+
+	lis, err := net.Listen("tcp", cfg.GRPCPort)
+	if err != nil {
+		log.Fatalf("[%s] Failed to listen: %v", serviceName, err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	go func() {
-		log.Printf("[%s] HTTP server on %s", serviceName, httpPort)
-		if err := http.ListenAndServe(httpPort, mux); err != nil {
-			log.Fatalf("[%s] HTTP server error: %v", serviceName, err)
+		sigCh := make(chan os.Signal, 1)
+		signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+		sig := <-sigCh
+		log.Printf("[%s] Received signal %v, shutting down...", serviceName, sig)
+		healthServer.SetServingStatus(serviceName, healthpb.HealthCheckResponse_NOT_SERVING)
+		go func() {
+			time.Sleep(cfg.ShutdownTimeout)
+			os.Exit(1)
+		}()
+		grpcServer.GracefulStop()
+		cancel()
+	}()
+
+	// Observability HTTP server
+	go func() {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/metrics", metrics.PrometheusHandler())
+		mux.HandleFunc("/health", healthCheck.Handler())
+		metricsAddr := ":9100"
+		logger.Info("Metrics server starting", zap.String("addr", metricsAddr))
+		if err := http.ListenAndServe(metricsAddr, mux); err != nil {
+			logger.Error("Metrics server failed", zap.Error(err))
 		}
 	}()
 
-	// 시그널 대기
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	sig := <-sigCh
-	log.Printf("[%s] Received signal %v, shutting down...", serviceName, sig)
+	log.Printf("[%s] gRPC server listening on %s", serviceName, cfg.GRPCPort)
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("[%s] Failed to serve: %v", serviceName, err)
+	}
+	<-ctx.Done()
 	log.Printf("[%s] Shutdown complete", serviceName)
 }

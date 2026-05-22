@@ -26,14 +26,14 @@ func (r *Router) handleAnalyzeMeasurement(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	conn, err := dialGRPC(r.aiInferenceAddr)
+	cb, err := r.dialWithBreaker("ai-inference", r.aiInferenceAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "AI 추론 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewAiInferenceServiceClient(conn)
+	client := v1.NewAiInferenceServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
@@ -68,14 +68,14 @@ func (r *Router) handleGetHealthScore(w http.ResponseWriter, req *http.Request) 
 		days = 30
 	}
 
-	conn, err := dialGRPC(r.aiInferenceAddr)
+	cb, err := r.dialWithBreaker("ai-inference", r.aiInferenceAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "AI 추론 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewAiInferenceServiceClient(conn)
+	client := v1.NewAiInferenceServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -115,14 +115,14 @@ func (r *Router) handlePredictTrend(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.aiInferenceAddr)
+	cb, err := r.dialWithBreaker("ai-inference", r.aiInferenceAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "AI 추론 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewAiInferenceServiceClient(conn)
+	client := v1.NewAiInferenceServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
@@ -142,14 +142,14 @@ func (r *Router) handlePredictTrend(w http.ResponseWriter, req *http.Request) {
 
 // GET /api/v1/ai/models
 func (r *Router) handleListAiModels(w http.ResponseWriter, _ *http.Request) {
-	conn, err := dialGRPC(r.aiInferenceAddr)
+	cb, err := r.dialWithBreaker("ai-inference", r.aiInferenceAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "AI 추론 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewAiInferenceServiceClient(conn)
+	client := v1.NewAiInferenceServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -280,14 +280,14 @@ func (r *Router) handleReadCartridge(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.cartridgeAddr)
+	cb, err := r.dialWithBreaker("cartridge", r.cartridgeAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "카트리지 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCartridgeServiceClient(conn)
+	client := v1.NewCartridgeServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -317,14 +317,14 @@ func (r *Router) handleRecordCartridgeUsage(w http.ResponseWriter, req *http.Req
 		return
 	}
 
-	conn, err := dialGRPC(r.cartridgeAddr)
+	cb, err := r.dialWithBreaker("cartridge", r.cartridgeAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "카트리지 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCartridgeServiceClient(conn)
+	client := v1.NewCartridgeServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -350,14 +350,14 @@ func (r *Router) handleRecordCartridgeUsage(w http.ResponseWriter, req *http.Req
 
 // GET /api/v1/cartridges/types
 func (r *Router) handleListCartridgeCategories(w http.ResponseWriter, _ *http.Request) {
-	conn, err := dialGRPC(r.cartridgeAddr)
+	cb, err := r.dialWithBreaker("cartridge", r.cartridgeAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "카트리지 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCartridgeServiceClient(conn)
+	client := v1.NewCartridgeServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -392,14 +392,14 @@ func (r *Router) handleGetRemainingUses(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	conn, err := dialGRPC(r.cartridgeAddr)
+	cb, err := r.dialWithBreaker("cartridge", r.cartridgeAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "카트리지 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCartridgeServiceClient(conn)
+	client := v1.NewCartridgeServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -433,14 +433,14 @@ func (r *Router) handleValidateCartridge(w http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	conn, err := dialGRPC(r.cartridgeAddr)
+	cb, err := r.dialWithBreaker("cartridge", r.cartridgeAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "카트리지 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCartridgeServiceClient(conn)
+	client := v1.NewCartridgeServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -510,14 +510,14 @@ func (r *Router) handleRegisterFactoryCalibration(w http.ResponseWriter, req *ht
 		return
 	}
 
-	conn, err := dialGRPC(r.calibrationAddr)
+	cb, err := r.dialWithBreaker("calibration", r.calibrationAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "보정 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCalibrationServiceClient(conn)
+	client := v1.NewCalibrationServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -558,14 +558,14 @@ func (r *Router) handlePerformFieldCalibration(w http.ResponseWriter, req *http.
 		return
 	}
 
-	conn, err := dialGRPC(r.calibrationAddr)
+	cb, err := r.dialWithBreaker("calibration", r.calibrationAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "보정 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCalibrationServiceClient(conn)
+	client := v1.NewCalibrationServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -599,14 +599,14 @@ func (r *Router) handleCheckCalibrationStatus(w http.ResponseWriter, req *http.R
 	cartridgeCategory, _ := strconv.Atoi(q.Get("cartridge_category"))
 	cartridgeTypeIndex, _ := strconv.Atoi(q.Get("cartridge_type_index"))
 
-	conn, err := dialGRPC(r.calibrationAddr)
+	cb, err := r.dialWithBreaker("calibration", r.calibrationAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "보정 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCalibrationServiceClient(conn)
+	client := v1.NewCalibrationServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -641,14 +641,14 @@ func (r *Router) handleCheckCalibrationStatus(w http.ResponseWriter, req *http.R
 
 // GET /api/v1/calibration/models
 func (r *Router) handleListCalibrationModels(w http.ResponseWriter, _ *http.Request) {
-	conn, err := dialGRPC(r.calibrationAddr)
+	cb, err := r.dialWithBreaker("calibration", r.calibrationAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "보정 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCalibrationServiceClient(conn)
+	client := v1.NewCalibrationServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -727,14 +727,14 @@ func (r *Router) handleSetHealthGoal(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.coachingAddr)
+	cb, err := r.dialWithBreaker("coaching", r.coachingAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "코칭 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCoachingServiceClient(conn)
+	client := v1.NewCoachingServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -766,14 +766,14 @@ func (r *Router) handleGetHealthGoals(w http.ResponseWriter, req *http.Request) 
 
 	statusFilter, _ := strconv.Atoi(req.URL.Query().Get("status_filter"))
 
-	conn, err := dialGRPC(r.coachingAddr)
+	cb, err := r.dialWithBreaker("coaching", r.coachingAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "코칭 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCoachingServiceClient(conn)
+	client := v1.NewCoachingServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -808,14 +808,14 @@ func (r *Router) handleGenerateCoaching(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	conn, err := dialGRPC(r.coachingAddr)
+	cb, err := r.dialWithBreaker("coaching", r.coachingAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "코칭 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCoachingServiceClient(conn)
+	client := v1.NewCoachingServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
@@ -840,14 +840,14 @@ func (r *Router) handleGenerateDailyReport(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	conn, err := dialGRPC(r.coachingAddr)
+	cb, err := r.dialWithBreaker("coaching", r.coachingAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "코칭 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCoachingServiceClient(conn)
+	client := v1.NewCoachingServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
@@ -895,14 +895,14 @@ func (r *Router) handleGetRecommendations(w http.ResponseWriter, req *http.Reque
 		limit = 10
 	}
 
-	conn, err := dialGRPC(r.coachingAddr)
+	cb, err := r.dialWithBreaker("coaching", r.coachingAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "코칭 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewCoachingServiceClient(conn)
+	client := v1.NewCoachingServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

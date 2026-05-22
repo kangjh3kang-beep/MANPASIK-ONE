@@ -6,3 +6,5 @@ flwr==1.7.0
 tritonclient[all]==2.43.0
 tensorflow==2.15.0
 pydantic==2.6.4
+onnx==1.16.0
+skl2onnx==1.17.0

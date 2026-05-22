@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:manpasik/core/config/feature_flags.dart';
 import 'package:manpasik/core/services/rust_ffi_stub.dart';
 
-/// Rust FFI Bridge Provider
+/// Rust FFI Bridge Provider (레거시 — H2 후방 호환)
 ///
-/// 시스템 전반에서 RustBridge에 일관되게 접근하기 위한 Riverpod Provider.
-/// Feature Flag (`enableRustNative`)와 결합되어 네이티브/스텁 자동 전환됩니다.
+/// 신규 코드는 [rustEngineProvider] (rust_engine_provider.dart)를 사용해주세요.
+/// 이 Provider는 기존 호출 사이트 호환을 위해 유지됩니다.
 ///
 /// 사용:
 /// ```dart
@@ -18,6 +18,14 @@ import 'package:manpasik/core/services/rust_ffi_stub.dart';
 /// );
 /// ```
 final rustBridgeProvider = Provider<RustBridge>((ref) {
+  return RustBridge.instance;
+});
+
+/// H1: RustEngineInterface 타입으로 노출하는 Provider.
+///
+/// 구체 타입에 의존하지 않고 인터페이스 계약만으로 Rust 엔진을 사용합니다.
+/// [rustEngineProvider] (rust_engine_provider.dart)와 동일한 인스턴스를 반환합니다.
+final rustEngineInterfaceProvider = Provider<RustEngineInterface>((ref) {
   return RustBridge.instance;
 });
 

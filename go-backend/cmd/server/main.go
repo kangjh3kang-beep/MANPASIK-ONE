@@ -69,7 +69,7 @@ func main() {
 
 	// 5. [신규] HTTP/REST 브릿지 서버 가동 (Next.js 연동용)
 	go func() {
-		mux := net.NewServeMux()
+		mux := http.NewServeMux()
 		mux.HandleFunc("/api/v1/health", func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.Header().Set("Access-Control-Allow-Origin", "*")

@@ -5,6 +5,13 @@ import { DomainNav } from '@mmup/ui';
 import React, { useState, useEffect } from 'react';
 import { Smartphone, Heart, Activity, Moon, Footprints, Droplets, Bell, Settings, ChevronRight, Stethoscope, Users2, Database } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+function useLocalePrefix(): string {
+  const pathname = usePathname();
+  const match = pathname.match(/^\/(ko|en|ja|zh)/);
+  return match ? `/${match[1]}` : '/ko';
+}
 
 const HEALTH_CARDS = [
   { label: '심박수', val: '72', unit: 'bpm', icon: Heart, color: 'text-red-500 bg-red-50', trend: '정상' },
@@ -21,6 +28,7 @@ const RECENT_MEASUREMENTS = [
 ];
 
 export default function AppPage() {
+  const localePrefix = useLocalePrefix();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   if (!mounted) return <div className="min-h-screen bg-slate-50 animate-pulse" />;
@@ -85,12 +93,12 @@ export default function AppPage() {
         {/* Quick Actions */}
         <div className="space-y-3">
           {[
-            { label: '새 측정 시작', href: 'http://localhost:3001/', icon: Stethoscope },
-            { label: '의사에게 공유', href: 'http://localhost:3005/', icon: Users2 },
-            { label: '리워드 확인', href: 'http://localhost:3004/', icon: Database },
+            { label: '새 측정 시작', href: `${localePrefix}/domains/clinical`, icon: Stethoscope },
+            { label: '의사에게 공유', href: `${localePrefix}/domains/partner`, icon: Users2 },
+            { label: '리워드 확인', href: `${localePrefix}/domains/reward`, icon: Database },
           ].map((action) => (
-            <a 
-              key={action.label} 
+            <Link
+              key={action.label}
               href={action.href}
               className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white px-5 py-4 text-sm font-bold text-slate-700 hover:bg-slate-50 hover:border-sky-500 hover:text-sky-600 transition-all group shadow-sm"
             >
@@ -101,7 +109,7 @@ export default function AppPage() {
                 {action.label}
               </div>
               <ChevronRight className="h-4 w-4 text-slate-300 group-hover:translate-x-1 transition-transform" />
-            </a>
+            </Link>
           ))}
         </div>
 

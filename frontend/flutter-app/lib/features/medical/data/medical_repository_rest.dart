@@ -1,25 +1,55 @@
 import 'package:dio/dio.dart';
 import 'package:manpasik/features/medical/domain/medical_repository.dart';
 import 'package:manpasik/core/services/rest_client.dart';
+import 'package:manpasik/core/network/offline_queue.dart';
 
 /// REST Gateway를 사용하는 MedicalRepository 구현체
 class MedicalRepositoryRest implements MedicalRepository {
-  MedicalRepositoryRest(this._client, {required this.userId});
+  MedicalRepositoryRest(this._client, {required this.userId, OfflineQueue? offlineQueue})
+      : _offlineQueue = offlineQueue ?? OfflineQueue.instance;
 
   final ManPaSikRestClient _client;
   final String userId;
+  final OfflineQueue _offlineQueue;
 
   @override
   Future<TelemedicineReservation> createReservation({
     required String doctorId,
     required DateTime scheduledAt,
   }) async {
-    final res = await _client.createReservation(
-      userId: userId,
-      facilityId: doctorId,
-      reason: 'telemedicine',
-    );
-    return _mapReservation(res);
+    try {
+      final res = await _client.createReservation(
+        userId: userId,
+        facilityId: doctorId,
+        reason: 'telemedicine',
+      );
+      return _mapReservation(res);
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout) {
+        await _offlineQueue.enqueue(OfflineRequest(
+          method: 'POST',
+          path: '/reservations',
+          body: {
+            'user_id': userId,
+            'facility_id': doctorId,
+            'reason': 'telemedicine',
+          },
+          createdAt: DateTime.now(),
+        ));
+        // Optimistic result
+        return TelemedicineReservation(
+          id: 'pending-${DateTime.now().millisecondsSinceEpoch}',
+          doctorId: doctorId,
+          doctorName: '',
+          specialty: '',
+          scheduledAt: scheduledAt,
+          durationMinutes: 30,
+          status: ReservationStatus.pending,
+        );
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -37,7 +67,20 @@ class MedicalRepositoryRest implements MedicalRepository {
 
   @override
   Future<void> cancelReservation(String reservationId) async {
-    await _client.cancelReservation(reservationId);
+    try {
+      await _client.cancelReservation(reservationId);
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout) {
+        await _offlineQueue.enqueue(OfflineRequest(
+          method: 'PUT',
+          path: '/reservations/$reservationId/cancel',
+          createdAt: DateTime.now(),
+        ));
+        return; // Optimistic success
+      }
+      rethrow;
+    }
   }
 
   @override
@@ -85,12 +128,31 @@ class MedicalRepositoryRest implements MedicalRepository {
     required double abnormalValue,
     required String biomarkerType,
   }) async {
-    await _client.sendNotification(
-      userId: userId,
-      title: '긴급 건강 알림: $biomarkerType',
-      body: '$alertType - 측정값: $abnormalValue',
-      type: 'emergency',
-    );
+    try {
+      await _client.sendNotification(
+        userId: userId,
+        title: '긴급 건강 알림: $biomarkerType',
+        body: '$alertType - 측정값: $abnormalValue',
+        type: 'emergency',
+      );
+    } on DioException catch (e) {
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout) {
+        await _offlineQueue.enqueue(OfflineRequest(
+          method: 'POST',
+          path: '/notifications',
+          body: {
+            'user_id': userId,
+            'title': '긴급 건강 알림: $biomarkerType',
+            'body': '$alertType - 측정값: $abnormalValue',
+            'type': 'emergency',
+          },
+          createdAt: DateTime.now(),
+        ));
+        return; // Enqueued for later delivery
+      }
+      rethrow;
+    }
   }
 
   @override

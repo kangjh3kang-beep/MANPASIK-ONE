@@ -32,14 +32,14 @@ func (r *Router) handleGetProfile(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.userAddr)
+	cb, err := r.dialWithBreaker("user", r.userAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "사용자 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewUserServiceClient(conn)
+	client := v1.NewUserServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -47,9 +47,11 @@ func (r *Router) handleGetProfile(w http.ResponseWriter, req *http.Request) {
 		UserId: userID,
 	})
 	if err != nil {
+		cb.RecordFailure()
 		writeError(w, http.StatusNotFound, err.Error())
 		return
 	}
+	cb.RecordSuccess()
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"user_id":           resp.GetUserId(),
@@ -82,14 +84,14 @@ func (r *Router) handleUpdateProfile(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.userAddr)
+	cb, err := r.dialWithBreaker("user", r.userAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "사용자 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewUserServiceClient(conn)
+	client := v1.NewUserServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -101,9 +103,11 @@ func (r *Router) handleUpdateProfile(w http.ResponseWriter, req *http.Request) {
 		Timezone:    body.Timezone,
 	})
 	if err != nil {
+		cb.RecordFailure()
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	cb.RecordSuccess()
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"user_id":           resp.GetUserId(),
@@ -135,14 +139,14 @@ func (r *Router) handleStartSession(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.measurementAddr)
+	cb, err := r.dialWithBreaker("measurement", r.measurementAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "측정 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewMeasurementServiceClient(conn)
+	client := v1.NewMeasurementServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -154,9 +158,11 @@ func (r *Router) handleStartSession(w http.ResponseWriter, req *http.Request) {
 		CartridgeTypeIndex: body.CartridgeTypeIndex,
 	})
 	if err != nil {
+		cb.RecordFailure()
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	cb.RecordSuccess()
 
 	writeJSON(w, http.StatusCreated, map[string]interface{}{
 		"session_id": resp.GetSessionId(),
@@ -172,14 +178,14 @@ func (r *Router) handleEndSession(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.measurementAddr)
+	cb, err := r.dialWithBreaker("measurement", r.measurementAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "측정 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewMeasurementServiceClient(conn)
+	client := v1.NewMeasurementServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -187,9 +193,11 @@ func (r *Router) handleEndSession(w http.ResponseWriter, req *http.Request) {
 		SessionId: sessionID,
 	})
 	if err != nil {
+		cb.RecordFailure()
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	cb.RecordSuccess()
 
 	writeJSON(w, http.StatusOK, map[string]interface{}{
 		"session_id":         resp.GetSessionId(),
@@ -212,14 +220,14 @@ func (r *Router) handleGetHistory(w http.ResponseWriter, req *http.Request) {
 		limit = 20
 	}
 
-	conn, err := dialGRPC(r.measurementAddr)
+	cb, err := r.dialWithBreaker("measurement", r.measurementAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "측정 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewMeasurementServiceClient(conn)
+	client := v1.NewMeasurementServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -229,9 +237,11 @@ func (r *Router) handleGetHistory(w http.ResponseWriter, req *http.Request) {
 		Offset: int32(offset),
 	})
 	if err != nil {
+		cb.RecordFailure()
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	cb.RecordSuccess()
 
 	measurements := make([]map[string]interface{}, 0, len(resp.GetMeasurements()))
 	for _, m := range resp.GetMeasurements() {
@@ -267,14 +277,14 @@ func (r *Router) handleRegisterDevice(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	conn, err := dialGRPC(r.deviceAddr)
+	cb, err := r.dialWithBreaker("device", r.deviceAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "디바이스 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewDeviceServiceClient(conn)
+	client := v1.NewDeviceServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -285,9 +295,11 @@ func (r *Router) handleRegisterDevice(w http.ResponseWriter, req *http.Request) 
 		UserId:          body.UserID,
 	})
 	if err != nil {
+		cb.RecordFailure()
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	cb.RecordSuccess()
 
 	writeJSON(w, http.StatusCreated, map[string]interface{}{
 		"device_id":          resp.GetDeviceId(),
@@ -304,14 +316,14 @@ func (r *Router) handleListDevices(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.deviceAddr)
+	cb, err := r.dialWithBreaker("device", r.deviceAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "디바이스 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewDeviceServiceClient(conn)
+	client := v1.NewDeviceServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -319,9 +331,11 @@ func (r *Router) handleListDevices(w http.ResponseWriter, req *http.Request) {
 		UserId: userID,
 	})
 	if err != nil {
+		cb.RecordFailure()
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
 	}
+	cb.RecordSuccess()
 
 	devices := make([]map[string]interface{}, 0, len(resp.GetDevices()))
 	for _, d := range resp.GetDevices() {
@@ -357,14 +371,14 @@ func (r *Router) handleSearchFacilities(w http.ResponseWriter, req *http.Request
 		limit = 20
 	}
 
-	conn, err := dialGRPC(r.reservationAddr)
+	cb, err := r.dialWithBreaker("reservation", r.reservationAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "예약 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewReservationServiceClient(conn)
+	client := v1.NewReservationServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -413,14 +427,14 @@ func (r *Router) handleGetFacility(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.reservationAddr)
+	cb, err := r.dialWithBreaker("reservation", r.reservationAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "예약 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewReservationServiceClient(conn)
+	client := v1.NewReservationServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -464,14 +478,14 @@ func (r *Router) handleCreateReservation(w http.ResponseWriter, req *http.Reques
 		return
 	}
 
-	conn, err := dialGRPC(r.reservationAddr)
+	cb, err := r.dialWithBreaker("reservation", r.reservationAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "예약 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewReservationServiceClient(conn)
+	client := v1.NewReservationServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -506,14 +520,14 @@ func (r *Router) handleListReservations(w http.ResponseWriter, req *http.Request
 		limit = 20
 	}
 
-	conn, err := dialGRPC(r.reservationAddr)
+	cb, err := r.dialWithBreaker("reservation", r.reservationAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "예약 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewReservationServiceClient(conn)
+	client := v1.NewReservationServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -546,14 +560,14 @@ func (r *Router) handleGetReservation(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	conn, err := dialGRPC(r.reservationAddr)
+	cb, err := r.dialWithBreaker("reservation", r.reservationAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "예약 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewReservationServiceClient(conn)
+	client := v1.NewReservationServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -616,14 +630,14 @@ func (r *Router) handleSelectPharmacy(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	conn, err := dialGRPC(r.prescriptionAddr)
+	cb, err := r.dialWithBreaker("prescription", r.prescriptionAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "처방 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewPrescriptionServiceClient(conn)
+	client := v1.NewPrescriptionServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -653,14 +667,14 @@ func (r *Router) handleSendToPharmacy(w http.ResponseWriter, req *http.Request) 
 		return
 	}
 
-	conn, err := dialGRPC(r.prescriptionAddr)
+	cb, err := r.dialWithBreaker("prescription", r.prescriptionAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "처방 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewPrescriptionServiceClient(conn)
+	client := v1.NewPrescriptionServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
@@ -687,14 +701,14 @@ func (r *Router) handleGetByToken(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	conn, err := dialGRPC(r.prescriptionAddr)
+	cb, err := r.dialWithBreaker("prescription", r.prescriptionAddr)
 	if err != nil {
 		writeError(w, http.StatusServiceUnavailable, "처방 서비스 연결 실패")
 		return
 	}
-	defer conn.Close()
+	defer cb.Close()
 
-	client := v1.NewPrescriptionServiceClient(conn)
+	client := v1.NewPrescriptionServiceClient(cb.conn)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 

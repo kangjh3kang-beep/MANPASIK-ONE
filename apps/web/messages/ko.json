@@ -1,5 +1,80 @@
 {
-  "Index": {
-    "title": "정밀 진단의 새로운 지평, MMUP"
+  "common": {
+    "loading": "로딩 중...",
+    "error": "데이터 로드 실패",
+    "retry": "다시 시도",
+    "save": "저장",
+    "cancel": "취소",
+    "search": "검색",
+    "filter": "필터"
+  },
+  "clinical": {
+    "title": "임상 데이터 콘솔",
+    "subtitle": "실시간 환자 바이탈 모니터링 및 AI 분석",
+    "activePatients": "활성 환자",
+    "dailyMeasurements": "일일 측정",
+    "activeAlerts": "활성 알림",
+    "accuracy": "정확도"
+  },
+  "agentsHub": {
+    "title": "AI 에이전트 오케스트레이터",
+    "subtitle": "ML 모델 파이프라인 관리 및 모니터링",
+    "registeredAgents": "등록 에이전트",
+    "activeInference": "활성 추론",
+    "avgLatency": "평균 지연시간",
+    "pipelineHealth": "파이프라인 상태"
+  },
+  "predictor": {
+    "title": "생체 지표 예측 엔진",
+    "subtitle": "GNN 기반 질병 위험도 예측 시스템",
+    "targetDiseases": "대상 질병",
+    "highRiskDetections": "고위험 감지",
+    "modelAccuracy": "모델 정확도"
+  },
+  "reward": {
+    "title": "환자 리워드 풀",
+    "subtitle": "데이터 기여에 대한 토큰 기반 보상 시스템",
+    "totalTokens": "보유 토큰",
+    "contributions": "기여 수",
+    "monthlyReward": "월간 보상"
+  },
+  "partner": {
+    "title": "파트너 통합 연동",
+    "subtitle": "HL7/FHIR 데이터 파이프라인 통합 관리",
+    "connectedPartners": "연동 파트너",
+    "dailyExchanges": "일일 교환",
+    "successRate": "성공률"
+  },
+  "gxp": {
+    "title": "의약품 GxP 준수 시스템",
+    "subtitle": "cGMP 감사 추적 및 전자서명 규정 준수",
+    "complianceRate": "준수율",
+    "auditItems": "감사 항목",
+    "pendingItems": "보류 항목",
+    "totalLogs": "전체 로그"
+  },
+  "devPortal": {
+    "title": "개발자 포털",
+    "subtitle": "OpenAPI 탐색기 및 API 키 관리",
+    "totalEndpoints": "전체 엔드포인트",
+    "activeKeys": "활성 API 키",
+    "webhooks": "웹훅",
+    "docs": "문서 버전"
+  },
+  "hardwareCore": {
+    "title": "하드웨어 코어 엔진",
+    "subtitle": "Rust 기반 Edge AI 및 센서 캘리브레이션",
+    "engineStatus": "엔진 상태",
+    "cpuTemp": "CPU 온도",
+    "memoryUsage": "메모리 사용률",
+    "compliance": "IEC 62304 준수"
+  },
+  "app": {
+    "title": "만파식 건강 앱",
+    "subtitle": "나의 건강 데이터를 한눈에",
+    "healthScore": "건강 점수",
+    "newMeasurement": "새 측정 시작",
+    "shareDoctor": "의사에게 공유",
+    "checkReward": "리워드 확인"
   }
 }

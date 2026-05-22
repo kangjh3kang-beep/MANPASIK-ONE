@@ -1,0 +1,55 @@
+# ManPaSik Promtail Configuration
+# Docker 컨테이너 로그를 Loki 로 전송
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Docker 컨테이너 로그 수집
+  - job_name: docker
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: manpasik-containers
+          __path__: /var/lib/docker/containers/*/*-json.log
+
+    pipeline_stages:
+      # Docker JSON 로그 파싱
+      - docker: {}
+
+      # ManPaSik JSON 구조화 로그 파싱
+      - json:
+          expressions:
+            level: level
+            service: service
+            msg: msg
+            timestamp: timestamp
+            trace_id: trace_id
+
+      - labels:
+          level:
+          service:
+
+      - timestamp:
+          source: timestamp
+          format: RFC3339Nano
+          fallback_formats:
+            - "2006-01-02T15:04:05Z07:00"
+
+      # 서비스별 라벨링
+      - match:
+          selector: '{job="manpasik-containers"}'
+          stages:
+            - regex:
+                source: service
+                expression: "^(?P<service_name>.+)-service$"
+            - labels:
+                service_name:

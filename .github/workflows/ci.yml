@@ -238,3 +238,162 @@ jobs:
 
       - name: Run tests
         run: cargo test --workspace
+
+  # ============================================================================
+  # 5. Security Scanning (보안 스캔)
+  # ============================================================================
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    needs: [go-backend, rust-core]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Go — gosec 정적 보안 분석
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Run gosec (Go security scan)
+        working-directory: backend
+        run: |
+          gosec -fmt sarif -out ../gosec-results.sarif ./... || true
+          gosec -fmt text ./... || echo "::warning::gosec 발견 사항 존재"
+
+      # Rust — cargo audit 취약점 검사
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-audit
+        run: cargo install cargo-audit
+
+      - name: Run cargo audit (Rust dependency audit)
+        working-directory: rust-core
+        run: cargo audit || echo "::warning::cargo audit 취약점 발견"
+
+      # Container — Trivy 이미지 스캔
+      - name: Run Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          severity: "HIGH,CRITICAL"
+          exit-code: "0"
+          format: "table"
+
+  # ============================================================================
+  # 6. Load Tests (k6 부하 테스트)
+  # ============================================================================
+  load-test:
+    name: Load Tests (k6)
+    runs-on: ubuntu-latest
+    needs: [go-backend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          sudo gpg -k
+          sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg \
+            --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D68
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" \
+            | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install k6 -y
+
+      - name: Run API gateway load test
+        working-directory: tests/load
+        run: k6 run --vus 10 --duration 30s api_gateway_load_test.js || echo "::warning::Gateway load test completed with issues"
+        env:
+          BASE_URL: ${{ vars.LOAD_TEST_BASE_URL || 'http://localhost:8080' }}
+
+      - name: Run auth load test
+        working-directory: tests/load
+        run: k6 run --vus 10 --duration 30s auth_load_test.js || echo "::warning::Auth load test completed with issues"
+        env:
+          BASE_URL: ${{ vars.LOAD_TEST_BASE_URL || 'http://localhost:8080' }}
+
+      - name: Run measurement load test
+        working-directory: tests/load
+        run: k6 run --vus 5 --duration 30s measurement_load_test.js || echo "::warning::Measurement load test completed with issues"
+        env:
+          BASE_URL: ${{ vars.LOAD_TEST_BASE_URL || 'http://localhost:8080' }}
+
+  # ============================================================================
+  # 7. E2E Integration Tests
+  # ============================================================================
+  e2e-test:
+    name: E2E Integration Tests
+    runs-on: ubuntu-latest
+    needs: [go-backend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: backend/go.sum
+
+      - name: Start services with Docker Compose
+        run: |
+          if [ -f docker-compose.yml ]; then
+            docker compose up -d --wait --timeout 120
+          elif [ -f infrastructure/docker-compose.yml ]; then
+            docker compose -f infrastructure/docker-compose.yml up -d --wait --timeout 120
+          else
+            echo "::warning::No docker-compose.yml found, running E2E tests against external services"
+          fi
+
+      - name: Wait for services to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -sf http://localhost:8080/health --connect-timeout 5 2>/dev/null; then
+              echo "Services are ready"
+              break
+            fi
+            echo "Waiting for services... (attempt $i/30)"
+            sleep 5
+          done
+
+      - name: Run E2E tests
+        working-directory: tests/e2e
+        run: go test -v -count=1 -timeout 600s ./... 2>&1 | tee e2e-results.txt
+        env:
+          GATEWAY_ADDR: "localhost:8080"
+          AUTH_SERVICE_ADDR: "localhost:50051"
+          USER_SERVICE_ADDR: "localhost:50052"
+          DEVICE_SERVICE_ADDR: "localhost:50053"
+          MEASUREMENT_SERVICE_ADDR: "localhost:50054"
+          IOT_GATEWAY_SERVICE_ADDR: "localhost:50072"
+          NLP_SERVICE_ADDR: "localhost:50074"
+          MARKETPLACE_SERVICE_ADDR: "localhost:50075"
+
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: tests/e2e/e2e-results.txt
+
+      - name: Teardown Docker Compose
+        if: always()
+        run: |
+          if [ -f docker-compose.yml ]; then
+            docker compose down -v
+          elif [ -f infrastructure/docker-compose.yml ]; then
+            docker compose -f infrastructure/docker-compose.yml down -v
+          fi

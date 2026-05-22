@@ -64,6 +64,7 @@ import 'package:manpasik/features/admin/presentation/admin_hierarchy_screen.dart
 import 'package:manpasik/features/admin/presentation/admin_compliance_screen.dart';
 import 'package:manpasik/features/admin/presentation/admin_revenue_screen.dart';
 import 'package:manpasik/features/admin/presentation/admin_inventory_table.dart';
+import 'package:manpasik/features/admin/presentation/admin_device_fleet_screen.dart';
 import 'package:manpasik/features/admin/presentation/admin_ecosystem_screen.dart';
 import 'package:manpasik/features/admin/presentation/tenancy_admin_dashboard_screen.dart';
 import 'package:manpasik/features/community/presentation/research_post_screen.dart';
@@ -374,6 +375,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/admin/ecosystem',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const AdminEcosystemScreen(),
+      ),
+      GoRoute(
+        path: '/admin/devices',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const AdminDeviceFleetScreen(),
       ),
       // Phase AN-1: Tenancy 운영자 대시보드
       // opsBaseUrl 은 build 시 ENV(MANPASIK_OPS_BASE_URL) 또는 query 파라미터 사용

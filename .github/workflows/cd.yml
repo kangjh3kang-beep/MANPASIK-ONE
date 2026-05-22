@@ -29,7 +29,8 @@ env:
 # cartridge-service, calibration-service, coaching-service, family-service,
 # notification-service, health-record-service, prescription-service,
 # reservation-service, telemedicine-service, admin-service, community-service,
-# video-service, translation-service, vision-service
+# video-service, translation-service, vision-service,
+# iot-gateway-service, nlp-service, marketplace-service
 
 jobs:
   # ============================================================================
@@ -69,6 +70,9 @@ jobs:
           - video-service
           - translation-service
           - vision-service
+          - iot-gateway-service
+          - nlp-service
+          - marketplace-service
 
     steps:
       - uses: actions/checkout@v4
@@ -156,7 +160,8 @@ jobs:
             cartridge-service calibration-service coaching-service family-service \
             notification-service health-record-service prescription-service \
             reservation-service telemedicine-service admin-service community-service \
-            video-service translation-service vision-service; do
+            video-service translation-service vision-service \
+            iot-gateway-service nlp-service marketplace-service; do
             [ -n "$IMAGES" ] && IMAGES="$IMAGES "
             IMAGES="${IMAGES}manpasik/${svc}:latest=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${svc}:${{ github.sha }}"
           done
@@ -191,6 +196,9 @@ jobs:
             video-service
             translation-service
             vision-service
+            iot-gateway-service
+            nlp-service
+            marketplace-service
           )
           FAILED=()
           for svc in "${SERVICES[@]}"; do
@@ -272,7 +280,8 @@ jobs:
             cartridge-service calibration-service coaching-service family-service \
             notification-service health-record-service prescription-service \
             reservation-service telemedicine-service admin-service community-service \
-            video-service translation-service vision-service; do
+            video-service translation-service vision-service \
+            iot-gateway-service nlp-service marketplace-service; do
             [ -n "$IMAGES" ] && IMAGES="$IMAGES "
             IMAGES="${IMAGES}manpasik/${svc}:latest=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${svc}:${{ github.sha }}"
           done
@@ -307,6 +316,9 @@ jobs:
             video-service
             translation-service
             vision-service
+            iot-gateway-service
+            nlp-service
+            marketplace-service
           )
           FAILED=()
           for svc in "${SERVICES[@]}"; do
@@ -341,6 +353,44 @@ jobs:
           done
           echo "::error::Staging health check failed after 5 attempts"
           exit 1
+
+      - name: Smoke test (Staging)
+        run: |
+          GATEWAY_URL=$(kubectl get svc gateway -n manpasik -o jsonpath='{.status.loadBalancer.ingress[0].hostname}' 2>/dev/null || echo "")
+          if [ -z "$GATEWAY_URL" ]; then
+            GATEWAY_URL=$(kubectl get svc gateway -n manpasik -o jsonpath='{.spec.clusterIP}' 2>/dev/null || echo "")
+          fi
+          BASE="http://${GATEWAY_URL}:8080"
+
+          echo "=== Smoke Test: Health ==="
+          curl -sf "${BASE}/health" || { echo "::error::Health endpoint failed"; exit 1; }
+
+          echo ""
+          echo "=== Smoke Test: Auth Registration ==="
+          SMOKE_EMAIL="smoke-$(date +%s)@staging-test.manpasik.com"
+          REG_RESP=$(curl -sf -X POST "${BASE}/api/v1/auth/register" \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"${SMOKE_EMAIL}\",\"password\":\"SmokeTest1!@#\",\"name\":\"Smoke Tester\"}" \
+            -w "\n%{http_code}" 2>/dev/null || echo "000")
+          REG_STATUS=$(echo "$REG_RESP" | tail -1)
+          echo "Registration status: ${REG_STATUS}"
+
+          echo ""
+          echo "=== Smoke Test: Auth Login ==="
+          LOGIN_RESP=$(curl -sf -X POST "${BASE}/api/v1/auth/login" \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"${SMOKE_EMAIL}\",\"password\":\"SmokeTest1!@#\"}" \
+            -w "\n%{http_code}" 2>/dev/null || echo "000")
+          LOGIN_STATUS=$(echo "$LOGIN_RESP" | tail -1)
+          echo "Login status: ${LOGIN_STATUS}"
+
+          echo ""
+          echo "=== Smoke Test: Products List ==="
+          PROD_STATUS=$(curl -sf -o /dev/null -w "%{http_code}" "${BASE}/api/v1/market/products?limit=1" 2>/dev/null || echo "000")
+          echo "Products status: ${PROD_STATUS}"
+
+          echo ""
+          echo "Staging smoke tests completed."
 
   # ============================================================================
   # 4단계: Production 환경 배포 (수동 승인) — kustomize overlays/production
@@ -386,7 +436,8 @@ jobs:
             cartridge-service calibration-service coaching-service family-service \
             notification-service health-record-service prescription-service \
             reservation-service telemedicine-service admin-service community-service \
-            video-service translation-service vision-service; do
+            video-service translation-service vision-service \
+            iot-gateway-service nlp-service marketplace-service; do
             [ -n "$IMAGES" ] && IMAGES="$IMAGES "
             IMAGES="${IMAGES}manpasik/${svc}:latest=${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/${svc}:${{ github.sha }}"
           done
@@ -402,7 +453,8 @@ jobs:
             cartridge-service calibration-service coaching-service family-service \
             notification-service health-record-service prescription-service \
             reservation-service telemedicine-service admin-service community-service \
-            video-service translation-service vision-service)
+            video-service translation-service vision-service \
+            iot-gateway-service nlp-service marketplace-service)
           FAILED=()
           for svc in "${SERVICES[@]}"; do
             echo "::group::Waiting for $svc rollout"
@@ -502,6 +554,9 @@ jobs:
             video-service
             translation-service
             vision-service
+            iot-gateway-service
+            nlp-service
+            marketplace-service
           )
           for svc in "${SERVICES[@]}"; do
             echo "Rolling back $svc..."

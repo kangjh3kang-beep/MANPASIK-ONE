@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:manpasik/core/network/offline_queue.dart';
 import 'package:manpasik/core/router/app_router.dart';
 import 'package:manpasik/core/theme/app_theme.dart';
 import 'package:manpasik/core/theme/sanggam_theme.dart';
@@ -56,8 +58,11 @@ void main() async {
       return true;
     };
 
-    // Hive 초기화 (로컬 저장소)
-    // await Hive.initFlutter();
+    // Hive 초기화 (로컬 저장소 — OfflineQueue 의존)
+    await Hive.initFlutter();
+
+    // OfflineQueue 초기화 (Hive 박스 오픈)
+    await OfflineQueue.instance.init();
 
     // 카카오 SDK 초기화 (네이티브 앱 키 설정)
     // 실제 배포 시 YOUR_NATIVE_APP_KEY를 카카오 개발자 콘솔에서 발급받은 키로 교체

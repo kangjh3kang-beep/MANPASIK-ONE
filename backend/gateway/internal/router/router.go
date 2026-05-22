@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/manpasik/backend/gateway/internal/circuit"
 	"github.com/manpasik/backend/shared/storage"
+	"google.golang.org/grpc"
 )
 
 // Config holds all gRPC service addresses for the gateway.
@@ -25,8 +27,11 @@ type Config struct {
 	AdminAddr        string
 	AiInferenceAddr  string
 	CartridgeAddr    string
-	CalibrationAddr  string
-	CoachingAddr     string
+	CalibrationAddr    string
+	CoachingAddr       string
+	IotGatewayAddr     string
+	NlpAddr            string
+	MarketplaceAddr    string
 }
 
 // Router sets up all REST API routes and proxies to gRPC microservices.
@@ -47,9 +52,13 @@ type Router struct {
 	adminAddr        string
 	aiInferenceAddr  string
 	cartridgeAddr    string
-	calibrationAddr  string
-	coachingAddr     string
-	s3Client         *storage.S3Client // optional: nil이면 파일 업로드 비활성화
+	calibrationAddr    string
+	coachingAddr       string
+	iotGatewayAddr     string
+	nlpAddr            string
+	marketplaceAddr    string
+	s3Client           *storage.S3Client // optional: nil이면 파일 업로드 비활성화
+	breakers           map[string]*circuit.Breaker // H6: 서비스별 서킷 브레이커
 }
 
 // SetS3Client는 S3 클라이언트를 설정합니다 (optional).
@@ -76,11 +85,99 @@ func NewRouter(cfg Config) *Router {
 		adminAddr:        cfg.AdminAddr,
 		aiInferenceAddr:  cfg.AiInferenceAddr,
 		cartridgeAddr:    cfg.CartridgeAddr,
-		calibrationAddr:  cfg.CalibrationAddr,
-		coachingAddr:     cfg.CoachingAddr,
+		calibrationAddr:    cfg.CalibrationAddr,
+		coachingAddr:       cfg.CoachingAddr,
+		iotGatewayAddr:     cfg.IotGatewayAddr,
+		nlpAddr:            cfg.NlpAddr,
+		marketplaceAddr:    cfg.MarketplaceAddr,
+		breakers:           make(map[string]*circuit.Breaker),
 	}
+
+	// H6: 서비스별 서킷 브레이커 초기화 (5회 실패 → 30초 차단)
+	for _, svc := range []string{
+		"auth", "user", "device", "measurement",
+		"reservation", "prescription", "subscription",
+		"shop", "payment", "health-record",
+		"notification", "community", "admin",
+		"ai-inference", "cartridge", "calibration",
+		"coaching", "iot-gateway", "nlp", "marketplace",
+	} {
+		r.breakers[svc] = circuit.New(svc, 5, 30*time.Second)
+	}
+
 	r.setupRoutes()
 	return r
+}
+
+// dialWithBreaker wraps dialGRPC with circuit breaker protection.
+//
+// H6: 개별 서비스 장애가 전체 게이트웨이로 전파되지 않도록 격리합니다.
+// 서킷이 Open 상태이면 gRPC 연결을 시도하지 않고 즉시 에러를 반환합니다.
+func (r *Router) dialWithBreaker(serviceName, addr string) (*grpcConnWithBreaker, error) {
+	breaker, ok := r.breakers[serviceName]
+	if !ok {
+		// 브레이커 미등록 서비스 — 브레이커 없이 연결
+		conn, err := dialGRPC(addr)
+		if err != nil {
+			return nil, err
+		}
+		return &grpcConnWithBreaker{conn: conn, breaker: nil}, nil
+	}
+
+	if !breaker.Allow() {
+		return nil, &circuitOpenError{service: serviceName}
+	}
+
+	conn, err := dialGRPC(addr)
+	if err != nil {
+		breaker.RecordFailure()
+		return nil, err
+	}
+
+	return &grpcConnWithBreaker{conn: conn, breaker: breaker}, nil
+}
+
+// grpcConnWithBreaker wraps a gRPC connection with its associated breaker.
+type grpcConnWithBreaker struct {
+	conn    *grpc.ClientConn
+	breaker *circuit.Breaker
+}
+
+// Close closes the underlying gRPC connection.
+func (c *grpcConnWithBreaker) Close() error {
+	return c.conn.Close()
+}
+
+// RecordSuccess records a successful gRPC call to the breaker.
+func (c *grpcConnWithBreaker) RecordSuccess() {
+	if c.breaker != nil {
+		c.breaker.RecordSuccess()
+	}
+}
+
+// RecordFailure records a failed gRPC call to the breaker.
+func (c *grpcConnWithBreaker) RecordFailure() {
+	if c.breaker != nil {
+		c.breaker.RecordFailure()
+	}
+}
+
+// circuitOpenError is returned when the circuit breaker is open.
+type circuitOpenError struct {
+	service string
+}
+
+func (e *circuitOpenError) Error() string {
+	return "서비스 일시 중단 (circuit open): " + e.service
+}
+
+// BreakerStats returns diagnostic stats for all circuit breakers.
+func (r *Router) BreakerStats() []circuit.BreakerStats {
+	stats := make([]circuit.BreakerStats, 0, len(r.breakers))
+	for _, b := range r.breakers {
+		stats = append(stats, b.Stats())
+	}
+	return stats
 }
 
 // ServeHTTP implements http.Handler.
@@ -203,6 +300,18 @@ func (r *Router) setupRoutes() {
 	r.mux.HandleFunc("GET /api/v1/coaching/daily-report/{userId}", r.handleGenerateDailyReport)
 	r.mux.HandleFunc("GET /api/v1/coaching/recommendations/{userId}", r.handleGetRecommendations)
 
+	// IoT Gateway service
+	r.mux.HandleFunc("GET /api/v1/iot/devices", r.handleListIoTDevices)
+	r.mux.HandleFunc("GET /api/v1/iot/telemetry", r.handleGetIoTTelemetry)
+
+	// NLP service
+	r.mux.HandleFunc("POST /api/v1/nlp/parse", r.handleNlpParse)
+	r.mux.HandleFunc("POST /api/v1/nlp/symptoms", r.handleNlpSymptoms)
+
+	// Marketplace service
+	r.mux.HandleFunc("GET /api/v1/marketplace/products", r.handleListMarketplaceProducts)
+	r.mux.HandleFunc("GET /api/v1/marketplace/partners", r.handleListMarketplacePartners)
+
 	// File upload service (S3/MinIO)
 	r.setupUploadRoutes()
 }
@@ -230,7 +339,7 @@ func (r *Router) handleVersion(w http.ResponseWriter, _ *http.Request) {
 		"service":     "gateway",
 		"version":     "1.0.0",
 		"api_version": "v1",
-		"services":    17,
+		"services":    20,
 	})
 }
 

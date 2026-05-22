@@ -17,7 +17,7 @@ export default async function middleware(request: NextRequest) {
   
   // 1. 도메인 경로는 인증 먼저 체크
   if (pathname.includes('/domains')) {
-    const authRes = await authMiddleware(request as any);
+    const authRes = await authMiddleware(request);
     // 리다이렉트가 발생했다면(로그인 필요 등) 바로 반환
     if (authRes && authRes.status !== 200 && authRes.headers.get('location')) {
       return authRes;

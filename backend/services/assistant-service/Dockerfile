@@ -12,4 +12,7 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /app
 COPY --from=builder /assistant-service .
 EXPOSE 50077
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget -qO /dev/null http://localhost:9100/health 2>/dev/null || exit 1
+
 ENTRYPOINT ["./assistant-service"]
