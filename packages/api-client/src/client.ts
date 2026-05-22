@@ -56,13 +56,13 @@ class MmupApiClient {
     body?: unknown,
     params?: Record<string, string>
   ): Promise<ApiResponse<T>> {
-    // 기본 베이스 URL 처리 (상대 경로인 경우 처리)
+    // 베이스 URL 처리: 빈 문자열 또는 상대 경로인 경우 origin 사용
     let baseUrl = this.config.baseUrl;
-    if (baseUrl.startsWith('/')) {
+    if (!baseUrl || baseUrl.startsWith('/')) {
       if (typeof window !== 'undefined') {
-        baseUrl = window.location.origin + baseUrl;
+        baseUrl = window.location.origin + (baseUrl || '');
       } else {
-        baseUrl = 'http://localhost:3000' + baseUrl; // SSR 대응
+        baseUrl = 'http://localhost:3000' + (baseUrl || '');
       }
     }
 
