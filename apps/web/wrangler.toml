@@ -1,0 +1,19 @@
+# Cloudflare Pages — apps/web (Next.js + next-on-pages adapter)
+#
+# 본 파일은 빌드 후 산출물 디렉토리를 명시함으로써 Cloudflare 대시보드 GUI
+# 설정 변경 없이도 자동으로 .vercel/output/static 을 deploy 하게 한다.
+#
+# next-on-pages 가 Next.js 빌드 결과를 분석하여 다음을 생성:
+#   .vercel/output/static/        — 정적 자산
+#   .vercel/output/functions/     — Cloudflare Pages Functions (SSR/middleware/API)
+#   .vercel/output/_routes.json   — 라우팅 메타
+#
+# pages_build_output_dir 만 명시하면 Cloudflare Pages 가 자동 인식.
+
+name = "manpasik-one"
+pages_build_output_dir = ".vercel/output/static"
+
+# Next.js 15 + jose (next-auth) 가 CompressionStream / DecompressionStream
+# 등 Node.js API 를 사용. Edge runtime 의 nodejs_compat 플래그로 허용.
+compatibility_date = "2025-05-22"
+compatibility_flags = ["nodejs_compat"]
