@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Activity, ArrowRight, Eye, EyeOff, ShieldCheck, Stethoscope, FlaskConical, Pill, Users2, FileCode2, Smartphone, Settings, Home } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Activity, ArrowRight, Eye, EyeOff, ShieldCheck, Stethoscope, FlaskConical, Pill, Users2, FileCode2, Smartphone, Settings, Home, Lock } from 'lucide-react';
 import { signIn } from 'next-auth/react';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 const PERSONA_CARDS = [
@@ -21,6 +22,27 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  // 인증 미들웨어가 redirect 했을 때 ?callbackUrl 또는 ?from 으로 원래 페이지 전달.
+  // 사용자가 "어디로 가려고 했는지" 명확히 안내하여 혼란 방지.
+  const searchParams = useSearchParams();
+  const [originPath, setOriginPath] = useState<string | null>(null);
+  useEffect(() => {
+    const cb = searchParams?.get('callbackUrl') ?? searchParams?.get('from');
+    if (!cb) {
+      setOriginPath(null);
+      return;
+    }
+    try {
+      const url = new URL(cb, window.location.origin);
+      // 같은 origin 만 표시 (open redirect 방지)
+      if (url.origin === window.location.origin) {
+        setOriginPath(url.pathname);
+      }
+    } catch {
+      setOriginPath(null);
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
 
@@ -78,6 +100,20 @@ export default function LoginPage() {
               홈으로 가기
             </Link>
           </div>
+
+          {/* callbackUrl Banner — 인증 미들웨어가 redirect 했을 때 원래 페이지 안내 */}
+          {originPath && (
+            <div className="mb-6 flex items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3">
+              <Lock className="h-5 w-5 flex-shrink-0 text-sky-600 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-semibold text-sky-900">로그인이 필요한 페이지입니다</p>
+                <p className="mt-0.5 text-sky-700">
+                  <code className="rounded bg-white/60 px-1.5 py-0.5 text-xs font-mono">{originPath}</code>
+                  {' '}로 접근하셨습니다. 로그인 후 자동으로 이동합니다.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Title Section */}
           <h1 className="text-3xl font-bold tracking-tight text-slate-900">
