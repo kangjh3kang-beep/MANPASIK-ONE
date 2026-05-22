@@ -5,8 +5,8 @@ import React, { useEffect, useState } from 'react';
 export function MSWProvider(props: React.PropsWithChildren<{}>) {
   const { children } = props;
   // 초기 상태: 모킹이 필요 없으면 즉시 ready 상태로 시작
-  const isMockingEnabled = 
-    process.env.NODE_ENV === 'development' || 
+  const isMockingEnabled =
+    process.env.NODE_ENV === 'development' ||
     process.env.NEXT_PUBLIC_API_MOCKING === 'enabled';
     
   const [mswReady, setMswReady] = useState(!isMockingEnabled);

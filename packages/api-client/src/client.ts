@@ -29,9 +29,9 @@ export interface ApiResponse<T> {
 }
 
 const DEFAULT_CONFIG: ApiConfig = {
-  baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
+  baseUrl: process.env.NEXT_PUBLIC_API_URL || '',
   timeout: 15000,
-  retries: 2,
+  retries: 1,
 };
 
 class MmupApiClient {
