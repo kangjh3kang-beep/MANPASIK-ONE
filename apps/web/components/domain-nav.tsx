@@ -2,7 +2,8 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, Stethoscope, Network, ActivitySquare, Coins, Users2, Pill, FileCode2, Smartphone } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { ArrowLeft, Stethoscope, Network, ActivitySquare, Coins, Users2, Pill, FileCode2, Smartphone, Globe } from 'lucide-react';
 
 const DOMAINS = [
   { id: 'clinical', label: '임상 콘솔', path: '/domains/clinical', icon: Stethoscope },
@@ -12,6 +13,7 @@ const DOMAINS = [
   { id: 'partner', label: '파트너', path: '/domains/partner', icon: Users2 },
   { id: 'gxp', label: 'GxP', path: '/domains/gxp', icon: Pill },
   { id: 'dev-portal', label: '개발자', path: '/domains/dev-portal', icon: FileCode2 },
+  { id: 'hardware-core', label: '하드웨어', path: '/domains/hardware-core', icon: Globe },
   { id: 'app', label: '건강 앱', path: '/domains/app', icon: Smartphone },
 ];
 
@@ -19,12 +21,24 @@ interface DomainNavProps {
   currentDomain: string;
 }
 
+/**
+ * 현재 pathname에서 locale prefix를 추출하여 링크에 적용.
+ * 예: /ko/domains/clinical → locale = 'ko'
+ */
+function useLocalePrefix(): string {
+  const pathname = usePathname();
+  const match = pathname.match(/^\/(ko|en|ja|zh)/);
+  return match ? `/${match[1]}` : '/ko';
+}
+
 export function DomainNav({ currentDomain }: DomainNavProps) {
+  const localePrefix = useLocalePrefix();
+
   return (
     <div className="w-full bg-slate-900 text-white">
       <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 overflow-x-auto h-10">
         <Link
-          href="/ko"
+          href={localePrefix}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-colors flex-shrink-0"
         >
           <ArrowLeft className="h-3 w-3" />
@@ -37,7 +51,7 @@ export function DomainNav({ currentDomain }: DomainNavProps) {
           return (
             <Link
               key={domain.id}
-              href={domain.path}
+              href={`${localePrefix}${domain.path}`}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium transition-colors flex-shrink-0 ${
                 isActive
                   ? 'bg-white/10 text-white'

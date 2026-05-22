@@ -17,7 +17,11 @@ const NAV_ITEMS = [
   { id: 'settings', label: '설정', icon: Settings, href: '#' },
 ];
 
-export function ClinicalShell({ children }: { children: React.ReactNode }) {
+type ClinicalShellProps = {
+  children?: React.ReactNode;
+};
+
+export function ClinicalShell({ children }: ClinicalShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [activeId, setActiveId] = useState('dashboard');
 

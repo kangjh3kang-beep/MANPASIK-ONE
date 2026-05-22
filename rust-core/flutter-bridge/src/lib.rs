@@ -677,3 +677,7 @@ mod tests {
         assert!((sim - 1.0).abs() < 0.001, "동일 벡터 유사도 = 1.0");
     }
 }
+#![allow(unexpected_cfgs)]
+#![allow(dead_code)]
+#![allow(unused_imports)]
+#![cfg_attr(test, allow(unused_variables))]

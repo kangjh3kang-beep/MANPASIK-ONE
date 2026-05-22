@@ -285,7 +285,7 @@ impl CryptoEngine {
 
         // 체인 해시 = SHA256(이전_체인_해시 + 현재_데이터_해시)
         let chain_input = match &self.chain_state {
-            Some(prev) => format!("{}{}", prev, data_hash),
+            Some(prev) => format!("{prev}{data_hash}"),
             None => data_hash.clone(),
         };
         let chain_hash = self.hash_sha256(chain_input.as_bytes());

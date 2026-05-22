@@ -32,7 +32,7 @@ pub struct AnalysisResult {
 pub fn process_camera_frame(bytes: Vec<u8>, width: u32, height: u32) -> String {
     match _process_internal(bytes, width, height) {
         Ok(result) => serde_json::to_string(&result).unwrap_or_else(|e| {
-            format!("{{\"detected\":false,\"biomarker\":\"\",\"value\":0,\"confidence\":0,\"dominant_rgb\":[0,0,0],\"warning\":\"직렬화 실패: {}\"}}", e)
+            format!("{{\"detected\":false,\"biomarker\":\"\",\"value\":0,\"confidence\":0,\"dominant_rgb\":[0,0,0],\"warning\":\"직렬화 실패: {e}\"}}")
         }),
         Err(e) => {
             let err_result = AnalysisResult {
@@ -41,7 +41,7 @@ pub fn process_camera_frame(bytes: Vec<u8>, width: u32, height: u32) -> String {
                 value: 0.0,
                 confidence: 0.0,
                 dominant_rgb: [0, 0, 0],
-                warning: format!("분석 오류: {}", e),
+                warning: format!("분석 오류: {e}"),
             };
             serde_json::to_string(&err_result).unwrap_or_default()
         }

@@ -29,6 +29,6 @@ export default async function middleware(request: NextRequest) {
 }
  
 export const config = {
-  matcher: ['/', '/(ko|en|ja|zh)/:path*', '/domains/:path*']
+  // 정적 자원, API, _next를 제외한 모든 경로에 미들웨어 적용
+  matcher: ['/', '/(ko|en|ja|zh)/:path*', '/domains/:path*', '/login', '/unauthorized']
 };
-

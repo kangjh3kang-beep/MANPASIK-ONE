@@ -1,6 +1,18 @@
+'use client';
+
 import React from 'react';
 import { Network, Database, ShieldCheck, ActivitySquare, Pill, FileCode2, GraduationCap, Users2, Stethoscope, ChevronRight, Globe } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+/**
+ * 현재 pathname에서 locale prefix를 추출
+ */
+function useLocalePrefix(): string {
+  const pathname = usePathname();
+  const match = pathname.match(/^\/(ko|en|ja|zh)/);
+  return match ? `/${match[1]}` : '/ko';
+}
 
 const domains = [
   {
@@ -78,6 +90,8 @@ const domains = [
 ];
 
 export function DomainBentoGrid() {
+  const localePrefix = useLocalePrefix();
+
   return (
     <section id="domains" className="py-24 bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -95,7 +109,7 @@ export function DomainBentoGrid() {
           {domains.map((domain) => (
             <Link 
               key={domain.id} 
-              href={domain.url}
+              href={`${localePrefix}${domain.url}`}
               className="group relative flex flex-col justify-between overflow-hidden rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:ring-sky-500 cursor-pointer"
             >
               <div>

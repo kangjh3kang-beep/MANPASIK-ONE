@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { DomainNav } from '../../components/domain-nav';
+import { DomainNav } from '@/components/domain-nav';
 import { usePathname } from 'next/navigation';
 
 export default function DomainsLayout({ children }: { children: React.ReactNode }) {

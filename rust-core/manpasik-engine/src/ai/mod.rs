@@ -477,8 +477,7 @@ impl SafetyValidator {
         // 위험 수준 체크
         if value <= critical_low || value >= critical_high {
             warnings.push(format!(
-                "위험 수준: {} = {:.1} (위험 범위: <{} 또는 >{})",
-                biomarker_type, value, critical_low, critical_high
+                "위험 수준: {biomarker_type} = {value:.1} (위험 범위: <{critical_low} 또는 >{critical_high})"
             ));
             return false;
         }
@@ -486,8 +485,7 @@ impl SafetyValidator {
         // 정상 범위 체크
         if value < low || value > high {
             warnings.push(format!(
-                "참조 범위 이탈: {} = {:.1} (정상: {}-{})",
-                biomarker_type, value, low, high
+                "참조 범위 이탈: {biomarker_type} = {value:.1} (정상: {low}-{high})"
             ));
         }
 
@@ -698,7 +696,7 @@ impl ExplainabilityEngine {
             };
 
             importances.push(FeatureImportance {
-                feature_name: format!("channel_{}", i),
+                feature_name: format!("channel_{i}"),
                 importance_score: diff.abs(),
                 direction,
             });
@@ -991,12 +989,10 @@ impl TrendAnalyzer {
             } else {
                 TrendDirection::Worsening
             }
+        } else if reg.slope > 0.0 {
+            TrendDirection::Improving
         } else {
-            if reg.slope > 0.0 {
-                TrendDirection::Improving
-            } else {
-                TrendDirection::Worsening
-            }
+            TrendDirection::Worsening
         }
     }
 

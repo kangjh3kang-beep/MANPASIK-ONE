@@ -2,6 +2,13 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, Stethoscope, Heart, Droplets, Footprints, Moon, Smartphone, ChevronRight, Users2, Database } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+function useLocalePrefix(): string {
+  const pathname = usePathname();
+  const match = pathname.match(/^\/(ko|en|ja|zh)/);
+  return match ? `/${match[1]}` : '/ko';
+}
 
 const HEALTH_CARDS = [
   { label: '심박수', val: '72', unit: 'bpm', icon: Heart, color: 'text-red-500 bg-red-50', trend: '정상' },
@@ -19,10 +26,17 @@ const RECENT = [
 
 export default function MobileAppPage() {
   const [mounted, setMounted] = useState(false);
+  const localePrefix = useLocalePrefix();
   useEffect(() => setMounted(true), []);
   if (!mounted) return <div className="min-h-screen bg-slate-50 animate-pulse" />;
 
   const lastUpdate = new Date().toLocaleTimeString();
+
+  const ACTIONS = [
+    { label: '새 측정 시작', href: `${localePrefix}/domains/clinical`, icon: Stethoscope },
+    { label: '의사에게 공유', href: `${localePrefix}/domains/partner`, icon: Users2 },
+    { label: '리워드 확인', href: `${localePrefix}/domains/reward`, icon: Database },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-white">
@@ -77,11 +91,7 @@ export default function MobileAppPage() {
         </div>
 
         <div className="space-y-3">
-          {[
-            { label: '새 측정 시작', href: '/domains/clinical', icon: Stethoscope },
-            { label: '의사에게 공유', href: '/domains/partner', icon: Users2 },
-            { label: '리워드 확인', href: '/domains/reward', icon: Database },
-          ].map((action) => (
+          {ACTIONS.map((action) => (
             <Link 
               key={action.label} 
               href={action.href}
@@ -102,3 +112,4 @@ export default function MobileAppPage() {
     </div>
   );
 }
+

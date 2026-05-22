@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
-    "lint": "turbo run lint",
+    "lint": "node scripts/web_workspace_lint_gate.mjs",
     "type": "turbo run typecheck",
     "test": "vitest run",
     "test:watch": "vitest",

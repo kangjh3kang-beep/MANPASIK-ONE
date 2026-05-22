@@ -1,14 +1,22 @@
 'use client';
-export const runtime = 'edge';
 import React from 'react';
-import { SiteHeader } from '../../components/site-header';
+import { SiteHeader } from '@/components/site-header';
 import { DomainHeader } from '@mmup/ui';
-import { DomainBentoGrid } from '../../components/domain-bento-grid';
-import { EcosystemNerveCenter } from '../../components/dashboard/ecosystem-nerve-center';
+import { DomainBentoGrid } from '@/components/domain-bento-grid';
+import { EcosystemNerveCenter } from '@/components/dashboard/ecosystem-nerve-center';
 import { LayoutGrid, Database, Activity } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+function useLocalePrefix(): string {
+  const pathname = usePathname();
+  const match = pathname.match(/^\/(ko|en|ja|zh)/);
+  return match ? `/${match[1]}` : '/ko';
+}
 
 export default function UnifiedDashboard() {
+  const localePrefix = useLocalePrefix();
+
   return (
     <div className="min-h-screen bg-slate-50">
       <SiteHeader />
@@ -34,13 +42,13 @@ export default function UnifiedDashboard() {
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <Link 
-                    href="/domains/clinical"
+                    href={`${localePrefix}/domains/clinical`}
                     className="px-6 py-3.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-sky-600/30 flex items-center gap-2"
                   >
                     데모 콘솔 열기
                   </Link>
                   <Link 
-                    href="/domains/app"
+                    href={`${localePrefix}/domains/app`}
                     className="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl transition-all border border-white/20 backdrop-blur-sm"
                   >
                     건강 앱 관리
@@ -77,3 +85,4 @@ export default function UnifiedDashboard() {
     </div>
   );
 }
+

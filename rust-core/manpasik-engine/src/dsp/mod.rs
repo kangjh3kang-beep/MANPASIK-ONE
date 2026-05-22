@@ -320,8 +320,7 @@ impl DspProcessor {
         }
         if !(0.0..=1.0).contains(&alpha) {
             return Err(DspError::InvalidFilterParams(format!(
-                "alpha={}, 0.0~1.0 범위여야 합니다",
-                alpha
+                "alpha={alpha}, 0.0~1.0 범위여야 합니다"
             )));
         }
 

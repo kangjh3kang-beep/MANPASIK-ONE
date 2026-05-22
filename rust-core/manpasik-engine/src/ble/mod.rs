@@ -124,14 +124,14 @@ pub struct BleManager {
     /// 연결된 디바이스 맵 (device_id -> DeviceInfo)
     connected_devices: Arc<RwLock<HashMap<String, DeviceInfo>>>,
     /// 스캔 결과 캐시
-    scan_cache: Arc<RwLock<Vec<DeviceInfo>>>,
+    _scan_cache: Arc<RwLock<Vec<DeviceInfo>>>,
 }
 
 impl BleManager {
     pub fn new() -> Self {
         Self {
             connected_devices: Arc::new(RwLock::new(HashMap::new())),
-            scan_cache: Arc::new(RwLock::new(Vec::new())),
+            _scan_cache: Arc::new(RwLock::new(Vec::new())),
         }
     }
 
@@ -549,8 +549,7 @@ impl BleStateMachine {
             Ok(())
         } else {
             Err(BleError::ConnectionFailed(format!(
-                "잘못된 상태 전이: {:?} → {:?}",
-                self, target
+                "잘못된 상태 전이: {self:?} → {target:?}"
             )))
         }
     }
