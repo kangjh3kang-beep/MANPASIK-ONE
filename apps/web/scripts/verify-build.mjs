@@ -139,6 +139,108 @@ if (existsSync(middlewareManifest)) {
   warn('middleware-manifest.json 누락 — middleware.ts 비활성 가능성');
 }
 
+// ============================================================================
+// (7) Deploy Contract — Cloudflare Pages 한계 검증 (Phase BX, Harness H7)
+// ============================================================================
+//
+// Cloudflare Pages 공식 한계:
+//   - 단일 파일: 25 MiB                       (hard limit)
+//   - 총 파일 수: 20,000                       (soft, plan 별 상이)
+//   - 총 deploy 크기: 25 GB                   (soft)
+//   - Pages Functions 압축 크기: 10 MiB        (Workers)
+//
+// 빌드 성공 ≠ deploy 성공. 사고 회고 (2026-05-22T01:38): 27 MiB
+// webpack cache 가 deploy 단계에서 차단되어 production 미반영.
+// 본 검증은 deploy 차단 발생 전에 build 단계에서 사전 감지.
+
+const CLOUDFLARE_MAX_FILE_BYTES = 25 * 1024 * 1024; // 25 MiB
+const FILE_COUNT_WARN = 18000;
+const FILE_COUNT_FAIL = 20000;
+const TOTAL_SIZE_WARN_BYTES = 1024 * 1024 * 1024; // 1 GB
+const TOTAL_SIZE_FAIL_BYTES = 25 * 1024 * 1024 * 1024; // 25 GB
+
+console.log('');
+console.log('📦 Cloudflare Pages Deploy Contract 검증');
+
+const oversized = [];
+let fileCount = 0;
+let totalBytes = 0;
+let cacheJunkBytes = 0;
+
+function walkDeploy(dir, relative = '') {
+  if (!existsSync(dir)) return;
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    const rel = relative ? `${relative}/${entry}` : entry;
+    let st;
+    try { st = statSync(full); } catch { continue; }
+    if (st.isDirectory()) {
+      // .next/cache 는 deploy 에 포함되면 안 됨 — production webpack cache 잔존 검사
+      if (rel === 'cache' && relative === '') {
+        // 크기 계산만 하고 경고 처리
+        const cacheSize = computeDirSize(full);
+        cacheJunkBytes = cacheSize;
+        continue; // walk 안 함 — fail 발생 방지
+      }
+      walkDeploy(full, rel);
+    } else {
+      fileCount += 1;
+      totalBytes += st.size;
+      if (st.size > CLOUDFLARE_MAX_FILE_BYTES) {
+        oversized.push({ path: rel, bytes: st.size });
+      }
+    }
+  }
+}
+
+function computeDirSize(dir) {
+  let bytes = 0;
+  if (!existsSync(dir)) return 0;
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry);
+    let st;
+    try { st = statSync(full); } catch { continue; }
+    if (st.isDirectory()) bytes += computeDirSize(full);
+    else bytes += st.size;
+  }
+  return bytes;
+}
+
+walkDeploy(NEXT_DIR);
+
+// 단일 파일 크기 위반 — hard fail
+if (oversized.length > 0) {
+  for (const f of oversized) {
+    fail(`단일 파일 크기 ${(f.bytes / 1024 / 1024).toFixed(1)} MiB > Cloudflare 한계 25 MiB: .next/${f.path}`);
+  }
+} else {
+  ok(`모든 파일 ≤ 25 MiB (총 ${fileCount} 개)`);
+}
+
+// 파일 수 검사
+if (fileCount > FILE_COUNT_FAIL) {
+  fail(`파일 수 ${fileCount} > Cloudflare 한계 ${FILE_COUNT_FAIL}`);
+} else if (fileCount > FILE_COUNT_WARN) {
+  warn(`파일 수 ${fileCount} (한계 ${FILE_COUNT_FAIL} 에 근접)`);
+}
+
+// 총 크기 검사
+if (totalBytes > TOTAL_SIZE_FAIL_BYTES) {
+  fail(`총 deploy 크기 ${(totalBytes / 1024 / 1024 / 1024).toFixed(2)} GB > 25 GB 한계`);
+} else if (totalBytes > TOTAL_SIZE_WARN_BYTES) {
+  warn(`총 deploy 크기 ${(totalBytes / 1024 / 1024).toFixed(0)} MiB (1 GB 초과 — 분석 권장)`);
+} else {
+  ok(`총 deploy 크기 ${(totalBytes / 1024 / 1024).toFixed(1)} MiB`);
+}
+
+// .next/cache 잔존 검사 — webpack cache 파일이 27 MiB+ 로 deploy 차단 원인
+if (cacheJunkBytes > 0) {
+  const mib = (cacheJunkBytes / 1024 / 1024).toFixed(1);
+  fail(`.next/cache 잔존 (${mib} MiB) — package.json build 가 rm -rf .next/cache 실행해야 함`);
+} else {
+  ok('.next/cache 미존재 (deploy 정합)');
+}
+
 printResult();
 
 function printResult() {
