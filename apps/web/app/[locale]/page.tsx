@@ -26,8 +26,8 @@ export default function UnifiedDashboard() {
           {/* 히어로 섹션 */}
           <div className="relative rounded-3xl overflow-hidden bg-slate-900 text-white p-8 md:p-12 shadow-2xl">
             <div className="absolute inset-0 bg-gradient-to-br from-sky-900/50 via-slate-900 to-slate-900 opacity-90" />
-            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
-              <div className="lg:col-span-3">
+            <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              <div>
                 <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 text-sky-400 text-xs font-bold mb-6 border border-sky-500/30">
                   <Activity className="h-3 w-3" />
                   시스템 정상 운영 중
@@ -56,7 +56,7 @@ export default function UnifiedDashboard() {
                 </div>
               </div>
 
-              <div className="hidden lg:block lg:col-span-2 overflow-hidden">
+              <div className="hidden lg:block">
                 <EcosystemNerveCenter />
               </div>
             </div>
