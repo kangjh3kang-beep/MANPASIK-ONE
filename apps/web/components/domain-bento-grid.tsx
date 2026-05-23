@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Network, Database, ShieldCheck, ActivitySquare, Pill, FileCode2, Users2, Stethoscope, ChevronRight, Globe } from 'lucide-react';
+import { Network, Database, ShieldCheck, ActivitySquare, Pill, FileCode2, Users2, Stethoscope, ChevronRight, Globe, Brain } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -78,6 +78,14 @@ const domains = [
     icon: Globe,
     colorClasses: 'bg-orange-50 text-orange-600 ring-orange-500/20 group-hover:bg-orange-500 group-hover:text-white',
     url: '/domains/hardware-core'
+  },
+  {
+    id: 'ai-coach',
+    title: 'AI 건강 코치',
+    desc: '생활비서와 AI주치의가 건강 궁금증에 맞춤 답변을 제공합니다',
+    icon: Brain,
+    colorClasses: 'bg-purple-50 text-purple-600 ring-purple-500/20 group-hover:bg-purple-500 group-hover:text-white',
+    url: '/domains/ai-coach'
   },
   {
     id: 'app',
