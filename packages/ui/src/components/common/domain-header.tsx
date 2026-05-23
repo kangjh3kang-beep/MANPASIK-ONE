@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { LogOut, User, Bell, Search, Activity } from 'lucide-react';
 
 interface DomainHeaderProps {
@@ -40,14 +41,14 @@ export function DomainHeader({
       <div className="flex h-20 items-center justify-between px-8">
         {/* Left: Branding & Page Title */}
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-3 border-r border-slate-200 pr-6 mr-1">
+          <Link href="/" className="flex items-center gap-3 border-r border-slate-200 pr-6 mr-1 hover:opacity-80 transition-opacity">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-900 text-white">
               <Activity className="h-6 w-6" />
             </div>
             <span className="text-xl font-black tracking-tighter text-slate-900">
-              MMUP<span className="text-sky-500">.</span>
+              MPS<span className="text-sky-500">.</span>
             </span>
-          </div>
+          </Link>
           
           <div className="flex items-center gap-3">
             <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${theme.color} text-white shadow-sm`}>
