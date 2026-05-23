@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 import { Brain, AlertTriangle, ActivitySquare, Target } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
-  const localePrefix = useLocalePrefix();
 import { usePredictions, DiseasePrediction } from '@mmup/api-client';
 import { RiskProgress, DomainHeader, KPICard, ErrorState } from '@mmup/ui';
 

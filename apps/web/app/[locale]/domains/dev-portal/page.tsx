@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { FileCode2, Terminal, Key, Webhook, Copy, CheckCircle, BookOpen } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
-  const localePrefix = useLocalePrefix();
 import { useDevPortalKeys, useDevPortalEndpoints, DevPortalKey, DevPortalEndpoint } from '@mmup/api-client';
 import { DomainHeader, KPICard, ErrorState, LoadingSkeleton } from '@mmup/ui';
 

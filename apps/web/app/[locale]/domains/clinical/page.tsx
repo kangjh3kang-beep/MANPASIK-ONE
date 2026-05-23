@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 import { Activity, Users, AlertTriangle, TrendingUp, Heart, Droplets, Zap, Stethoscope } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
-  const localePrefix = useLocalePrefix();
 import { usePatientVitals, VitalSign } from '@mmup/api-client';
 import { AreaChart, DomainHeader, KPICard, ErrorState } from '@mmup/ui';
 

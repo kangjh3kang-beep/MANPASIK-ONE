@@ -4,7 +4,6 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 import { Coins, TrendingUp, Database, Star, Gift, ArrowUpRight } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
-  const localePrefix = useLocalePrefix();
 import { useRewardBalance, useRewardContributions } from '@mmup/api-client';
 import { DomainHeader, KPICard, ErrorState, LoadingSkeleton } from '@mmup/ui';
 

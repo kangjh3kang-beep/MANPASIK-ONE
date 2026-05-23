@@ -4,15 +4,14 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 import { Pill, ClipboardCheck, Shield, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
-  const localePrefix = useLocalePrefix();
 import { useAuditLogs, useCompliance, AuditLog } from '@mmup/api-client';
 import { DataTable, Column, DomainHeader, KPICard, LoadingSkeleton, ErrorState } from '@mmup/ui';
 
 function useLocalePrefix(): string { const pathname = usePathname(); const match = pathname.match(/^\/(ko|en|ja|zh)/); return match ? `/${match[1]}` : '/ko'; }
 
 export default function GxPPage() {
-  const { data: session } = useSession();
   const localePrefix = useLocalePrefix();
+  const { data: session } = useSession();
   const { data: logs, isLoading: logsLoading, error: logsError, refetch } = useAuditLogs();
   const { data: compliances, isLoading: compLoading, error: compError } = useCompliance();
   const user = session?.user;

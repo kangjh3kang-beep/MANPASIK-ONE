@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation';
 import React from 'react';
 import { Cpu, HardDrive, Unplug, Zap, Activity, ShieldCheck, Microscope } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
-  const localePrefix = useLocalePrefix();
 import { useHardwareDevices, useHardwareDiagnostics, HardwareDevice } from '@mmup/api-client';
 import { DomainHeader, KPICard, ErrorState, LoadingSkeleton } from '@mmup/ui';
 
