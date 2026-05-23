@@ -32,6 +32,12 @@ type Config struct {
 	IotGatewayAddr     string
 	NlpAddr            string
 	MarketplaceAddr    string
+	AiTrainingAddr     string
+	AdAddr             string
+	InventoryAddr      string
+	LogisticsAddr      string
+	LocationAddr       string
+	ModerationAddr     string
 }
 
 // Router sets up all REST API routes and proxies to gRPC microservices.

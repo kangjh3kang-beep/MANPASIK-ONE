@@ -102,11 +102,12 @@ export function announceToScreenReader(message: string, priority: 'polite' | 'as
  */
 export async function runAxeTest(container: HTMLElement): Promise<{ violations: number; passes: number }> {
   try {
-    const axe = await import('axe-core');
-    const results = await axe.default.run(container);
+    // axe-core는 선택적 의존성 — 설치 시에만 동작
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const axe = await import(/* webpackIgnore: true */ 'axe-core' as string);
+    const results = await (axe as any).default.run(container);
     return { violations: results.violations.length, passes: results.passes.length };
   } catch {
-    // axe-core 미설치 시 기본 통과 (개발 환경에서만 사용)
     return { violations: 0, passes: 0 };
   }
 }

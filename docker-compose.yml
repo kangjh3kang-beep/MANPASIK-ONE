@@ -232,6 +232,12 @@ services:
       IOT_GATEWAY_SERVICE_ADDR: iot-gateway-service:50072
       NLP_SERVICE_ADDR: nlp-service:50074
       MARKETPLACE_SERVICE_ADDR: marketplace-service:50075
+      AI_TRAINING_SERVICE_ADDR: ai-training-service:50076
+      AD_SERVICE_ADDR: ad-service:50077
+      INVENTORY_SERVICE_ADDR: inventory-service:50078
+      LOGISTICS_SERVICE_ADDR: logistics-service:50079
+      LOCATION_SERVICE_ADDR: location-service:50080
+      MODERATION_SERVICE_ADDR: moderation-service:50081
     depends_on:
       - auth-service
       - user-service
@@ -480,6 +486,60 @@ services:
     environment:
       <<: *common-env
       GRPC_PORT: ":50075"
+
+  ai-training-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/ai-training-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50076"
+
+  ad-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/ad-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50077"
+
+  inventory-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/inventory-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50078"
+
+  logistics-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/logistics-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50079"
+
+  location-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/location-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50080"
+
+  moderation-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/moderation-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50081"
 
 volumes:
   postgres_data:

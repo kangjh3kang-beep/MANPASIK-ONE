@@ -49,6 +49,12 @@ func main() {
 		IotGatewayAddr:     getEnvOrDefault("IOT_GATEWAY_SERVICE_ADDR", "localhost:50072"),
 		NlpAddr:            getEnvOrDefault("NLP_SERVICE_ADDR", "localhost:50074"),
 		MarketplaceAddr:    getEnvOrDefault("MARKETPLACE_SERVICE_ADDR", "localhost:50075"),
+		AiTrainingAddr:     getEnvOrDefault("AI_TRAINING_SERVICE_ADDR", "localhost:50076"),
+		AdAddr:             getEnvOrDefault("AD_SERVICE_ADDR", "localhost:50077"),
+		InventoryAddr:      getEnvOrDefault("INVENTORY_SERVICE_ADDR", "localhost:50078"),
+		LogisticsAddr:      getEnvOrDefault("LOGISTICS_SERVICE_ADDR", "localhost:50079"),
+		LocationAddr:       getEnvOrDefault("LOCATION_SERVICE_ADDR", "localhost:50080"),
+		ModerationAddr:     getEnvOrDefault("MODERATION_SERVICE_ADDR", "localhost:50081"),
 	}
 
 	metrics := observability.NewMetrics()

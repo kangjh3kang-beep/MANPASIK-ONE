@@ -1,46 +1,54 @@
-# ManPaSik (萬波息) — 프로젝트 CLAUDE.md (v2.1 베이스라인)
+# 만파식(MMUP) 빌드 글로벌 규칙
 
-## 프로젝트 정의
-차동측정 기반 범용분석 POCT 시스템의 소프트웨어 스택.
-하드웨어 리더기(STM32F405) + 일회용 카트리지를 연동하는 모바일 앱(Flutter) + Rust 핵심 엔진 + Go 백엔드 + AI/ML 파이프라인으로 구성된 6-Layer 통합 생태계.
+## 규칙 계층 원칙 (확장성 보장)
+- **불변 규칙(헌법)**: 정체성·계약(인터페이스·패킷)·안전/규제 불변식·표기 규칙만 글로벌 규칙에 고정한다.
+- **베이스라인 파라미터(외부화·교체가능)**: 특정 금액·수수료율·환율 수치·부품 IC·RTOS·대수·차원/정확도 수치는 **규칙에 박지 않고** `config/baseline_params`(버전화·[추정] 플래그·12-factor/시크릿 외부화, EX)로 둔다. 변경은 §4 진화 원칙·사람 승인이며 **규칙 개정 불요**. 코드·규칙은 이를 값이 아닌 **역량·키로 참조**한다.
 
-## SSOT 베이스라인 (절대 변경 금지, 코드에 반드시 반영)
-- 환율: ₩1,480/USD
-- 커넥터: CSI v1.0 = Samtec MECF-08-01-L-DV, 16핀, 1.27mm (E12-IF 절대 사용 금지)
-- 차분식: Sdiff_n = S_n - α_n * R_n (alpha 기본값 0.98, 동적 보정 범위 0.90~1.10)
-- PPM 크기: 49.70×30×4.30mm
-- Universal AFE: 9블록 (Stage별 자동 활성화)
-- 정확도: 3축 결합 기준 92~98%
-- 핑거프린트: 88차원(기본) → 448차원 → 896차원(통합) → 1792차원(풀스펙)
+## 정체성·언어 (불변)
+- 플랫폼 공식명: MPS 만파식 다중측정원리 유니버설 POCT 플랫폼(MMUP). 금지표현: "유니버설 POCT 분석장치"·"소형 정량 면역분석기"·"혈액 전용 분석기".
+- 산출 문서·UI 카피·주석은 한글, 코드·식별자·경로는 영어. **금액은 ₩ 표기, 외화 괄호 병기**(환율 수치는 파라미터 `fx.krw_per_usd`, 현행 [추정] 1,480).
+- 불확실성 표기: [검증됨]/[추정]/[미검증]/[추측] + 출처.
 
-## 통합 아키텍처 기술 스택 (확정)
-- Layer 6 (인프라): AWS/GCP Multi-Cloud, Kubernetes
-- Layer 5 (백엔드): Go 1.22+ (gRPC MSA), PostgreSQL 16 + TimescaleDB + Milvus
-- Layer 4 (앱): Flutter 3.x (Riverpod 2.x + freezed) + flutter_rust_bridge 2.x
-- Layer 3 (코어): Rust 핵심 엔진 (no_std 호환, Harness Abstraction Layer)
-- Layer 2 (하드웨어 제어): embedded-hal, RAFE 스위치
-- Layer 1 (하드웨어): STM32F405, nRF52832(BLE), PN7150(NFC)
+## 불변 계약·불변식 (변경 시 어댑터+버전업·사람 승인)
+- 카트리지 인터페이스 계약: CSI v1.0 — 14 신호핀(7×2) + 2 비도금 마운트홀, 1.27mm 피치. ("12핀/E12-IF" 표기 금지). 부품(MECF-08 등)은 파라미터·footprint 검증(§아키텍처 불변식 커넥터 규칙).
+- 차동측정 식: Sdiff_n = S_n − α_n × R_n. (계수 α는 파라미터)
+- 측정 차원 곡선: 88 → 448 → 896 → 1792차원+ (가변 길이 스키마·N차원 개방; 마일스톤 수치는 파라미터).
+- 표준 데이터 패킷·전역 ID·이벤트·계약 우선(아래 아키텍처 불변식).
 
-## 하네스 엔지니어링 (Harness Engineering) 6대 원칙
-1. H1 모듈 독립성: AFE 블록은 HAL(SensorTrait)로 분리, 구체 타입 직접 참조 금지.
-2. H2 후방 호환: CartridgeManifest v1.0 카트리지는 v2.0 리더기/앱에서 반드시 동작해야 함.
-3. H3 사전인증 플랫폼: 510(k) predicate 기반 모듈 단위 간소화 인증 고려 설계.
-4. H4 점진적 확장: Stage-1(전기화학)부터 Stage-3(NAAT)까지 순차 확장 고려 구현.
-5. H5 인터페이스 계약: BLE GATT 서비스 UUID 및 NFC 매니페스트 구조는 버전화하여 계약 명시.
-6. H6 실패 격리: 센서 1개 오류시 전체 중단 금지. `Result<T,E>`로 에러 격리 및 폴백 경로 제공.
+## 베이스라인 파라미터 (현행값·교체가능·[추정], `config/baseline_params`)
+> 아래는 **현재 작업기준점**일 뿐 불변 규칙이 아니다. 변경은 규칙 개정 없이 파라미터 갱신 + 사람 승인.
+- 카트리지 SKU: 현행 44종(Layer 3) — 커머스·재고·구독은 **확장 수용 구조**로 설계(수치 하드코딩 금지).
+- 측정 정확도(결합): 현행 92~98% [검증됨/SSOT, 임상 미검증]. (학습 향상 92→95→98%는 별개 축)
+- 리더기 등록 대수: 하드 캡 없음(구독 티어). 동시 BLE 연결은 SoC 한계(Apple 7~10 / Nordic ~20)를 허브·스케줄링·PAwR로 우회.
+- 가격·수수료: 구독가·판매수수료·수익배분(예 70:30)·예산은 모두 파라미터·[추정], UI/로직에 하드코딩 금지.
+- 부품·RTOS 후보: MCU(STM32F405급)·BLE(nRF52832/40급)·NFC(PN7150/PN7642급)·RTOS(FreeRTOS→SafeRTOS/ThreadX·Zephyr) — 전부 **HAL/역량 명세 뒤 현재 후보**, 데이터시트·HW SSOT로 확정.
 
-## 코딩/설계 규칙
-1. Rust: Result<T, E> 패턴 필수. unwrap() 절대 금지 (테스트 제외). clippy 경고 0건 유지.
-2. Flutter: 오프라인 우선(CRDT). 상태관리는 Riverpod+freezed 불변 상태.
-3. 백엔드: Go gRPC, FHIR R4 호환 직렬화, PCCP 대응 MLOps (모델 레지스트리) 파이프라인 대비.
-4. AI/ML: TFLite 엣지 양자화(INT8) 우선, XAI(SHAP) 적용 및 클라우드-연합학습(FL) 하이브리드.
-5. 테스트/보안: 커버리지 80% 이상, TPM 2.0 / 해시체인 / AES-256-GCM / PII 토큰화.
+## 기술 스택 (현행 채택·버전화, 부품/IC는 HAL 뒤·교체가능)
+- 앱: Flutter 3.x + Riverpod + Material 3 + flutter_localizations + WCAG 2.2 AA.
+- 코어: Rust(no_std 차동측정, btleplug, nfc, rustfft, ring, tokio, sled, flutter_rust_bridge).
+- 펌웨어: 리더기 임베디드 OS(MMUP-OS) — RTOS 후보(파라미터)·embedded-hal·no_std Rust(§2.1·E-FW).
+- 백엔드: Go + gRPC, Kong, Keycloak(OIDC/MFA/RBAC), PostgreSQL 16, TimescaleDB, Redis, Milvus, Kafka, MinIO, Kubernetes(EKS).
+- AI: PyTorch, XGBoost, YOLOv8, Whisper, VITS, NLLB-200, SeamlessM4T, Flower/NVIDIA FLARE, MLflow.
+- 통신: WebRTC(Janus), MQTT, FCM/APNs.
+> 스택·라이브러리는 입증된 우위 시 §4 진화 원칙으로 교체 가능(고정 아님). 외부 호출은 어댑터/HAL 뒤로.
 
-## 절대 금지 사항
-- E12-IF 12핀 참조 금지 (기존 문서들에서 발견 시 CSI v1.0 16핀으로 일괄 수정 대상).
-- AI가 생성한 가상의 검증/테스트 데이터를 마치 실제인 것처럼 삽입 금지.
-- 검증되지 않은 알고리즘, 파라미터를 코드 주석에 "검증됨"으로 표기 금지.
+## 아키텍처 불변식 (모세혈관 정합성)
+- 계약 우선: `contracts/`(proto·packet schema·OMOP/FHIR 매핑·Kafka 이벤트·OpenAPI)가 단일 진실원천. 코드는 계약에서 생성.
+- 표준 데이터 패킷: header/payload/footer + transform_log(해시체인). 모든 측정 결과에 confidence·uncertainty 필수.
+- 전역 ID: 단말·카트리지·user·org·dataset 전역 고유 ID + 토큰화 매핑.
+- 후방호환: 핀맵·커넥터·프로토콜·API 변경 시 어댑터 1세대 의무 제공.
+- 커넥터 핀 계약: CSI 핀맵은 **신호핀(기능)으로 정의**하고 정렬핀·키잉·웰드탭 등 기구물은 별도 기계 사양으로 분리. 신호핀 수는 SSOT v1.2 기준 **14(7×2)**이며, 제조사 nominal 16(8×2)과의 정합은 **footprint·데이터시트로 상시 확인**한다. 핀 확장(예: 40핀 MECF-20)은 계약층 변경 → SSOT 버전업·사람 승인.
+- 오프라인 우선: 측정·기본 AI·로컬 저장은 100% 오프라인. 동기화는 CRDT+Vector Clock.
 
-## AI 어시스턴트(Agent) 기본 동작 및 보고 지침 (Core Workflow)
-1. **작업 기록 및 실시간 공유**: 모든 코드 변경사항 및 개발 결과물은 즉시 시스템 작업 일지나 Artifact로 기록하고 사용자에게 투명하게 진행 상황을 공유한다.
-2. **반복적 검증 (코드리뷰 > 린트 > 빌드 > 테스트)**: 코드 작성 완료 즉시 다음 단계로 넘어가기 전에, 자체 코드리뷰를 거치고 각 언어별 린트(Rust clippy, Flutter analyzer, Go vet 등) 수행 및 단위 컴파일/테스트를 반드시 통과시켜 무결성을 확보한다.
+## 안전·사실성 게이트 (절대 준수)
+- 모든 측정·코칭·번역·예측 산출에 신뢰도·불확실성·출처 동반. 단정 금지.
+- 의료: AI 진단·처방 단정 금지 → 인간 주치의/의료진(Human-in-the-loop)으로 핸드오프.
+- 비의료 웰니스 코칭과 의료(화상진료)는 분리. 영양제·키트는 질병 효능 단정 금지(건기식법/FDA·FTC).
+- 긴급(119)·자동신고·결제·데이터 공유·자기학습은 사용자 동의 + 휴먼인더루프 + 임계값.
+- AI 비서: 어조(따뜻함)와 사실성·신뢰성 분리, 반(反)아첨, 과의존·과신 방지, AI임을 고지.
+- 외부 인용 ID(PMID·K-number·특허)는 1차 출처 교차검증. 창작 인용은 Critical 위반.
+- 규제: QMSR·IVDR·MFDS·HIPAA/GDPR/PIPA·21 CFR Part 11·ISO 13485/14971·IEC 62304 설계 초기 내장.
+
+## 작업 방식
+- 작은 단위로 변경, 각 작업에 테스트·수용 기준. 게이트 통과 전 다음 단계 금지.
+- 사람 최종 승인: SSOT·BOM·Gate 통과를 에이전트가 단독 확정하지 않는다.
