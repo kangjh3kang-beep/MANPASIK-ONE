@@ -1,13 +1,19 @@
 'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import React from 'react';
 import { Cpu, HardDrive, Unplug, Zap, Activity, ShieldCheck, Microscope } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
+  const localePrefix = useLocalePrefix();
 import { useHardwareDevices, useHardwareDiagnostics, HardwareDevice } from '@mmup/api-client';
 import { DomainHeader, KPICard, ErrorState, LoadingSkeleton } from '@mmup/ui';
 
+function useLocalePrefix(): string { const pathname = usePathname(); const match = pathname.match(/^\/(ko|en|ja|zh)/); return match ? `/${match[1]}` : '/ko'; }
+
 export default function HardwareCorePage() {
   const { data: session } = useSession();
+  const localePrefix = useLocalePrefix();
   const { data: devicesData, isLoading: devicesLoading, error: devicesError, refetch } = useHardwareDevices();
   const { data: diagData, isLoading: diagLoading, error: diagError } = useHardwareDiagnostics();
   const user = session?.user as any;
@@ -41,7 +47,7 @@ export default function HardwareCorePage() {
       <div className="max-w-7xl mx-auto px-8 py-8 space-y-8">
         <section aria-label="핵심 성과 지표">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <KPICard title="엔진 상태" value={`Active (${diag?.engineVersion || 'N/A'})`} icon={<Activity className="h-4 w-4" />} color="text-emerald-600 bg-emerald-50" />
+            <KPICard title="엔진 상태" value={`Active (${diag?.engineVersion || 'N/A'})`} icon={<span className="text-sm">→</span>} color="text-emerald-600 bg-emerald-50" />
             <KPICard title="CPU 온도" value={`${diag?.cpuTemp?.toFixed(1) || '0'}°C`} icon={<Zap className="h-4 w-4" />} color="text-amber-600 bg-amber-50" />
             <KPICard title="메모리 점유" value={`${diag?.memoryMB?.toFixed(2) || '0'}MB`} icon={<HardDrive className="h-4 w-4" />} color="text-sky-600 bg-sky-50" />
             <KPICard title="보안 검증" value={diag?.securityStatus || 'N/A'} icon={<ShieldCheck className="h-4 w-4" />} color="text-indigo-600 bg-indigo-50" />
@@ -86,6 +92,25 @@ export default function HardwareCorePage() {
           </section>
         </div>
       </div>
+
+      {/* 관련 도메인 — 모세혈관 교차 연결 */}
+      <section aria-label="관련 도메인" className="mt-8">
+        <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[{ name: "개발자 포털", path: "/domains/dev-portal", desc: "SDK 도구" },{ name: "AI 에이전트", path: "/domains/agents-hub", desc: "AI 추론 엔진" },{ name: "임상 콘솔", path: "/domains/clinical", desc: "센서 데이터 전달" }].map(d => (
+            <Link key={d.path} href={`${localePrefix}${d.path}`}
+              className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">
+              <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-100">
+                <span className="text-sm">→</span>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-slate-700 group-hover:text-sky-600">{d.name}</span>
+                <p className="text-[11px] text-slate-400">{d.desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

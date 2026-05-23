@@ -84,7 +84,9 @@ export default function LoginPage() {
       if (result?.error) {
         setError('이메일 또는 비밀번호가 올바르지 않습니다.');
       } else {
-        window.location.href = '/ko';
+        const localeMatch = window.location.pathname.match(/^\/(ko|en|ja|zh)/);
+        const locale = localeMatch ? localeMatch[1] : 'ko';
+        window.location.href = `/${locale}`;
       }
     } catch {
       setError('로그인 처리 중 오류가 발생했습니다.');

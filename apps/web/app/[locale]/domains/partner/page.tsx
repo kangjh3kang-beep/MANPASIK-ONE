@@ -1,7 +1,10 @@
 'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 import { Users2, Building2, ArrowLeftRight, CheckCircle2, Clock, Globe } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
+  const localePrefix = useLocalePrefix();
 import { usePartners, PartnerOrg } from '@mmup/api-client';
 import { DomainHeader, KPICard, ErrorState, LoadingSkeleton } from '@mmup/ui';
 
@@ -11,8 +14,11 @@ const STATUS_STYLE: Record<string, { color: string; label: string }> = {
   inactive: { color: 'text-slate-500 bg-slate-50', label: '비활성' },
 };
 
+function useLocalePrefix(): string { const pathname = usePathname(); const match = pathname.match(/^\/(ko|en|ja|zh)/); return match ? `/${match[1]}` : '/ko'; }
+
 export default function PartnerPage() {
   const { data: session } = useSession();
+  const localePrefix = useLocalePrefix();
   const { data: partnersData, isLoading, error, refetch } = usePartners();
   const user = session?.user as any;
 
@@ -86,6 +92,25 @@ export default function PartnerPage() {
           </div>
         </section>
       </div>
+
+      {/* 관련 도메인 — 모세혈관 교차 연결 */}
+      <section aria-label="관련 도메인" className="mt-8">
+        <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[{ name: "임상 콘솔", path: "/domains/clinical", desc: "환자 데이터 연동" },{ name: "GxP 준수", path: "/domains/gxp", desc: "규제 감사 추적" },{ name: "개발자 포털", path: "/domains/dev-portal", desc: "API 연동 가이드" }].map(d => (
+            <Link key={d.path} href={`${localePrefix}${d.path}`}
+              className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">
+              <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-100">
+                <span className="text-sm">→</span>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-slate-700 group-hover:text-sky-600">{d.name}</span>
+                <p className="text-[11px] text-slate-400">{d.desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

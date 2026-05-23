@@ -1,7 +1,10 @@
 'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import React from 'react';
 import { Coins, TrendingUp, Database, Star, Gift, ArrowUpRight } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
+  const localePrefix = useLocalePrefix();
 import { useRewardBalance, useRewardContributions } from '@mmup/api-client';
 import { DomainHeader, KPICard, ErrorState, LoadingSkeleton } from '@mmup/ui';
 
@@ -12,8 +15,11 @@ const REWARDS = [
   { id: 4, title: '보험료 할인', cost: 1000, category: '보험' },
 ];
 
+function useLocalePrefix(): string { const pathname = usePathname(); const match = pathname.match(/^\/(ko|en|ja|zh)/); return match ? `/${match[1]}` : '/ko'; }
+
 export default function RewardPage() {
   const { data: session } = useSession();
+  const localePrefix = useLocalePrefix();
   const user = session?.user as any;
   const userId = user?.id || 'user-1';
 
@@ -108,6 +114,25 @@ export default function RewardPage() {
           </div>
         </section>
       </div>
+
+      {/* 관련 도메인 — 모세혈관 교차 연결 */}
+      <section aria-label="관련 도메인" className="mt-8">
+        <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[{ name: "임상 콘솔", path: "/domains/clinical", desc: "측정 데이터 기여" },{ name: "건강 앱", path: "/domains/app", desc: "모바일 건강 관리" },{ name: "파트너 연동", path: "/domains/partner", desc: "의료 데이터 공유" }].map(d => (
+            <Link key={d.path} href={`${localePrefix}${d.path}`}
+              className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">
+              <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-100">
+                <span className="text-sm">→</span>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-slate-700 group-hover:text-sky-600">{d.name}</span>
+                <p className="text-[11px] text-slate-400">{d.desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

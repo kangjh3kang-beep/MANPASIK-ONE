@@ -1,13 +1,19 @@
 'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 import React from 'react';
 import { Brain, AlertTriangle, ActivitySquare, Target } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
+  const localePrefix = useLocalePrefix();
 import { usePredictions, DiseasePrediction } from '@mmup/api-client';
 import { RiskProgress, DomainHeader, KPICard, ErrorState } from '@mmup/ui';
 
+function useLocalePrefix(): string { const pathname = usePathname(); const match = pathname.match(/^\/(ko|en|ja|zh)/); return match ? `/${match[1]}` : '/ko'; }
+
 export default function PredictorPage() {
   const { data: session } = useSession();
+  const localePrefix = useLocalePrefix();
   const { data: predictions, isLoading, error, refetch } = usePredictions();
   const user = session?.user as any;
 
@@ -66,6 +72,25 @@ export default function PredictorPage() {
           </div>
         </section>
       </div>
+
+      {/* 관련 도메인 — 모세혈관 교차 연결 */}
+      <section aria-label="관련 도메인" className="mt-8">
+        <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[{ name: "임상 콘솔", path: "/domains/clinical", desc: "실시간 바이탈 데이터" },{ name: "AI 에이전트", path: "/domains/agents-hub", desc: "ML 파이프라인" },{ name: "리워드", path: "/domains/reward", desc: "예측 데이터 기여" }].map(d => (
+            <Link key={d.path} href={`${localePrefix}${d.path}`}
+              className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">
+              <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-100">
+                <span className="text-sm">→</span>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-slate-700 group-hover:text-sky-600">{d.name}</span>
+                <p className="text-[11px] text-slate-400">{d.desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }

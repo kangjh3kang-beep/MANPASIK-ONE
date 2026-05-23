@@ -64,7 +64,7 @@ export function SiteHeader() {
           <div className="hidden sm:block h-4 w-px bg-slate-300 mx-2"></div>
           
           <Link
-            href="/login"
+            href={`${localePrefix}/login`}
             className="group flex items-center gap-2 rounded-full border border-slate-300 bg-white pl-4 pr-3 py-2 text-sm font-semibold text-slate-700 transition-all hover:border-sky-500 hover:text-sky-600"
           >
             <LogIn className="h-4 w-4" />

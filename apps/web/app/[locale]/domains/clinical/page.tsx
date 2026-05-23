@@ -1,7 +1,10 @@
 'use client';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 import { Activity, Users, AlertTriangle, TrendingUp, Heart, Droplets, Zap, Stethoscope } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
+  const localePrefix = useLocalePrefix();
 import { usePatientVitals, VitalSign } from '@mmup/api-client';
 import { AreaChart, DomainHeader, KPICard, ErrorState } from '@mmup/ui';
 
@@ -12,8 +15,11 @@ function MiniSparkline({ data, color }: { data: number[]; color: string }) {
   return <svg width={w} height={h} className="inline-block" aria-hidden="true"><polyline fill="none" stroke={color} strokeWidth="2" strokeLinejoin="round" points={points} /></svg>;
 }
 
+function useLocalePrefix(): string { const pathname = usePathname(); const match = pathname.match(/^\/(ko|en|ja|zh)/); return match ? `/${match[1]}` : '/ko'; }
+
 export default function ClinicalPage() {
   const { data: session } = useSession();
+  const localePrefix = useLocalePrefix();
   const { data: initialVitals, isLoading, error, refetch } = usePatientVitals('patient-1');
   const [vitals, setVitals] = useState<VitalSign[]>([]);
 
@@ -81,7 +87,7 @@ export default function ClinicalPage() {
         <section aria-label="통계 요약">
           <div className="grid grid-cols-4 gap-4">
             <KPICard title="활성 환자" value="1,247" icon={<Users className="h-4 w-4" />} color="text-sky-600 bg-sky-50" />
-            <KPICard title="금일 측정" value="3,891" icon={<Activity className="h-4 w-4" />} color="text-emerald-600 bg-emerald-50" />
+            <KPICard title="금일 측정" value="3,891" icon={<span className="text-sm">→</span>} color="text-emerald-600 bg-emerald-50" />
             <KPICard title="이상 징후" value="23" icon={<AlertTriangle className="h-4 w-4" />} color="text-amber-600 bg-amber-50" />
             <KPICard title="진단 정확도" value="99.7%" icon={<TrendingUp className="h-4 w-4" />} color="text-violet-600 bg-violet-50" />
           </div>
@@ -151,6 +157,25 @@ export default function ClinicalPage() {
           </div>
         </section>
       </div>
+
+      {/* 관련 도메인 — 모세혈관 교차 연결 */}
+      <section aria-label="관련 도메인" className="mt-8">
+        <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[{ name: "생체 예측", path: "/domains/predictor", desc: "AI 질병 위험도 분석" },{ name: "리워드", path: "/domains/reward", desc: "데이터 기여 보상" },{ name: "파트너 연동", path: "/domains/partner", desc: "의료기관 데이터 공유" }].map(d => (
+            <Link key={d.path} href={`${localePrefix}${d.path}`}
+              className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">
+              <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-100">
+                <span className="text-sm">→</span>
+              </div>
+              <div>
+                <span className="text-sm font-semibold text-slate-700 group-hover:text-sky-600">{d.name}</span>
+                <p className="text-[11px] text-slate-400">{d.desc}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </section>
     </main>
   );
 }
