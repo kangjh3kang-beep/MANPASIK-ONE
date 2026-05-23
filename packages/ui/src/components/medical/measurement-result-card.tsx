@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 type MeasurementStatus = 'normal' | 'caution' | 'danger';
 
@@ -120,23 +120,70 @@ export function MeasurementResultCard({
         </div>
       </div>
 
-      {/* Footer: confidence + uncertainty */}
-      <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1" aria-label={`신뢰도 ${Math.round(confidence * 100)}%`}>
-            <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-              <div className="h-full bg-sky-500 rounded-full" style={{ width: `${confidence * 100}%` }} />
-            </div>
-            <span className="text-xs text-slate-500">{Math.round(confidence * 100)}%</span>
-          </div>
-        </div>
-        <span className="text-xs text-slate-400" aria-label={`불확실성 ±${uncertainty.value}`}>
-          ±{uncertainty.value}
-          {uncertainty.ci_lower != null && uncertainty.ci_upper != null && (
-            <span className="ml-1">({uncertainty.ci_lower}~{uncertainty.ci_upper})</span>
+      {/* Footer: confidence + 3단계 설명 */}
+      <ThreeTierExplanation
+        biomarker={biomarker}
+        value={value}
+        unit={unit}
+        confidence={confidence}
+        uncertainty={uncertainty}
+        referenceRange={referenceRange}
+        status={status}
+      />
+    </div>
+  );
+}
+
+/** 3단계 설명 계층 — 일반인 → 중급 → 전문가 (점진적 공개) */
+function ThreeTierExplanation({ biomarker, value, unit, confidence, uncertainty, referenceRange, status }: {
+  biomarker: string; value: number; unit: string; confidence: number;
+  uncertainty: { value: number; ci_lower?: number; ci_upper?: number };
+  referenceRange: { low: number; high: number }; status: MeasurementStatus;
+}) {
+  const [tier, setTier] = useState<0 | 1 | 2>(0);
+
+  const statusText = status === 'normal' ? '정상 범위 안에 있습니다' : status === 'caution' ? '약간 주의가 필요합니다' : '관리가 필요한 수준입니다';
+
+  return (
+    <div className="pt-3 border-t border-slate-100">
+      {/* 일반인 (기본, 항상 표시) */}
+      <p className="text-sm text-slate-600 mb-2">
+        {biomarker} 수치가 {statusText}.
+      </p>
+
+      {/* 자세히 버튼 */}
+      {tier === 0 && (
+        <button onClick={() => setTier(1)} className="text-xs font-semibold text-sky-600 hover:text-sky-700 transition-colors">
+          자세히 보기 ▾
+        </button>
+      )}
+
+      {/* 중급 (수치·기준·추세) */}
+      {tier >= 1 && (
+        <div className="mt-2 p-3 rounded-lg bg-slate-50 text-xs text-slate-600 space-y-1">
+          <p>측정값: <strong>{value} {unit}</strong></p>
+          <p>정상 범위: {referenceRange.low}~{referenceRange.high} {unit}</p>
+          <p>신뢰도: {Math.round(confidence * 100)}% · 오차: ±{uncertainty.value}</p>
+          {tier === 1 && (
+            <button onClick={() => setTier(2)} className="text-sky-600 font-semibold mt-1 hover:text-sky-700">
+              전문가 정보 ▾
+            </button>
           )}
-        </span>
-      </div>
+        </div>
+      )}
+
+      {/* 전문가 (방법·계량·근거) */}
+      {tier === 2 && (
+        <div className="mt-2 p-3 rounded-lg bg-sky-50 text-xs text-slate-600 space-y-1">
+          <p>측정 방법: 차동 보정 (Sdiff = S - α×R, α=0.98)</p>
+          <p>신뢰구간: {uncertainty.ci_lower ?? '—'}~{uncertainty.ci_upper ?? '—'} {unit} (95% CI)</p>
+          <p>불확실성: ±{uncertainty.value} (GUM Type A+B 합성)</p>
+          <p className="text-slate-400 mt-1">이 결과는 AI 참고 정보이며, 의료 진단을 대체하지 않습니다.</p>
+          <button onClick={() => setTier(0)} className="text-sky-600 font-semibold mt-1 hover:text-sky-700">
+            접기 ▴
+          </button>
+        </div>
+      )}
     </div>
   );
 }

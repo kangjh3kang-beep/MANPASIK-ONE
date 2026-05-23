@@ -541,6 +541,78 @@ services:
       <<: *common-env
       GRPC_PORT: ":50081"
 
+  analytics-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/analytics-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50082"
+
+  assistant-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/assistant-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50083"
+
+  cartridge-store-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/cartridge-store-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50084"
+
+  concept-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/concept-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50085"
+
+  data-platform-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/data-platform-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50086"
+
+  emergency-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/emergency-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50087"
+
+  vision-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/vision-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50088"
+
+  voice-profile-service:
+    <<: *go-service
+    build:
+      context: ./backend
+      dockerfile: services/voice-profile-service/Dockerfile
+    environment:
+      <<: *common-env
+      GRPC_PORT: ":50089"
+
 volumes:
   postgres_data:
   minio_data:
