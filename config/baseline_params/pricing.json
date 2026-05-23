@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "description": "가격·수수료 베이스라인 파라미터. 모든 값은 [추정]이며 UI/로직에 하드코딩 금지.",
+  "flag": "estimated",
+  "subscription_tiers": [
+    { "id": "free", "name_ko": "무료", "features": "기본 측정·제한 저장" },
+    { "id": "basic", "name_ko": "베이직", "features": "전체 측정·데이터허브·기본 AI" },
+    { "id": "pro", "name_ko": "프로", "features": "전체 기능·화상진료·고급 AI" },
+    { "id": "clinical", "name_ko": "클리니컬", "features": "의료기관용·다중리더기·API" }
+  ],
+  "revenue_share": {
+    "platform_pct": 30,
+    "developer_pct": 70,
+    "flag": "estimated",
+    "note": "카트리지 스토어 수익 배분. 확정 전 사람 승인 필요."
+  },
+  "currency": {
+    "primary": "KRW",
+    "symbol": "₩",
+    "display_format": "₩{amount} (${usd_amount})",
+    "note": "외화 괄호 병기"
+  }
+}

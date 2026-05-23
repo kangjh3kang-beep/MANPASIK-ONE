@@ -1,0 +1,52 @@
+{
+  "version": "1.0.0",
+  "description": "만파식 플랫폼 베이스라인 파라미터 — 외부화·버전화. 값 변경은 사람 승인 필요.",
+  "fx": {
+    "krw_per_usd": 1480,
+    "flag": "estimated",
+    "note": "환율은 추정치. UI/로직에 하드코딩 금지."
+  },
+  "cartridge": {
+    "sku_total": 44,
+    "layers": { "L1": 16, "L2": 12, "L3": 10, "L4": 8, "L5": 6 },
+    "clinical_assays": 169
+  },
+  "measurement": {
+    "accuracy_combined_pct": { "min": 92, "max": 98, "flag": "ssot_verified_clinical_unverified" },
+    "alpha_default": 0.98,
+    "alpha_min": 0.90,
+    "alpha_max": 1.10,
+    "dimensions": [88, 448, 896, 1792],
+    "dimension_phases": {
+      "88": "R1/P1",
+      "448": "R2/P2",
+      "896": "R4/P4",
+      "1792": "P5"
+    },
+    "differential_formula": "Sdiff_n = S_n - alpha_n * R_n"
+  },
+  "connector": {
+    "type": "CSI v1.0",
+    "part_number": "Samtec MECF-08-01-L-DV",
+    "pins": 16,
+    "pitch_mm": 1.27,
+    "signal_pins": 14,
+    "forbidden": ["E12-IF", "12핀"]
+  },
+  "ppm_dimensions_mm": {
+    "length": 49.70,
+    "width": 30.0,
+    "height": 4.30
+  },
+  "ble": {
+    "simultaneous_connections": {
+      "apple": "7-10",
+      "nordic": "~20",
+      "note": "SoC 한계를 허브·스케줄링·PAwR로 우회"
+    }
+  },
+  "reader": {
+    "hard_cap": false,
+    "note": "구독 티어별 N대 (하드캡 없음)"
+  }
+}

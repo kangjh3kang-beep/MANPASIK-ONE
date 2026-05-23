@@ -1,0 +1,361 @@
+openapi: 3.1.0
+info:
+  title: ManPaSik Gateway API
+  version: 1.0.0
+  description: |
+    만파식 플랫폼 REST API 계약 (Gateway → gRPC 마이크로서비스 프록시).
+    모든 엔드포인트는 /api/v1/ 프리픽스. 인증은 Bearer JWT.
+  contact:
+    name: ManPaSik Platform
+servers:
+  - url: https://api.manpasik.com/api/v1
+    description: Production
+  - url: http://localhost:8080/api/v1
+    description: Development
+
+security:
+  - BearerAuth: []
+
+paths:
+  # ===== Auth =====
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: 회원가입
+      operationId: register
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: 가입 성공
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: 로그인
+      operationId: login
+      security: []
+      responses:
+        '200':
+          description: JWT 토큰 반환
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: 토큰 갱신
+      operationId: refreshToken
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: 로그아웃
+      operationId: logout
+
+  # ===== User =====
+  /users/{userId}/profile:
+    get:
+      tags: [User]
+      summary: 프로필 조회
+      operationId: getProfile
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+    put:
+      tags: [User]
+      summary: 프로필 수정
+      operationId: updateProfile
+
+  # ===== Measurement =====
+  /measurements/sessions:
+    post:
+      tags: [Measurement]
+      summary: 측정 세션 시작
+      operationId: startSession
+  /measurements/sessions/{sessionId}/end:
+    post:
+      tags: [Measurement]
+      summary: 측정 세션 종료
+      operationId: endSession
+  /measurements/history:
+    get:
+      tags: [Measurement]
+      summary: 측정 이력 조회
+      operationId: getHistory
+
+  # ===== Device =====
+  /devices:
+    post:
+      tags: [Device]
+      summary: 리더기 등록
+      operationId: registerDevice
+    get:
+      tags: [Device]
+      summary: 리더기 목록
+      operationId: listDevices
+
+  # ===== Cartridge =====
+  /cartridges/read:
+    post:
+      tags: [Cartridge]
+      summary: NFC 카트리지 읽기
+      operationId: readCartridge
+  /cartridges/types:
+    get:
+      tags: [Cartridge]
+      summary: 카트리지 유형 목록 (44 SKU)
+      operationId: listCartridgeCategories
+  /cartridges/{cartridgeId}/remaining:
+    get:
+      tags: [Cartridge]
+      summary: 잔여 사용횟수 조회
+      operationId: getRemainingUses
+
+  # ===== Calibration =====
+  /calibration/factory:
+    post:
+      tags: [Calibration]
+      summary: 공장 캘리브레이션 등록
+      operationId: registerFactoryCalibration
+  /calibration/field:
+    post:
+      tags: [Calibration]
+      summary: 현장 캘리브레이션 수행
+      operationId: performFieldCalibration
+  /calibration/{deviceId}/status:
+    get:
+      tags: [Calibration]
+      summary: 캘리브레이션 상태 조회
+      operationId: checkCalibrationStatus
+
+  # ===== AI =====
+  /ai/analyze:
+    post:
+      tags: [AI]
+      summary: 측정 데이터 AI 분석
+      operationId: analyzeMeasurement
+  /ai/health-score/{userId}:
+    get:
+      tags: [AI]
+      summary: 건강 점수 조회
+      operationId: getHealthScore
+  /ai/predict-trend:
+    post:
+      tags: [AI]
+      summary: 트렌드 예측
+      operationId: predictTrend
+  /ai/models:
+    get:
+      tags: [AI]
+      summary: AI 모델 목록
+      operationId: listAiModels
+
+  # ===== Coaching =====
+  /coaching/goals:
+    post:
+      tags: [Coaching]
+      summary: 건강 목표 설정
+      operationId: setHealthGoal
+  /coaching/goals/{userId}:
+    get:
+      tags: [Coaching]
+      summary: 건강 목표 조회
+      operationId: getHealthGoals
+  /coaching/generate:
+    post:
+      tags: [Coaching]
+      summary: 코칭 생성
+      operationId: generateCoaching
+  /coaching/recommendations/{userId}:
+    get:
+      tags: [Coaching]
+      summary: 맞춤 추천 조회
+      operationId: getRecommendations
+
+  # ===== Subscription =====
+  /subscriptions/plans:
+    get:
+      tags: [Subscription]
+      summary: 구독 플랜 목록
+      operationId: listSubscriptionPlans
+  /subscriptions:
+    post:
+      tags: [Subscription]
+      summary: 구독 생성
+      operationId: createSubscription
+
+  # ===== Shop =====
+  /products:
+    get:
+      tags: [Shop]
+      summary: 상품 목록
+      operationId: listProducts
+  /products/{productId}:
+    get:
+      tags: [Shop]
+      summary: 상품 상세
+      operationId: getProduct
+  /cart:
+    post:
+      tags: [Shop]
+      summary: 장바구니 추가
+      operationId: addToCart
+  /orders:
+    post:
+      tags: [Shop]
+      summary: 주문 생성
+      operationId: createOrder
+    get:
+      tags: [Shop]
+      summary: 주문 목록
+      operationId: listOrders
+
+  # ===== Payment =====
+  /payments:
+    post:
+      tags: [Payment]
+      summary: 결제 생성
+      operationId: createPayment
+  /payments/{paymentId}/confirm:
+    post:
+      tags: [Payment]
+      summary: 결제 확인
+      operationId: confirmPayment
+
+  # ===== Health Record =====
+  /health-records:
+    post:
+      tags: [HealthRecord]
+      summary: 건강 기록 생성
+      operationId: createRecord
+    get:
+      tags: [HealthRecord]
+      summary: 건강 기록 목록
+      operationId: listRecords
+  /health-records/export/fhir:
+    post:
+      tags: [HealthRecord]
+      summary: FHIR R4 형식 내보내기
+      operationId: exportToFHIR
+
+  # ===== Community =====
+  /posts:
+    get:
+      tags: [Community]
+      summary: 게시물 목록
+      operationId: listPosts
+    post:
+      tags: [Community]
+      summary: 게시물 작성
+      operationId: createPost
+
+  # ===== Notification =====
+  /notifications:
+    get:
+      tags: [Notification]
+      summary: 알림 목록
+      operationId: listNotifications
+  /notifications/unread-count:
+    get:
+      tags: [Notification]
+      summary: 미읽은 알림 수
+      operationId: getUnreadCount
+
+  # ===== Admin =====
+  /admin/stats:
+    get:
+      tags: [Admin]
+      summary: 시스템 통계
+      operationId: getSystemStats
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: 사용자 관리 목록
+      operationId: adminListUsers
+  /admin/audit-log:
+    get:
+      tags: [Admin]
+      summary: 감사 로그
+      operationId: getAuditLog
+
+  # ===== IoT =====
+  /iot/devices:
+    get:
+      tags: [IoT]
+      summary: IoT 디바이스 목록
+      operationId: listIoTDevices
+  /iot/telemetry:
+    get:
+      tags: [IoT]
+      summary: 텔레메트리 데이터
+      operationId: getIoTTelemetry
+
+  # ===== NLP =====
+  /nlp/parse:
+    post:
+      tags: [NLP]
+      summary: 건강 질의 파싱
+      operationId: nlpParse
+  /nlp/symptoms:
+    post:
+      tags: [NLP]
+      summary: 증상 추출
+      operationId: nlpSymptoms
+
+  # ===== Marketplace =====
+  /marketplace/products:
+    get:
+      tags: [Marketplace]
+      summary: 마켓플레이스 상품 목록
+      operationId: listMarketplaceProducts
+  /marketplace/partners:
+    get:
+      tags: [Marketplace]
+      summary: 파트너 목록
+      operationId: listMarketplacePartners
+
+  # ===== Reservation =====
+  /facilities:
+    get:
+      tags: [Reservation]
+      summary: 시설 검색
+      operationId: searchFacilities
+  /reservations:
+    post:
+      tags: [Reservation]
+      summary: 예약 생성
+      operationId: createReservation
+    get:
+      tags: [Reservation]
+      summary: 예약 목록
+      operationId: listReservations
+
+  # ===== Prescription =====
+  /prescriptions/{prescriptionId}/pharmacy:
+    post:
+      tags: [Prescription]
+      summary: 약국 선택
+      operationId: selectPharmacy
+  /prescriptions/{prescriptionId}/send:
+    post:
+      tags: [Prescription]
+      summary: 처방전 전송
+      operationId: sendToPharmacy
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegisterRequest:
+      type: object
+      required: [email, password, name]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+        name: { type: string }

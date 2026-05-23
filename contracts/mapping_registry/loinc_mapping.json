@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "description": "ManPaSik 바이오마커 ↔ LOINC/SNOMED/UCUM 매핑 레지스트리. 버전 관리 대상.",
+  "source": "backend/services/health-record-service/internal/service/fhir_mapper.go",
+  "mappings": [
+    { "biomarker": "blood_glucose", "loinc": "15074-8", "display": "Glucose [Moles/volume] in Blood", "ucum_unit": "mg/dL", "fhir_category": "laboratory" },
+    { "biomarker": "blood_glucose_fasting", "loinc": "1558-6", "display": "Fasting glucose [Mass/volume] in Serum or Plasma", "ucum_unit": "mg/dL", "fhir_category": "laboratory" },
+    { "biomarker": "hemoglobin_a1c", "loinc": "4548-4", "display": "Hemoglobin A1c/Hemoglobin.total in Blood", "ucum_unit": "%", "fhir_category": "laboratory" },
+    { "biomarker": "cholesterol_total", "loinc": "2093-3", "display": "Cholesterol [Mass/volume] in Serum or Plasma", "ucum_unit": "mg/dL", "fhir_category": "laboratory" },
+    { "biomarker": "cholesterol_hdl", "loinc": "2085-9", "display": "HDL Cholesterol", "ucum_unit": "mg/dL", "fhir_category": "laboratory" },
+    { "biomarker": "cholesterol_ldl", "loinc": "2089-1", "display": "LDL Cholesterol", "ucum_unit": "mg/dL", "fhir_category": "laboratory" },
+    { "biomarker": "triglycerides", "loinc": "2571-8", "display": "Triglycerides", "ucum_unit": "mg/dL", "fhir_category": "laboratory" },
+    { "biomarker": "blood_pressure_systolic", "loinc": "8480-6", "display": "Systolic blood pressure", "ucum_unit": "mm[Hg]", "fhir_category": "vital-signs" },
+    { "biomarker": "blood_pressure_diastolic", "loinc": "8462-4", "display": "Diastolic blood pressure", "ucum_unit": "mm[Hg]", "fhir_category": "vital-signs" },
+    { "biomarker": "heart_rate", "loinc": "8867-4", "display": "Heart rate", "ucum_unit": "/min", "fhir_category": "vital-signs" },
+    { "biomarker": "body_temperature", "loinc": "8310-5", "display": "Body temperature", "ucum_unit": "Cel", "fhir_category": "vital-signs" },
+    { "biomarker": "oxygen_saturation", "loinc": "2708-6", "display": "Oxygen saturation in Arterial blood", "ucum_unit": "%", "fhir_category": "vital-signs" },
+    { "biomarker": "creatinine", "loinc": "2160-0", "display": "Creatinine [Mass/volume] in Serum or Plasma", "ucum_unit": "mg/dL", "fhir_category": "laboratory" },
+    { "biomarker": "uric_acid", "loinc": "3084-1", "display": "Uric acid [Mass/volume] in Serum or Plasma", "ucum_unit": "mg/dL", "fhir_category": "laboratory" },
+    { "biomarker": "cortisol", "loinc": "2143-6", "display": "Cortisol [Mass/volume] in Serum or Plasma", "ucum_unit": "ug/dL", "fhir_category": "laboratory" }
+  ]
+}

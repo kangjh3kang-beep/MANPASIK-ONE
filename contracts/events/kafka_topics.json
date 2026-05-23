@@ -1,0 +1,79 @@
+{
+  "version": "1.0.0",
+  "description": "ManPaSik Kafka 토픽 및 이벤트 스키마 정의. Schema Registry 등록 대상.",
+  "topics": [
+    {
+      "name": "measurement.completed",
+      "description": "측정 완료 이벤트 — 코칭·추천·연구 전파의 기점",
+      "schema": "MeasurementCompletedEvent",
+      "retention_days": 30,
+      "partitions": 6,
+      "key": "session_id",
+      "payload_fields": ["session_id", "user_id", "device_id", "cartridge_id", "biomarker", "value", "unit", "confidence", "uncertainty", "fingerprint_dim", "timestamp"]
+    },
+    {
+      "name": "cartridge.recognized",
+      "description": "카트리지 NFC 인식 이벤트",
+      "schema": "CartridgeRecognizedEvent",
+      "retention_days": 7,
+      "partitions": 3,
+      "key": "cartridge_id",
+      "payload_fields": ["cartridge_id", "category_code", "type_index", "csi_version", "remaining_uses", "expiry_date", "device_id", "timestamp"]
+    },
+    {
+      "name": "subscription.changed",
+      "description": "구독 상태 변경 이벤트 (생성/업그레이드/취소)",
+      "schema": "SubscriptionChangedEvent",
+      "retention_days": 90,
+      "partitions": 3,
+      "key": "user_id",
+      "payload_fields": ["user_id", "subscription_id", "tier", "action", "effective_date", "timestamp"]
+    },
+    {
+      "name": "anomaly.detected",
+      "description": "이상 탐지 이벤트 — 협진·긴급 트리거",
+      "schema": "AnomalyDetectedEvent",
+      "retention_days": 90,
+      "partitions": 3,
+      "key": "user_id",
+      "payload_fields": ["user_id", "measurement_id", "anomaly_type", "severity", "score", "biomarker", "value", "threshold", "timestamp"]
+    },
+    {
+      "name": "prescription.issued",
+      "description": "처방 발행 이벤트 (exactly-once 보장)",
+      "schema": "PrescriptionIssuedEvent",
+      "retention_days": 365,
+      "partitions": 3,
+      "key": "prescription_id",
+      "idempotency_key": true,
+      "payload_fields": ["prescription_id", "patient_id", "doctor_id", "medications", "pharmacy_id", "issued_at"]
+    },
+    {
+      "name": "alert.raised",
+      "description": "건강 알림 이벤트 — 보호자·주치의 동시알림",
+      "schema": "AlertRaisedEvent",
+      "retention_days": 365,
+      "partitions": 3,
+      "key": "user_id",
+      "payload_fields": ["alert_id", "user_id", "alert_type", "severity", "message", "measurement_id", "recipients", "timestamp"]
+    },
+    {
+      "name": "ai.analysis_completed",
+      "description": "AI 분석 완료 이벤트",
+      "schema": "AiAnalysisCompletedEvent",
+      "retention_days": 90,
+      "partitions": 3,
+      "key": "session_id",
+      "payload_fields": ["session_id", "model_id", "model_version", "risk_score", "health_score", "confidence", "recommendations", "timestamp"]
+    },
+    {
+      "name": "device.status_changed",
+      "description": "리더기 상태 변경 이벤트",
+      "schema": "DeviceStatusChangedEvent",
+      "retention_days": 30,
+      "partitions": 3,
+      "key": "device_id",
+      "payload_fields": ["device_id", "status", "firmware_version", "battery_pct", "last_calibration", "timestamp"]
+    }
+  ]
+}

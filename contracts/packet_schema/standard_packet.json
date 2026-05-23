@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ManPaSik Standard Measurement Packet v1.0",
+  "description": "표준 측정 데이터 패킷 — header/payload/footer + transform_log 해시체인. IEC 62304 Class B 준수.",
+  "type": "object",
+  "required": ["header", "payload", "footer"],
+  "properties": {
+    "header": {
+      "type": "object",
+      "required": ["packet_version", "device_id", "session_id", "timestamp", "cartridge_id"],
+      "properties": {
+        "packet_version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$", "description": "패킷 스키마 버전 (semver)" },
+        "device_id": { "type": "string", "format": "uuid", "description": "리더기 전역 고유 ID" },
+        "session_id": { "type": "string", "format": "uuid", "description": "측정 세션 ID" },
+        "timestamp": { "type": "string", "format": "date-time", "description": "측정 시각 (ISO 8601)" },
+        "cartridge_id": { "type": "string", "description": "카트리지 UID (NFC 태그)" },
+        "csi_version": { "type": "integer", "enum": [1, 2], "default": 1, "description": "CSI 커넥터 버전 (v1.0=16핀)" },
+        "user_id": { "type": "string", "description": "토큰화된 사용자 ID" },
+        "org_id": { "type": "string", "description": "소속 조직 ID (선택)" }
+      }
+    },
+    "payload": {
+      "type": "object",
+      "required": ["biomarker", "value", "unit", "confidence", "uncertainty"],
+      "properties": {
+        "biomarker": { "type": "string", "description": "바이오마커 식별자 (LOINC 매핑)" },
+        "value": { "type": "number", "description": "측정값" },
+        "unit": { "type": "string", "description": "UCUM 단위 코드 (예: mg/dL, %, mmHg)" },
+        "raw_channels": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 1,
+          "maxItems": 1792,
+          "description": "원시 채널 데이터 (CSI v1.0: 16채널)"
+        },
+        "differential": {
+          "type": "object",
+          "description": "차동 보정 결과 (Sdiff = S - α × R)",
+          "properties": {
+            "alpha": { "type": "number", "minimum": 0.90, "maximum": 1.10, "default": 0.98 },
+            "corrected_values": { "type": "array", "items": { "type": "number" } },
+            "snr_db": { "type": "number", "description": "신호 대 잡음비 (dB)" }
+          }
+        },
+        "fingerprint": {
+          "type": "object",
+          "description": "핑거프린트 벡터 (88→448→896→1792 차원)",
+          "properties": {
+            "dimension": { "type": "integer", "enum": [88, 448, 896, 1792] },
+            "vector": { "type": "array", "items": { "type": "number" } }
+          }
+        },
+        "confidence": {
+          "type": "number", "minimum": 0, "maximum": 1,
+          "description": "측정 신뢰도 (0~1). 모든 결과에 필수 동반. 과대표현 금지."
+        },
+        "uncertainty": {
+          "type": "object",
+          "description": "측정 불확실성 (GUM 기반). 모든 결과에 필수 동반.",
+          "required": ["value"],
+          "properties": {
+            "value": { "type": "number", "description": "불확실성 크기 (±)" },
+            "unit": { "type": "string" },
+            "ci_lower": { "type": "number", "description": "신뢰구간 하한" },
+            "ci_upper": { "type": "number", "description": "신뢰구간 상한" },
+            "ci_level": { "type": "number", "default": 0.95, "description": "신뢰수준 (기본 95%)" }
+          }
+        },
+        "reference_range": {
+          "type": "object",
+          "description": "기준 범위 (My Zone)",
+          "properties": {
+            "low": { "type": "number" },
+            "high": { "type": "number" },
+            "source": { "type": "string", "description": "기준 출처 (population/personal)" }
+          }
+        },
+        "calibration_status": {
+          "type": "string",
+          "enum": ["valid", "expired", "pending", "failed"],
+          "description": "캘리브레이션 상태"
+        }
+      }
+    },
+    "footer": {
+      "type": "object",
+      "required": ["transform_log", "checksum"],
+      "properties": {
+        "transform_log": {
+          "type": "array",
+          "description": "SHA-256 해시체인 변환 로그 — IEC 62304 데이터 무결성",
+          "items": {
+            "type": "object",
+            "required": ["step", "data_hash", "chain_hash", "timestamp"],
+            "properties": {
+              "step": { "type": "string", "enum": ["raw_capture", "differential_correction", "fingerprint_generation", "ai_prediction"] },
+              "data_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "chain_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "timestamp": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
+        "checksum": { "type": "string", "pattern": "^[a-f0-9]{64}$", "description": "패킷 전체 SHA-256 체크섬" }
+      }
+    }
+  }
+}
