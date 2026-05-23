@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Network, Database, ShieldCheck, ActivitySquare, Pill, FileCode2, Users2, Stethoscope, ChevronRight, Globe, Brain } from 'lucide-react';
+import { Network, Database, ShieldCheck, ActivitySquare, Pill, FileCode2, Users2, Stethoscope, ChevronRight, Globe, Brain, Activity } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -15,6 +15,14 @@ function useLocalePrefix(): string {
 }
 
 const domains = [
+  {
+    id: 'measure',
+    title: '건강 측정',
+    desc: '카트리지를 인식하고 측정을 시작합니다. 오프라인에서도 사용 가능합니다',
+    icon: Activity,
+    colorClasses: 'bg-rose-50 text-rose-600 ring-rose-500/20 group-hover:bg-rose-500 group-hover:text-white',
+    url: '/domains/measure'
+  },
   {
     id: 'clinical',
     title: '건강 데이터 관리',
