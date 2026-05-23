@@ -25,7 +25,7 @@ export default function DevPortalPage() {
   }
 
   if (keysError || endpointsError) {
-    return <ErrorState message="개발자 포털 데이터를 불러오는 중 오류가 발생했습니다." onRetry={() => refetch()} />;
+    return <ErrorState message="개발자 도구 데이터를 불러오는 중 오류가 발생했습니다." onRetry={() => refetch()} />;
   }
 
   const keys: DevPortalKey[] = keysData?.data || [];
@@ -33,16 +33,16 @@ export default function DevPortalPage() {
   const activeKeys = keys.filter(k => k.status === 'active');
 
   return (
-    <main className="min-h-screen bg-slate-50" aria-label="개발자 포털">
+    <main className="min-h-screen bg-slate-50" aria-label="개발자 도구">
       <DomainHeader
-        title="개발자 포털"
-        subtitle="MMUP Open API 명세서, SDK 다운로드 및 실시간 샌드박스"
+        title="개발자 도구"
+        subtitle="외부 개발자가 만파식 기능을 활용할 수 있는 연동 도구입니다"
         icon={FileCode2}
         user={user ? {
           name: user.name,
           email: user.email,
           persona: user.persona || 'dev',
-          organization: user.organization || 'MMUP Dev Center'
+          organization: user.organization || 'MPS 개발자 센터'
         } : undefined}
         onLogout={() => signOut({ callbackUrl: '/login' })}
       />

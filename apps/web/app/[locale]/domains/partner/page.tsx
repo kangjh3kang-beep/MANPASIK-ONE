@@ -34,10 +34,10 @@ export default function PartnerPage() {
   const totalExchanges = partners.reduce((sum, p) => sum + p.totalExchanges, 0);
 
   return (
-    <main className="min-h-screen bg-slate-50" aria-label="파트너 통합 연동">
+    <main className="min-h-screen bg-slate-50" aria-label="병원 연동 관리">
       <DomainHeader
-        title="파트너 통합 연동"
-        subtitle="HL7/FHIR 국제 표준 의료 데이터 파이프라인"
+        title="병원 연동 관리"
+        subtitle="협력 병원과 건강 데이터를 안전하게 주고받습니다"
         icon={Users2}
         user={user ? {
           name: user.name,

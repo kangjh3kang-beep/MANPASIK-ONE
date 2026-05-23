@@ -43,16 +43,16 @@ export default function AgentsHubPage() {
     : 0;
 
   return (
-    <main className="min-h-screen bg-slate-50" aria-label="AI 에이전트 오케스트레이터">
+    <main className="min-h-screen bg-slate-50" aria-label="AI 분석 센터">
       <DomainHeader
-        title="AI 에이전트 오케스트레이터"
-        subtitle="의료 AI 모델 파이프라인 실시간 상태 모니터링 및 성능 관리"
+        title="AI 분석 센터"
+        subtitle="인공지능 모델의 작동 상태를 확인하고 성능을 관리합니다"
         icon={Network}
         user={user ? {
           name: user.name,
           email: user.email,
           persona: user.persona || 'researcher',
-          organization: user.organization || 'MMUP AI Center'
+          organization: user.organization || 'MPS AI 센터'
         } : undefined}
         onLogout={() => signOut({ callbackUrl: '/login' })}
       />
@@ -73,7 +73,7 @@ export default function AgentsHubPage() {
               <h2 className="text-lg font-bold text-slate-900">추론 파이프라인 진행 상태</h2>
               <div className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold flex items-center gap-2">
                 <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" aria-hidden="true" />
-                Live Inference Active
+                실시간 추론 활성
               </div>
             </div>
 

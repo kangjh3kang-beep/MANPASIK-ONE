@@ -37,10 +37,10 @@ export default function RewardPage() {
   const contributions = contribData?.data || [];
 
   return (
-    <main className="min-h-screen bg-slate-50" aria-label="환자 리워드 풀">
+    <main className="min-h-screen bg-slate-50" aria-label="건강 데이터 보상">
       <DomainHeader
-        title="환자 리워드 풀"
-        subtitle="개인 건강 데이터 기여에 대한 투명한 보상 및 실제 혜택 제공"
+        title="건강 데이터 보상"
+        subtitle="건강 검사 데이터를 제공하면 포인트로 보상받을 수 있습니다"
         icon={Coins}
         user={user ? {
           name: user.name,

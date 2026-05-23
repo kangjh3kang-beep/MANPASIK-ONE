@@ -36,7 +36,7 @@ export default function GxPPage() {
         <span className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase ${
           val ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
         }`}>
-          {val ? 'Signed' : 'Missing'}
+          {val ? '서명됨' : '미서명'}
         </span>
       )
     },
@@ -46,10 +46,10 @@ export default function GxPPage() {
   const compData = compliances?.data || [];
 
   return (
-    <main className="min-h-screen bg-slate-50" aria-label="의약품 GxP 준수 시스템">
+    <main className="min-h-screen bg-slate-50" aria-label="의약품 품질 관리">
       <DomainHeader
-        title="의약품 GxP 준수 시스템"
-        subtitle="cGMP 감사 추적, 전자 서명 및 실시간 규제 준수 모니터링"
+        title="의약품 품질 관리"
+        subtitle="의약품 제조·유통 기록을 추적하고 규정 준수를 확인합니다"
         icon={Pill}
         user={user ? {
           name: user.name,
@@ -74,7 +74,7 @@ export default function GxPPage() {
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
             <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
               <ClipboardCheck className="w-5 h-5 text-violet-500" aria-hidden="true" />
-              감사 추적 로그 (Audit Trail)
+              감사 추적 로그 (감사 추적)
             </h2>
             <DataTable
               data={auditData}

@@ -68,10 +68,10 @@ export default function ClinicalPage() {
   const user = session?.user;
 
   return (
-    <main className="min-h-screen bg-slate-50" aria-label="임상 데이터 콘솔">
+    <main className="min-h-screen bg-slate-50" aria-label="건강 데이터 관리">
       <DomainHeader
-        title="임상 데이터 콘솔"
-        subtitle="환자 생체 데이터 실시간 모니터링 및 AI 분석 현황"
+        title="건강 데이터 관리"
+        subtitle="환자의 생체 신호를 실시간으로 확인하고 AI가 분석합니다"
         icon={Stethoscope}
         user={user ? {
           name: user.name,
@@ -161,7 +161,7 @@ export default function ClinicalPage() {
       <section aria-label="관련 도메인" className="mt-8">
         <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[{ name: "생체 예측", path: "/domains/predictor", desc: "AI 질병 위험도 분석" },{ name: "리워드", path: "/domains/reward", desc: "데이터 기여 보상" },{ name: "파트너 연동", path: "/domains/partner", desc: "의료기관 데이터 공유" }].map(d => (
+          {[{ name: "위험 예측", path: "/domains/predictor", desc: "건강 위험 예측" },{ name: "리워드", path: "/domains/reward", desc: "데이터 기여 보상" },{ name: "파트너 연동", path: "/domains/partner", desc: "의료기관 데이터 공유" }].map(d => (
             <Link key={d.path} href={`${localePrefix}${d.path}`}
               className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">
               <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-100">

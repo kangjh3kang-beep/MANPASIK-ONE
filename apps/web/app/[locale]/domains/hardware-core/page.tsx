@@ -29,16 +29,16 @@ export default function HardwareCorePage() {
   const diag = diagData?.data;
 
   return (
-    <main className="min-h-screen bg-slate-50" aria-label="하드웨어 코어 엔진">
+    <main className="min-h-screen bg-slate-50" aria-label="측정 장비 관리">
       <DomainHeader
-        title="하드웨어 코어 엔진"
-        subtitle="Rust 기반 저지연 생체 데이터 파싱 및 엣지 AI 추론 모듈 제어"
+        title="측정 장비 관리"
+        subtitle="리더기 센서의 작동 상태를 확인하고 정밀도를 관리합니다"
         icon={Microscope}
         user={user ? {
           name: user.name,
           email: user.email,
           persona: user.persona || 'dev',
-          organization: user.organization || 'MMUP Hardware Lab'
+          organization: user.organization || 'MPS 장비 연구소'
         } : undefined}
         onLogout={() => signOut({ callbackUrl: '/login' })}
       />
@@ -58,14 +58,14 @@ export default function HardwareCorePage() {
             <div className="rounded-3xl border border-slate-200 bg-white p-8">
               <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <Unplug className="h-5 w-5 text-sky-600" aria-hidden="true" />
-                물리 장치 연결 상태 (HW Bridge)
+                물리 장치 연결 상태 (장비 연동)
               </h2>
               <div className="space-y-4">
                 {devices.map(dev => (
                   <div key={dev.name} className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100" aria-label={`${dev.name} - ${dev.status}`}>
                     <span className="text-sm font-bold text-slate-700">{dev.name}</span>
                     <div className="flex items-center gap-4">
-                      <span className="text-xs font-medium text-slate-400">Latency: {dev.latency}</span>
+                      <span className="text-xs font-medium text-slate-400">지연시간: {dev.latency}</span>
                       <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-lg" role="status">{dev.status}</span>
                     </div>
                   </div>
@@ -74,11 +74,11 @@ export default function HardwareCorePage() {
             </div>
           </section>
 
-          <section aria-label="Rust Core 스레드 모니터">
+          <section aria-label="분석 엔진 상태 모니터">
             <div className="rounded-3xl border border-slate-200 bg-white p-8">
               <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
                 <Cpu className="h-5 w-5 text-indigo-600" aria-hidden="true" />
-                Rust Core 스레드 모니터
+                분석 엔진 상태 모니터
               </h2>
               <div className="relative h-48 w-full bg-slate-900 rounded-2xl overflow-hidden p-4 font-mono text-[10px] text-emerald-400" role="log" aria-label="시스템 로그">
                 <p className="mb-1">{`[sys] Rust ManPaSik Engine initialized...`}</p>

@@ -33,16 +33,16 @@ export default function PredictorPage() {
   const highRiskCount = data.filter(p => p.riskScore >= 0.75).length;
 
   return (
-    <main className="min-h-screen bg-slate-50" aria-label="생체 지표 예측 엔진">
+    <main className="min-h-screen bg-slate-50" aria-label="건강 위험 예측">
       <DomainHeader
-        title="생체 지표 예측 엔진"
-        subtitle="GNN 기반 다중 질환 시계열 예측 및 데이터 기반 예방 의학"
+        title="건강 위험 예측"
+        subtitle="과거 검사 데이터를 분석하여 질병 가능성을 미리 알려드립니다"
         icon={ActivitySquare}
         user={user ? {
           name: user.name,
           email: user.email,
           persona: user.persona || 'researcher',
-          organization: user.organization || 'MMUP AI Lab'
+          organization: user.organization || 'MPS AI 연구소'
         } : undefined}
         onLogout={() => signOut({ callbackUrl: '/login' })}
       />
@@ -76,7 +76,7 @@ export default function PredictorPage() {
       <section aria-label="관련 도메인" className="mt-8">
         <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[{ name: "임상 콘솔", path: "/domains/clinical", desc: "실시간 바이탈 데이터" },{ name: "AI 에이전트", path: "/domains/agents-hub", desc: "ML 파이프라인" },{ name: "리워드", path: "/domains/reward", desc: "예측 데이터 기여" }].map(d => (
+          {[{ name: "임상 콘솔", path: "/domains/clinical", desc: "실시간 바이탈 데이터" },{ name: "AI 에이전트", path: "/domains/agents-hub", desc: "AI 분석 흐름" },{ name: "리워드", path: "/domains/reward", desc: "예측 데이터 기여" }].map(d => (
             <Link key={d.path} href={`${localePrefix}${d.path}`}
               className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">
               <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-100">
