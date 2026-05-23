@@ -6,14 +6,14 @@ import { usePathname } from 'next/navigation';
 import { ArrowLeft, Stethoscope, Network, ActivitySquare, Coins, Users2, Pill, FileCode2, Smartphone, Globe } from 'lucide-react';
 
 const DOMAINS = [
-  { id: 'clinical', label: '임상 콘솔', path: '/domains/clinical', icon: Stethoscope },
-  { id: 'agents-hub', label: 'AI 에이전트', path: '/domains/agents-hub', icon: Network },
-  { id: 'predictor', label: '생체 예측', path: '/domains/predictor', icon: ActivitySquare },
-  { id: 'reward', label: '리워드', path: '/domains/reward', icon: Coins },
-  { id: 'partner', label: '파트너', path: '/domains/partner', icon: Users2 },
-  { id: 'gxp', label: 'GxP', path: '/domains/gxp', icon: Pill },
+  { id: 'clinical', label: '건강 데이터', path: '/domains/clinical', icon: Stethoscope },
+  { id: 'agents-hub', label: 'AI 분석', path: '/domains/agents-hub', icon: Network },
+  { id: 'predictor', label: '위험 예측', path: '/domains/predictor', icon: ActivitySquare },
+  { id: 'reward', label: '보상', path: '/domains/reward', icon: Coins },
+  { id: 'partner', label: '병원 연동', path: '/domains/partner', icon: Users2 },
+  { id: 'gxp', label: '품질 관리', path: '/domains/gxp', icon: Pill },
   { id: 'dev-portal', label: '개발자', path: '/domains/dev-portal', icon: FileCode2 },
-  { id: 'hardware-core', label: '하드웨어', path: '/domains/hardware-core', icon: Globe },
+  { id: 'hardware-core', label: '측정 장비', path: '/domains/hardware-core', icon: Globe },
   { id: 'app', label: '건강 앱', path: '/domains/app', icon: Smartphone },
 ];
 

@@ -45,10 +45,10 @@ export function SiteHeader() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden lg:flex items-center gap-8">
-            <Link href={`${localePrefix}/domains/agents-hub`} className="text-[15px] font-semibold text-slate-600 hover:text-sky-600 transition-colors">솔루션 허브</Link>
-            <Link href={`${localePrefix}/domains/hardware-core`} className="text-[15px] font-semibold text-slate-600 hover:text-sky-600 transition-colors">하드웨어 코어</Link>
+            <Link href={`${localePrefix}/domains/agents-hub`} className="text-[15px] font-semibold text-slate-600 hover:text-sky-600 transition-colors">AI 분석</Link>
+            <Link href={`${localePrefix}/domains/hardware-core`} className="text-[15px] font-semibold text-slate-600 hover:text-sky-600 transition-colors">측정 장비</Link>
             <div className="h-4 w-px bg-slate-300"></div>
-            <Link href={`${localePrefix}/domains/partner`} className="text-[15px] font-semibold text-slate-600 hover:text-sky-600 transition-colors">파트너 연동</Link>
+            <Link href={`${localePrefix}/domains/partner`} className="text-[15px] font-semibold text-slate-600 hover:text-sky-600 transition-colors">병원 연동</Link>
           </nav>
 
 

@@ -17,72 +17,72 @@ function useLocalePrefix(): string {
 const domains = [
   {
     id: 'clinical',
-    title: '임상 데이터 콘솔',
-    desc: '실시간 패킷 검증 및 해시 체인 무결성 시각화 (IEC 62304 B등급)',
+    title: '건강 데이터 관리',
+    desc: '환자의 생체 신호를 실시간으로 모니터링하고 AI가 분석 결과를 제공합니다',
     icon: Stethoscope,
     colorClasses: 'bg-sky-50 text-sky-600 ring-sky-500/20 group-hover:bg-sky-500 group-hover:text-white',
     url: '/domains/clinical'
   },
   {
     id: 'agents-hub',
-    title: 'AI 에이전트 허브',
-    desc: '의료 AI 모델 오케스트레이션 및 상태 관리',
+    title: 'AI 분석 센터',
+    desc: '인공지능 모델의 작동 상태를 확인하고 분석 성능을 관리합니다',
     icon: Network,
     colorClasses: 'bg-indigo-50 text-indigo-600 ring-indigo-500/20 group-hover:bg-indigo-500 group-hover:text-white',
     url: '/domains/agents-hub'
   },
   {
     id: 'predictor',
-    title: '생체 지표 예측',
-    desc: 'GNN 기반 다중 질환 시계열 예측 시스템',
+    title: '건강 위험도 예측',
+    desc: '과거 검사 데이터를 분석하여 질병 발생 가능성을 미리 알려드립니다',
     icon: ActivitySquare,
     colorClasses: 'bg-emerald-50 text-emerald-600 ring-emerald-500/20 group-hover:bg-emerald-500 group-hover:text-white',
     url: '/domains/predictor'
   },
   {
     id: 'reward',
-    title: '환자 리워드 풀',
-    desc: '개인 데이터 주권 및 토큰 보상 스마트 컨트랙트',
+    title: '건강 데이터 보상',
+    desc: '건강 검사 데이터를 제공하면 포인트로 보상받을 수 있습니다',
     icon: Database,
     colorClasses: 'bg-amber-50 text-amber-600 ring-amber-500/20 group-hover:bg-amber-500 group-hover:text-white',
     url: '/domains/reward'
   },
   {
     id: 'partner',
-    title: '파트너 통합 연동',
-    desc: '제네바 HL7/FHIR 국제 표준 의료 데이터 파이프라인 연계',
+    title: '병원 연동 관리',
+    desc: '협력 병원과 건강 데이터를 국제 표준 형식으로 안전하게 주고받습니다',
     icon: Users2,
     colorClasses: 'bg-rose-50 text-rose-600 ring-rose-500/20 group-hover:bg-rose-500 group-hover:text-white',
     url: '/domains/partner'
   },
   {
     id: 'gxp',
-    title: '의약품 GxP 준수',
-    desc: 'cGMP 추적성 확보 및 전자 서명 기반 워크플로우',
+    title: '의약품 품질 관리',
+    desc: '의약품 제조·유통 과정의 모든 기록을 추적하고 규정 준수를 확인합니다',
     icon: Pill,
     colorClasses: 'bg-violet-50 text-violet-600 ring-violet-500/20 group-hover:bg-violet-500 group-hover:text-white',
     url: '/domains/gxp'
   },
   {
     id: 'dev-portal',
-    title: '개발자 포털',
-    desc: '오픈 API 명세서, 웹훅 연동 및 실시간 샌드박스',
+    title: '개발자 도구',
+    desc: '외부 개발자가 만파식 기능을 활용할 수 있도록 연동 도구를 제공합니다',
     icon: FileCode2,
     colorClasses: 'bg-slate-50 text-slate-600 ring-slate-500/20 group-hover:bg-slate-700 group-hover:text-white',
     url: '/domains/dev-portal'
   },
   {
     id: 'hardware-core',
-    title: '하드웨어 코어',
-    desc: '분광 분석 엔진 및 센서 캘리브레이션 시스템 (Optics Control)',
+    title: '측정 장비 관리',
+    desc: '리더기 센서의 작동 상태를 확인하고 측정 정밀도를 관리합니다',
     icon: Globe,
     colorClasses: 'bg-orange-50 text-orange-600 ring-orange-500/20 group-hover:bg-orange-500 group-hover:text-white',
     url: '/domains/hardware-core'
   },
   {
     id: 'app',
-    title: '모바일 하이브리드',
-    desc: 'Flutter Native 통신 연동용 PWA Fallback 환경',
+    title: '건강 관리 앱',
+    desc: '스마트폰에서 건강 데이터를 확인하고 관리할 수 있는 모바일 앱입니다',
     icon: ShieldCheck,
     colorClasses: 'bg-cyan-50 text-cyan-600 ring-cyan-500/20 group-hover:bg-cyan-500 group-hover:text-white',
     url: '/domains/app'
@@ -96,12 +96,12 @@ export function DomainBentoGrid() {
     <section id="domains" className="py-24 bg-slate-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
-          <h2 className="text-sm font-bold tracking-widest text-sky-600 uppercase">Architecture</h2>
+          <h2 className="text-sm font-bold tracking-widest text-sky-600 uppercase">서비스 구성</h2>
           <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            초연결 의료 생태계, <span className="text-sky-600">9개의 도메인 허브</span>
+            하나로 연결된 건강 생태계, <span className="text-sky-600">9개 핵심 서비스</span>
           </p>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-slate-600">
-            마이크로서비스 아키텍처(MSA)를 통해 분리된 9개의 전문 도메인 앱은 하나의 Turborepo 모노레포 위에서 완벽히 조화롭게 유기적으로 결합합니다.
+            각 서비스가 독립적으로 운영되면서도 하나의 플랫폼 위에서 유기적으로 연결됩니다.
           </p>
         </div>
 
@@ -124,7 +124,7 @@ export function DomainBentoGrid() {
               
               {/* Animated Button at bottom of card */}
               <div className="mt-8 pt-4 border-t border-slate-100 flex items-center justify-between transition-all duration-300">
-                <span className="text-sm font-semibold text-slate-400 group-hover:text-sky-600 transition-colors">허브 연결 및 이동</span>
+                <span className="text-sm font-semibold text-slate-400 group-hover:text-sky-600 transition-colors">자세히 보기</span>
                 <div className="h-8 w-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-sky-100 group-hover:text-sky-600 transition-colors">
                   <ChevronRight className="h-4 w-4" />
                 </div>
