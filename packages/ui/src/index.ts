@@ -19,3 +19,5 @@ export * from "./components/common/kpi-card";
 export * from "./components/common/error-state";
 export * from "./components/common/loading-skeleton";
 export * from "./components/domain-nav";
+export * from "./components/medical/measurement-result-card";
+export * from "./components/medical/dual-persona-chat";
