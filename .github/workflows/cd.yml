@@ -73,6 +73,12 @@ jobs:
           - iot-gateway-service
           - nlp-service
           - marketplace-service
+          - ai-training-service
+          - ad-service
+          - inventory-service
+          - logistics-service
+          - location-service
+          - moderation-service
 
     steps:
       - uses: actions/checkout@v4

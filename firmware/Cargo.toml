@@ -1,0 +1,27 @@
+[package]
+name = "mmup-os"
+version = "0.1.0"
+edition = "2021"
+description = "ManPaSik MMUP-OS — 리더기 임베디드 운영체제 (STM32F405)"
+authors = ["ManPaSik Team"]
+
+# 임베디드 타깃 — 호스트 빌드 시스템과 별도
+# cargo build --target thumbv7em-none-eabihf --release
+
+[lib]
+name = "mmup_os"
+path = "rust_embedded/src/lib.rs"
+
+[dependencies]
+# 프로토타입 단계: 의존성 최소화 (no_std)
+# embedded-hal = "1.0"     # HAL trait (실물 연결 시 활성화)
+# cortex-m = "0.7"         # ARM Cortex-M 지원
+# cortex-m-rt = "0.7"      # 런타임
+# stm32f4xx-hal = "0.21"   # STM32F4 HAL (실물 연결 시 활성화)
+
+[profile.release]
+opt-level = "s"      # 크기 최적화
+debug = false
+lto = true
+codegen-units = 1
+panic = "abort"      # no_std: unwind 불가
