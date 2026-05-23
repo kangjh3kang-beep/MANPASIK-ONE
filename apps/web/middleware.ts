@@ -13,18 +13,20 @@ const authMiddleware = withAuth({
 });
 
 export default async function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  
-  // 1. 도메인 경로는 인증 먼저 체크
-  if (pathname.includes('/domains')) {
-    const authRes = await authMiddleware(request);
-    // 리다이렉트가 발생했다면(로그인 필요 등) 바로 반환
-    if (authRes && authRes.status !== 200 && authRes.headers.get('location')) {
-      return authRes;
+  // 도메인 페이지는 데모 모드에서 인증 없이 접근 가능
+  // 프로덕션 백엔드 연결 시 인증 활성화: NEXT_PUBLIC_AUTH_REQUIRED=true
+  const authRequired = process.env.NEXT_PUBLIC_AUTH_REQUIRED === 'true';
+
+  if (authRequired) {
+    const { pathname } = request.nextUrl;
+    if (pathname.includes('/domains')) {
+      const authRes = await authMiddleware(request);
+      if (authRes && authRes.status !== 200 && authRes.headers.get('location')) {
+        return authRes;
+      }
     }
   }
 
-  // 2. 다국어 처리 진행
   return intlMiddleware(request);
 }
  
