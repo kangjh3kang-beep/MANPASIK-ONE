@@ -3,10 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft, Stethoscope, Network, ActivitySquare, Coins, Users2, Pill, FileCode2, Smartphone, Globe, Brain, Activity } from 'lucide-react';
+import { ArrowLeft, Stethoscope, Network, ActivitySquare, Coins, Users2, Pill, FileCode2, Smartphone, Globe, Brain, Activity, FileText } from 'lucide-react';
 
 const DOMAINS = [
   { id: 'measure', label: '측정', path: '/domains/measure', icon: Activity },
+  { id: 'health-records', label: '기록', path: '/domains/health-records', icon: FileText },
   { id: 'clinical', label: '건강 데이터', path: '/domains/clinical', icon: Stethoscope },
   { id: 'agents-hub', label: 'AI 분석', path: '/domains/agents-hub', icon: Network },
   { id: 'predictor', label: '위험 예측', path: '/domains/predictor', icon: ActivitySquare },

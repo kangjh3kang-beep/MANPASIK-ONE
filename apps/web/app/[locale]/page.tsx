@@ -42,16 +42,16 @@ export default function UnifiedDashboard() {
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <Link
-                    href={`${localePrefix}/domains/clinical`}
+                    href={`${localePrefix}/domains/measure`}
                     className="px-6 py-3.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-sky-600/30 flex items-center gap-2"
                   >
-                    임상 데이터 보기
+                    측정 시작하기
                   </Link>
                   <Link
-                    href={`${localePrefix}/domains/app`}
+                    href={`${localePrefix}/domains/health-records`}
                     className="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl transition-all border border-white/20 backdrop-blur-sm"
                   >
-                    건강 앱 열기
+                    건강 기록 보기
                   </Link>
                 </div>
               </div>
