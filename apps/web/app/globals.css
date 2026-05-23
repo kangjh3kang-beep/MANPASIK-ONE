@@ -1,3 +1,68 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ===== MPS Design System — Theme Variables ===== */
+:root {
+  --mps-bg: #f8fafc;
+  --mps-bg-card: #ffffff;
+  --mps-bg-elevated: #f1f5f9;
+  --mps-border: #e2e8f0;
+  --mps-border-subtle: #f1f5f9;
+  --mps-text: #0f172a;
+  --mps-text-secondary: #64748b;
+  --mps-text-muted: #94a3b8;
+  --mps-accent: #0284c7;
+  --mps-accent-light: #e0f2fe;
+  --mps-accent-hover: #0369a1;
+  --mps-success: #059669;
+  --mps-success-light: #d1fae5;
+  --mps-warning: #d97706;
+  --mps-warning-light: #fef3c7;
+  --mps-danger: #dc2626;
+  --mps-danger-light: #fee2e2;
+  --mps-header-bg: rgba(255,255,255,0.85);
+  --mps-hero-bg: #0f172a;
+  --mps-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+[data-theme="dark"] {
+  --mps-bg: #0f172a;
+  --mps-bg-card: #1e293b;
+  --mps-bg-elevated: #334155;
+  --mps-border: #334155;
+  --mps-border-subtle: #1e293b;
+  --mps-text: #f1f5f9;
+  --mps-text-secondary: #94a3b8;
+  --mps-text-muted: #64748b;
+  --mps-accent: #38bdf8;
+  --mps-accent-light: #0c4a6e;
+  --mps-accent-hover: #7dd3fc;
+  --mps-success: #34d399;
+  --mps-success-light: #064e3b;
+  --mps-warning: #fbbf24;
+  --mps-warning-light: #451a03;
+  --mps-danger: #f87171;
+  --mps-danger-light: #450a0a;
+  --mps-header-bg: rgba(15,23,42,0.9);
+  --mps-hero-bg: #020617;
+  --mps-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+body {
+  background-color: var(--mps-bg);
+  color: var(--mps-text);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Smooth theme transitions */
+*, *::before, *::after {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+}
+
+/* Override for animations that shouldn't be affected */
+.animate-pulse, [class*="animate-"] {
+  transition: none;
+}
