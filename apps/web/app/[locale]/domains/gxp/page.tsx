@@ -15,7 +15,7 @@ export default function GxPPage() {
   const localePrefix = useLocalePrefix();
   const { data: logs, isLoading: logsLoading, error: logsError, refetch } = useAuditLogs();
   const { data: compliances, isLoading: compLoading, error: compError } = useCompliance();
-  const user = session?.user as any;
+  const user = session?.user;
 
   if (logsLoading || compLoading) {
     return <LoadingSkeleton columns={4} rows={1} />;

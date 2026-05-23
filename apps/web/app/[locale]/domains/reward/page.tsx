@@ -20,7 +20,7 @@ function useLocalePrefix(): string { const pathname = usePathname(); const match
 export default function RewardPage() {
   const { data: session } = useSession();
   const localePrefix = useLocalePrefix();
-  const user = session?.user as any;
+  const user = session?.user;
   const userId = user?.id || 'user-1';
 
   const { data: balanceData, isLoading: balanceLoading, error: balanceError, refetch } = useRewardBalance(userId);

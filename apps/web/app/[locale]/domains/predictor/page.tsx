@@ -15,7 +15,7 @@ export default function PredictorPage() {
   const { data: session } = useSession();
   const localePrefix = useLocalePrefix();
   const { data: predictions, isLoading, error, refetch } = usePredictions();
-  const user = session?.user as any;
+  const user = session?.user;
 
   if (isLoading) return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center" role="status" aria-label="예측 모델 분석 중">
@@ -65,7 +65,7 @@ export default function PredictorPage() {
                   diseaseName={pred.disease}
                   riskScore={pred.riskScore}
                   factors={pred.contributingFactors}
-                  trend={pred.trend as any}
+                  trend={pred.trend}
                 />
               </div>
             ))}

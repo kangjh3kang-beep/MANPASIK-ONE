@@ -16,7 +16,7 @@ export default function HardwareCorePage() {
   const localePrefix = useLocalePrefix();
   const { data: devicesData, isLoading: devicesLoading, error: devicesError, refetch } = useHardwareDevices();
   const { data: diagData, isLoading: diagLoading, error: diagError } = useHardwareDiagnostics();
-  const user = session?.user as any;
+  const user = session?.user;
 
   if (devicesLoading || diagLoading) {
     return <LoadingSkeleton columns={4} rows={1} />;

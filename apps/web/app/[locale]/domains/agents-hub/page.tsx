@@ -23,7 +23,7 @@ export default function AgentsHubPage() {
   const { data: agentsData, isLoading: agentsLoading, error: agentsError, refetch: refetchAgents } = useAgents();
   const { data: pipelineData, isLoading: pipelineLoading, error: pipelineError } = useAgentPipeline();
 
-  const user = session?.user as any;
+  const user = session?.user;
 
   if (agentsLoading || pipelineLoading) {
     return <LoadingSkeleton columns={4} rows={1} />;

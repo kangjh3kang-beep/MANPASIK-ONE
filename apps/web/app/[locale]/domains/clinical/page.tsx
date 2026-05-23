@@ -65,8 +65,8 @@ export default function ClinicalPage() {
     { key: 'bloodPressureSys', label: '수축기 혈압', unit: 'mmHg', icon: Zap, color: '#8b5cf6', min: 90, max: 140 },
   ];
 
-  const latest = vitals.length > 0 ? vitals[vitals.length - 1] as any : {};
-  const user = session?.user as any;
+  const latest = vitals.length > 0 ? vitals[vitals.length - 1] : {};
+  const user = session?.user;
 
   return (
     <main className="min-h-screen bg-slate-50" aria-label="임상 데이터 콘솔">

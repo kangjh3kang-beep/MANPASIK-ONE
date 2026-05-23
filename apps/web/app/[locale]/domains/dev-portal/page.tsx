@@ -16,7 +16,7 @@ export default function DevPortalPage() {
   const { data: session } = useSession();
   const localePrefix = useLocalePrefix();
   const [copied, setCopied] = useState<string | null>(null);
-  const user = session?.user as any;
+  const user = session?.user;
 
   const { data: keysData, isLoading: keysLoading, error: keysError, refetch } = useDevPortalKeys();
   const { data: endpointsData, isLoading: endpointsLoading, error: endpointsError } = useDevPortalEndpoints();

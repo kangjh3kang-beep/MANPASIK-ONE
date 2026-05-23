@@ -20,7 +20,7 @@ export default function PartnerPage() {
   const { data: session } = useSession();
   const localePrefix = useLocalePrefix();
   const { data: partnersData, isLoading, error, refetch } = usePartners();
-  const user = session?.user as any;
+  const user = session?.user;
 
   if (isLoading) {
     return <LoadingSkeleton columns={4} rows={1} />;
