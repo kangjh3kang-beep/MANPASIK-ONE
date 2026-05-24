@@ -6,13 +6,13 @@
  * 루트 레이아웃 — 모든 페이지에 Tailwind CSS 적용
  */
 import React from 'react';
-import { Figtree, Noto_Sans_KR } from 'next/font/google';
+import { Outfit, Noto_Sans_KR, Gowun_Batang } from 'next/font/google';
 import './globals.css';
 import { ApiProvider } from '../components/api-provider';
 import { MSWProvider } from '../components/common/msw-provider';
 import { AuthProvider } from '../components/common/auth-provider';
 
-const figtree = Figtree({
+const outfit = Outfit({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
   variable: '--font-heading',
@@ -23,6 +23,13 @@ const notoSansKR = Noto_Sans_KR({
   subsets: ['latin'],
   weight: ['400', '700'],
   variable: '--font-body',
+  display: 'swap',
+});
+
+const gowunBatang = Gowun_Batang({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-display',
   display: 'swap',
 });
 
@@ -37,7 +44,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko" suppressHydrationWarning className={`${figtree.variable} ${notoSansKR.variable}`}>
+    <html lang="ko" suppressHydrationWarning className={`${outfit.variable} ${notoSansKR.variable} ${gowunBatang.variable}`}>
       <body suppressHydrationWarning className="antialiased font-body">
         <MSWProvider>
           <AuthProvider>

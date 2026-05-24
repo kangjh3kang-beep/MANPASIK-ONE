@@ -2,128 +2,227 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ===== MPS Design System — Theme Variables ===== */
+/* ═══════════════════════════════════════════════════════════════
+   MPS 만파식 — 상감(Sanggam) 디자인 시스템
+   Brand: Deep Sea Navy + Sanggam Gold + Wave Cyan
+   기획서: ECOSYSTEM_DESIGN_MASTER_PLAN / BRAND_GUIDELINE 준수
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 기본 팔레트 (Light Mode) ── */
 :root {
-  --mps-bg: #f8fafc;
-  --mps-bg-card: #ffffff;
-  --mps-bg-elevated: #f1f5f9;
-  --mps-border: #e2e8f0;
-  --mps-border-subtle: #f1f5f9;
-  --mps-text: #0f172a;
-  --mps-text-secondary: #64748b;
-  --mps-text-muted: #94a3b8;
-  --mps-accent: #0284c7;
-  --mps-accent-light: #e0f2fe;
-  --mps-accent-hover: #0369a1;
-  --mps-success: #059669;
-  --mps-success-light: #d1fae5;
-  --mps-warning: #d97706;
-  --mps-warning-light: #fef3c7;
-  --mps-danger: #dc2626;
-  --mps-danger-light: #fee2e2;
-  --mps-header-bg: rgba(255,255,255,0.85);
-  --mps-hero-bg: #0f172a;
-  --mps-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  /* 배경 */
+  --mps-bg: #F8FAFC;
+  --mps-bg-card: #FFFFFF;
+  --mps-bg-elevated: #F1F5F9;
+  --mps-bg-deep: #0A192F;
+
+  /* 보더 */
+  --mps-border: #E2E8F0;
+  --mps-border-subtle: #F1F5F9;
+  --mps-border-gold: rgba(212, 175, 55, 0.3);
+
+  /* 텍스트 */
+  --mps-text: #0A192F;
+  --mps-text-secondary: #475569;
+  --mps-text-muted: #94A3B8;
+
+  /* 브랜드 컬러 (기획서 SSOT) */
+  --mps-gold: #D4AF37;
+  --mps-gold-light: rgba(212, 175, 55, 0.1);
+  --mps-gold-hover: #E5C349;
+  --mps-cyan: #64FFDA;
+  --mps-cyan-light: rgba(100, 255, 218, 0.08);
+  --mps-deep-sea: #0A192F;
+  --mps-glass-navy: rgba(17, 34, 64, 0.6);
+  --mps-hanji: #FAFAFA;
+
+  /* 시맨틱 */
+  --mps-success: #4CAF50;
+  --mps-success-light: #E8F5E9;
+  --mps-warning: #FFC107;
+  --mps-warning-light: #FFF8E1;
+  --mps-danger: #D32F2F;
+  --mps-danger-light: #FFEBEE;
+  --mps-info: #2196F3;
+
+  /* 헤더 */
+  --mps-header-bg: rgba(10, 25, 47, 0.95);
+  --mps-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+
+  /* 트랜지션 */
+  --transition-micro: 150ms ease-out;
+  --transition-small: 250ms ease-in-out;
+  --transition-medium: 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ── 다크 모드 (Deep Sea 기본) ── */
 [data-theme="dark"] {
-  --mps-bg: #0f172a;
-  --mps-bg-card: #1e293b;
-  --mps-bg-elevated: #334155;
-  --mps-border: #334155;
-  --mps-border-subtle: #1e293b;
-  --mps-text: #f1f5f9;
-  --mps-text-secondary: #94a3b8;
-  --mps-text-muted: #64748b;
-  --mps-accent: #38bdf8;
-  --mps-accent-light: #0c4a6e;
-  --mps-accent-hover: #7dd3fc;
-  --mps-success: #34d399;
-  --mps-success-light: #064e3b;
-  --mps-warning: #fbbf24;
-  --mps-warning-light: #451a03;
-  --mps-danger: #f87171;
-  --mps-danger-light: #450a0a;
-  --mps-header-bg: rgba(15,23,42,0.9);
-  --mps-hero-bg: #020617;
-  --mps-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --mps-bg: #0A192F;
+  --mps-bg-card: #112240;
+  --mps-bg-elevated: #1A2F4A;
+  --mps-border: rgba(212, 175, 55, 0.15);
+  --mps-border-subtle: rgba(100, 255, 218, 0.08);
+  --mps-text: #FAFAFA;
+  --mps-text-secondary: #8892B0;
+  --mps-text-muted: #495670;
+  --mps-gold-light: rgba(212, 175, 55, 0.15);
+  --mps-cyan-light: rgba(100, 255, 218, 0.1);
+  --mps-success-light: rgba(76, 175, 80, 0.15);
+  --mps-warning-light: rgba(255, 193, 7, 0.15);
+  --mps-danger-light: rgba(211, 47, 47, 0.15);
+  --mps-header-bg: rgba(10, 25, 47, 0.98);
+  --mps-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
+
+/* ── 타이포그래피 ── */
+.font-display { font-family: var(--font-display, 'Gowun Batang', 'Playfair Display', serif); }
+.font-heading { font-family: var(--font-heading, 'Outfit', 'Figtree', system-ui, sans-serif); }
+.font-body { font-family: var(--font-body, 'Noto Sans KR', system-ui, sans-serif); }
+.font-mono { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+.tabular-nums { font-variant-numeric: tabular-nums; }
 
 body {
   background-color: var(--mps-bg);
   color: var(--mps-text);
-  transition: background-color 0.3s, color 0.3s;
+  font-family: var(--font-body, 'Noto Sans KR', system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Smooth theme transitions */
-*, *::before, *::after {
-  transition-property: background-color, border-color, color, box-shadow;
-  transition-duration: 0.2s;
-  transition-timing-function: ease;
+/* ── 상감(Sanggam) 컨테이너 — 브랜드 핵심 모티프 ── */
+.mps-sanggam-card {
+  background: linear-gradient(135deg, var(--mps-bg-card) 0%, var(--mps-bg-elevated) 100%);
+  border: 1px solid var(--mps-border-gold);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 6px rgba(0, 0, 0, 0.07),
+    inset 0 0 0 1px rgba(212, 175, 55, 0.05);
+  transition: border-color var(--transition-small), box-shadow var(--transition-small);
+}
+.mps-sanggam-card:hover {
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.1),
+    0 0 20px rgba(212, 175, 55, 0.08);
+}
+[data-theme="dark"] .mps-sanggam-card {
+  background: linear-gradient(135deg, #112240 0%, #0A192F 100%);
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(212, 175, 55, 0.08);
 }
 
-/* Override for animations that shouldn't be affected */
-.animate-pulse, [class*="animate-"] {
-  transition: none;
-}
-
-/* ===== Medical Design System — Typography ===== */
-.font-heading { font-family: var(--font-heading, 'Figtree', system-ui, sans-serif); }
-.font-body { font-family: var(--font-body, 'Noto Sans KR', system-ui, sans-serif); }
-.tabular-nums { font-variant-numeric: tabular-nums; }
-
-/* ===== Medical Design System — Extended Palette ===== */
-:root {
-  --mps-medical-teal: #0891B2;
-  --mps-trust-blue: #1E40AF;
-  --mps-science-indigo: #4F46E5;
-  --mps-bio-cyan: #22D3EE;
-  --mps-card-glass: rgba(255,255,255,0.72);
-  --mps-gradient-normal: linear-gradient(135deg, #059669 0%, #0891B2 100%);
-  --mps-gradient-caution: linear-gradient(135deg, #d97706 0%, #ea580c 100%);
-  --mps-gradient-danger: linear-gradient(135deg, #dc2626 0%, #be123c 100%);
-}
-[data-theme="dark"] {
-  --mps-medical-teal: #22D3EE;
-  --mps-trust-blue: #60A5FA;
-  --mps-science-indigo: #818CF8;
-  --mps-bio-cyan: #67E8F9;
-  --mps-card-glass: rgba(30,41,59,0.72);
-}
-
-/* ===== Glassmorphism Card ===== */
+/* ── 글래스모피즘 패널 (기획서: blur 20px) ── */
 .mps-glass-card {
-  background: var(--mps-card-glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.18);
-  box-shadow: 0 4px 30px rgba(0,0,0,0.04);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 12px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.06);
 }
 [data-theme="dark"] .mps-glass-card {
-  border-color: rgba(255,255,255,0.08);
-  box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+  background: rgba(17, 34, 64, 0.6);
+  border-color: rgba(212, 175, 55, 0.15);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
 }
 
-/* ===== Status Indicator Stripes ===== */
-.mps-stripe-normal { border-left: 3px solid #059669; background: linear-gradient(90deg, rgba(5,150,105,0.06) 0%, transparent 40%); }
-.mps-stripe-caution { border-left: 3px solid #d97706; background: linear-gradient(90deg, rgba(217,119,6,0.06) 0%, transparent 40%); }
-.mps-stripe-danger { border-left: 3px solid #dc2626; background: linear-gradient(90deg, rgba(220,38,38,0.06) 0%, transparent 40%); }
+/* ── 상태 스트라이프 (좌측 3px) ── */
+.mps-stripe-normal {
+  border-left: 3px solid var(--mps-success);
+  background: linear-gradient(90deg, var(--mps-success-light) 0%, transparent 40%);
+}
+.mps-stripe-caution {
+  border-left: 3px solid var(--mps-warning);
+  background: linear-gradient(90deg, var(--mps-warning-light) 0%, transparent 40%);
+}
+.mps-stripe-danger {
+  border-left: 3px solid var(--mps-danger);
+  background: linear-gradient(90deg, var(--mps-danger-light) 0%, transparent 40%);
+}
 
-/* ===== Focus Ring — Medical Teal ===== */
-.mps-focus { @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2] focus-visible:ring-offset-2; }
+/* ── 상감 글로우 라인 애니메이션 ── */
+.mps-glow-line {
+  background: linear-gradient(90deg, transparent 0%, var(--mps-gold) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: sanggam-glow 3s linear infinite;
+}
+@keyframes sanggam-glow {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
 
-/* ===== Scientific Grid Pattern ===== */
+/* ── 물결 리플 (측정 버튼, 연결) ── */
+.mps-wave-ripple {
+  animation: wave-ripple 2s ease-out infinite;
+}
+@keyframes wave-ripple {
+  0% { box-shadow: 0 0 0 0 rgba(100, 255, 218, 0.4); }
+  70% { box-shadow: 0 0 0 20px rgba(100, 255, 218, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(100, 255, 218, 0); }
+}
+
+/* ── 호흡 애니메이션 (측정 진행, AI 패널) ── */
+.mps-breathing {
+  animation: breathing 3s ease-in-out infinite;
+}
+@keyframes breathing {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.015); opacity: 1; }
+}
+
+/* ── 데이터 플로우 파티클 ── */
+@keyframes data-flow {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  50% { opacity: 0.8; }
+  100% { transform: translateY(-80px) scale(0.5); opacity: 0; }
+}
+
+/* ── 포커스 링 (Wave Cyan) ── */
+*:focus-visible {
+  outline: 2px solid var(--mps-cyan);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── 과학 도트 그리드 배경 ── */
 .mps-grid-pattern {
-  background-image: radial-gradient(circle, rgba(8,145,178,0.08) 1px, transparent 1px);
+  background-image: radial-gradient(circle, rgba(100, 255, 218, 0.06) 1px, transparent 1px);
   background-size: 24px 24px;
 }
 
-/* ===== Reduced Motion ===== */
-@media (prefers-reduced-motion: reduce) {
-  .mps-pulse { animation: none !important; }
+/* ── 상감 라인 보더 (금+시안 그라데이션) ── */
+.mps-sanggam-border {
+  border-image: linear-gradient(90deg, var(--mps-gold), var(--mps-cyan), var(--mps-gold)) 1;
 }
-.mps-pulse { animation: mps-pulse 2.5s ease-in-out infinite; }
-@keyframes mps-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+
+/* ── 고대비 모드 ── */
+@media (prefers-contrast: high) {
+  :root {
+    --mps-gold: #FFD700;
+    --mps-cyan: #00FFFF;
+    --mps-danger: #FF0000;
+  }
+}
+
+/* ── 모션 감소 ── */
+@media (prefers-reduced-motion: reduce) {
+  .mps-breathing,
+  .mps-wave-ripple,
+  .mps-glow-line,
+  .mps-pulse {
+    animation: none !important;
+  }
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── 스크롤바 숨기기 ── */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ── 부드러운 테마 전환 (애니메이션 제외) ── */
+.animate-pulse, [class*="animate-"] {
+  transition: none;
 }

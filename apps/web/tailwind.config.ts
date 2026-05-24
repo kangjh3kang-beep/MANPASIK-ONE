@@ -10,16 +10,41 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        heading: ['var(--font-heading)', 'Figtree', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Gowun Batang', 'Playfair Display', 'serif'],
+        heading: ['var(--font-heading)', 'Outfit', 'Figtree', 'system-ui', 'sans-serif'],
         body: ['var(--font-body)', 'Noto Sans KR', 'system-ui', 'sans-serif'],
+        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       colors: {
-        primary: "#0A2540",
-        accent: "#635BFF",
-        medical: { teal: "#0891B2", DEFAULT: "#0891B2", light: "#ECFEFF" },
-        trust: { blue: "#1E40AF", DEFAULT: "#1E40AF", light: "#DBEAFE" },
-        science: { indigo: "#4F46E5", DEFAULT: "#4F46E5", light: "#EEF2FF" },
-        bio: { cyan: "#22D3EE", DEFAULT: "#22D3EE", light: "#CFFAFE" },
+        // 브랜드 기본 (기획서 SSOT)
+        'deep-sea': '#0A192F',
+        'glass-navy': '#112240',
+        'sanggam': {
+          DEFAULT: '#D4AF37',
+          light: 'rgba(212, 175, 55, 0.1)',
+          hover: '#E5C349',
+          border: 'rgba(212, 175, 55, 0.3)',
+        },
+        'wave-cyan': {
+          DEFAULT: '#64FFDA',
+          light: 'rgba(100, 255, 218, 0.08)',
+          hover: '#7BFFE3',
+        },
+        'hanji': '#FAFAFA',
+        'dancheong': '#D32F2F',
+        // 호환성 유지
+        primary: '#0A192F',
+        accent: '#D4AF37',
+        medical: { teal: '#0891B2', DEFAULT: '#0891B2', light: '#ECFEFF' },
+        trust: { blue: '#1E40AF', DEFAULT: '#1E40AF', light: '#DBEAFE' },
+      },
+      borderRadius: {
+        'sanggam': '12px',
+      },
+      boxShadow: {
+        'sanggam': '0 0 20px rgba(212, 175, 55, 0.15)',
+        'glass': '0 4px 30px rgba(0, 0, 0, 0.06)',
+        'deep': '0 4px 20px rgba(0, 0, 0, 0.4)',
       },
     },
   },
