@@ -93,7 +93,7 @@ export default function PredictorPage() {
       <section aria-label="관련 도메인" className="mt-8">
         <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[{ name: "임상 콘솔", path: "/domains/clinical", desc: "실시간 바이탈 데이터" },{ name: "AI 에이전트", path: "/domains/agents-hub", desc: "AI 분석 흐름" },{ name: "리워드", path: "/domains/reward", desc: "예측 데이터 기여" }].map(d => (
+          {[{ name: "임상 콘솔", path: "/domains/clinical", desc: "실시간 바이탈 데이터" },{ name: "건강 앱", path: "/domains/app", desc: "모바일 건강 관리" },{ name: "리워드", path: "/domains/reward", desc: "예측 데이터 기여" }].map(d => (
             <Link key={d.path} href={`${localePrefix}${d.path}`}
               className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">
               <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-100">

@@ -318,6 +318,25 @@ func (r *Router) setupRoutes() {
 	r.mux.HandleFunc("GET /api/v1/marketplace/products", r.handleListMarketplaceProducts)
 	r.mux.HandleFunc("GET /api/v1/marketplace/partners", r.handleListMarketplacePartners)
 
+	// Rewards service (mock)
+	r.mux.HandleFunc("GET /api/v1/rewards/{userId}/balance", r.handleGetRewardBalance)
+	r.mux.HandleFunc("GET /api/v1/rewards/{userId}/contributions", r.handleGetRewardContributions)
+
+	// GxP Compliance service (mock)
+	r.mux.HandleFunc("GET /api/v1/gxp/audit-logs", r.handleGetGxpAuditLogs)
+	r.mux.HandleFunc("GET /api/v1/gxp/compliance", r.handleGetGxpCompliance)
+
+	// Developer Portal service (mock)
+	r.mux.HandleFunc("GET /api/v1/dev-portal/keys", r.handleGetDevPortalKeys)
+	r.mux.HandleFunc("GET /api/v1/dev-portal/endpoints", r.handleGetDevPortalEndpoints)
+
+	// Telemedicine service (mock)
+	r.mux.HandleFunc("GET /api/v1/telemedicine/doctors", r.handleListTelemedicineDoctors)
+
+	// Admin extras (mock)
+	r.mux.HandleFunc("GET /api/v1/admin/kpis", r.handleGetAdminKPIs)
+	r.mux.HandleFunc("GET /api/v1/admin/events", r.handleGetAdminEvents)
+
 	// File upload service (S3/MinIO)
 	r.setupUploadRoutes()
 }

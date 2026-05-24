@@ -96,7 +96,7 @@ export default function PartnerPage() {
       <section aria-label="관련 도메인" className="mt-8">
         <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[{ name: "임상 콘솔", path: "/domains/clinical", desc: "환자 데이터 연동" },{ name: "GxP 준수", path: "/domains/gxp", desc: "규제 감사 추적" },{ name: "개발자 포털", path: "/domains/dev-portal", desc: "API 연동 가이드" }].map(d => (
+          {[{ name: "임상 콘솔", path: "/domains/clinical", desc: "환자 데이터 연동" },{ name: "설정", path: "/domains/settings", desc: "데이터 공유 관리" },{ name: "개발자 포털", path: "/domains/dev-portal", desc: "API 연동 가이드" }].map(d => (
             <Link key={d.path} href={`${localePrefix}${d.path}`}
               className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">
               <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-100">
