@@ -71,9 +71,10 @@ export default function AdminPage() {
               onChange={e => setNlQuery(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleNlQuery()}
               placeholder="질문하세요: '이번 주 지역별 이상 측정 현황', '재고 부족 지역'"
+              aria-label="AI 관리 콘솔 질문 입력"
               className="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/30"
             />
-            <button onClick={handleNlQuery} className="px-6 py-3 rounded-xl bg-sky-600 text-sm font-bold hover:bg-sky-700 transition-colors">
+            <button onClick={handleNlQuery} aria-label="질문 검색" className="px-6 py-3 rounded-xl bg-sky-600 text-sm font-bold hover:bg-sky-700 transition-colors">
               <Search className="h-4 w-4" />
             </button>
           </div>

@@ -85,6 +85,8 @@ export default function StorePage() {
             <Filter className="h-4 w-4 text-slate-400" />
             {CATEGORIES.map(c => (
               <button key={c} onClick={() => setCategory(c)}
+                aria-label={`${c} 카테고리 필터`}
+                aria-pressed={category === c}
                 className={`px-4 py-2 rounded-xl text-sm font-semibold transition-colors ${
                   category === c ? 'bg-sky-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
                 }`}>
@@ -127,6 +129,7 @@ export default function StorePage() {
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-bold text-slate-900">₩{product.price.toLocaleString()}</span>
                   <button onClick={() => addToCart(product)}
+                    aria-label={`${product.name} 장바구니에 담기`}
                     className="h-9 w-9 rounded-xl bg-sky-600 text-white flex items-center justify-center hover:bg-sky-700 transition-colors">
                     <Plus className="h-4 w-4" />
                   </button>

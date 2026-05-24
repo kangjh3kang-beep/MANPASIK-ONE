@@ -134,8 +134,8 @@ export default function MeasurePage() {
 
         {/* 진행률 바 */}
         {step !== 'ready' && step !== 'result' && (
-          <div className="mb-8">
-            <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div className="mb-8" role="status" aria-live="polite" aria-label={`측정 진행률 ${progress}%`}>
+            <div className="h-2 bg-slate-100 rounded-full overflow-hidden" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
               <div className="h-full bg-sky-500 rounded-full transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
             <p className="text-xs text-slate-400 mt-1 text-right">{progress}%</p>
@@ -238,7 +238,7 @@ export default function MeasurePage() {
 
           {/* 결과 카드 */}
           {step === 'result' && result && (
-            <div>
+            <div role="status" aria-live="polite">
               <div className="flex items-center gap-2 mb-6">
                 <CheckCircle className="h-5 w-5 text-emerald-500" />
                 <h2 className="text-lg font-bold text-slate-900">측정 완료</h2>

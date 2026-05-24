@@ -75,6 +75,8 @@ export default function HealthRecordsPage() {
                 <button
                   key={b}
                   onClick={() => setFilterBiomarker(b)}
+                  aria-label={`${b} 바이오마커 필터`}
+                  aria-pressed={filterBiomarker === b}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                     filterBiomarker === b
                       ? 'bg-sky-600 text-white'
