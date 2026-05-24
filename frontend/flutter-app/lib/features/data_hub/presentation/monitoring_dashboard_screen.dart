@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:manpasik/core/theme/sanggam_theme.dart';
 import 'package:manpasik/features/devices/domain/device_repository.dart';
 import 'package:manpasik/features/data_hub/presentation/providers/monitoring_providers.dart';
+import 'package:manpasik/features/data_hub/presentation/providers/bio_ticker_provider.dart';
 import 'package:manpasik/features/data_hub/presentation/widgets/device_detail_bottom_sheet.dart';
 import 'package:manpasik/features/data_hub/presentation/widgets/device_status_card.dart';
 import 'package:manpasik/shared/widgets/golden_orbit_globe.dart';
@@ -345,48 +346,51 @@ class _MonitoringDashboardScreenState
         ),
 
         // Consolidated Orbital HUD for Bio Tab
-        if (isBody)
+        if (isBody) ...[
           Positioned.fill(
             child: OrbitalHud(
               center: center,
-              baseRadius: baseRadius * 1.5, // 1.2 -> 1.5로 확장하여 더 넓은 시야 확보
-              nodes: const [
+              baseRadius: baseRadius * 1.5,
+              nodes: [
                 OrbitalNodeData(
                   label: '심박수',
-                  value: '72',
+                  value: ref.watch(selectedBioDataProvider)['Pulse']?.toString() ?? '72',
                   unit: 'bpm',
                   icon: Icons.favorite,
                   angle: -135,
                   radiusMultiplier: 1.1,
-                  bodyAttachmentOffset: Offset(0, -100),
+                  bodyAttachmentOffset: const Offset(0, -100),
                 ),
                 OrbitalNodeData(
                   label: '산소포화도',
-                  value: '98',
+                  value: ref.watch(selectedBioDataProvider)['O2']?.toString() ?? '98',
                   unit: '%',
                   icon: Icons.air,
                   angle: -45,
                   radiusMultiplier: 1.1,
-                  bodyAttachmentOffset: Offset(0, -80),
+                  bodyAttachmentOffset: const Offset(0, -80),
                 ),
                 OrbitalNodeData(
                   label: '혈당',
-                  value: '105',
+                  value: ref.watch(selectedBioDataProvider)['Glucose']?.toString() ?? '105',
                   unit: 'mg/dL',
                   icon: Icons.bloodtype,
                   angle: 135,
                   radiusMultiplier: 1.2,
-                  bodyAttachmentOffset: Offset(0, 50),
-                  isAlert: true,
+                  bodyAttachmentOffset: const Offset(0, 50),
+                  isAlert: (double.tryParse(ref.watch(selectedBioDataProvider)['Glucose']?.toString() ?? '') ?? 105) > 140,
+                  onTap: () {
+                    context.push('/market'); // 1단계 조치: 관련 건강 식품 샵으로 안내
+                  },
                 ),
                 OrbitalNodeData(
                   label: '뇌활동',
-                  value: '42',
+                  value: ref.watch(selectedBioDataProvider)['Stress']?.toString() ?? '42',
                   unit: '%',
                   icon: Icons.psychology,
                   angle: 45,
                   radiusMultiplier: 1.0,
-                  bodyAttachmentOffset: Offset(0, -180),
+                  bodyAttachmentOffset: const Offset(0, -180),
                 ),
               ],
               centerWidget: HoloBody(
@@ -396,11 +400,71 @@ class _MonitoringDashboardScreenState
                 profile: ref.watch(holoBodyProfileProvider),
                 gender: ref.watch(holoGenderProvider),
                 bioData: ref.watch(selectedBioDataProvider),
+                bioTickerSpeed: ref.watch(bioTickerSpeedProvider),
                 showHud: false,
               ),
             ),
-          )
-        else ...[
+          ),
+          
+          // Zero-Dead-End Ecosystem: AI 코칭 패널 부상 (위험 감지 시)
+          if ((double.tryParse(ref.watch(selectedBioDataProvider)['Glucose']?.toString() ?? '') ?? 105) > 140)
+            Positioned(
+              bottom: 24,
+              right: 24,
+              child: Semantics(
+                label: 'AI 코칭 시작',
+                button: true,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.click,
+                  child: GestureDetector(
+                    onTap: () {
+                      context.push('/medical/telemedicine'); // 2단계 조치: 원격 진료 안내
+                    },
+                    child: GlassmorphismCard(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                      baseColor: SanggamTheme.error,
+                      opacity: 0.2,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: SanggamTheme.error.withValues(alpha: 0.3),
+                            ),
+                            child: const Icon(Icons.smart_toy, color: Colors.white, size: 20),
+                          ),
+                          const SizedBox(width: 12),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              Text(
+                                '혈당 이상 감지됨',
+                                style: TextStyle(
+                                  color: SanggamTheme.error,
+                                  fontWeight: 12,
+                                  fontSize: 10,
+                                ),
+                              ),
+                              Text(
+                                '의료진 상담 예약하기',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ] else ...[
           // Standard Globe & Node layer for connected devices
           Positioned(
             left: center.dx - globeSize / 2,
