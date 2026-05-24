@@ -21,3 +21,5 @@ export * from "./components/common/loading-skeleton";
 export * from "./components/domain-nav";
 export * from "./components/medical/measurement-result-card";
 export * from "./components/medical/dual-persona-chat";
+export * from "./components/common/related-domains";
+export * from "./components/charts/mini-sparkline";
