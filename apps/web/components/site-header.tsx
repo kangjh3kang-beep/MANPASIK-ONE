@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useEffect, useCallback } from 'react';
-import { Activity, Menu, X, ChevronDown, Globe, LogIn, Moon, Sun, Stethoscope, Network, BarChart3, Coins, Users2, Pill, FileCode2, Cpu, Smartphone } from 'lucide-react';
+import { Activity, Menu, X, ChevronDown, Globe, LogIn, Moon, Sun, Stethoscope, Network, BarChart3, Coins, Users2, Pill, FileCode2, Cpu, Smartphone, Brain } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -17,15 +17,22 @@ function useCurrentLocale(): string {
 }
 
 const DOMAINS = [
+  { id: 'measure', label: '건강 측정', icon: Activity, path: '/domains/measure' },
+  { id: 'health-records', label: '건강 기록', icon: BarChart3, path: '/domains/health-records' },
   { id: 'clinical', label: '건강 데이터', icon: Stethoscope, path: '/domains/clinical' },
+  { id: 'ai-coach', label: 'AI 코치', icon: Brain, path: '/domains/ai-coach' },
   { id: 'agents-hub', label: 'AI 분석', icon: Network, path: '/domains/agents-hub' },
   { id: 'predictor', label: '위험 예측', icon: BarChart3, path: '/domains/predictor' },
+  { id: 'telemedicine', label: '화상진료', icon: Smartphone, path: '/domains/telemedicine' },
+  { id: 'store', label: '스토어', icon: Coins, path: '/domains/store' },
   { id: 'reward', label: '보상', icon: Coins, path: '/domains/reward' },
   { id: 'partner', label: '병원 연동', icon: Users2, path: '/domains/partner' },
   { id: 'gxp', label: '품질 관리', icon: Pill, path: '/domains/gxp' },
   { id: 'dev-portal', label: '개발자 도구', icon: FileCode2, path: '/domains/dev-portal' },
   { id: 'hardware-core', label: '측정 장비', icon: Cpu, path: '/domains/hardware-core' },
   { id: 'app', label: '건강 앱', icon: Smartphone, path: '/domains/app' },
+  { id: 'admin', label: '관리자', icon: Cpu, path: '/domains/admin' },
+  { id: 'settings', label: '설정', icon: Pill, path: '/domains/settings' },
 ];
 
 const LOCALES = [
