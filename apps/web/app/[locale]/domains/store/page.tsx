@@ -115,43 +115,54 @@ export default function StorePage() {
         </div>
 
         {/* 상품 그리드 */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filtered.map(product => (
-            <div key={product.id} className="rounded-2xl border border-slate-200 bg-white overflow-hidden hover:shadow-md transition-shadow group">
-              <div className="relative h-40 bg-slate-50 flex items-center justify-center">
-                {(() => { const IconComponent = PRODUCT_ICONS[product.image] || Package; return (
-                  <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-sky-50 to-teal-50 flex items-center justify-center">
-                    <IconComponent className="h-8 w-8 text-medical-teal" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          {filtered.map(product => {
+            const IconComponent = PRODUCT_ICONS[product.image] || Package;
+            return (
+              <div key={product.id} className="group rounded-2xl border border-slate-200 bg-white overflow-hidden hover:shadow-lg hover:border-slate-300 transition-all duration-200">
+                {/* 상품 이미지 영역 — 클릭 시 상세 페이지 */}
+                <Link href={`${localePrefix}/domains/store/${product.id}`} className="block relative h-44 bg-gradient-to-br from-slate-50 to-sky-50/30 flex items-center justify-center cursor-pointer">
+                  <div className="h-20 w-20 rounded-2xl bg-white/80 shadow-sm flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
+                    <IconComponent className="h-10 w-10 text-[#0891B2]" />
                   </div>
-                ); })()}
-                {product.badge && (
-                  <span className={`absolute top-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-bold text-white ${
-                    product.badge === '인기' ? 'bg-rose-500' : product.badge === '신규' ? 'bg-emerald-500' : product.badge === '추천' ? 'bg-sky-500' : 'bg-amber-500'
-                  }`}>{product.badge}</span>
-                )}
-                {product.subscription && (
-                  <span className="absolute top-3 right-3 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-600 border border-purple-200">
-                    <Truck className="h-3 w-3 inline mr-0.5" />정기배송
-                  </span>
-                )}
-              </div>
-              <div className="p-4">
-                <h3 className="text-sm font-bold text-slate-900 mb-1 line-clamp-2">{product.name}</h3>
-                <div className="flex items-center gap-1 mb-2">
-                  <Star className="h-3 w-3 text-amber-500" />
-                  <span className="text-xs text-slate-500">{product.rating} ({product.reviews.toLocaleString()})</span>
+                  {product.badge && (
+                    <span className={`absolute top-3 left-3 px-2.5 py-1 rounded-lg text-[10px] font-bold text-white shadow-sm ${
+                      product.badge === '인기' ? 'bg-rose-500' : product.badge === '신규' ? 'bg-emerald-500' : product.badge === '추천' ? 'bg-sky-500' : 'bg-amber-500'
+                    }`}>{product.badge}</span>
+                  )}
+                  {product.subscription && (
+                    <span className="absolute top-3 right-3 px-2 py-1 rounded-lg text-[10px] font-semibold bg-white/90 text-purple-600 shadow-sm backdrop-blur-sm">
+                      <Truck className="h-3 w-3 inline mr-0.5" />정기배송
+                    </span>
+                  )}
+                  {/* 상세 보기 오버레이 */}
+                  <div className="absolute inset-0 bg-slate-900/0 group-hover:bg-slate-900/5 transition-colors flex items-end justify-center pb-3 opacity-0 group-hover:opacity-100">
+                    <span className="text-[10px] font-semibold text-slate-500 bg-white/90 px-3 py-1 rounded-full shadow-sm">상세 보기</span>
+                  </div>
+                </Link>
+
+                {/* 상품 정보 */}
+                <div className="p-4">
+                  <Link href={`${localePrefix}/domains/store/${product.id}`} className="block mb-2 cursor-pointer">
+                    <h3 className="text-sm font-bold text-slate-900 mb-1 line-clamp-2 group-hover:text-[#0891B2] transition-colors">{product.name}</h3>
+                    <div className="flex items-center gap-1">
+                      <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
+                      <span className="text-xs font-medium text-slate-600">{product.rating}</span>
+                      <span className="text-xs text-slate-400">({product.reviews.toLocaleString()})</span>
+                    </div>
+                  </Link>
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                    <span className="text-lg font-bold text-slate-900 font-heading tabular-nums">₩{product.price.toLocaleString()}</span>
+                    <button onClick={(e) => { e.preventDefault(); addToCart(product); }}
+                      aria-label={`${product.name} 장바구니에 담기`}
+                      className="h-9 w-9 rounded-lg bg-slate-900 text-white flex items-center justify-center hover:bg-[#0891B2] transition-colors shadow-sm">
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-bold text-slate-900">₩{product.price.toLocaleString()}</span>
-                  <button onClick={() => addToCart(product)}
-                    aria-label={`${product.name} 장바구니에 담기`}
-                    className="h-9 w-9 rounded-xl bg-sky-600 text-white flex items-center justify-center hover:bg-sky-700 transition-colors">
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* 관련 도메인 */}
