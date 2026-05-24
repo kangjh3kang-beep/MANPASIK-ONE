@@ -118,7 +118,7 @@ export default function RewardPage() {
       <section aria-label="관련 도메인" className="mt-8">
         <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[{ name: "임상 콘솔", path: "/domains/clinical", desc: "측정 데이터 기여" },{ name: "건강 앱", path: "/domains/app", desc: "모바일 건강 관리" },{ name: "파트너 연동", path: "/domains/partner", desc: "의료 데이터 공유" }].map(d => (
+          {[{ name: "MPS 스토어", path: "/domains/store", desc: "포인트로 구매" },{ name: "건강 데이터", path: "/domains/clinical", desc: "측정 데이터 기여" },{ name: "파트너 연동", path: "/domains/partner", desc: "의료 데이터 공유" }].map(d => (
             <Link key={d.path} href={`${localePrefix}${d.path}`}
               className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">
               <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-100">

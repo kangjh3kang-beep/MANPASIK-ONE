@@ -161,7 +161,7 @@ export default function ClinicalPage() {
       <section aria-label="관련 도메인" className="mt-8">
         <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          {[{ name: "위험 예측", path: "/domains/predictor", desc: "건강 위험 예측" },{ name: "리워드", path: "/domains/reward", desc: "데이터 기여 보상" },{ name: "파트너 연동", path: "/domains/partner", desc: "의료기관 데이터 공유" }].map(d => (
+          {[{ name: "건강 측정", path: "/domains/measure", desc: "재측정 시작" },{ name: "화상 진료", path: "/domains/telemedicine", desc: "전문의 상담" },{ name: "위험 예측", path: "/domains/predictor", desc: "건강 위험 예측" },{ name: "건강 기록", path: "/domains/health-records", desc: "기록 타임라인" }].map(d => (
             <Link key={d.path} href={`${localePrefix}${d.path}`}
               className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">
               <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-100">

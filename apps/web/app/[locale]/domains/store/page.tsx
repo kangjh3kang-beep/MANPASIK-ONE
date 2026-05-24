@@ -143,7 +143,7 @@ export default function StorePage() {
             {[
               { name: '건강 측정', path: '/domains/measure', desc: '카트리지로 측정' },
               { name: '보상', path: '/domains/reward', desc: '포인트 사용' },
-              { name: '건강 앱', path: '/domains/app', desc: '모바일에서 구매' },
+              { name: '화상 진료', path: '/domains/telemedicine', desc: '전문의 상담' },
             ].map(d => (
               <Link key={d.path} href={`${localePrefix}${d.path}`}
                 className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">

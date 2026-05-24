@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { DomainHeader, MeasurementResultCard } from '@mmup/ui';
-import { Activity, CheckCircle, Clock, Loader2, AlertTriangle, Smartphone } from 'lucide-react';
+import { DomainHeader, MeasurementResultCard, NextActionGroup } from '@mmup/ui';
+import { Activity, CheckCircle, Clock, Loader2, AlertTriangle, Smartphone, ClipboardList, Brain, BarChart3 } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -269,6 +269,18 @@ export default function MeasurePage() {
                   기록 보기
                 </Link>
               </div>
+
+              {/* 다음 단계 추천 */}
+              <div className="mt-6">
+                <NextActionGroup
+                  title="다음 단계"
+                  actions={[
+                    { id: 'records', title: '기록에서 추이 보기', description: '과거 측정값과 비교하여 변화를 확인합니다', icon: <ClipboardList className="h-4 w-4" />, onClick: () => window.location.href = `${localePrefix}/domains/health-records`, priority: 'high' },
+                    { id: 'coach', title: 'AI 코치에게 해석 요청', description: '측정 결과를 AI가 쉽게 설명해드립니다', icon: <Brain className="h-4 w-4" />, onClick: () => window.location.href = `${localePrefix}/domains/ai-coach` },
+                    { id: 'predictor', title: '위험 예측 확인', description: '건강 위험도를 미리 분석합니다', icon: <BarChart3 className="h-4 w-4" />, onClick: () => window.location.href = `${localePrefix}/domains/predictor` },
+                  ]}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -284,9 +296,9 @@ export default function MeasurePage() {
           <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
-              { name: '건강 데이터', path: '/domains/clinical', desc: '측정 이력 확인' },
+              { name: '건강 기록', path: '/domains/health-records', desc: '측정 이력 확인' },
               { name: 'AI 코치', path: '/domains/ai-coach', desc: '결과 해석 상담' },
-              { name: '건강 앱', path: '/domains/app', desc: '모바일 건강 관리' },
+              { name: '건강 데이터', path: '/domains/clinical', desc: '상세 분석' },
             ].map(d => (
               <Link key={d.path} href={`${localePrefix}${d.path}`}
                 className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">

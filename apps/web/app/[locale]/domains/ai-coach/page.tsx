@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { DualPersonaChat, ChatMessage, ChatPersona } from '@mmup/ui';
-import { DomainHeader } from '@mmup/ui';
-import { Brain } from 'lucide-react';
+import { DualPersonaChat, ChatMessage, ChatPersona, DomainHeader, NextActionGroup } from '@mmup/ui';
+import { Brain, Video, ShoppingCart } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -98,6 +97,17 @@ export default function AiCoachPage() {
         <p className="text-center text-xs text-slate-400 mt-4">
           AI 코치의 답변은 참고 정보이며, 의학적 진단이나 처방을 대체하지 않습니다.
         </p>
+
+        {/* 다음 단계 추천 */}
+        <div className="mt-6">
+          <NextActionGroup
+            title="다음 단계"
+            actions={[
+              { id: 'telemedicine', title: '화상 진료 예약', description: '전문의와 직접 상담하세요', icon: <Video className="h-4 w-4" />, onClick: () => window.location.href = `${localePrefix}/domains/telemedicine`, priority: 'high' },
+              { id: 'store', title: '건강용품 구매', description: '추천 카트리지와 건강식품을 확인하세요', icon: <ShoppingCart className="h-4 w-4" />, onClick: () => window.location.href = `${localePrefix}/domains/store` },
+            ]}
+          />
+        </div>
       </div>
 
       {/* 관련 도메인 */}
@@ -105,9 +115,9 @@ export default function AiCoachPage() {
         <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {[
-            { name: '건강 데이터', path: '/domains/clinical', desc: '측정 결과 확인' },
+            { name: '화상 진료', path: '/domains/telemedicine', desc: '전문의 상담 연결' },
             { name: '위험 예측', path: '/domains/predictor', desc: '건강 위험도 분석' },
-            { name: '건강 앱', path: '/domains/app', desc: '모바일 건강 관리' },
+            { name: '건강 데이터', path: '/domains/clinical', desc: '측정 결과 확인' },
           ].map(d => (
             <Link key={d.path} href={`${localePrefix}${d.path}`}
               className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">

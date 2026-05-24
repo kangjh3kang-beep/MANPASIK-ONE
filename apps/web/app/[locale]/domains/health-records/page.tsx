@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DomainHeader, MeasurementResultCard, MiniSparkline } from '@mmup/ui';
-import { FileText, Download, Filter, Calendar, TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { DomainHeader, MeasurementResultCard, MiniSparkline, NextActionGroup } from '@mmup/ui';
+import { FileText, Download, Filter, Calendar, TrendingUp, TrendingDown, Minus, Brain, ShoppingCart, BarChart3 } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -214,6 +214,18 @@ export default function HealthRecordsPage() {
           </div>
         </div>
 
+        {/* 다음 단계 추천 */}
+        <div className="mt-8">
+          <NextActionGroup
+            title="다음 단계"
+            actions={[
+              { id: 'coach', title: 'AI 코치 상담', description: '기록을 바탕으로 건강 상담을 받으세요', icon: <Brain className="h-4 w-4" />, onClick: () => window.location.href = `${localePrefix}/domains/ai-coach`, priority: 'high' },
+              { id: 'store', title: '카트리지 재구매', description: '소모품을 재주문합니다', icon: <ShoppingCart className="h-4 w-4" />, onClick: () => window.location.href = `${localePrefix}/domains/store` },
+              { id: 'predictor', title: '위험 예측 확인', description: '건강 위험도를 미리 분석합니다', icon: <BarChart3 className="h-4 w-4" />, onClick: () => window.location.href = `${localePrefix}/domains/predictor` },
+            ]}
+          />
+        </div>
+
         {/* 관련 도메인 */}
         <section aria-label="관련 도메인" className="mt-8">
           <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
@@ -221,6 +233,7 @@ export default function HealthRecordsPage() {
             {[
               { name: '건강 측정', path: '/domains/measure', desc: '새 측정 시작' },
               { name: 'AI 코치', path: '/domains/ai-coach', desc: '결과 해석 상담' },
+              { name: '건강 데이터', path: '/domains/clinical', desc: '상세 분석' },
               { name: '위험 예측', path: '/domains/predictor', desc: '건강 위험도 분석' },
             ].map(d => (
               <Link key={d.path} href={`${localePrefix}${d.path}`}

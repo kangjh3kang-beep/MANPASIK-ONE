@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Network, Database, ShieldCheck, ActivitySquare, Pill, FileCode2, Users2, Stethoscope, ChevronRight, Globe, Brain, Activity } from 'lucide-react';
+import { Network, Database, ShieldCheck, ActivitySquare, Pill, FileCode2, Users2, Stethoscope, ChevronRight, Globe, Brain, Activity, ClipboardList, ShoppingCart, Video, Settings, UserCog } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -102,6 +102,46 @@ const domains = [
     icon: ShieldCheck,
     colorClasses: 'bg-cyan-50 text-cyan-600 ring-cyan-500/20 group-hover:bg-cyan-500 group-hover:text-white',
     url: '/domains/app'
+  },
+  {
+    id: 'health-records',
+    title: '건강 기록 타임라인',
+    desc: '지금까지의 측정 기록을 시간순으로 확인하고 추이 변화를 한눈에 파악합니다',
+    icon: ClipboardList,
+    colorClasses: 'bg-teal-50 text-teal-600 ring-teal-500/20 group-hover:bg-teal-500 group-hover:text-white',
+    url: '/domains/health-records'
+  },
+  {
+    id: 'store',
+    title: 'MPS 스토어',
+    desc: '카트리지, 건강식품, 건강용품을 구매하고 구독 혜택을 관리합니다',
+    icon: ShoppingCart,
+    colorClasses: 'bg-pink-50 text-pink-600 ring-pink-500/20 group-hover:bg-pink-500 group-hover:text-white',
+    url: '/domains/store'
+  },
+  {
+    id: 'telemedicine',
+    title: '화상 진료',
+    desc: '측정 데이터를 공유하며 전문의와 화상으로 상담합니다',
+    icon: Video,
+    colorClasses: 'bg-blue-50 text-blue-600 ring-blue-500/20 group-hover:bg-blue-500 group-hover:text-white',
+    url: '/domains/telemedicine'
+  },
+  {
+    id: 'admin',
+    title: '관리자 대시보드',
+    desc: '플랫폼 전체 현황을 모니터링하고 운영 데이터를 관리합니다',
+    icon: UserCog,
+    colorClasses: 'bg-gray-50 text-gray-600 ring-gray-500/20 group-hover:bg-gray-700 group-hover:text-white',
+    url: '/domains/admin'
+  },
+  {
+    id: 'settings',
+    title: '설정',
+    desc: '테마, 언어, 알림, 개인정보 등 사용 환경을 맞춤 설정합니다',
+    icon: Settings,
+    colorClasses: 'bg-stone-50 text-stone-600 ring-stone-500/20 group-hover:bg-stone-600 group-hover:text-white',
+    url: '/domains/settings'
   }
 ];
 
@@ -114,7 +154,7 @@ export function DomainBentoGrid() {
         <div className="text-center mb-16">
           <h2 className="text-sm font-bold tracking-widest text-sky-600 uppercase">서비스 구성</h2>
           <p className="mt-2 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-            하나로 연결된 건강 생태계, <span className="text-sky-600">9개 핵심 서비스</span>
+            하나로 연결된 건강 생태계, <span className="text-sky-600">16개 핵심 서비스</span>
           </p>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-slate-600">
             각 서비스가 독립적으로 운영되면서도 하나의 플랫폼 위에서 유기적으로 연결됩니다.

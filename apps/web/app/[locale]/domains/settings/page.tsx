@@ -159,6 +159,29 @@ export default function SettingsPage() {
           </div>
         </section>
 
+        {/* 관련 도메인 */}
+        <section aria-label="관련 도메인" className="mt-2">
+          <h3 className="text-sm font-bold text-slate-500 mb-3">관련 도메인</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { name: '건강 기록', path: '/domains/health-records', desc: '내 기록 확인' },
+              { name: '관리자', path: '/domains/admin', desc: '플랫폼 관리' },
+              { name: '건강 측정', path: '/domains/measure', desc: '측정 시작' },
+            ].map(d => (
+              <Link key={d.path} href={`${localePrefix}${d.path}`}
+                className="flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white hover:border-sky-300 hover:shadow-sm transition-all group">
+                <div className="h-8 w-8 rounded-lg bg-sky-50 flex items-center justify-center text-sky-600 group-hover:bg-sky-100">
+                  <span className="text-sm">→</span>
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-slate-700 group-hover:text-sky-600">{d.name}</span>
+                  <p className="text-[11px] text-slate-400">{d.desc}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+
         <p className="text-center text-xs text-slate-400">MPS 만파식 플랫폼 v2.0 · 개인정보처리방침 · 이용약관</p>
       </div>
     </main>
