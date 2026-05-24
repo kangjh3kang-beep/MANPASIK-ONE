@@ -120,7 +120,7 @@ export default function SettingsPage() {
                   <p className="text-sm font-medium text-slate-700">{n.label}</p>
                   <p className="text-xs text-slate-400">{n.desc}</p>
                 </div>
-                <div className={`relative w-11 h-6 rounded-full transition-colors ${notifications[n.key] ? 'bg-sky-600' : 'bg-slate-300'}`}
+                <div role="switch" aria-checked={notifications[n.key]} className={`relative w-11 h-6 rounded-full transition-colors ${notifications[n.key] ? 'bg-sky-600' : 'bg-slate-300'}`}
                   onClick={() => setNotifications(prev => ({ ...prev, [n.key]: !prev[n.key] }))}>
                   <div className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${notifications[n.key] ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
                 </div>

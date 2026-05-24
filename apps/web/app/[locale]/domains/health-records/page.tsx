@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { DomainHeader, MeasurementResultCard } from '@mmup/ui';
+import { DomainHeader, MeasurementResultCard, MiniSparkline } from '@mmup/ui';
 import { FileText, Download, Filter, Calendar, TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
@@ -13,13 +13,15 @@ function useLocalePrefix(): string {
   return match ? `/${match[1]}` : '/ko';
 }
 
-const MOCK_RECORDS = [
-  { id: '1', date: '2026-05-24', time: '14:32', biomarker: '혈당', value: 95, unit: 'mg/dL', status: 'normal' as const, confidence: 0.96, trend: 'stable' },
-  { id: '2', date: '2026-05-23', time: '08:15', biomarker: '혈당', value: 112, unit: 'mg/dL', status: 'normal' as const, confidence: 0.94, trend: 'up' },
-  { id: '3', date: '2026-05-22', time: '14:00', biomarker: '당화혈색소', value: 6.8, unit: '%', status: 'caution' as const, confidence: 0.93, trend: 'stable' },
-  { id: '4', date: '2026-05-21', time: '09:30', biomarker: '총 콜레스테롤', value: 195, unit: 'mg/dL', status: 'normal' as const, confidence: 0.91, trend: 'down' },
-  { id: '5', date: '2026-05-20', time: '08:00', biomarker: '혈당', value: 88, unit: 'mg/dL', status: 'normal' as const, confidence: 0.95, trend: 'down' },
-  { id: '6', date: '2026-05-19', time: '14:45', biomarker: '요산', value: 7.2, unit: 'mg/dL', status: 'caution' as const, confidence: 0.92, trend: 'up' },
+type RecordStatus = 'normal' | 'caution' | 'danger';
+
+const MOCK_RECORDS: { id: string; date: string; time: string; biomarker: string; value: number; unit: string; status: RecordStatus; confidence: number; trend: string }[] = [
+  { id: '1', date: '2026-05-24', time: '14:32', biomarker: '혈당', value: 95, unit: 'mg/dL', status: 'normal', confidence: 0.96, trend: 'stable' },
+  { id: '2', date: '2026-05-23', time: '08:15', biomarker: '혈당', value: 112, unit: 'mg/dL', status: 'normal', confidence: 0.94, trend: 'up' },
+  { id: '3', date: '2026-05-22', time: '14:00', biomarker: '당화혈색소', value: 6.8, unit: '%', status: 'caution', confidence: 0.93, trend: 'stable' },
+  { id: '4', date: '2026-05-21', time: '09:30', biomarker: '총 콜레스테롤', value: 195, unit: 'mg/dL', status: 'normal', confidence: 0.91, trend: 'down' },
+  { id: '5', date: '2026-05-20', time: '08:00', biomarker: '혈당', value: 88, unit: 'mg/dL', status: 'normal', confidence: 0.95, trend: 'down' },
+  { id: '6', date: '2026-05-19', time: '14:45', biomarker: '요산', value: 7.2, unit: 'mg/dL', status: 'caution', confidence: 0.92, trend: 'up' },
 ];
 
 const RANGES: Record<string, { low: number; high: number }> = {
@@ -89,6 +91,38 @@ export default function HealthRecordsPage() {
             내보내기
           </button>
         </div>
+
+        {/* 범위 요약 바 (FreeStyle Libre AGP 참고) */}
+        {filteredRecords.length > 0 && (
+          <div className="rounded-2xl border border-slate-200 bg-white p-5 mb-6">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-slate-700">측정 범위 요약</h3>
+              <div className="flex items-center gap-1">
+                <MiniSparkline data={filteredRecords.map(r => r.value)} color="#0ea5e9" width={80} height={24} />
+              </div>
+            </div>
+            <div className="flex h-4 rounded-full overflow-hidden">
+              {(() => {
+                const total = filteredRecords.length;
+                const normal = filteredRecords.filter(r => r.status === 'normal').length;
+                const caution = filteredRecords.filter(r => r.status === 'caution').length;
+                const danger = filteredRecords.filter(r => r.status === 'danger').length;
+                return (
+                  <>
+                    <div className="bg-emerald-400 transition-all" style={{ width: `${(normal/total)*100}%` }} />
+                    <div className="bg-amber-400 transition-all" style={{ width: `${(caution/total)*100}%` }} />
+                    <div className="bg-red-400 transition-all" style={{ width: `${(danger/total)*100}%` }} />
+                  </>
+                );
+              })()}
+            </div>
+            <div className="flex gap-4 mt-2 text-xs text-slate-500">
+              <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-emerald-400" />정상 {filteredRecords.filter(r=>r.status==='normal').length}건</span>
+              <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-amber-400" />주의 {filteredRecords.filter(r=>r.status==='caution').length}건</span>
+              <span className="flex items-center gap-1"><div className="h-2 w-2 rounded-full bg-red-400" />위험 {filteredRecords.filter(r=>r.status==='danger').length}건</span>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* 왼쪽: 타임라인 목록 */}

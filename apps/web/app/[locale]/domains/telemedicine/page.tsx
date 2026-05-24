@@ -191,11 +191,11 @@ export default function TelemedicinePage() {
 
             {/* 하단 컨트롤 */}
             <div className="flex items-center justify-center gap-4 p-4 bg-slate-800">
-              <button className="h-12 w-12 rounded-full bg-slate-700 text-white flex items-center justify-center hover:bg-slate-600">
-                <Video className="h-5 w-5" />
+              <button aria-label="카메라 켜기/끄기" className="h-12 w-12 rounded-full bg-slate-700 text-white flex items-center justify-center hover:bg-slate-600">
+                <Video className="h-5 w-5" aria-hidden="true" />
               </button>
-              <button className="h-12 w-12 rounded-full bg-slate-700 text-white flex items-center justify-center hover:bg-slate-600">
-                <Phone className="h-5 w-5" />
+              <button aria-label="마이크 켜기/끄기" className="h-12 w-12 rounded-full bg-slate-700 text-white flex items-center justify-center hover:bg-slate-600">
+                <Phone className="h-5 w-5" aria-hidden="true" />
               </button>
               <button
                 onClick={() => { setStep('search'); setSelectedDoctor(null); }}
