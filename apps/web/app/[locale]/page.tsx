@@ -62,6 +62,26 @@ export default function UnifiedDashboard() {
             </div>
           </div>
 
+          {/* 의료 인증 신뢰 배지 */}
+          <section className="py-6 border-y border-slate-100 bg-slate-50/50 -mx-6 lg:-mx-8 px-6 lg:px-8 rounded-2xl">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-center justify-center gap-8 flex-wrap">
+                {[
+                  { label: 'MFDS 인증', desc: '식품의약품안전처 의료기기 인증' },
+                  { label: 'ISO 13485', desc: '의료기기 품질경영시스템' },
+                  { label: 'IEC 62304', desc: '의료기기 소프트웨어 수명주기' },
+                  { label: 'HIPAA', desc: '미국 건강정보 보호법 준수' },
+                  { label: 'WCAG 2.2 AA', desc: '웹 접근성 지침 준수' },
+                ].map(badge => (
+                  <div key={badge.label} className="flex items-center gap-2 text-slate-500 hover:text-trust-blue transition-colors group" title={badge.desc}>
+                    <Shield className="h-4 w-4 text-trust-blue/60 group-hover:text-trust-blue" />
+                    <span className="text-xs font-semibold tracking-wide">{badge.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+
           {/* 플랫폼 현황 */}
           <section aria-label="플랫폼 현황">
             <h2 className="text-2xl font-bold text-slate-900 mb-2">플랫폼 현황 한눈에 보기</h2>

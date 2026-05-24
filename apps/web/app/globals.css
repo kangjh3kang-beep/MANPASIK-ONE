@@ -66,3 +66,64 @@ body {
 .animate-pulse, [class*="animate-"] {
   transition: none;
 }
+
+/* ===== Medical Design System — Typography ===== */
+.font-heading { font-family: var(--font-heading, 'Figtree', system-ui, sans-serif); }
+.font-body { font-family: var(--font-body, 'Noto Sans KR', system-ui, sans-serif); }
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+/* ===== Medical Design System — Extended Palette ===== */
+:root {
+  --mps-medical-teal: #0891B2;
+  --mps-trust-blue: #1E40AF;
+  --mps-science-indigo: #4F46E5;
+  --mps-bio-cyan: #22D3EE;
+  --mps-card-glass: rgba(255,255,255,0.72);
+  --mps-gradient-normal: linear-gradient(135deg, #059669 0%, #0891B2 100%);
+  --mps-gradient-caution: linear-gradient(135deg, #d97706 0%, #ea580c 100%);
+  --mps-gradient-danger: linear-gradient(135deg, #dc2626 0%, #be123c 100%);
+}
+[data-theme="dark"] {
+  --mps-medical-teal: #22D3EE;
+  --mps-trust-blue: #60A5FA;
+  --mps-science-indigo: #818CF8;
+  --mps-bio-cyan: #67E8F9;
+  --mps-card-glass: rgba(30,41,59,0.72);
+}
+
+/* ===== Glassmorphism Card ===== */
+.mps-glass-card {
+  background: var(--mps-card-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.04);
+}
+[data-theme="dark"] .mps-glass-card {
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+}
+
+/* ===== Status Indicator Stripes ===== */
+.mps-stripe-normal { border-left: 3px solid #059669; background: linear-gradient(90deg, rgba(5,150,105,0.06) 0%, transparent 40%); }
+.mps-stripe-caution { border-left: 3px solid #d97706; background: linear-gradient(90deg, rgba(217,119,6,0.06) 0%, transparent 40%); }
+.mps-stripe-danger { border-left: 3px solid #dc2626; background: linear-gradient(90deg, rgba(220,38,38,0.06) 0%, transparent 40%); }
+
+/* ===== Focus Ring — Medical Teal ===== */
+.mps-focus { @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0891B2] focus-visible:ring-offset-2; }
+
+/* ===== Scientific Grid Pattern ===== */
+.mps-grid-pattern {
+  background-image: radial-gradient(circle, rgba(8,145,178,0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  .mps-pulse { animation: none !important; }
+}
+.mps-pulse { animation: mps-pulse 2.5s ease-in-out infinite; }
+@keyframes mps-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}

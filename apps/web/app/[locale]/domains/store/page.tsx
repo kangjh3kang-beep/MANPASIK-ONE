@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { DomainHeader } from '@mmup/ui';
-import { ShoppingCart, Package, Star, Truck, Filter, Plus, Minus, X, CheckCircle } from 'lucide-react';
+import { ShoppingCart, Package, Star, Truck, Filter, Plus, Minus, X, CheckCircle, Droplets, Syringe, Microscope, Smartphone, Pill, FlaskRound, Briefcase } from 'lucide-react';
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -13,15 +13,26 @@ function useLocalePrefix(): string {
   return match ? `/${match[1]}` : '/ko';
 }
 
+const PRODUCT_ICONS: Record<string, any> = {
+  droplets: Droplets,
+  syringe: Syringe,
+  microscope: Microscope,
+  package: Package,
+  smartphone: Smartphone,
+  pill: Pill,
+  'flask-round': FlaskRound,
+  briefcase: Briefcase,
+};
+
 const PRODUCTS = [
-  { id: '1', name: '혈당 카트리지 (10개입)', category: '카트리지', price: 29000, rating: 4.8, reviews: 1234, image: '🩸', badge: '인기', subscription: true },
-  { id: '2', name: '콜레스테롤 카트리지 (10개입)', category: '카트리지', price: 35000, rating: 4.7, reviews: 892, image: '💉', badge: null, subscription: true },
-  { id: '3', name: '당화혈색소 카트리지 (5개입)', category: '카트리지', price: 45000, rating: 4.9, reviews: 567, image: '🔬', badge: '신규', subscription: true },
-  { id: '4', name: '종합검사 카트리지 세트', category: '카트리지', price: 89000, rating: 4.8, reviews: 345, image: '📦', badge: '추천', subscription: false },
-  { id: '5', name: 'MPS 리더기 Pro', category: '리더기', price: 290000, rating: 4.9, reviews: 2341, image: '📱', badge: '베스트', subscription: false },
-  { id: '6', name: '채혈침 세트 (100개입)', category: '소모품', price: 12000, rating: 4.6, reviews: 3456, image: '💊', badge: null, subscription: false },
-  { id: '7', name: '알코올 솜 (200매)', category: '소모품', price: 8000, rating: 4.5, reviews: 5678, image: '🧴', badge: null, subscription: false },
-  { id: '8', name: '휴대용 파우치', category: '액세서리', price: 25000, rating: 4.7, reviews: 890, image: '👜', badge: null, subscription: false },
+  { id: '1', name: '혈당 카트리지 (10개입)', category: '카트리지', price: 29000, rating: 4.8, reviews: 1234, image: 'droplets', badge: '인기', subscription: true },
+  { id: '2', name: '콜레스테롤 카트리지 (10개입)', category: '카트리지', price: 35000, rating: 4.7, reviews: 892, image: 'syringe', badge: null, subscription: true },
+  { id: '3', name: '당화혈색소 카트리지 (5개입)', category: '카트리지', price: 45000, rating: 4.9, reviews: 567, image: 'microscope', badge: '신규', subscription: true },
+  { id: '4', name: '종합검사 카트리지 세트', category: '카트리지', price: 89000, rating: 4.8, reviews: 345, image: 'package', badge: '추천', subscription: false },
+  { id: '5', name: 'MPS 리더기 Pro', category: '리더기', price: 290000, rating: 4.9, reviews: 2341, image: 'smartphone', badge: '베스트', subscription: false },
+  { id: '6', name: '채혈침 세트 (100개입)', category: '소모품', price: 12000, rating: 4.6, reviews: 3456, image: 'pill', badge: null, subscription: false },
+  { id: '7', name: '알코올 솜 (200매)', category: '소모품', price: 8000, rating: 4.5, reviews: 5678, image: 'flask-round', badge: null, subscription: false },
+  { id: '8', name: '휴대용 파우치', category: '액세서리', price: 25000, rating: 4.7, reviews: 890, image: 'briefcase', badge: null, subscription: false },
 ];
 
 const CATEGORIES = ['전체', '카트리지', '리더기', '소모품', '액세서리'];
@@ -108,7 +119,11 @@ export default function StorePage() {
           {filtered.map(product => (
             <div key={product.id} className="rounded-2xl border border-slate-200 bg-white overflow-hidden hover:shadow-md transition-shadow group">
               <div className="relative h-40 bg-slate-50 flex items-center justify-center">
-                <span className="text-5xl">{product.image}</span>
+                {(() => { const IconComponent = PRODUCT_ICONS[product.image] || Package; return (
+                  <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-sky-50 to-teal-50 flex items-center justify-center">
+                    <IconComponent className="h-8 w-8 text-medical-teal" />
+                  </div>
+                ); })()}
                 {product.badge && (
                   <span className={`absolute top-3 left-3 px-2 py-0.5 rounded-full text-[10px] font-bold text-white ${
                     product.badge === '인기' ? 'bg-rose-500' : product.badge === '신규' ? 'bg-emerald-500' : product.badge === '추천' ? 'bg-sky-500' : 'bg-amber-500'
@@ -190,7 +205,11 @@ export default function StorePage() {
                 <div className="space-y-3 mb-6">
                   {cart.map(item => (
                     <div key={item.product.id} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
-                      <span className="text-2xl">{item.product.image}</span>
+                      {(() => { const CartIcon = PRODUCT_ICONS[item.product.image] || Package; return (
+                        <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-sky-50 to-teal-50 flex items-center justify-center flex-shrink-0">
+                          <CartIcon className="h-5 w-5 text-medical-teal" />
+                        </div>
+                      ); })()}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900 truncate">{item.product.name}</p>
                         <p className="text-sm font-bold text-slate-700">₩{(item.product.price * item.quantity).toLocaleString()}</p>

@@ -10,13 +10,23 @@ export interface KPICardProps {
   icon?: React.ReactNode;
   color?: string;
   loading?: boolean;
+  /** Optional status indicator shown as a colored top border stripe */
+  status?: 'normal' | 'caution' | 'danger';
 }
 
-export function KPICard({ title, value, unit, trend, icon, color = 'text-sky-600 bg-sky-50', loading = false }: KPICardProps) {
+const statusBorderStyles: Record<string, string> = {
+  normal: '2px solid rgb(16 185 129)', // emerald-500
+  caution: '2px solid rgb(245 158 11)', // amber-500
+  danger: '2px solid rgb(239 68 68)', // red-500
+};
+
+export function KPICard({ title, value, unit, trend, icon, color = 'text-sky-600 bg-sky-50', loading = false, status }: KPICardProps) {
+  const borderTopStyle = status ? statusBorderStyles[status] : undefined;
   if (loading) {
     return (
       <div
         className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm animate-pulse"
+        style={borderTopStyle ? { borderTop: borderTopStyle } : undefined}
         aria-label={`${title} 로딩 중`}
         role="status"
       >
@@ -33,6 +43,7 @@ export function KPICard({ title, value, unit, trend, icon, color = 'text-sky-600
   return (
     <div
       className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+      style={borderTopStyle ? { borderTop: borderTopStyle } : undefined}
       aria-label={`${title}: ${value}${unit ? ` ${unit}` : ''}`}
     >
       <div className="flex items-center justify-between mb-3">

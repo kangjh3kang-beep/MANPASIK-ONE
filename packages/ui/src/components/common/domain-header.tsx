@@ -15,14 +15,17 @@ interface DomainHeaderProps {
   };
   onLogout?: () => void;
   icon?: React.ElementType;
+  /** When true, shows a certification shield badge next to the title */
+  certified?: boolean;
 }
 
-export function DomainHeader({ 
-  title, 
-  subtitle, 
-  user, 
+export function DomainHeader({
+  title,
+  subtitle,
+  user,
   onLogout,
-  icon: Icon = Activity
+  icon: Icon = Activity,
+  certified = false
 }: DomainHeaderProps) {
   
   // 페르소나별 테마 설정
@@ -55,7 +58,15 @@ export function DomainHeader({
               <Icon className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900 leading-none mb-1">{title}</h1>
+              <h1 className="text-lg font-bold text-slate-900 leading-none mb-1">
+                {title}
+                {certified && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-trust-blue/10 text-trust-blue text-[10px] font-semibold ml-2">
+                    <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
+                    인증
+                  </span>
+                )}
+              </h1>
               {subtitle && <p className="text-xs text-slate-400 font-medium tracking-tight">{subtitle}</p>}
             </div>
           </div>
