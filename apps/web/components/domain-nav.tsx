@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft, Stethoscope, Network, ActivitySquare, Coins, Users2, Pill, FileCode2, Smartphone, Globe, Brain, Activity, FileText } from 'lucide-react';
+import { ArrowLeft, Stethoscope, Network, ActivitySquare, Coins, Users2, Pill, FileCode2, Smartphone, Globe, Brain, Activity, FileText, Video, ShoppingCart, Settings as SettingsIcon } from 'lucide-react';
 
 const DOMAINS = [
   { id: 'measure', label: '측정', path: '/domains/measure', icon: Activity },
@@ -17,7 +17,10 @@ const DOMAINS = [
   { id: 'gxp', label: '품질 관리', path: '/domains/gxp', icon: Pill },
   { id: 'dev-portal', label: '개발자', path: '/domains/dev-portal', icon: FileCode2 },
   { id: 'hardware-core', label: '측정 장비', path: '/domains/hardware-core', icon: Globe },
+  { id: 'telemedicine', label: '진료', path: '/domains/telemedicine', icon: Video },
+  { id: 'store', label: '스토어', path: '/domains/store', icon: ShoppingCart },
   { id: 'app', label: '건강 앱', path: '/domains/app', icon: Smartphone },
+  { id: 'settings', label: '설정', path: '/domains/settings', icon: SettingsIcon },
 ];
 
 interface DomainNavProps {
