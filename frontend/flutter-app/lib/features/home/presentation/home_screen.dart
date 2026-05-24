@@ -12,6 +12,7 @@ import 'package:manpasik/shared/widgets/golden_orbit_globe.dart';
 import 'package:manpasik/shared/widgets/royal_cloud_background.dart';
 import 'package:manpasik/shared/widgets/sanggam_container.dart';
 import 'package:manpasik/features/measurement/presentation/widgets/measurement_evidence_badge.dart';
+import 'package:manpasik/features/community/presentation/challenge_screen.dart';
 
 // ════════════════════════════════════════════════════════════════════════════
 //  HomeScreen — Bento-box Slim-fit Hybrid Architecture
@@ -437,16 +438,18 @@ class _BentoGrid extends ConsumerWidget {
   }
 
   Widget _buildMobileList() {
-    return const SingleChildScrollView(
-      physics: BouncingScrollPhysics(),
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Column(
-        children: [
+        children: const [
           _HeroBentoCard(),
           SizedBox(height: 16),
           _StatsBentoRow(),
           SizedBox(height: 16),
           _CrossDomainCards(),
+          SizedBox(height: 16),
+          _ChallengeBanner(),
           SizedBox(height: 16),
           _InsightBentoCard(),
           SizedBox(height: 16),
@@ -1160,6 +1163,92 @@ class _CrossDomainCards extends ConsumerWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+// ── 커뮤니티 챌린지 배너 ────────────────────────────────────────────────────
+
+class _ChallengeBanner extends ConsumerWidget {
+  const _ChallengeBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final challengesAsync = ref.watch(challengesProvider);
+
+    return challengesAsync.when(
+      data: (challenges) {
+        if (challenges.isEmpty) return const SizedBox.shrink();
+        final active = challenges.first;
+        final title = active['title'] as String? ?? '건강 챌린지';
+        final participants = active['participant_count'] as int? ?? 0;
+
+        return SanggamContainer(
+          onTap: () => context.go('/community'),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          borderRadius: 16,
+          borderColor: SanggamTheme.jagaeMagenta.withValues(alpha: 0.3),
+          jagaeOpacity: 0.06,
+          child: Row(
+            children: [
+              Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: SanggamTheme.jagaeMagenta.withValues(alpha: 0.15),
+                ),
+                child: const Icon(Icons.emoji_events_rounded,
+                    size: 18, color: SanggamTheme.jagaeMagenta),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      '$participants명 참여 중',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: SanggamTheme.jagaeMagenta.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  '참여하기',
+                  style: TextStyle(
+                    color: SanggamTheme.jagaeMagenta,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
     );
   }
 }

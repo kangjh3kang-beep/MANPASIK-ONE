@@ -1,17 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:manpasik/core/theme/sanggam_theme.dart';
-import 'package:manpasik/shared/widgets/sanggam_container.dart';
+import 'package:manpasik/shared/widgets/medical_glass_card.dart';
 
 // ───────────────────────────────────────────────────
-// MedicalStatCard — SanggamContainer 기반 생체 지표 카드
-//
-// [Rule 4] withOpacity 3건 → withValues(alpha:)
-// [Rule 4] Color(0xFF00E5FF) → SanggamTheme.jagaeCyan
-// [Rule 4] Color(0xFF05101A) → SanggamContainer backgroundColor
-// [Rule 4] Colors.redAccent → SanggamTheme.error
-// [Rule 4] 중복 ClipRRect+BackdropFilter → SanggamContainer 위임
-// [Rule 2] borderRadius 12→16, padding 12→16, SizedBox(w:6)→8
-// [Rule 1] 기존 BackdropFilter 유지 (SanggamContainer 내장)
+// MedicalStatCard — Living Digital Twin 디자인이 적용된 생체 지표 카드
+// [PDCA Design] High Contrast 다크 모드, 44x44px 터치 보장, 사이버네틱 무드.
 // ───────────────────────────────────────────────────
 
 class MedicalStatCard extends StatelessWidget {
@@ -19,9 +11,10 @@ class MedicalStatCard extends StatelessWidget {
   final String value;
   final String unit;
   final IconData icon;
-  final Color color;
+  final Color? color;
   final bool isAlert;
   final String? tooltipMessage;
+  final VoidCallback? onTap;
 
   const MedicalStatCard({
     super.key,
@@ -29,104 +22,100 @@ class MedicalStatCard extends StatelessWidget {
     required this.value,
     required this.unit,
     required this.icon,
-    this.color = SanggamTheme.jagaeCyan,
+    this.color,
     this.isAlert = false,
     this.tooltipMessage,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final c = isAlert ? SanggamTheme.error : color;
+    const Color cyberCyan = Color(0xFF22D3EE);
+    const Color warningRed = Color(0xFFEF4444);
+    final Color accentColor = isAlert ? warningRed : (color ?? cyberCyan);
 
-    final card = SanggamContainer(
-      padding: const EdgeInsets.all(16),
-      borderRadius: 16,
-      borderWidth: 1.5,
-      borderColor: c.withValues(alpha: 0.5),
-      blurSigma: 8,
-      jagaeOpacity: 0.03,
-      child: LayoutBuilder(builder: (context, constraints) {
-        final boundedWidth =
-            constraints.hasBoundedWidth && constraints.maxWidth.isFinite
-                ? constraints.maxWidth
-                : 180.0;
-        return FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.topLeft,
-          child: SizedBox(
-            width: boundedWidth,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
+    Widget content = Semantics(
+      label: '$label, $value $unit, ${isAlert ? '경고 상태' : '정상 상태'}',
+      child: MedicalGlassCard(
+        isAlert: isAlert,
+        customAccentColor: accentColor,
+        onTap: onTap,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header: icon + label
+            Row(
               children: [
-                // Header: icon + label
-                Row(
-                  children: [
-                    Icon(icon, size: 14, color: c),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        label,
-                        style: TextStyle(
-                          color: c,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.0,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                Icon(icon, size: 14, color: accentColor),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: accentColor,
+                      fontSize: 12, // 디자인 명세: 12px
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.0,
                     ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-
-                // Value + Unit
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.baseline,
-                  textBaseline: TextBaseline.alphabetic,
-                  children: [
-                    Text(
-                      value,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'monospace',
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      unit,
-                      style: const TextStyle(
-                        color: SanggamTheme.onSurfaceDim,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ],
-                ),
-
-                // Mini waveform graph
-                const SizedBox(height: 8),
-                if (value != '--')
-                  SizedBox(
-                    height: 16,
-                    child: CustomPaint(
-                      size: const Size(double.infinity, 16),
-                      painter: _MiniGraphPainter(color: c),
-                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
+                ),
               ],
             ),
-          ),
-        );
-      }),
+            const SizedBox(height: 12),
+
+            // Value + Unit
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.baseline,
+              textBaseline: TextBaseline.alphabetic,
+              children: [
+                Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 24, // 디자인 명세: 24px
+                    fontWeight: FontWeight.w700,
+                    fontFamily: 'monospace',
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  unit,
+                  style: const TextStyle(
+                    color: Color(0xFFCBD5E1), // Slate 300
+                    fontSize: 10,
+                  ),
+                ),
+              ],
+            ),
+
+            // Mini waveform graph (생체 리듬 시각화)
+            const SizedBox(height: 12),
+            if (value != '--')
+              SizedBox(
+                height: 16,
+                child: RepaintBoundary(
+                  child: CustomPaint(
+                    size: const Size(double.infinity, 16),
+                    painter: _MiniGraphPainter(color: accentColor),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
     );
 
     if (tooltipMessage != null) {
-      return Tooltip(message: tooltipMessage!, child: card);
+      return Tooltip(
+        message: tooltipMessage!,
+        child: content,
+      );
     }
-    return card;
+    
+    return content;
   }
 }
 
@@ -143,7 +132,8 @@ class _MiniGraphPainter extends CustomPainter {
     final paint = Paint()
       ..color = color
       ..strokeWidth = 1.5
-      ..style = PaintingStyle.stroke;
+      ..style = PaintingStyle.stroke
+      ..strokeJoin = StrokeJoin.round;
 
     final path = Path()..moveTo(0, size.height * 0.5);
 
@@ -159,5 +149,6 @@ class _MiniGraphPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _MiniGraphPainter oldDelegate) => 
+    oldDelegate.color != color;
 }

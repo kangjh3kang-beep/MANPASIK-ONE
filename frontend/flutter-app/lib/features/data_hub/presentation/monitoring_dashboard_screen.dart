@@ -418,7 +418,7 @@ class _MonitoringDashboardScreenState
                   cursor: SystemMouseCursors.click,
                   child: GestureDetector(
                     onTap: () {
-                      context.push('/medical/telemedicine'); // 2단계 조치: 원격 진료 안내
+                      context.push('/coach'); // Flow A: 위험 감지 → AI 코치 핸드오프
                     },
                     child: GlassmorphismCard(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -443,12 +443,12 @@ class _MonitoringDashboardScreenState
                                 '혈당 이상 감지됨',
                                 style: TextStyle(
                                   color: SanggamTheme.error,
-                                  fontWeight: 12,
+                                  fontWeight: FontWeight.bold,
                                   fontSize: 10,
                                 ),
                               ),
                               Text(
-                                '의료진 상담 예약하기',
+                                'AI 코치와 상담하기',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,

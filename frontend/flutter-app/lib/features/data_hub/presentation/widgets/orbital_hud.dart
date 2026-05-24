@@ -153,22 +153,14 @@ class _OrbitalHudState extends State<OrbitalHud>
 
   Widget _buildOrbitalPod(
       OrbitalNodeData node) {
-    return GlassmorphismCard(
-      useKoreanBorder: true,
-      opacity: node.isAlert ? 0.3 : 0.15,
-      baseColor: node.isAlert
-          ? SanggamTheme.error
-              .withValues(alpha: 0.1)
-          : SanggamTheme.background,
-      padding: const EdgeInsets.all(8),
-      child: MedicalStatCard(
-        label: node.label,
-        value: node.value,
-        unit: node.unit,
-        icon: node.icon,
-        isAlert: node.isAlert,
-        color: SanggamTheme.jagaeCyan,
-      ),
+    return MedicalStatCard(
+      label: node.label,
+      value: node.value,
+      unit: node.unit,
+      icon: node.icon,
+      isAlert: node.isAlert,
+      color: SanggamTheme.jagaeCyan,
+      onTap: node.onTap, // 노드 클릭 시 이벤트 연동
     );
   }
 }
@@ -183,6 +175,7 @@ class OrbitalNodeData {
   final double angle;
   final double radiusMultiplier;
   final Offset bodyAttachmentOffset;
+  final VoidCallback? onTap;
 
   const OrbitalNodeData({
     required this.label,
@@ -193,5 +186,6 @@ class OrbitalNodeData {
     required this.angle,
     this.radiusMultiplier = 1.0,
     this.bodyAttachmentOffset = Offset.zero,
+    this.onTap,
   });
 }

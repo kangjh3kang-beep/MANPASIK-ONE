@@ -191,6 +191,57 @@ class AiCoachScreen extends ConsumerWidget {
                       subtitle: '바이오마커 추세 분석',
                       category: 'trend',
                     ),
+                    const SizedBox(height: 24),
+
+                    // Flow B: AI 추천 → 마켓/의료 연결
+                    const Text(
+                      '추가 조치',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: SanggamContainer(
+                        borderRadius: 16,
+                        padding: EdgeInsets.zero,
+                        child: ListTile(
+                          leading: const Icon(
+                              Icons.shopping_cart_outlined,
+                              color: SanggamTheme.primary),
+                          title: const Text('카트리지 재구매'),
+                          subtitle: const Text(
+                              '건강 관리에 필요한 카트리지 구매'),
+                          trailing: const Icon(
+                              Icons.chevron_right,
+                              color: SanggamTheme.onSurfaceDim),
+                          onTap: () => context.push('/market'),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: SanggamContainer(
+                        borderRadius: 16,
+                        padding: EdgeInsets.zero,
+                        borderColor: SanggamTheme.jagaeCyan.withValues(alpha: 0.3),
+                        child: ListTile(
+                          leading: const Icon(
+                              Icons.local_hospital_outlined,
+                              color: SanggamTheme.jagaeCyan),
+                          title: const Text('전문의 상담'),
+                          subtitle: const Text(
+                              '원격 화상진료로 전문의와 상담'),
+                          trailing: const Icon(
+                              Icons.chevron_right,
+                              color: SanggamTheme.onSurfaceDim),
+                          onTap: () => context.push('/medical/telemedicine'),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
