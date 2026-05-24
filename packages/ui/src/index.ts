@@ -23,3 +23,5 @@ export * from "./components/medical/measurement-result-card";
 export * from "./components/medical/dual-persona-chat";
 export * from "./components/common/related-domains";
 export * from "./components/charts/mini-sparkline";
+export * from "./components/medical/three-tier-explanation";
+export * from "./components/common/domain-tab-nav";
