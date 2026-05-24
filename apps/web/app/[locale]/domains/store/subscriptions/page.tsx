@@ -14,7 +14,16 @@ import {
   CheckCircle,
   XCircle,
   AlertCircle,
+  Droplets,
+  Pill,
+  Syringe,
 } from 'lucide-react';
+
+const SUB_ICONS: Record<string, React.ElementType> = {
+  droplets: Droplets,
+  pill: Pill,
+  syringe: Syringe,
+};
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -47,7 +56,7 @@ const INITIAL_SUBSCRIPTIONS: Subscription[] = [
   {
     id: 'sub-1',
     productName: '혈당 카트리지 (10개입)',
-    productImage: '🩸',
+    productImage: 'droplets',
     cycle: '격주',
     nextDelivery: '2026-06-07',
     status: '활성',
@@ -57,7 +66,7 @@ const INITIAL_SUBSCRIPTIONS: Subscription[] = [
   {
     id: 'sub-2',
     productName: '채혈침 세트 (100개입)',
-    productImage: '💊',
+    productImage: 'pill',
     cycle: '매월',
     nextDelivery: '2026-06-15',
     status: '일시정지',
@@ -67,7 +76,7 @@ const INITIAL_SUBSCRIPTIONS: Subscription[] = [
   {
     id: 'sub-3',
     productName: '콜레스테롤 카트리지 (10개입)',
-    productImage: '💉',
+    productImage: 'syringe',
     cycle: '매월',
     nextDelivery: '',
     status: '해지',
@@ -196,7 +205,7 @@ export default function SubscriptionsPage() {
                     <div className="flex items-start gap-4">
                       {/* 상품 이미지 */}
                       <div className="h-16 w-16 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0">
-                        <span className="text-3xl">{sub.productImage}</span>
+                        {(() => { const Ic = SUB_ICONS[sub.productImage] || Package; return <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-sky-50 to-teal-50 flex items-center justify-center"><Ic className="h-6 w-6 text-[#0891B2]" /></div>; })()}
                       </div>
 
                       {/* 상품 정보 */}
@@ -330,7 +339,7 @@ export default function SubscriptionsPage() {
                 >
                   <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center flex-shrink-0">
-                      <span className="text-2xl grayscale">{sub.productImage}</span>
+                      {(() => { const Ic = SUB_ICONS[sub.productImage] || Package; return <div className="h-10 w-10 rounded-lg bg-slate-100 flex items-center justify-center"><Ic className="h-5 w-5 text-slate-400" /></div>; })()}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
