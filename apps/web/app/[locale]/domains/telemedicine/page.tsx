@@ -233,7 +233,7 @@ export default function TelemedicinePage() {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[
               { name: '건강 기록', path: '/domains/health-records', desc: '진료 기록 확인' },
-              { name: '건강 측정', path: '/domains/measure', desc: '진료 전 측정' },
+              { name: 'MPS 스토어', path: '/domains/store', desc: '처방 카트리지 구매' },
               { name: '건강 데이터', path: '/domains/clinical', desc: '데이터 관리' },
             ].map(d => (
               <Link key={d.path} href={`${localePrefix}${d.path}`}

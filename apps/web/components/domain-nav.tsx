@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft, Stethoscope, Network, ActivitySquare, Coins, Users2, Pill, FileCode2, Smartphone, Globe, Brain, Activity, FileText, Video, ShoppingCart, Settings as SettingsIcon } from 'lucide-react';
+import { ArrowLeft, Stethoscope, Network, ActivitySquare, Coins, Users2, Pill, FileCode2, Smartphone, Globe, Brain, Activity, FileText, Video, ShoppingCart, Settings as SettingsIcon, UserCog } from 'lucide-react';
 
 const DOMAINS = [
   { id: 'measure', label: '측정', path: '/domains/measure', icon: Activity },
@@ -20,6 +20,7 @@ const DOMAINS = [
   { id: 'telemedicine', label: '진료', path: '/domains/telemedicine', icon: Video },
   { id: 'store', label: '스토어', path: '/domains/store', icon: ShoppingCart },
   { id: 'app', label: '건강 앱', path: '/domains/app', icon: Smartphone },
+  { id: 'admin', label: '관리자', path: '/domains/admin', icon: UserCog },
   { id: 'settings', label: '설정', path: '/domains/settings', icon: SettingsIcon },
 ];
 
