@@ -13,6 +13,8 @@ export type {
   PartnerOrg, AuditLog, ComplianceRule,
   AgentPipelineState, DevPortalKey, DevPortalEndpoint,
   HardwareDevice, HardwareDiagnostics, AppMetric,
+  MeasurementRecord, TelemedicineDoctor, StoreProduct,
+  AdminKPI, AdminEvent,
 } from './types';
 
 // Endpoints
@@ -20,6 +22,7 @@ export {
   patientsApi, sensorsApi, agentsApi, predictionsApi,
   rewardsApi, partnersApi, gxpApi,
   agentPipelineApi, devPortalApi, hardwareApi, appMetricsApi,
+  measurementsApi, telemedicineApi, storeApi, adminApi,
 } from './endpoints';
 
 // React Query Hooks
@@ -30,6 +33,8 @@ export {
   usePartners, useAuditLogs, useCompliance,
   useAgentPipeline, useDevPortalKeys, useDevPortalEndpoints,
   useHardwareDevices, useHardwareDiagnostics, useAppMetrics,
+  useMeasurementHistory, useTelemedicineDoctors, useStoreProducts,
+  useAdminKPIs, useAdminEvents,
 } from './hooks';
 
 // Mocks

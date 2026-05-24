@@ -166,3 +166,59 @@ export interface AppMetric {
   iconName: string;
   color: string;
 }
+
+// ===== 측정 기록 =====
+export interface MeasurementRecord {
+  id: string;
+  date: string;
+  time: string;
+  biomarker: string;
+  value: number;
+  unit: string;
+  status: 'normal' | 'caution' | 'danger';
+  confidence: number;
+  trend: string;
+}
+
+// ===== 화상진료 의사 =====
+export interface TelemedicineDoctor {
+  id: string;
+  name: string;
+  specialty: string;
+  rating: number;
+  reviews: number;
+  available: boolean;
+  nextSlot: string;
+  photo: string;
+  fee: string;
+}
+
+// ===== 스토어 상품 =====
+export interface StoreProduct {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  rating: number;
+  reviews: number;
+  image: string;
+  badge: string | null;
+  subscription: boolean;
+}
+
+// ===== 관리자 KPI =====
+export interface AdminKPI {
+  label: string;
+  value: string;
+  change: string;
+  icon: string;
+  color: string;
+}
+
+// ===== 관리자 이벤트 =====
+export interface AdminEvent {
+  time: string;
+  type: string;
+  desc: string;
+  severity: 'warning' | 'info' | 'success';
+}

@@ -233,4 +233,72 @@ export const handlers = [
       ]
     });
   }),
+
+  // 측정 기록 히스토리
+  http.get('*/api/v1/measurements/history', async () => {
+    return HttpResponse.json({
+      data: [
+        { id: '1', date: '2026-05-24', time: '14:32', biomarker: '혈당', value: 95, unit: 'mg/dL', status: 'normal', confidence: 0.96, trend: 'stable' },
+        { id: '2', date: '2026-05-23', time: '08:15', biomarker: '혈당', value: 112, unit: 'mg/dL', status: 'normal', confidence: 0.94, trend: 'up' },
+        { id: '3', date: '2026-05-22', time: '14:00', biomarker: '당화혈색소', value: 6.8, unit: '%', status: 'caution', confidence: 0.93, trend: 'stable' },
+        { id: '4', date: '2026-05-21', time: '09:30', biomarker: '총 콜레스테롤', value: 195, unit: 'mg/dL', status: 'normal', confidence: 0.91, trend: 'down' },
+        { id: '5', date: '2026-05-20', time: '08:00', biomarker: '혈당', value: 88, unit: 'mg/dL', status: 'normal', confidence: 0.95, trend: 'down' },
+        { id: '6', date: '2026-05-19', time: '14:45', biomarker: '요산', value: 7.2, unit: 'mg/dL', status: 'caution', confidence: 0.92, trend: 'up' },
+      ]
+    });
+  }),
+
+  // 화상진료 의사 목록
+  http.get('*/api/v1/telemedicine/doctors', async () => {
+    return HttpResponse.json({
+      data: [
+        { id: '1', name: '김내과', specialty: '내과', rating: 4.8, reviews: 234, available: true, nextSlot: '오늘 15:00', photo: '👨‍⚕️', fee: '₩25,000' },
+        { id: '2', name: '이피부', specialty: '피부과', rating: 4.9, reviews: 189, available: true, nextSlot: '오늘 16:30', photo: '👩‍⚕️', fee: '₩30,000' },
+        { id: '3', name: '박가정', specialty: '가정의학과', rating: 4.7, reviews: 312, available: false, nextSlot: '내일 09:00', photo: '👨‍⚕️', fee: '₩20,000' },
+        { id: '4', name: '최소아', specialty: '소아과', rating: 4.9, reviews: 156, available: true, nextSlot: '오늘 17:00', photo: '👩‍⚕️', fee: '₩25,000' },
+      ]
+    });
+  }),
+
+  // 스토어 상품 목록
+  http.get('*/api/v1/store/products', async () => {
+    return HttpResponse.json({
+      data: [
+        { id: '1', name: '혈당 카트리지 (10개입)', category: '카트리지', price: 29000, rating: 4.8, reviews: 1234, image: '🩸', badge: '인기', subscription: true },
+        { id: '2', name: '콜레스테롤 카트리지 (10개입)', category: '카트리지', price: 35000, rating: 4.7, reviews: 892, image: '💉', badge: null, subscription: true },
+        { id: '3', name: '당화혈색소 카트리지 (5개입)', category: '카트리지', price: 45000, rating: 4.9, reviews: 567, image: '🔬', badge: '신규', subscription: true },
+        { id: '4', name: '종합검사 카트리지 세트', category: '카트리지', price: 89000, rating: 4.8, reviews: 345, image: '📦', badge: '추천', subscription: false },
+        { id: '5', name: 'MPS 리더기 Pro', category: '리더기', price: 290000, rating: 4.9, reviews: 2341, image: '📱', badge: '베스트', subscription: false },
+        { id: '6', name: '채혈침 세트 (100개입)', category: '소모품', price: 12000, rating: 4.6, reviews: 3456, image: '💊', badge: null, subscription: false },
+        { id: '7', name: '알코올 솜 (200매)', category: '소모품', price: 8000, rating: 4.5, reviews: 5678, image: '🧴', badge: null, subscription: false },
+        { id: '8', name: '휴대용 파우치', category: '액세서리', price: 25000, rating: 4.7, reviews: 890, image: '👜', badge: null, subscription: false },
+      ]
+    });
+  }),
+
+  // 관리자 KPI
+  http.get('*/api/v1/admin/kpis', async () => {
+    return HttpResponse.json({
+      data: [
+        { label: '총 사용자', value: '12,847', change: '+3.2%', icon: 'Users', color: 'text-sky-600 bg-sky-50' },
+        { label: '오늘 측정', value: '3,421', change: '+12%', icon: 'Activity', color: 'text-emerald-600 bg-emerald-50' },
+        { label: '활성 리더기', value: '8,923', change: '+1.5%', icon: 'Package', color: 'text-purple-600 bg-purple-50' },
+        { label: '이상 알림', value: '7', change: '-2건', icon: 'AlertTriangle', color: 'text-amber-600 bg-amber-50' },
+      ]
+    });
+  }),
+
+  // 관리자 최근 이벤트
+  http.get('*/api/v1/admin/events', async () => {
+    return HttpResponse.json({
+      data: [
+        { time: '14:32', type: '측정', desc: '서울 강남구 — 혈당 측정 이상치 감지', severity: 'warning' },
+        { time: '14:28', type: '리더기', desc: 'MPK-A1B2C3 펌웨어 업데이트 완료', severity: 'info' },
+        { time: '14:15', type: '사용자', desc: '신규 가입 +23명 (일일 목표 120%)', severity: 'success' },
+        { time: '13:50', type: '재고', desc: '혈당 카트리지 재고 부족 경고 (창고 B)', severity: 'warning' },
+        { time: '13:30', type: '결제', desc: '정기배송 결제 처리 완료 342건', severity: 'info' },
+        { time: '12:45', type: '품질', desc: 'Lot-2026-A 보정 검증 통과', severity: 'success' },
+      ]
+    });
+  }),
 ];

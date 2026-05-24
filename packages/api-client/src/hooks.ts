@@ -5,7 +5,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { patientsApi, sensorsApi, agentsApi, predictionsApi, rewardsApi, partnersApi, gxpApi, agentPipelineApi, devPortalApi, hardwareApi, appMetricsApi } from './endpoints';
+import { patientsApi, sensorsApi, agentsApi, predictionsApi, rewardsApi, partnersApi, gxpApi, agentPipelineApi, devPortalApi, hardwareApi, appMetricsApi, measurementsApi, telemedicineApi, storeApi, adminApi } from './endpoints';
 
 // ===== 환자 =====
 export function usePatients(params?: Record<string, string>) {
@@ -173,5 +173,49 @@ export function useAppMetrics() {
     queryKey: ['app-metrics'],
     queryFn: () => appMetricsApi.getMetrics(),
     refetchInterval: 10_000,
+  });
+}
+
+// ===== 측정 기록 =====
+export function useMeasurementHistory() {
+  return useQuery({
+    queryKey: ['measurement-history'],
+    queryFn: () => measurementsApi.getHistory(),
+    staleTime: 30_000,
+  });
+}
+
+// ===== 화상진료 =====
+export function useTelemedicineDoctors() {
+  return useQuery({
+    queryKey: ['telemedicine-doctors'],
+    queryFn: () => telemedicineApi.getDoctors(),
+    staleTime: 60_000,
+  });
+}
+
+// ===== 스토어 =====
+export function useStoreProducts() {
+  return useQuery({
+    queryKey: ['store-products'],
+    queryFn: () => storeApi.getProducts(),
+    staleTime: 60_000,
+  });
+}
+
+// ===== 관리자 =====
+export function useAdminKPIs() {
+  return useQuery({
+    queryKey: ['admin-kpis'],
+    queryFn: () => adminApi.getKPIs(),
+    refetchInterval: 30_000,
+  });
+}
+
+export function useAdminEvents() {
+  return useQuery({
+    queryKey: ['admin-events'],
+    queryFn: () => adminApi.getEvents(),
+    refetchInterval: 15_000,
   });
 }

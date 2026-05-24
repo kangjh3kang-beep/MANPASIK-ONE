@@ -8,6 +8,8 @@ import type {
   PartnerOrg, AuditLog, ComplianceRule,
   AgentPipelineState, DevPortalKey, DevPortalEndpoint,
   HardwareDevice, HardwareDiagnostics, AppMetric,
+  MeasurementRecord, TelemedicineDoctor, StoreProduct,
+  AdminKPI, AdminEvent,
 } from './types';
 
 // ===== 환자 =====
@@ -100,4 +102,30 @@ export const hardwareApi = {
 export const appMetricsApi = {
   getMetrics: () =>
     apiClient.get<AppMetric[]>('/api/v1/app/metrics'),
+};
+
+// ===== 측정 기록 =====
+export const measurementsApi = {
+  getHistory: () =>
+    apiClient.get<MeasurementRecord[]>('/api/v1/measurements/history'),
+};
+
+// ===== 화상진료 =====
+export const telemedicineApi = {
+  getDoctors: () =>
+    apiClient.get<TelemedicineDoctor[]>('/api/v1/telemedicine/doctors'),
+};
+
+// ===== 스토어 =====
+export const storeApi = {
+  getProducts: () =>
+    apiClient.get<StoreProduct[]>('/api/v1/store/products'),
+};
+
+// ===== 관리자 =====
+export const adminApi = {
+  getKPIs: () =>
+    apiClient.get<AdminKPI[]>('/api/v1/admin/kpis'),
+  getEvents: () =>
+    apiClient.get<AdminEvent[]>('/api/v1/admin/events'),
 };
