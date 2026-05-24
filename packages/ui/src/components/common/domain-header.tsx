@@ -38,7 +38,7 @@ export function DomainHeader({
   const theme = user?.persona ? personaThemes[user.persona] : { color: 'text-slate-700', bg: 'bg-slate-50', label: '사용자' };
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md border-b border-slate-100">
+    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-xl border-b border-slate-200/60">
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Left: Logo + Title */}
         <div className="flex items-center gap-4 min-w-0">

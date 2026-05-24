@@ -34,8 +34,8 @@ export function DomainTabNav({ tabs, currentPath, localePrefix }: DomainTabNavPr
                   relative flex-shrink-0 px-5 py-2.5 text-[13px] font-semibold rounded-lg
                   transition-all duration-200 whitespace-nowrap
                   ${isActive
-                    ? 'bg-slate-900 text-white shadow-sm'
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-[#0A192F] text-white shadow-sm'
+                    : 'text-slate-500 hover:text-[#0A192F] hover:bg-slate-100'
                   }
                 `}
                 aria-current={isActive ? 'page' : undefined}
