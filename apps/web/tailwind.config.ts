@@ -10,16 +10,23 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['var(--font-display)', 'Gowun Batang', 'Playfair Display', 'serif'],
-        heading: ['var(--font-heading)', 'Outfit', 'Figtree', 'system-ui', 'sans-serif'],
+        display: ['var(--font-display)', 'Gowun Batang', 'serif'],
+        heading: ['var(--font-heading)', 'Outfit', 'system-ui', 'sans-serif'],
         body: ['var(--font-body)', 'Noto Sans KR', 'system-ui', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+        mono: ['JetBrains Mono', 'monospace'],
       },
       colors: {
-        // 브랜드 기본 (기획서 SSOT)
+        // ── Tailwind 기본색을 CSS 변수로 연결 ──
+        // 페이지에서 bg-white, bg-slate-50 등을 쓰면 테마 변수를 따름
+        'white': 'var(--mps-bg-card)',
+        'background': 'var(--mps-bg)',
+
+        // 기존 호환 + 브랜드
+        primary: '#0A192F',
+        accent: '#D4AF37',
         'deep-sea': '#0A192F',
         'glass-navy': '#112240',
-        'sanggam': {
+        sanggam: {
           DEFAULT: '#D4AF37',
           light: 'rgba(212, 175, 55, 0.1)',
           hover: '#E5C349',
@@ -28,23 +35,37 @@ const config: Config = {
         'wave-cyan': {
           DEFAULT: '#64FFDA',
           light: 'rgba(100, 255, 218, 0.08)',
-          hover: '#7BFFE3',
         },
-        'hanji': '#FAFAFA',
-        'dancheong': '#D32F2F',
-        // 호환성 유지
-        primary: '#0A192F',
-        accent: '#D4AF37',
-        medical: { teal: '#0891B2', DEFAULT: '#0891B2', light: '#ECFEFF' },
-        trust: { blue: '#1E40AF', DEFAULT: '#1E40AF', light: '#DBEAFE' },
+        hanji: '#FAFAFA',
+        dancheong: '#D32F2F',
+        medical: { teal: '#0891B2', DEFAULT: '#0891B2' },
+        trust: { blue: '#1E40AF', DEFAULT: '#1E40AF' },
       },
-      borderRadius: {
-        'sanggam': '12px',
+      backgroundColor: {
+        // bg-slate-50 → CSS 변수 참조 (테마 자동 반영)
+        'slate-50': 'var(--mps-bg)',
+        'slate-100': 'var(--mps-bg-elevated)',
+      },
+      textColor: {
+        // text-slate-900 → CSS 변수 참조
+        'slate-900': 'var(--mps-text)',
+        'slate-700': 'var(--mps-text)',
+        'slate-600': 'var(--mps-text-secondary)',
+        'slate-500': 'var(--mps-text-secondary)',
+        'slate-400': 'var(--mps-text-muted)',
+      },
+      borderColor: {
+        // border-slate-200 → CSS 변수 참조
+        'slate-200': 'var(--mps-border)',
+        'slate-100': 'var(--mps-border-subtle)',
       },
       boxShadow: {
         'sanggam': '0 0 20px rgba(212, 175, 55, 0.15)',
         'glass': '0 4px 30px rgba(0, 0, 0, 0.06)',
         'deep': '0 4px 20px rgba(0, 0, 0, 0.4)',
+      },
+      borderRadius: {
+        'sanggam': '12px',
       },
     },
   },

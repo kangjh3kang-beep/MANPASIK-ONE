@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft, Stethoscope, Network, ActivitySquare, Coins, Users2, Pill, FileCode2, Smartphone, Globe, Brain, Activity, FileText, Video, ShoppingCart, Settings as SettingsIcon, UserCog, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Stethoscope, Network, ActivitySquare, Coins, Users2, Pill, FileCode2, Smartphone, Globe, Brain, Activity, FileText, Video, ShoppingCart, Settings as SettingsIcon, UserCog } from 'lucide-react';
 
 const NAV_GROUPS = [
   {
@@ -57,10 +57,8 @@ function useLocalePrefix(): string {
 export function DomainNav({ currentDomain }: DomainNavProps) {
   const localePrefix = useLocalePrefix();
 
-  const currentGroup = NAV_GROUPS.find(g => g.items.some(i => i.id === currentDomain));
-
   return (
-    <nav className="w-full bg-slate-900" aria-label="도메인 네비게이션">
+    <nav className="w-full bg-[var(--mps-bg-deep,#0A192F)]" aria-label="도메인 네비게이션">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center h-11 gap-0.5 overflow-x-auto scrollbar-hide">
           {/* 홈 */}
