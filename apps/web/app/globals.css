@@ -8,36 +8,10 @@
    기획서: ECOSYSTEM_DESIGN_MASTER_PLAN / BRAND_GUIDELINE 준수
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── 글로벌 브랜드 리매핑: Tailwind 기본색 → 브랜드색 ──
-   기존 54개 페이지가 bg-sky-600, text-sky-700 등을 사용하므로
-   sky 계열을 브랜드 강조색으로, slate 보더를 상감 보더로 리매핑
-   ─────────────────────────────────────────────────── */
-@layer base {
-  /* sky-600 → Sanggam Gold (기존 CTA/강조를 금색으로) */
-  .bg-sky-600 { background-color: #0891B2 !important; }
-  .bg-sky-700, .hover\:bg-sky-700:hover { background-color: #0E7490 !important; }
-  .text-sky-600 { color: #0891B2 !important; }
-  .text-sky-700 { color: #0E7490 !important; }
-  .text-sky-500 { color: #06B6D4 !important; }
-  .border-sky-600 { border-color: #0891B2 !important; }
-  .ring-sky-500\/30 { --tw-ring-color: rgba(8, 145, 178, 0.3) !important; }
-  .ring-sky-500\/20 { --tw-ring-color: rgba(8, 145, 178, 0.2) !important; }
-
-  /* 카드 보더를 더 세련되게 */
-  .border-slate-200 { border-color: #E2E8F0 !important; }
-
-  /* 배경: 미세한 톤 조정 */
-  .bg-slate-900 { background-color: #0A192F !important; }
-  .text-slate-900 { color: #0A192F !important; }
-  .bg-slate-800 { background-color: #112240 !important; }
-
-  /* 상품/의료 카드 호버 효과 강화 */
-  .hover\:shadow-lg:hover { box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important; }
-  .hover\:shadow-xl:hover { box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1) !important; }
-
-  /* 폰트 적용 */
-  h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading, 'Outfit', system-ui, sans-serif); }
-  .text-3xl, .text-4xl, .text-5xl { letter-spacing: -0.02em; }
+/* ── 글로벌 브랜드 폰트 적용 ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading, 'Outfit', system-ui, sans-serif);
+  letter-spacing: -0.01em;
 }
 
 /* ── 기본 팔레트 (Light Mode) ── */
