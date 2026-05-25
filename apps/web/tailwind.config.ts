@@ -45,6 +45,23 @@ const config: Config = {
         // bg-slate-50 → CSS 변수 참조 (테마 자동 반영)
         'slate-50': 'var(--mps-bg)',
         'slate-100': 'var(--mps-bg-elevated)',
+        // bg-*-50 (라이트 틴트) → 다크 모드 대응
+        'sky-50': 'var(--mps-tint-sky)',
+        'emerald-50': 'var(--mps-tint-emerald)',
+        'purple-50': 'var(--mps-tint-purple)',
+        'amber-50': 'var(--mps-tint-amber)',
+        'rose-50': 'var(--mps-tint-rose)',
+        'cyan-50': 'var(--mps-tint-cyan)',
+        'indigo-50': 'var(--mps-tint-indigo)',
+        'orange-50': 'var(--mps-tint-orange)',
+        'teal-50': 'var(--mps-tint-teal)',
+        'violet-50': 'var(--mps-tint-violet)',
+        'blue-50': 'var(--mps-tint-blue)',
+        'pink-50': 'var(--mps-tint-pink)',
+        'green-50': 'var(--mps-tint-emerald)',
+        'red-50': 'var(--mps-tint-rose)',
+        'gray-50': 'var(--mps-bg)',
+        'stone-50': 'var(--mps-bg)',
       },
       textColor: {
         // text-slate-900 → CSS 변수 참조
