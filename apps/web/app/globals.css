@@ -14,23 +14,23 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: -0.01em;
 }
 
-/* ── 기본 팔레트 (Light Mode) ── */
+/* ── 기본 팔레트 (Light Mode — 의료 전문 톤) ── */
 :root {
-  /* 배경 */
-  --mps-bg: #F8FAFC;
+  /* 배경: 순백이 아닌 따뜻한 의료 톤 */
+  --mps-bg: #F0F4F8;
   --mps-bg-card: #FFFFFF;
-  --mps-bg-elevated: #F1F5F9;
+  --mps-bg-elevated: #E8EDF2;
   --mps-bg-deep: #0A192F;
 
-  /* 보더 */
-  --mps-border: #E2E8F0;
-  --mps-border-subtle: #F1F5F9;
-  --mps-border-gold: rgba(212, 175, 55, 0.3);
+  /* 보더: 금색 미세 보더로 상감 느낌 */
+  --mps-border: #D1D9E6;
+  --mps-border-subtle: #E8EDF2;
+  --mps-border-gold: rgba(212, 175, 55, 0.25);
 
-  /* 텍스트 */
+  /* 텍스트: Deep Sea 기반 */
   --mps-text: #0A192F;
-  --mps-text-secondary: #475569;
-  --mps-text-muted: #94A3B8;
+  --mps-text-secondary: #3D5068;
+  --mps-text-muted: #7B8FA6;
 
   /* 브랜드 컬러 (기획서 SSOT) */
   --mps-gold: #D4AF37;
