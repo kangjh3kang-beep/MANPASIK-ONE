@@ -24,32 +24,33 @@ export default function UnifiedDashboard() {
       <main className="pt-24 pb-20">
         <div className="max-w-7xl mx-auto px-6 lg:px-8 space-y-12">
           {/* 히어로 섹션 */}
-          <div className="relative rounded-3xl overflow-hidden bg-slate-900 text-white p-8 md:p-12 shadow-2xl">
-            <div className="absolute inset-0 bg-gradient-to-br from-sky-900/50 via-slate-900 to-slate-900 opacity-90" />
+          <div className="relative rounded-3xl overflow-hidden bg-[#0A192F] text-white p-8 md:p-12 shadow-2xl">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0A192F] via-[#112240] to-[#0A192F]" />
+            <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: 'radial-gradient(circle, #64FFDA 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
             <div className="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
               <div>
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 text-sky-400 text-xs font-bold mb-6 border border-sky-500/30">
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#64FFDA]/10 text-[#64FFDA] text-xs font-bold mb-6 border border-[#64FFDA]/20">
                   <Activity className="h-3 w-3" />
                   시스템 정상 운영 중
                 </span>
-                <h1 className="text-3xl lg:text-5xl font-black tracking-tight mb-6 leading-tight">
+                <h1 className="text-3xl lg:text-5xl font-black tracking-tight mb-6 leading-tight font-heading">
                   만파식 건강 생태계<br />
-                  <span className="text-sky-400 font-extrabold">통합 관리 센터</span>
+                  <span className="text-[#64FFDA] font-extrabold">통합 관리 센터</span>
                 </h1>
                 <p className="text-base lg:text-lg text-slate-300 mb-8 max-w-lg leading-relaxed">
-                  9개 핵심 서비스와 인공지능 분석 허브를 한눈에 모니터링합니다.
+                  16개 핵심 서비스와 인공지능 분석 허브를 한눈에 모니터링합니다.
                   나의 건강 데이터를 안전하게 관리하세요.
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <Link
                     href={`${localePrefix}/domains/measure`}
-                    className="px-6 py-3.5 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-sky-600/30 flex items-center gap-2"
+                    className="px-6 py-3.5 bg-[#64FFDA] hover:bg-[#7BFFE3] text-[#0A192F] font-bold rounded-2xl transition-all shadow-lg shadow-[#64FFDA]/20 flex items-center gap-2"
                   >
                     측정 시작하기
                   </Link>
                   <Link
                     href={`${localePrefix}/domains/health-records`}
-                    className="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl transition-all border border-white/20 backdrop-blur-sm"
+                    className="px-6 py-3.5 bg-white/10 hover:bg-white/20 text-white font-bold rounded-2xl transition-all border border-white/30 backdrop-blur-sm"
                   >
                     건강 기록 보기
                   </Link>
@@ -63,7 +64,7 @@ export default function UnifiedDashboard() {
           </div>
 
           {/* 의료 인증 신뢰 배지 */}
-          <section className="py-6 border-y border-slate-100 bg-slate-50/50 -mx-6 lg:-mx-8 px-6 lg:px-8 rounded-2xl">
+          <section className="py-6 border-y border-[var(--mps-border)] bg-[var(--mps-bg-elevated)] -mx-6 lg:-mx-8 px-6 lg:px-8 rounded-2xl">
             <div className="max-w-7xl mx-auto">
               <div className="flex items-center justify-center gap-8 flex-wrap">
                 {[
@@ -73,8 +74,8 @@ export default function UnifiedDashboard() {
                   { label: 'HIPAA', desc: '미국 건강정보 보호법 준수' },
                   { label: 'WCAG 2.2 AA', desc: '웹 접근성 지침 준수' },
                 ].map(badge => (
-                  <div key={badge.label} className="flex items-center gap-2 text-slate-500 hover:text-trust-blue transition-colors group" title={badge.desc}>
-                    <Shield className="h-4 w-4 text-trust-blue/60 group-hover:text-trust-blue" />
+                  <div key={badge.label} className="flex items-center gap-2 text-[var(--mps-text-muted)] hover:text-[var(--mps-text)] transition-colors group" title={badge.desc}>
+                    <Shield className="h-4 w-4 opacity-60 group-hover:opacity-100" />
                     <span className="text-xs font-semibold tracking-wide">{badge.label}</span>
                   </div>
                 ))}
@@ -84,8 +85,8 @@ export default function UnifiedDashboard() {
 
           {/* 플랫폼 현황 */}
           <section aria-label="플랫폼 현황">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">플랫폼 현황 한눈에 보기</h2>
-            <p className="text-slate-500 mb-6">만파식 생태계의 핵심 수치를 실시간으로 확인합니다</p>
+            <h2 className="text-2xl font-bold text-[var(--mps-text)] mb-2">플랫폼 현황 한눈에 보기</h2>
+            <p className="text-[var(--mps-text-secondary)] mb-6">만파식 생태계의 핵심 수치를 실시간으로 확인합니다</p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <KPICard title="연결된 서비스" value="41" unit="개" trend="안정적으로 운영 중" icon={<Cpu className="h-4 w-4" />} color="text-sky-600 bg-sky-50" />
               <KPICard title="보안 등급" value="6" unit="단계" trend="군사급 암호화 적용" icon={<Shield className="h-4 w-4" />} color="text-emerald-600 bg-emerald-50" />
@@ -96,8 +97,8 @@ export default function UnifiedDashboard() {
 
           {/* 측정 결과 예시 */}
           <section aria-label="측정 결과 예시">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">건강 측정 결과 예시</h2>
-            <p className="text-slate-500 mb-6">색상 + 숫자 + 아이콘으로 결과를 쉽게 이해할 수 있습니다</p>
+            <h2 className="text-2xl font-bold text-[var(--mps-text)] mb-2">건강 측정 결과 예시</h2>
+            <p className="text-[var(--mps-text-secondary)] mb-6">색상 + 숫자 + 아이콘으로 결과를 쉽게 이해할 수 있습니다</p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <MeasurementResultCard
                 biomarker="혈당"
@@ -134,8 +135,8 @@ export default function UnifiedDashboard() {
 
           {/* 안전 설계 원칙 */}
           <section aria-label="안전 설계 원칙">
-            <h2 className="text-2xl font-bold text-slate-900 mb-2">의료기기 안전 설계 원칙</h2>
-            <p className="text-slate-500 mb-6">6가지 핵심 원칙으로 안전한 의료 소프트웨어를 만듭니다</p>
+            <h2 className="text-2xl font-bold text-[var(--mps-text)] mb-2">의료기기 안전 설계 원칙</h2>
+            <p className="text-[var(--mps-text-secondary)] mb-6">6가지 핵심 원칙으로 안전한 의료 소프트웨어를 만듭니다</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {[
                 { id: 'H1', title: '부품 독립 설계', desc: '각 부품이 독립적으로 작동하여 한 곳의 문제가 전체에 영향을 주지 않습니다', score: 95, icon: GitBranch },
@@ -145,21 +146,21 @@ export default function UnifiedDashboard() {
                 { id: 'H5', title: '통신 규약 명확화', desc: '기기 간 통신 방식을 버전별로 명확히 정의합니다', score: 90, icon: Lock },
                 { id: 'H6', title: '오류 자동 격리', desc: '센서 하나가 고장나도 나머지는 정상 작동합니다', score: 95, icon: Heart },
               ].map(h => (
-                <div key={h.id} className="rounded-2xl border border-slate-200 bg-white p-5 hover:shadow-md transition-shadow">
+                <div key={h.id} className="rounded-2xl border border-[var(--mps-border)] bg-[var(--mps-bg-card)] p-5 hover:shadow-md transition-shadow">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#0891B2]/10 text-[#0891B2]">
                       <h.icon className="h-5 w-5" />
                     </div>
                     <div>
-                      <span className="text-xs font-bold text-sky-600">{h.id}</span>
-                      <h3 className="text-sm font-bold text-slate-900">{h.title}</h3>
+                      <span className="text-xs font-bold text-[#0891B2]">{h.id}</span>
+                      <h3 className="text-sm font-bold text-[var(--mps-text)]">{h.title}</h3>
                     </div>
                     <div className="ml-auto">
                       <span className="text-lg font-black text-emerald-600">{h.score}%</span>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-500 leading-relaxed">{h.desc}</p>
-                  <div className="mt-3 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                  <p className="text-xs text-[var(--mps-text-muted)] leading-relaxed">{h.desc}</p>
+                  <div className="mt-3 h-1.5 bg-[var(--mps-bg-elevated)] rounded-full overflow-hidden">
                     <div className="h-full bg-emerald-500 rounded-full transition-all" style={{ width: `${h.score}%` }} />
                   </div>
                 </div>
@@ -169,8 +170,8 @@ export default function UnifiedDashboard() {
 
           {/* 기술 구조 */}
           <section aria-label="기술 구조">
-            <div className="rounded-2xl bg-slate-900 text-white p-8">
-              <h2 className="text-xl font-bold mb-6">6단계 통합 기술 구조</h2>
+            <div className="rounded-2xl bg-[#0A192F] text-white p-8">
+              <h2 className="text-xl font-bold mb-6 text-white">6단계 통합 기술 구조</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {[
                   { layer: '6층', name: '클라우드', tech: '서버 관리', color: 'bg-slate-700' },
@@ -194,8 +195,8 @@ export default function UnifiedDashboard() {
           <div>
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-2xl font-bold text-slate-900">핵심 서비스 목록</h2>
-                <p className="text-slate-500">각 서비스를 클릭하면 상세 정보를 확인할 수 있습니다</p>
+                <h2 className="text-2xl font-bold text-[var(--mps-text)]">핵심 서비스 목록</h2>
+                <p className="text-[var(--mps-text-secondary)]">각 서비스를 클릭하면 상세 정보를 확인할 수 있습니다</p>
               </div>
               <div className="flex gap-2">
                 <div className="flex items-center gap-2 px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600">
