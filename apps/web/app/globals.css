@@ -61,23 +61,23 @@ h1, h2, h3, h4, h5, h6 {
   --transition-medium: 400ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── 다크 모드 (Deep Sea 기본) ── */
+/* ── 다크 모드 (Deep Sea — WCAG AA 대비 보장) ── */
 [data-theme="dark"] {
   --mps-bg: #0A192F;
   --mps-bg-card: #112240;
   --mps-bg-elevated: #1A2F4A;
-  --mps-border: rgba(212, 175, 55, 0.15);
+  --mps-border: rgba(148, 163, 184, 0.2);
   --mps-border-subtle: rgba(100, 255, 218, 0.08);
-  --mps-text: #FAFAFA;
-  --mps-text-secondary: #8892B0;
-  --mps-text-muted: #495670;
+  --mps-text: #F1F5F9;
+  --mps-text-secondary: #CBD5E1;
+  --mps-text-muted: #94A3B8;
   --mps-gold-light: rgba(212, 175, 55, 0.15);
-  --mps-cyan-light: rgba(100, 255, 218, 0.1);
-  --mps-success-light: rgba(76, 175, 80, 0.15);
-  --mps-warning-light: rgba(255, 193, 7, 0.15);
-  --mps-danger-light: rgba(211, 47, 47, 0.15);
+  --mps-cyan-light: rgba(100, 255, 218, 0.12);
+  --mps-success-light: rgba(76, 175, 80, 0.2);
+  --mps-warning-light: rgba(255, 193, 7, 0.2);
+  --mps-danger-light: rgba(211, 47, 47, 0.2);
   --mps-header-bg: rgba(10, 25, 47, 0.98);
-  --mps-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  --mps-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 /* ── 타이포그래피 ── */
